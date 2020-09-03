@@ -1,7 +1,12 @@
-add_library(juce_plot_window 
-            static 
-            juce_plot_window.cpp 
-            juce_plot_window.h)
+add_library(spl_plot
+            STATIC
+            spl_plot.cpp
+            spl_plot.h)
 
-target_link_libraries(juce_plot_window
-                      juce::juce_gui_extra)
+target_include_directories(spl_plot PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/spl_plot >
+  $<INSTALL_INTERFACE:spl_plot>  # <prefix>/spl_plot
+)
+
+target_link_libraries(spl_plot
+                      juce::juce_gui_basics)
