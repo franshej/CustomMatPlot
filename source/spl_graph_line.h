@@ -18,47 +18,60 @@ struct PlotData_ptr
     const juce::Colour* wave_colour;
 };
 
-struct PlotWindow : juce::Component
+struct GraphLine : juce::Component
 {
 public:
-    ~PlotWindow() = default;
+		GraphLine();
+    ~GraphLine() = default;
 
     void xLim(const float& min, const float& max);
     void yLim(const float& min, const float& max);
-
-    virtual void plot(juce::Graphics& g, const std::vector<PlotData>& plots_data) = 0;
+		void updateYValues(const std::vector<float> *y_values);
+		void updateXValues(const std::vector<float> *x_values);
 
     void resized() override;
     void paint(juce::Graphics& g) override;
 
 private:
     bool isValueWihtinPlotLimits(const float& x, const float& y) const;
+		virtual void calculateYData() = 0;
+		virtual void calculateXData() = 0;
 
 protected:
     void setPlotLimits();
     void setAutoXScale();
     void setAutoYScale();
 
-    float m_y_offset, m_x_offset, m_x_scale, m_y_scale;
+	  float m_x_min, m_x_max, m_y_min, m_y_max;
     bool m_x_autoscale = true, m_y_autoscale = true;
+		std::atomic<bool> nextYBlockReady, nextXBlockReady;
     std::pair<float, float> x_plot_limits, y_plot_limits;
 
     std::vector<std::vector<float>> m_x_values;
     std::vector<PlotData_ptr> m_plots_data_ptr;
+	//	std::vector<PlotData> m_plot_data;
+	
+		const std::vector<float>* m_y_data;
+		const std::vector<float>* m_x_data;
+		std::vector<juce::Point<float>> m_graph_points;
+	
+		const juce::Colour m_graph_colour;
 };
 
-struct Plot : PlotWindow
+struct LinearGraphLine : GraphLine
 {
 public:
-    Plot(const int x, const int y, const int width, const int height);
-    ~Plot() = default;
-    void plot(juce::Graphics& g, const std::vector<PlotData>& plots_data) override;
+		//LinearGraphLine() = default;
+    ~LinearGraphLine() = default;
+	
+private:
+		void calculateYData() override;
+    void calculateXData() override;
 };
 
-struct semiLogX : PlotWindow
+struct LogXGraphLine : GraphLine
 {
 public:
-    semiLogX(const int x, const int y, const int width, const int height);
-    void plot(juce::Graphics& g, const std::vector<PlotData>& plots_data) override;
+    LogXGraphLine(const int x, const int y, const int width, const int height);
 };
 

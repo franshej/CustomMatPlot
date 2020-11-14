@@ -1,64 +1,46 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
+#include "spl_graph_line.h"
+#include "spl_grid.h"
 
-struct PlotData
+struct Plot : juce::Component
 {
 public:
-    PlotData();
-    std::vector<float> x_values;
-    std::vector<float> y_values;
-    juce::Colour wave_colour;
-};
-
-struct PlotData_ptr
-{
-    const std::vector<float>* x_values;
-    const std::vector<float>* y_values;
-    const juce::Colour* wave_colour;
-};
-
-struct PlotWindow : juce::Component
-{
-public:
-    ~PlotWindow() = default;
-
-    void xLim(const float& min, const float& max);
-    void yLim(const float& min, const float& max);
-
-    virtual void plot(juce::Graphics& g, const std::vector<PlotData>& plots_data) = 0;
-
-    void resized() override;
-    void paint(juce::Graphics& g) override;
-
-private:
-    bool isValueWihtinPlotLimits(const float& x, const float& y) const;
-
+	Plot();
+	~Plot() = default;
+	
+	void xLim(const float& min, const float& max);
+	void yLim(const float& min, const float& max);
+	
+	virtual void updateYData(const std::vector<std::vector<float>> &y_data) = 0;
+	virtual void updateXData(const std::vector<std::vector<float>> &x_data) = 0;
+	
+	void resized() override;
+	void paint(juce::Graphics& g) override;
+	
 protected:
-    void setPlotLimits();
-    void setAutoXScale();
-    void setAutoYScale();
-
-    float m_y_offset, m_x_offset, m_x_scale, m_y_scale;
-    bool m_x_autoscale = true, m_y_autoscale = true;
-    std::pair<float, float> x_plot_limits, y_plot_limits;
-
-    std::vector<std::vector<float>> m_x_values;
-    std::vector<PlotData_ptr> m_plots_data_ptr;
+	void setAutoXScale(const std::vector<std::vector<float>>& x_data);
+	void setAutoYScale(const std::vector<std::vector<float>>& y_data);
+	
+	void updateYDataGraph();
+	void updateXDataGraph();
+	
+	bool m_x_autoscale = true, m_y_autoscale = true;
+	
+	std::vector<std::unique_ptr<GraphLine>> m_graph_lines;
+	juce::Rectangle<int> m_graph_area;
+	std::vector<std::vector<float>> m_y_data, m_x_data;
+	std::unique_ptr<BaseGrid> m_grid;
 };
 
-struct Plot : PlotWindow
+struct LinearPlot : Plot
 {
-public:
-    Plot(const int x, const int y, const int width, const int height);
-    ~Plot() = default;
-    void plot(juce::Graphics& g, const std::vector<PlotData>& plots_data) override;
-};
-
-struct semiLogX : PlotWindow
-{
-public:
-    semiLogX(const int x, const int y, const int width, const int height);
-    void plot(juce::Graphics& g, const std::vector<PlotData>& plots_data) override;
+	public:
+		~LinearPlot() = default;
+		LinearPlot(const int x, const int y, const int width, const int height);
+		LinearPlot();
+		void updateYData(const std::vector<std::vector<float>> &y_data) override;
+	  void updateXData(const std::vector<std::vector<float>> &x_data) override;
 };
 
