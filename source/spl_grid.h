@@ -16,7 +16,7 @@ private:
 	virtual void createGrid() = 0;
 	
 protected:
-	juce::Path m_grid_path;
+	std::vector<juce::Path> m_grid_path;
 };
 
 struct Grid : BaseGrid
