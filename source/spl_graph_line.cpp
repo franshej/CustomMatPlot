@@ -81,7 +81,8 @@ void LinearGraphLine::calculateXData() {
     }
 
     const auto &x_scale = static_cast<float>(getWidth()) / (m_x_max - m_x_min);
-    const auto &offset_x = static_cast<float>(getX()) - (m_x_min * x_scale);
+    const auto &offset_x =
+        static_cast<float>(/* getX()) */ - (m_x_min * x_scale));
 
     auto i = 0u;
     for (const auto &x : *m_x_data) {
@@ -102,7 +103,8 @@ void LinearGraphLine::calculateYData() {
       if (!m_x_data) {
         const auto &x_scale =
             static_cast<float>(getWidth()) / (m_x_max - m_x_min);
-        const auto &offset_x = static_cast<float>(getX()) - (m_x_min * x_scale);
+        const auto &offset_x =
+            static_cast<float>(/* getX()) */ - (m_x_min * x_scale));
 
         auto i = 0u;
         for (auto &point : m_graph_points) {
@@ -115,7 +117,7 @@ void LinearGraphLine::calculateYData() {
     const auto &y_offset = m_y_min;
 
     const auto offset_y =
-        static_cast<float>(getHeight() + getY()) + (y_offset * y_scale);
+        static_cast<float>(getHeight() /* + getY()) */ + (y_offset * y_scale));
 
     auto i = 0u;
     for (const auto &y : *m_y_data) {

@@ -28,9 +28,10 @@ protected:
   bool m_x_autoscale = true, m_y_autoscale = true;
 
   std::vector<std::unique_ptr<GraphLine>> m_graph_lines;
-  juce::Rectangle<int> m_graph_area;
+  juce::Rectangle<int> m_graph_area, m_plot_area;
   std::vector<std::vector<float>> m_y_data, m_x_data;
   std::unique_ptr<BaseGrid> m_grid;
+  float m_horizontal_margin, m_vertical_margin = 0.1f;
 };
 
 struct LinearPlot : Plot {

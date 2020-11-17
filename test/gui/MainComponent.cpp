@@ -130,7 +130,7 @@ TEST(test_y_lim) {
 }
 
 MainComponent::MainComponent() {
-  setSize(600, 400);
+  setSize(1200, 800);
   ADD_PARENT_COMP(this);
 
   const auto side_len = std::sqrt(m_plot_holder.size());

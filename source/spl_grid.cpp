@@ -2,7 +2,8 @@
 #include <stdexcept>
 
 void BaseGrid::paint(juce::Graphics &g) {
-  g.setColour(juce::Colours::dimgrey);
+  g.setColour(m_grid_colour);
+
   for (const auto &path : m_grid_path) {
     g.strokePath(path, juce::PathStrokeType(1.0f));
   }
@@ -10,9 +11,16 @@ void BaseGrid::paint(juce::Graphics &g) {
 
 void BaseGrid::resized() { createGrid(); }
 
+void BaseGrid::setGraphBounds(const juce::Rectangle<int> &graph_area) {
+  m_graph_area = graph_area;
+  createGrid();
+}
+
 void Grid::createGrid() {
-  const auto &width = static_cast<float>(getWidth());
-  const auto &height = static_cast<float>(getHeight());
+  const auto &width = static_cast<float>(m_graph_area.getWidth());
+  const auto &height = static_cast<float>(m_graph_area.getHeight());
+  const auto &x = static_cast<float>(m_graph_area.getX());
+  const auto &y = static_cast<float>(m_graph_area.getY());
 
   auto num_horizontal_lines = 3;
   if (width > 375.f) {
@@ -36,8 +44,8 @@ void Grid::createGrid() {
     const auto &y_pos = height * (static_cast<float>(n_line) /
                                   static_cast<float>(num_horizontal_lines - 1));
     juce::Path path_grid;
-    path_grid.startNewSubPath(getX(), getY() + y_pos);
-    path_grid.lineTo(getX() + width, getY() + y_pos);
+    path_grid.startNewSubPath(x, y + y_pos);
+    path_grid.lineTo(x + width, y + y_pos);
     m_grid_path.push_back(path_grid);
   }
 
@@ -45,13 +53,13 @@ void Grid::createGrid() {
     const auto &x_pos = width * (static_cast<float>(n_line) /
                                  static_cast<float>(num_vertical_lines - 1));
     juce::Path path_grid;
-    path_grid.startNewSubPath(getX() + x_pos, getY());
-    path_grid.lineTo(getX() + x_pos, getY() + height);
+    path_grid.startNewSubPath(x + int(x_pos), y);
+    path_grid.lineTo(x + x_pos, y + height);
     m_grid_path.push_back(path_grid);
   }
 
   juce::PathStrokeType p_type(1.0f);
-  std::vector<float> dashed_lines = {4, 7};
+  const std::vector<float> dashed_lines = {4, 7};
 
   for (auto &path : m_grid_path) {
     p_type.createDashedStroke(path, path, dashed_lines.data(), 2);
