@@ -7,7 +7,7 @@ Plot::Plot(){};
 
 static std::pair<float, float>
 findMinMaxValues(const std::vector<std::vector<float>> &xy_data) {
-  auto max_value = std::numeric_limits<float>::min();
+  auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
 
   for (const auto &single_data : xy_data) {
@@ -21,39 +21,41 @@ findMinMaxValues(const std::vector<std::vector<float>> &xy_data) {
   return {min_value, max_value};
 }
 
-static void
-setXLimGraphLines(const std::vector<std::unique_ptr<GraphLine>> &graph_lines,
-                  const float &min, const float &max) {
-  for (const auto &graph_line : graph_lines) {
-    graph_line->xLim(min, max);
+void Plot::updateYLim(const float &min, const float &max) {
+  for (const auto &graph_line : m_graph_lines) {
+    graph_line->yLim(min, max);
+  }
+  if (m_grid != nullptr) {
+    m_grid->yLim(min, max);
   }
 }
 
-static void
-setYLimGraphLines(const std::vector<std::unique_ptr<GraphLine>> &graph_lines,
-                  const float &min, const float &max) {
-  for (const auto &graph_line : graph_lines) {
-    graph_line->yLim(min, max);
+void Plot::updateXLim(const float &min, const float &max) {
+  for (const auto &graph_line : m_graph_lines) {
+    graph_line->xLim(min, max);
+  }
+  if (m_grid != nullptr) {
+    m_grid->xLim(min, max);
   }
 }
 
 void Plot::setAutoXScale(const std::vector<std::vector<float>> &x_data) {
   const auto &[min, max] = findMinMaxValues(x_data);
-  setXLimGraphLines(m_graph_lines, min, max);
+  updateXLim(min, max);
 }
 
 void Plot::setAutoYScale(const std::vector<std::vector<float>> &y_data) {
   const auto &[min, max] = findMinMaxValues(y_data);
-  setYLimGraphLines(m_graph_lines, min, max);
+  updateYLim(min, max);
 }
 
 void Plot::xLim(const float &min, const float &max) {
-  setXLimGraphLines(m_graph_lines, min, max);
+  updateXLim(min, max);
   m_x_autoscale = false;
 }
 
 void Plot::yLim(const float &min, const float &max) {
-  setYLimGraphLines(m_graph_lines, min, max);
+  updateYLim(min, max);
   m_y_autoscale = false;
 }
 
@@ -72,7 +74,7 @@ void Plot::resized() {
 
   if (m_grid != nullptr) {
     m_grid->setBounds(m_plot_area);
-	m_grid->setGraphBounds(m_graph_area);
+    m_grid->setGraphBounds(m_graph_area);
   }
 
   updateYDataGraph();
@@ -138,7 +140,7 @@ void Plot::updateYDataGraph() {
     }
 
     if (m_x_autoscale && m_x_data.empty()) {
-      setAutoXScale({{0, float(m_y_data[0].size())}});
+      setAutoXScale({{0, float(m_y_data[0].size() - 1)}});
     }
 
     auto i = 0u;
