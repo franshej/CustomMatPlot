@@ -65,8 +65,8 @@ void Plot::resized() {
 
   m_plot_area = juce::Rectangle<int>(0, 0, sc_int(width), sc_int(height));
   m_graph_area = juce::Rectangle<int>(
-      sc_int(0.1f * width), sc_int(0.05f * height),
-      sc_int(width - (0.2f * width)), sc_int(height - (0.1f * height)));
+      sc_int(0.15f * width), sc_int(0.1f * height),
+      sc_int(width - (0.20f * width)), sc_int(height - (0.2f * height)));
 
   for (const auto &graph_line : m_graph_lines) {
     graph_line->setBounds(m_graph_area);

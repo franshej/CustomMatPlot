@@ -25,11 +25,10 @@ static std::string convertFloatToString(const float_type value,
       const auto &first_digit = text_out.substr(0, 1 + is_neg);
       text_out = first_digit + two_decimals + "e" + std::to_string(pow_of_ten);
     } else {
-      auto three_decimals =
-          text_out.substr(len_before_dec + is_neg + 1, 4);
-	  three_decimals.insert(1, ".");
-          text_out = std::to_string(-1 * is_neg) + three_decimals + "e" +
-                     std::to_string(pow_of_ten);
+      auto three_decimals = text_out.substr(len_before_dec + is_neg + 1, 4);
+      three_decimals.insert(1, ".");
+      text_out = std::to_string(-1 * is_neg) + three_decimals + "e" +
+                 std::to_string(pow_of_ten);
     }
   } else if (string_len < req_len) {
     text_out = text_out.substr(0, string_len);
@@ -48,14 +47,21 @@ void BaseGrid::paint(juce::Graphics &g) {
   }
 
   g.setColour(m_text_colour);
+  g.setFont(juce::Font("Arial Rounded MT", m_font_size, juce::Font::plain));
   for (const auto &y_axis_text : m_y_axis_texts) {
-    g.setFont(juce::Font("Arial Rounded MT", 12.0f, juce::Font::plain));
     g.drawText(y_axis_text.first, y_axis_text.second,
-               juce::Justification::right);
+               juce::Justification::centredRight);
+  }
+  for (const auto &x_axis_text : m_x_axis_texts) {
+    g.drawText(x_axis_text.first, x_axis_text.second,
+               juce::Justification::centred);
   }
 }
 
-void BaseGrid::resized() { createGrid(); }
+void BaseGrid::resized() {
+  m_font_size = std::ceil(getWidth() * 0.03);
+  createGrid();
+}
 
 void BaseGrid::setGraphBounds(const juce::Rectangle<int> &graph_area) {
   m_graph_area = graph_area;
@@ -116,6 +122,7 @@ void Grid::createGrid() {
   }
 
   m_y_axis_texts.clear();
+  m_x_axis_texts.clear();
 
   if (m_limX.first != m_limX.second && m_limY.first != m_limY.second) {
     const auto &y_diff =
@@ -130,8 +137,20 @@ void Grid::createGrid() {
       m_y_axis_texts.resize(m_y_axis_texts.size() + 1);
       m_y_axis_texts.back().first =
           convertFloatToString(m_limY.second - y_diff * (n_line), 2, 7);
-      m_y_axis_texts.back().second =
-          juce::Rectangle<int>(x - 30, y + y_pos - 15, 60, 30);
+      m_y_axis_texts.back().second = juce::Rectangle<int>(
+          x - 0.18f * width - m_font_size / 2, y + y_pos - 0.07 * height,
+          0.18f * width, 0.14 * height);
+    }
+
+    for (int n_line = 0; n_line < num_vertical_lines; ++n_line) {
+      const auto &x_pos = width * (static_cast<float>(n_line) /
+                                   static_cast<float>(num_vertical_lines - 1));
+      m_x_axis_texts.resize(m_x_axis_texts.size() + 1);
+      m_x_axis_texts.back().first =
+          convertFloatToString(m_limX.first + x_diff * (n_line), 2, 7);
+      m_x_axis_texts.back().second = juce::Rectangle<int>(
+          x + x_pos - 0.09f * width, y + height - m_font_size / 2,
+          0.18f * width, 0.14 * height);
     }
   }
 }
