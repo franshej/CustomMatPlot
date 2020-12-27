@@ -6,9 +6,11 @@
 struct BaseGrid : juce::Component {
 public:
   BaseGrid(const juce::Colour grid_colour = juce::Colours::dimgrey,
-           const juce::Colour text_colour = juce::Colours::white)
-      : m_grid_colour(grid_colour), m_text_colour(text_colour), m_limX({0, 0}),
-        m_limY({0, 0}) {}
+           const juce::Colour text_colour = juce::Colours::white,
+           const juce::Colour frame_colour = juce::Colours::white)
+      : m_grid_colour(grid_colour), m_text_colour(text_colour),
+        m_frame_colour(frame_colour), m_limX({0, 0}), m_limY({0, 0}),
+        m_is_grid_on(false) {}
 
   ~BaseGrid() = default;
 
@@ -16,6 +18,8 @@ public:
 
   void yLim(const float &min, const float &max);
   void xLim(const float &min, const float &max);
+
+  void gridON(const bool grid_on) { m_is_grid_on = grid_on; }
 
   void resized() override;
   void paint(juce::Graphics &g) override;
@@ -26,9 +30,10 @@ private:
 protected:
   std::vector<juce::Path> m_grid_path;
   juce::Rectangle<int> m_graph_area;
-  juce::Colour m_grid_colour, m_text_colour;
+  juce::Colour m_grid_colour, m_text_colour, m_frame_colour;
   std::pair<float, float> m_limX, m_limY;
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_texts, m_x_axis_texts;
+  bool m_is_grid_on;
   float m_font_size;
 };
 

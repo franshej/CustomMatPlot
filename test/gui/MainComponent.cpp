@@ -5,55 +5,61 @@
   {                                                                            \
     ((MainComponent *)thiz)                                                    \
         ->get_plot_holder()                                                    \
-        ->push_back(std::make_unique<LinearPlot>());                           \
-    ((MainComponent *)thiz)->get_plot_holder()->back()->updateYData(Y);        \
+        ->push_back({std::make_unique<LinearPlot>(), test_name});              \
+    ((MainComponent *)thiz)->get_plot_holder()->back().first->updateYData(Y);  \
     thiz->addAndMakeVisible(                                                   \
-        ((MainComponent *)thiz)->get_plot_holder()->back().get());             \
+        ((MainComponent *)thiz)->get_plot_holder()->back().first.get());       \
   }
 
 #define PLOT_XY(X, Y)                                                          \
   {                                                                            \
     ((MainComponent *)thiz)                                                    \
         ->get_plot_holder()                                                    \
-        ->push_back(std::make_unique<LinearPlot>());                           \
-    ((MainComponent *)thiz)->get_plot_holder()->back()->updateYData(Y);        \
-    ((MainComponent *)thiz)->get_plot_holder()->back()->updateXData(X);        \
+        ->push_back({std::make_unique<LinearPlot>(), test_name});              \
+    ((MainComponent *)thiz)->get_plot_holder()->back().first->updateYData(Y);  \
+    ((MainComponent *)thiz)->get_plot_holder()->back().first->updateXData(X);  \
     thiz->addAndMakeVisible(                                                   \
-        ((MainComponent *)thiz)->get_plot_holder()->back().get());             \
+        ((MainComponent *)thiz)->get_plot_holder()->back().first.get());       \
   }
 
 #define X_LIM(MIN, MAX)                                                        \
-  ((MainComponent *)thiz)->get_plot_holder()->back()->xLim(MIN, MAX);
+  ((MainComponent *)thiz)->get_plot_holder()->back().first->xLim(MIN, MAX);
 
 #define Y_LIM(MIN, MAX)                                                        \
-  ((MainComponent *)thiz)->get_plot_holder()->back()->yLim(MIN, MAX);
+  ((MainComponent *)thiz)->get_plot_holder()->back().first->yLim(MIN, MAX);
 
 struct node {
-  void (*fun_ptr)(juce::Component *comp) = nullptr;
+  void (*fun_ptr)(juce::Component *comp,
+                  const std::string &test_name) = nullptr;
+  std::string name;
   node *next = NULL;
   node *tail = NULL;
 } *head = NULL;
 
-static void g_test_add(void (*new_fun_ptr)(juce::Component *comp)) {
+static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
+                                           const std::string &test_name),
+                       const std::string &test_name) {
   if (head == NULL) {
     head = new node;
     head->fun_ptr = new_fun_ptr;
     head->tail = head;
+    head->name = test_name;
   } else {
     head->tail->next = new node;
     head->tail->next->fun_ptr = new_fun_ptr;
+    head->tail->next->name = test_name;
     head->tail = head->tail->next;
   }
 }
 
 #ifdef __cplusplus
 #define TEST(f)                                                                \
-  static void f(juce::Component *thiz);                                        \
+  static void f(juce::Component *thiz, const std::string &test_name);          \
   struct f##_t_ {                                                              \
-    f##_t_(void) { g_test_add(&f); }                                           \
+    f##_t_(void) { g_test_add(&f, #f); }                                       \
   };                                                                           \
   static f##_t_ f##_;                                                          \
-  static void f(juce::Component *thiz)
+  static void f(juce::Component *thiz, const std::string &test_name)
 #else
 #define TEST(f)                                                                  \
   static void f(juce::Component *thiz);                                          \
@@ -66,13 +72,13 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp)) {
 #define ADD_PARENT_COMP(COMP)                                                  \
   struct node *cur;                                                            \
   for (cur = head; cur; cur = cur->next) {                                     \
-    cur->fun_ptr(COMP);                                                        \
+    cur->fun_ptr(COMP, cur->name);                                             \
   }
 
 TEST(test_flat_curve_1000) {
-	std::vector<float> y_test_data(10000);
-	std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
-	PLOT_Y({ y_test_data });
+  std::vector<float> y_test_data(10000);
+  std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
+  PLOT_Y({y_test_data});
 };
 
 TEST(test_sinus_auto_lim) {
@@ -135,36 +141,37 @@ TEST(test_y_lim) {
   Y_LIM(0, 1);
 }
 
-MainComponent::MainComponent() {
+static juce::Rectangle<int> getScreenArea() {
+  return juce::Desktop::getInstance().getDisplays().getMainDisplay().userArea;
+}
+
+MainComponent::MainComponent() : m_menu_label("", "Tests: ") {
   setSize(1200, 800);
   ADD_PARENT_COMP(this);
 
-  const auto side_len = std::sqrt(m_plot_holder.size());
-  const auto is_not_rational = (side_len - floor(side_len)) < 10e-4;
+  addAndMakeVisible(m_test_menu);
+  addAndMakeVisible(m_menu_label);
 
-  auto num_cols = 0u;
-  auto num_rows = 0u;
-
-  if (is_not_rational) {
-    num_cols = static_cast<size_t>(side_len);
-    num_rows = static_cast<size_t>(side_len);
-  } else {
-    num_cols = static_cast<size_t>(floor(side_len + 1));
-    num_rows = static_cast<size_t>(floor(side_len + 1));
+  for (auto i = 0u; i < m_plot_holder.size(); ++i) {
+    m_test_menu.addItem(m_plot_holder[i].second, i + 1);
   }
 
-  auto height = getHeight() / (num_rows);
-  auto width = getWidth() / (num_cols);
-
-  auto i = 0u;
-  for (int col = 0; col < num_cols; ++col) {
-    for (int row = 0; row < num_rows; ++row) {
-      if (i < m_plot_holder.size()) {
-        m_plot_holder[i]->setBounds(col * width, row * height, width, height);
-        i++;
-      }
-    }
+  for (auto &plot : m_plot_holder) {
+    plot.first->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
+                          getHeight() - getScreenArea().getHeight() / 15);
+	plot.first->setVisible(false);
   }
+
+  m_test_menu.onChange = [this]() {
+	  if (m_current_plot != nullptr) {
+		  m_current_plot->setVisible(false);
+	  }
+	  const auto id = m_test_menu.getSelectedId();
+	  if (!m_plot_holder.empty()) {
+		  m_current_plot = m_plot_holder[id - 1].first.get();
+		  m_current_plot->setVisible(true);
+	  }
+  };
 }
 
 /*
@@ -212,4 +219,15 @@ test_y_lim(g);
 */
 }
 
-void MainComponent::resized() {}
+void MainComponent::resized() {
+
+  m_test_menu.setBounds(0, getScreenArea().getHeight() / 30, getWidth() / 2,
+                        getScreenArea().getHeight() / 30);
+  m_menu_label.setBounds(0, 0, getWidth() / 2,
+                         getScreenArea().getHeight() / 30);
+
+  for (auto &plot : m_plot_holder) {
+    plot.first->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
+                          getHeight() - getScreenArea().getHeight() / 15);
+  }
+}

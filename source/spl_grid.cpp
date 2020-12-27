@@ -56,6 +56,12 @@ void BaseGrid::paint(juce::Graphics &g) {
     g.drawText(x_axis_text.first, x_axis_text.second,
                juce::Justification::centred);
   }
+
+  g.setColour(m_frame_colour);
+
+  // Draw frame
+  g.drawRect(m_graph_area);
+
 }
 
 void BaseGrid::resized() {
@@ -79,9 +85,9 @@ void Grid::createGrid() {
   const auto &y = static_cast<float>(m_graph_area.getY());
 
   auto num_horizontal_lines = 3;
-  if (width > 375.f) {
+  if (height > 375.f) {
     num_horizontal_lines = 11;
-  } else if (width <= 375.f && width > 135.f) {
+  } else if (height <= 375.f && height > 135.f) {
     num_horizontal_lines = 5;
   }
 
@@ -114,11 +120,32 @@ void Grid::createGrid() {
     m_grid_path.push_back(path_grid);
   }
 
-  juce::PathStrokeType p_type(1.0f);
-  const std::vector<float> dashed_lines = {4, 7};
+  if (m_is_grid_on) {
+    juce::PathStrokeType p_type(1.0f);
+    const std::vector<float> dashed_lines = {4, 8};
 
-  for (auto &path : m_grid_path) {
-    p_type.createDashedStroke(path, path, dashed_lines.data(), 2);
+    for (auto &path : m_grid_path) {
+      p_type.createDashedStroke(path, path, dashed_lines.data(), 2.f);
+    }
+  } else {
+    juce::PathStrokeType p_type(1.f);
+
+    if (width > 0 && height > 0) {
+      const std::vector<float> dashed_x = {
+		  height * 0.025f, width - (height * 0.05f), height * 0.025f};
+      const std::vector<float> dashed_y = {
+          height * 0.025f, height - (height * 0.05f), height * 0.025f};
+
+      auto i = 0u;
+      for (auto &path : m_grid_path) {
+        if (i < num_horizontal_lines) {
+          p_type.createDashedStroke(path, path, dashed_x.data(), 2);
+        } else {
+          p_type.createDashedStroke(path, path, dashed_y.data(), 2);
+        }
+        i++;
+      }
+    }
   }
 
   m_y_axis_texts.clear();
@@ -149,7 +176,7 @@ void Grid::createGrid() {
       m_x_axis_texts.back().first =
           convertFloatToString(m_limX.first + x_diff * (n_line), 2, 7);
       m_x_axis_texts.back().second = juce::Rectangle<int>(
-          x + x_pos - 0.09f * width, y + height - m_font_size / 2,
+          x + x_pos - 0.09f * width, y + height - static_cast<int>(m_font_size / 2.5),
           0.18f * width, 0.14 * height);
     }
   }

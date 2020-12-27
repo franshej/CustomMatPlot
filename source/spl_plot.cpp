@@ -140,16 +140,25 @@ void Plot::updateYDataGraph() {
     }
 
     if (m_x_autoscale && m_x_data.empty()) {
-      setAutoXScale({{0, float(m_y_data[0].size() - 1)}});
-    }
+      m_x_data.resize(m_y_data.size());
 
-    auto i = 0u;
-    for (const auto &graph_line : m_graph_lines) {
-      graph_line->updateYValues(&m_y_data[i]);
-      i++;
+      auto i = 0u;
+      for (auto &x_data : m_x_data) {
+        x_data.resize(m_y_data[i].size());
+		std::iota(x_data.begin(), x_data.end(), 0);
+        i++;
+      }
+      setAutoXScale(m_x_data);
     }
   }
+
+  auto i = 0u;
+  for (const auto &graph_line : m_graph_lines) {
+    graph_line->updateYValues(&m_y_data[i]);
+    i++;
+  }
 }
+
 void Plot::updateXDataGraph() {
   if (!m_x_data.empty()) {
     if (m_x_autoscale) {
