@@ -10,7 +10,7 @@ public:
            const juce::Colour frame_colour = juce::Colours::white)
       : m_grid_colour(grid_colour), m_text_colour(text_colour),
         m_frame_colour(frame_colour), m_limX({0, 0}), m_limY({0, 0}),
-        m_is_grid_on(false) {}
+        m_is_grid_on(false), m_font_size(16.f) {}
 
   ~BaseGrid() = default;
 
@@ -20,6 +20,8 @@ public:
   void xLim(const float &min, const float &max);
 
   void gridON(const bool grid_on) { m_is_grid_on = grid_on; }
+
+  void setFontSize(const float font_size) { m_font_size = font_size; }
 
   void resized() override;
   void paint(juce::Graphics &g) override;

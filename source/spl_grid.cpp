@@ -65,7 +65,6 @@ void BaseGrid::paint(juce::Graphics &g) {
 }
 
 void BaseGrid::resized() {
-  m_font_size = std::ceil(getWidth() * 0.03);
   createGrid();
 }
 
@@ -98,8 +97,6 @@ void Grid::createGrid() {
     num_vertical_lines = 5;
   }
 
-  // Height 375 pixlar ska den gå från 11 till 5 linjer, 135 till 3 linjer
-  // Width 435 pixlar gå från 11 till 5 linjer, 175 till 3 linjer
   m_grid_path.clear();
 
   for (int n_line = 0; n_line < num_horizontal_lines; ++n_line) {
@@ -165,8 +162,9 @@ void Grid::createGrid() {
       m_y_axis_texts.back().first =
           convertFloatToString(m_limY.second - y_diff * (n_line), 2, 7);
       m_y_axis_texts.back().second = juce::Rectangle<int>(
-          x - 0.18f * width - m_font_size / 2, y + y_pos - 0.07 * height,
-          0.18f * width, 0.14 * height);
+          x - static_cast<int>(m_font_size * 9) - m_font_size / 2,
+          y + y_pos - static_cast<int>(m_font_size / 2),
+          static_cast<int>(m_font_size * 9), static_cast<int>(m_font_size));
     }
 
     for (int n_line = 0; n_line < num_vertical_lines; ++n_line) {
@@ -176,8 +174,9 @@ void Grid::createGrid() {
       m_x_axis_texts.back().first =
           convertFloatToString(m_limX.first + x_diff * (n_line), 2, 7);
       m_x_axis_texts.back().second = juce::Rectangle<int>(
-          x + x_pos - 0.09f * width, y + height - static_cast<int>(m_font_size / 2.5),
-          0.18f * width, 0.14 * height);
+          x + x_pos - static_cast<int>(m_font_size * 4.5),
+          y + height + static_cast<int>(m_font_size / 2),
+          static_cast<int>(m_font_size * 9), static_cast<int>(m_font_size));
     }
   }
 }
