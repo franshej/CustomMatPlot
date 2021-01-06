@@ -3,8 +3,6 @@
 
 #define sc_int(val) static_cast<int>(val)
 
-Plot::Plot(){};
-
 static std::pair<float, float>
 findMinMaxValues(const std::vector<std::vector<float>> &xy_data) {
   auto max_value = -std::numeric_limits<float>::max();
@@ -59,14 +57,29 @@ void Plot::yLim(const float &min, const float &max) {
   m_y_autoscale = false;
 }
 
+void Plot::setXLabel(const std::string &x_label) {
+  m_plot_label.setXLabel(x_label);
+}
+
+void Plot::setYLabel(const std::string &y_label) {
+  m_plot_label.setYLabel(y_label);
+}
+
+void Plot::setTitle(const std::string &title) { m_plot_label.setTitle(title); }
+
 void Plot::resized() {
   const auto &width = static_cast<float>(getWidth());
   const auto &height = static_cast<float>(getHeight());
 
   m_plot_area = juce::Rectangle<int>(0, 0, sc_int(width), sc_int(height));
-  m_graph_area = juce::Rectangle<int>(
+
+  /*
+    m_graph_area = juce::Rectangle<int>(
       sc_int(0.15f * width), sc_int(0.1f * height),
       sc_int(width - (0.20f * width)), sc_int(height - (0.2f * height)));
+  */
+
+  m_graph_area.setBounds(100, 50, width - 150, height - 125);
 
   for (const auto &graph_line : m_graph_lines) {
     graph_line->setBounds(m_graph_area);
@@ -77,6 +90,9 @@ void Plot::resized() {
     m_grid->setGraphBounds(m_graph_area);
   }
 
+  m_plot_label.setBounds(m_plot_area);
+  m_plot_label.setGraphArea(m_graph_area);
+
   updateYDataGraph();
   updateXDataGraph();
 }
@@ -86,11 +102,13 @@ LinearPlot::LinearPlot(const int x, const int y, const int width,
   setBounds(x, y, width, height);
   m_grid = std::make_unique<Grid>();
   addAndMakeVisible(m_grid.get());
+  addAndMakeVisible(m_plot_label);
 }
 
 LinearPlot::LinearPlot() {
   m_grid = std::make_unique<Grid>();
   addAndMakeVisible(m_grid.get());
+  addAndMakeVisible(m_plot_label);
 }
 
 void Plot::paint(juce::Graphics &g) {}
@@ -145,7 +163,7 @@ void Plot::updateYDataGraph() {
       auto i = 0u;
       for (auto &x_data : m_x_data) {
         x_data.resize(m_y_data[i].size());
-		std::iota(x_data.begin(), x_data.end(), 0);
+        std::iota(x_data.begin(), x_data.end(), 0);
         i++;
       }
       setAutoXScale(m_x_data);

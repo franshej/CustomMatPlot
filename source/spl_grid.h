@@ -34,7 +34,8 @@ protected:
   juce::Rectangle<int> m_graph_area;
   juce::Colour m_grid_colour, m_text_colour, m_frame_colour;
   std::pair<float, float> m_limX, m_limY;
-  std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_texts, m_x_axis_texts;
+  std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_texts,
+      m_x_axis_texts;
   bool m_is_grid_on;
   float m_font_size;
 };

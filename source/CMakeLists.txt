@@ -4,8 +4,10 @@ add_library(spl_plot
             spl_plot.h
             spl_graph_line.cpp
             spl_graph_line.h
-	    spl_grid.cpp
-	    spl_grid.h)
+            spl_grid.cpp
+            spl_grid.h
+            spl_label.cpp
+            spl_label.h)
 
 target_include_directories(spl_plot PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/spl_plot >

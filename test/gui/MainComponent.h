@@ -79,6 +79,15 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 #define Y_LIM(MIN, MAX)                                                        \
   ((MainComponent *)thiz)->get_plot_holder()->back().first->yLim(MIN, MAX);
 
+#define X_LABEL(TEXT)                                                          \
+  ((MainComponent *)thiz)->get_plot_holder()->back().first->setXLabel(TEXT);
+
+#define Y_LABEL(TEXT)                                                          \
+  ((MainComponent *)thiz)->get_plot_holder()->back().first->setYLabel(TEXT);
+
+#define TITLE(TEXT)                                                            \
+  ((MainComponent *)thiz)->get_plot_holder()->back().first->setTitle(TEXT);
+
 class MainComponent : public juce::Component {
 public:
   MainComponent();

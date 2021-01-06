@@ -9,6 +9,15 @@ TEST(test_flat_curve_1000) {
   PLOT_Y({y_test_data});
 };
 
+TEST(test_labels) {
+	std::vector<float> y_test_data(10000);
+	std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
+	PLOT_Y({ y_test_data });
+	X_LABEL("X LABEL");
+	Y_LABEL("Y LABEL");
+	TITLE("TITLE");
+};
+
 TEST(test_sinus_auto_lim) {
   std::vector<float> test_data = std::vector<float>(100);
   std::iota(test_data.begin(), test_data.end(), 0.f);
