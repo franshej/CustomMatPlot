@@ -19,19 +19,17 @@ static std::string convertFloatToString(const float_type value,
   const auto &req_len =
       len_before_dec + is_neg + num_decimals + 1 /* 1 = dot */;
 
-  if (string_len <= len_before_dec + is_neg + 1) {
+  if (string_len < req_len) {
     if (pow_of_ten >= 0) {
       const auto &two_decimals = text_out.substr(is_neg + pow_of_ten + 1, 3);
       const auto &first_digit = text_out.substr(0, 1 + is_neg);
       text_out = first_digit + two_decimals + "e" + std::to_string(pow_of_ten);
     } else {
       auto three_decimals = text_out.substr(len_before_dec + is_neg + 1, 4);
-      three_decimals.insert(1, ".");
+      three_decimals.insert(0, ".");
       text_out = std::to_string(-1 * is_neg) + three_decimals + "e" +
                  std::to_string(pow_of_ten);
     }
-  } else if (string_len < req_len) {
-    text_out = text_out.substr(0, string_len);
   } else {
     text_out = text_out.substr(0, len_before_dec + is_neg + 1 + num_decimals);
   }
@@ -61,12 +59,9 @@ void BaseGrid::paint(juce::Graphics &g) {
 
   // Draw frame
   g.drawRect(m_graph_area);
-
 }
 
-void BaseGrid::resized() {
-  createGrid();
-}
+void BaseGrid::resized() { createGrid(); }
 
 void BaseGrid::setGraphBounds(const juce::Rectangle<int> &graph_area) {
   m_graph_area = graph_area;
@@ -129,7 +124,7 @@ void Grid::createGrid() {
 
     if (width > 0 && height > 0) {
       const std::vector<float> dashed_x = {
-		  height * 0.025f, width - (height * 0.05f), height * 0.025f};
+          height * 0.025f, width - (height * 0.05f), height * 0.025f};
       const std::vector<float> dashed_y = {
           height * 0.025f, height - (height * 0.05f), height * 0.025f};
 
@@ -172,7 +167,7 @@ void Grid::createGrid() {
                                    static_cast<float>(num_vertical_lines - 1));
       m_x_axis_texts.resize(m_x_axis_texts.size() + 1);
       m_x_axis_texts.back().first =
-          convertFloatToString(m_limX.first + x_diff * (n_line), 2, 7);
+          convertFloatToString(m_limX.first + x_diff * (n_line), 2, 6);
       m_x_axis_texts.back().second = juce::Rectangle<int>(
           x + x_pos - static_cast<int>(m_font_size * 4.5),
           y + height + static_cast<int>(m_font_size / 2),

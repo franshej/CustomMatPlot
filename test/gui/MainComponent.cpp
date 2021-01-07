@@ -9,13 +9,21 @@ TEST(test_flat_curve_1000) {
   PLOT_Y({y_test_data});
 };
 
+TEST(test_flat_curve_0p0001) {
+  std::vector<float> y_test_data(100);
+  std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
+  for (auto &val : y_test_data)
+    val *= 0.00001;
+  PLOT_Y({y_test_data});
+};
+
 TEST(test_labels) {
-	std::vector<float> y_test_data(10000);
-	std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
-	PLOT_Y({ y_test_data });
-	X_LABEL("X LABEL");
-	Y_LABEL("Y LABEL");
-	TITLE("TITLE");
+  std::vector<float> y_test_data(10000);
+  std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
+  PLOT_Y({y_test_data});
+  X_LABEL("X LABEL");
+  Y_LABEL("Y LABEL");
+  TITLE("TITLE");
 };
 
 TEST(test_sinus_auto_lim) {
