@@ -3,6 +3,12 @@
 
 extern node *head = NULL;
 
+TEST(test_semi_plot_x_10000) {
+	std::vector<float> y_test_data(10000);
+	std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+	SEMI_PLOT_Y({ y_test_data });
+};
+
 TEST(test_flat_curve_1000) {
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);

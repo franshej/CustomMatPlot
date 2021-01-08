@@ -62,6 +62,16 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
         ((MainComponent *)thiz)->get_plot_holder()->back().first.get());       \
   }
 
+#define SEMI_PLOT_Y(Y)                                                              \
+  {                                                                            \
+    ((MainComponent *)thiz)                                                    \
+        ->get_plot_holder()                                                    \
+        ->push_back({std::make_unique<SemiPlotX>(), test_name});              \
+    ((MainComponent *)thiz)->get_plot_holder()->back().first->updateYData(Y);  \
+    thiz->addAndMakeVisible(                                                   \
+        ((MainComponent *)thiz)->get_plot_holder()->back().first.get());       \
+  }
+
 #define PLOT_XY(X, Y)                                                          \
   {                                                                            \
     ((MainComponent *)thiz)                                                    \

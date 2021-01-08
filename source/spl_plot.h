@@ -53,3 +53,11 @@ public:
   void updateYData(const std::vector<std::vector<float>> &y_data) override;
   void updateXData(const std::vector<std::vector<float>> &x_data) override;
 };
+
+struct SemiPlotX : Plot {
+public:
+	~SemiPlotX() = default;
+	SemiPlotX();
+	void updateYData(const std::vector<std::vector<float>>& y_data) override;
+	void updateXData(const std::vector<std::vector<float>>& x_data) override;
+};

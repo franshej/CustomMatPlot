@@ -40,6 +40,7 @@ private:
 };
 
 struct LogXGraphLine : GraphLine {
-public:
-  LogXGraphLine(const int x, const int y, const int width, const int height);
+private:
+	void calculateYData() override;
+	void calculateXData() override;
 };

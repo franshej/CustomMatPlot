@@ -43,3 +43,7 @@ protected:
 struct Grid : BaseGrid {
   void createGrid() override;
 };
+
+struct SemiLogXGrid : BaseGrid {
+	void createGrid() override;
+};

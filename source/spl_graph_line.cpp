@@ -82,7 +82,7 @@ void LinearGraphLine::calculateXData() {
 
     const auto &x_scale = static_cast<float>(getWidth()) / (m_x_max - m_x_min);
     const auto &offset_x =
-        static_cast<float>(/* getX()) */ - (m_x_min * x_scale));
+        static_cast<float>(/* getX()) */ -(m_x_min * x_scale));
 
     auto i = 0u;
     for (const auto &x : *m_x_data) {
@@ -104,7 +104,7 @@ void LinearGraphLine::calculateYData() {
         const auto &x_scale =
             static_cast<float>(getWidth()) / (m_x_max - m_x_min);
         const auto &offset_x =
-            static_cast<float>(/* getX()) */ - (m_x_min * x_scale));
+            static_cast<float>(/* getX()) */ -(m_x_min * x_scale));
 
         auto i = 0u;
         for (auto &point : m_graph_points) {
@@ -126,5 +126,79 @@ void LinearGraphLine::calculateYData() {
     }
 
     nextYBlockReady = false;
+  }
+}
+
+void LogXGraphLine::calculateYData() {
+  if (nextYBlockReady) {
+
+    if (m_x_min <= 0) {
+      throw std::invalid_argument("Minimum x value must be > 0.");
+    }
+
+    if (m_graph_points.size() != m_y_data->size()) {
+      m_graph_points.resize(m_y_data->size());
+
+      if (!m_x_data) {
+        const auto &x_scale =
+            static_cast<float>(getWidth()) / (m_x_max - m_x_min);
+        const auto &offset_x = static_cast<float>(
+            /* getX()) */ -(m_x_min * x_scale));
+
+        auto i = 1u;
+        for (auto &point : m_graph_points) {
+          point.setX(offset_x + (i++ * x_scale));
+        }
+      }
+    }
+
+    const auto width = static_cast<float>(getWidth());
+    const auto y_ratio = m_x_max / static_cast<float>(m_y_data->size());
+
+    auto xToYData = [&](const float &x_pos) {
+      const auto y = m_x_min * pow((m_x_max / m_x_min), ((x_pos) / (width)));
+      const auto y_index = static_cast<int>(std::floor(y / y_ratio));
+
+      return (*m_y_data)[y_index >= m_y_data->size() ? m_y_data->size() - 1
+                                                     : y_index];
+    };
+
+    const auto &y_scale = static_cast<float>(getHeight()) / (m_y_max - m_y_min);
+    const auto &y_offset = m_y_min;
+
+    const auto offset_y =
+        static_cast<float>(getHeight() + (y_offset * y_scale));
+
+    const auto &x_scale = static_cast<float>(getWidth()) / (m_x_max - m_x_min);
+    const auto &offset_x = static_cast<float>(-(m_x_min * x_scale));
+
+    auto i = 0u;
+    for (const auto &x : *m_x_data) {
+      const auto x_scaled = offset_x + (x * x_scale);
+      m_graph_points[i].setY(offset_y - (xToYData(x_scaled) * y_scale));
+      i++;
+    }
+
+    nextYBlockReady = false;
+  }
+}
+
+void LogXGraphLine::calculateXData() {
+  if (nextXBlockReady && !m_x_data->empty()) {
+    if (m_graph_points.size() != m_x_data->size()) {
+      throw std::invalid_argument(
+          "x_values must be the same length as y_values.");
+    }
+
+    const auto &x_scale = static_cast<float>(getWidth()) / (m_x_max - m_x_min);
+    const auto &offset_x = static_cast<float>(-(m_x_min * x_scale));
+
+    auto i = 0u;
+    for (const auto &x : *m_x_data) {
+      m_graph_points[i].setX(offset_x + (x * x_scale));
+      i++;
+    }
+
+    nextXBlockReady = false;
   }
 }

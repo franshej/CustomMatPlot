@@ -131,6 +131,19 @@ void LinearPlot::updateYData(const std::vector<std::vector<float>> &y_data) {
 
     std::copy(y_data.begin(), y_data.end(), m_y_data.begin());
     updateYDataGraph();
+
+	if (m_x_data.size() != m_y_data.size()) {
+		m_x_data.resize(m_y_data.size());
+
+		auto i = 0u;
+		for (auto& x_data : m_x_data) {
+			x_data.resize(m_y_data[i].size());
+			std::iota(x_data.begin(), x_data.end(), 1);
+			i++;
+		}
+
+		updateXDataGraph();
+	}
   }
 }
 
@@ -156,18 +169,6 @@ void Plot::updateYDataGraph() {
     if (m_y_autoscale) {
       setAutoYScale(m_y_data);
     }
-
-    if (m_x_autoscale && m_x_data.empty()) {
-      m_x_data.resize(m_y_data.size());
-
-      auto i = 0u;
-      for (auto &x_data : m_x_data) {
-        x_data.resize(m_y_data[i].size());
-        std::iota(x_data.begin(), x_data.end(), 0);
-        i++;
-      }
-      setAutoXScale(m_x_data);
-    }
   }
 
   auto i = 0u;
@@ -188,5 +189,62 @@ void Plot::updateXDataGraph() {
       graph_line->updateXValues(&m_x_data[i]);
       i++;
     }
+  }
+}
+
+SemiPlotX::SemiPlotX() {
+  m_grid = std::make_unique<Grid>();
+  addAndMakeVisible(m_grid.get());
+  addAndMakeVisible(m_plot_label);
+}
+
+void SemiPlotX::updateYData(const std::vector<std::vector<float>> &y_data) {
+  if (!y_data.empty()) {
+    if (y_data.size() != m_graph_lines.size()) {
+      m_graph_lines.resize(y_data.size());
+
+      for (auto &graph_line : m_graph_lines) {
+        graph_line = std::make_unique<LogXGraphLine>();
+        addAndMakeVisible(graph_line.get());
+        graph_line->setBounds(m_graph_area);
+      }
+    }
+
+    if (y_data.size() != m_y_data.size()) {
+      m_y_data.resize(y_data.size());
+    }
+
+    std::copy(y_data.begin(), y_data.end(), m_y_data.begin());
+    updateYDataGraph();
+
+    if (m_x_data.size() != m_y_data.size()) {
+      m_x_data.resize(m_y_data.size());
+
+      auto i = 0u;
+      for (auto &x_data : m_x_data) {
+        x_data.resize(m_y_data[i].size());
+        std::iota(x_data.begin(), x_data.end(), 1);
+        i++;
+      }
+
+      updateXDataGraph();
+    }
+  }
+}
+
+void SemiPlotX::updateXData(const std::vector<std::vector<float>> &x_data) {
+  if (!x_data.empty()) {
+    if (x_data.size() != m_graph_lines.size()) {
+      throw std::invalid_argument(
+          "Numbers of x_data vectors must be the same amount as y_data "
+          "vectors. Make sure to set y_values first.");
+    }
+
+    if (x_data.size() != m_x_data.size()) {
+      m_x_data.resize(x_data.size());
+    }
+
+    std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
+    updateXDataGraph();
   }
 }
