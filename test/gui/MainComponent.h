@@ -89,6 +89,15 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 #define Y_LIM(MIN, MAX)                                                        \
   ((MainComponent *)thiz)->get_plot_holder()->back().first->yLim(MIN, MAX);
 
+#define GRID_ON                                                                \
+  ((MainComponent *)thiz)->get_plot_holder()->back().first->gridON(true);
+
+#define MAKE_GRAPH_DASHED(D_LENGTHS, GRAPH_INDEX)                              \
+  ((MainComponent *)thiz)                                                      \
+      ->get_plot_holder()                                                      \
+      ->back()                                                                 \
+      .first->makeGraphDashed(D_LENGTHS, GRAPH_INDEX);
+
 #define X_LABEL(TEXT)                                                          \
   ((MainComponent *)thiz)->get_plot_holder()->back().first->setXLabel(TEXT);
 

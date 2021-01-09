@@ -1,6 +1,7 @@
 #pragma once
 
 #include "spl_grid.h"
+#include "spl_graph_line.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 
 struct BaseGrid : juce::Component {
@@ -30,6 +31,11 @@ private:
   virtual void createGrid() = 0;
 
 protected:
+  std::pair<unsigned, unsigned> getNumHorizontalVerticalLines();
+
+  std::vector<std::unique_ptr<GraphLine>> m_grid_lines;
+  std::vector<std::vector<float>> m_x_coordinates, m_y_coordinates;
+
   std::vector<juce::Path> m_grid_path;
   juce::Rectangle<int> m_graph_area;
   juce::Colour m_grid_colour, m_text_colour, m_frame_colour;

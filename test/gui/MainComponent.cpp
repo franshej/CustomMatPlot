@@ -3,13 +3,36 @@
 
 extern node *head = NULL;
 
-TEST(test_semi_plot_x_10000) {
-	std::vector<float> y_test_data(10000);
-	std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
-	SEMI_PLOT_Y({ y_test_data });
+TEST(test_semi_plot_x_50000) {
+  std::vector<float> y_test_data(55000);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+  SEMI_PLOT_Y({y_test_data});
 };
 
-TEST(test_flat_curve_1000) {
+TEST(test_grid_on) {
+	std::vector<float> y_test_data(10);
+	std::iota(y_test_data.begin(), y_test_data.end(), 0);
+	PLOT_Y({ y_test_data });
+	GRID_ON;
+}
+
+TEST(test_draw_flat_line) {
+  std::vector<float> y_data{1, 1};
+  std::vector<float> x_data{0, 9};
+
+  PLOT_XY({x_data}, {y_data});
+  Y_LIM(0, 2);
+}
+
+TEST(test_linear_dashed_lines) {
+  std::vector<float> y_test_data(10000);
+  std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
+  const std::vector<float> dashed_lengths = {4, 8};
+  PLOT_Y({y_test_data});
+  MAKE_GRAPH_DASHED(dashed_lengths, 0);
+}
+
+TEST(test_flat_curve_10000) {
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   PLOT_Y({y_test_data});
@@ -41,7 +64,7 @@ TEST(test_sinus_auto_lim) {
   PLOT_Y({test_data});
 }
 
-TEST(test_flat_curve) {
+TEST(test_ramp) {
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 0);
   PLOT_Y({y_test_data});
@@ -119,9 +142,10 @@ MainComponent::MainComponent() : m_menu_label("", "Tests: ") {
     }
     const auto id = m_test_menu.getSelectedId();
     if (!m_plot_holder.empty()) {
-      m_current_plot = m_plot_holder[id - 1].first.get();
+      m_current_plot = m_plot_holder[id - 1u].first.get();
       m_current_plot->setVisible(true);
     }
+    resized();
   };
 }
 
@@ -138,7 +162,9 @@ void MainComponent::resized() {
                          getScreenArea().getHeight() / 30);
 
   for (auto &plot : m_plot_holder) {
-    plot.first->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
-                          getHeight() - getScreenArea().getHeight() / 15);
+    if (plot.first->isVisible()) {
+      plot.first->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
+                            getHeight() - getScreenArea().getHeight() / 15);
+    }
   }
 }

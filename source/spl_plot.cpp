@@ -67,17 +67,24 @@ void Plot::setYLabel(const std::string &y_label) {
 
 void Plot::setTitle(const std::string &title) { m_plot_label.setTitle(title); }
 
+void Plot::makeGraphDashed(const std::vector<float> &dashed_lengths,
+                           unsigned graph_index) {
+  if (graph_index >= m_graph_lines.size()) {
+    throw std::invalid_argument(
+        "graph_index out of range, updateYData before 'makeGraphDashed'");
+  }
+  m_graph_lines[graph_index]->createDashedPath(dashed_lengths);
+}
+
+void Plot::gridON(const bool grid_on) {
+	m_grid->gridON(grid_on);
+}
+
 void Plot::resized() {
   const auto &width = static_cast<float>(getWidth());
   const auto &height = static_cast<float>(getHeight());
 
   m_plot_area = juce::Rectangle<int>(0, 0, sc_int(width), sc_int(height));
-
-  /*
-    m_graph_area = juce::Rectangle<int>(
-      sc_int(0.15f * width), sc_int(0.1f * height),
-      sc_int(width - (0.20f * width)), sc_int(height - (0.2f * height)));
-  */
 
   m_graph_area.setBounds(100, 50, width - 150, height - 125);
 
@@ -132,18 +139,18 @@ void LinearPlot::updateYData(const std::vector<std::vector<float>> &y_data) {
     std::copy(y_data.begin(), y_data.end(), m_y_data.begin());
     updateYDataGraph();
 
-	if (m_x_data.size() != m_y_data.size()) {
-		m_x_data.resize(m_y_data.size());
+    if (m_x_data.size() != m_y_data.size()) {
+      m_x_data.resize(m_y_data.size());
 
-		auto i = 0u;
-		for (auto& x_data : m_x_data) {
-			x_data.resize(m_y_data[i].size());
-			std::iota(x_data.begin(), x_data.end(), 1);
-			i++;
-		}
+      auto i = 0u;
+      for (auto &x_data : m_x_data) {
+        x_data.resize(m_y_data[i].size());
+        std::iota(x_data.begin(), x_data.end(), 1);
+        i++;
+      }
 
-		updateXDataGraph();
-	}
+      updateXDataGraph();
+    }
   }
 }
 
@@ -193,7 +200,7 @@ void Plot::updateXDataGraph() {
 }
 
 SemiPlotX::SemiPlotX() {
-  m_grid = std::make_unique<Grid>();
+  m_grid = std::make_unique<SemiLogXGrid>();
   addAndMakeVisible(m_grid.get());
   addAndMakeVisible(m_plot_label);
 }

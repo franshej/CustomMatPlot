@@ -20,6 +20,10 @@ public:
   void setYLabel(const std::string &y_label);
   void setTitle(const std::string &title);
 
+  void makeGraphDashed(const std::vector<float> &dashed_lengths,
+                       unsigned graph_index);
+  void gridON(const bool grid_on);
+
   void resized() override;
   void paint(juce::Graphics &g) override;
 
@@ -56,8 +60,8 @@ public:
 
 struct SemiPlotX : Plot {
 public:
-	~SemiPlotX() = default;
-	SemiPlotX();
-	void updateYData(const std::vector<std::vector<float>>& y_data) override;
-	void updateXData(const std::vector<std::vector<float>>& x_data) override;
+  ~SemiPlotX() = default;
+  SemiPlotX();
+  void updateYData(const std::vector<std::vector<float>> &y_data) override;
+  void updateXData(const std::vector<std::vector<float>> &x_data) override;
 };
