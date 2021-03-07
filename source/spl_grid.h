@@ -32,6 +32,7 @@ private:
 
 protected:
   std::pair<unsigned, unsigned> getNumHorizontalVerticalLines();
+  std::pair<unsigned, unsigned> getNumHorizontalVerticalLinesLog();
 
   std::vector<std::unique_ptr<GraphLine>> m_grid_lines;
   std::vector<std::vector<float>> m_x_coordinates, m_y_coordinates;

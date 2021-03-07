@@ -3,17 +3,18 @@
 
 extern node *head = NULL;
 
-TEST(test_semi_plot_x_50000) {
-  std::vector<float> y_test_data(55000);
+TEST(test_semi_plot_x_1000) {
+  std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
   SEMI_PLOT_Y({y_test_data});
+  GRID_ON;
 };
 
 TEST(test_grid_on) {
-	std::vector<float> y_test_data(10);
-	std::iota(y_test_data.begin(), y_test_data.end(), 0);
-	PLOT_Y({ y_test_data });
-	GRID_ON;
+  std::vector<float> y_test_data(10);
+  std::iota(y_test_data.begin(), y_test_data.end(), 0);
+  PLOT_Y({y_test_data});
+  GRID_ON;
 }
 
 TEST(test_draw_flat_line) {

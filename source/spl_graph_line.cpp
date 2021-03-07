@@ -135,7 +135,7 @@ void LinearGraphLine::calculateYData() {
 void LogXGraphLine::calculateYData() {
   if (nextYBlockReady) {
 
-    if (m_x_min <= 0) {
+    if (m_x_min <= 0 && m_x_max <= 0) {
       throw std::invalid_argument("Minimum x value must be > 0.");
     }
 
@@ -161,9 +161,8 @@ void LogXGraphLine::calculateYData() {
 
 void LogXGraphLine::calculateXData() {
   if (nextXBlockReady && !m_x_data->empty()) {
-    if (m_graph_points.size() != m_x_data->size()) {
-      throw std::invalid_argument(
-          "x_values must be the same length as y_values.");
+    if (m_x_min <= 0 && m_x_max <= 0) {
+      throw std::invalid_argument("Minimum x value must be > 0.");
     }
 
     const auto width = static_cast<float>(getWidth());
@@ -174,8 +173,10 @@ void LogXGraphLine::calculateXData() {
 
     auto i = 0u;
     for (const auto &x : *m_x_data) {
-      m_graph_points[i].setX(xToXPos(x));
-      i++;
+      if (x < m_x_max) {
+        m_graph_points[i].setX(xToXPos(x));
+        i++;
+      }
     }
 
     nextXBlockReady = false;
