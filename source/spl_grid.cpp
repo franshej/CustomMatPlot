@@ -371,24 +371,28 @@ void SemiLogXGrid::createGrid() {
     };
 
     juce::Rectangle<int> *last_rect = nullptr;
-    for (const auto &x_pos : m_x_coordinates) {
-      const std::string x_label = convertFloatToString(x_pos[0], 2, 6);
-      auto x_label_area = juce::Rectangle<int>(
-          x + xToXPos(x_pos[0]) -
-              static_cast<int>(((m_font_size / 2) * x_label.size()) / 2),
-          y + height + static_cast<int>(m_font_size / 2),
-          static_cast<int>((m_font_size / 2) * x_label.size()),
-          static_cast<int>(m_font_size));
 
-      if (!last_rect) {
-        m_x_axis_texts.push_back({x_label, x_label_area});
-        last_rect = &m_x_axis_texts.back().second;
-      } else {
-        if (!last_rect->intersects(x_label_area)) {
-          m_x_axis_texts.push_back({x_label, x_label_area});
-          last_rect = &m_x_axis_texts.back().second;
-        }
-      }
-    }
+    std::for_each(std::make_reverse_iterator(m_x_coordinates.end())
+        , std::make_reverse_iterator(m_x_coordinates.begin())
+        , [&](const auto &x_pos) {
+            const std::string x_label = convertFloatToString(x_pos[0], 2, 6);
+            auto x_label_area = juce::Rectangle<int>(
+                x + xToXPos(x_pos[0]) -
+                static_cast<int>(((m_font_size / 2) * x_label.size()) / 2),
+                y + height + static_cast<int>(m_font_size / 2),
+                static_cast<int>((m_font_size / 2) * x_label.size()),
+                static_cast<int>(m_font_size));
+
+            if (!last_rect) {
+                m_x_axis_texts.push_back({ x_label, x_label_area });
+                last_rect = &m_x_axis_texts.back().second;
+            }
+            else {
+                if (!last_rect->intersects(x_label_area)) {
+                    m_x_axis_texts.push_back({ x_label, x_label_area });
+                    last_rect = &m_x_axis_texts.back().second;
+                }
+            }
+        });
   }
 }
