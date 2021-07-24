@@ -5,7 +5,7 @@
 #include "spl_graph_line.h"
 #include "spl_grid.h"
 
-typedef std::vector<std::unique_ptr<GraphLine>> GridLine;
+typedef std::vector<std::unique_ptr<GraphLine>> GridLines;
 
 /*============================================================================*/
 
@@ -36,10 +36,10 @@ struct BaseGrid : juce::Component {
 
  private:
   virtual void createGrid() = 0;
-  virtual void clearAndReserveDataHolders(GridLine &vertical_grid_lines,
-                                          GridLine &horizontal_grid_lines) = 0;
+  virtual void clearAndReserveDataHolders(GridLines &vertical_grid_lines,
+                                          GridLines &horizontal_grid_lines) = 0;
 
-  GridLine m_vertical_grid_lines, m_horizontal_grid_lines;
+  GridLines m_vertical_grid_lines, m_horizontal_grid_lines;
 
  protected:
   void setLabels(const std::function<float(const float)> xToXPos,
@@ -66,8 +66,8 @@ struct BaseGrid : juce::Component {
 
 struct Grid : BaseGrid {
   void createGrid() override;
-  void clearAndReserveDataHolders(GridLine &vertical_grid_lines,
-                                  GridLine &horizontal_grid_lines) override;
+  void clearAndReserveDataHolders(GridLines &vertical_grid_lines,
+                                  GridLines &horizontal_grid_lines) override;
 
  private:
   unsigned m_num_vertical_lines, m_num_horizontal_lines;
@@ -77,8 +77,8 @@ struct Grid : BaseGrid {
 
 struct SemiLogXGrid : BaseGrid {
   void createGrid() override;
-  void clearAndReserveDataHolders(GridLine &vertical_grid_lines,
-                                  GridLine &horizontal_grid_lines) override;
+  void clearAndReserveDataHolders(GridLines &vertical_grid_lines,
+                                  GridLines &horizontal_grid_lines) override;
 
  private:
   float m_min_exp, m_max_exp, m_exp_diff;

@@ -185,52 +185,52 @@ template <class graph_type>
 void BaseGrid::addGridLineVertical(const float x_val) {
     const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
-    auto GridLine =
+    auto GridLines =
         getAndAddGridLine<graph_type>(m_vertical_grid_lines, m_grid_colour);
-    GridLine->setBounds(m_graph_area);
+    GridLines->setBounds(m_graph_area);
 
-    GridLine->xLim(m_limX.first, m_limX.second);
-    GridLine->yLim(0.f, height);
+    GridLines->xLim(m_limX.first, m_limX.second);
+    GridLines->yLim(0.f, height);
 
-    GridLine->setXValues({ x_val, x_val });
-    GridLine->setYValues({ 0.f, height });
+    GridLines->setXValues({ x_val, x_val });
+    GridLines->setYValues({ 0.f, height });
 
     if (!m_is_grid_on) {
         const std::vector<float> dashed_lines = {
             height * 0.025f, height - (height * 0.05f), height * 0.025f };
-        GridLine->setDashedPath(dashed_lines);
+        GridLines->setDashedPath(dashed_lines);
     }
 
-    addAndMakeVisible(GridLine, 0);
+    addAndMakeVisible(GridLines, 0);
 }
 
 template <class graph_type>
 void BaseGrid::addGridLineHorizontal(const float y_val) {
     const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
-    auto GridLine =
+    auto GridLines =
         getAndAddGridLine<graph_type>(m_horizontal_grid_lines, m_grid_colour);
-    GridLine->setBounds(m_graph_area);
+    GridLines->setBounds(m_graph_area);
 
-    GridLine->xLim(0.f, width);
-    GridLine->yLim(m_limY.first, m_limY.second);
+    GridLines->xLim(0.f, width);
+    GridLines->yLim(m_limY.first, m_limY.second);
 
-    GridLine->setXValues({ 0.f, width });
-    GridLine->setYValues({ y_val, y_val });
+    GridLines->setXValues({ 0.f, width });
+    GridLines->setYValues({ y_val, y_val });
 
     if (!m_is_grid_on) {
         const std::vector<float> dashed_lines = {
             height * 0.025f, width - (height * 0.05f), height * 0.025f };
-        GridLine->setDashedPath(dashed_lines);
+        GridLines->setDashedPath(dashed_lines);
     }
 
-    addAndMakeVisible(GridLine, 0);
+    addAndMakeVisible(GridLines, 0);
 }
 
 /*============================================================================*/
 
-void Grid::clearAndReserveDataHolders(GridLine &vertical_grid_lines,
-                                      GridLine &horizontal_grid_lines) {
+void Grid::clearAndReserveDataHolders(GridLines &vertical_grid_lines,
+                                      GridLines &horizontal_grid_lines) {
   const unsigned width = m_graph_area.getWidth();
   const unsigned height = m_graph_area.getHeight();
 
@@ -287,8 +287,8 @@ void Grid::createGrid() {
 
 /*============================================================================*/
 
-void SemiLogXGrid::clearAndReserveDataHolders(GridLine& vertical_grid_lines,
-    GridLine& horizontal_grid_lines) {
+void SemiLogXGrid::clearAndReserveDataHolders(GridLines& vertical_grid_lines,
+    GridLines& horizontal_grid_lines) {
     const unsigned width = m_graph_area.getWidth();
     const unsigned height = m_graph_area.getHeight();
 
