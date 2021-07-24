@@ -5,6 +5,13 @@
 #include "spl_label.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 
+struct GraphLineData
+{
+    std::vector<float> x_data;
+    std::vector<float> y_data;
+    std::unique_ptr<GraphLine> grpah_line;
+};
+
 struct Plot : juce::Component {
 public:
   Plot() = default;
@@ -13,8 +20,8 @@ public:
   void xLim(const float &min, const float &max);
   void yLim(const float &min, const float &max);
 
-  virtual void updateYData(const std::vector<std::vector<float>> &y_data) = 0;
-  virtual void updateXData(const std::vector<std::vector<float>> &x_data) = 0;
+  void updateYData(const std::vector<std::vector<float>> &y_data);
+  void updateXData(const std::vector<std::vector<float>> &x_data);
 
   void setXLabel(const std::string &x_label);
   void setYLabel(const std::string &y_label);
@@ -28,14 +35,13 @@ public:
   void paint(juce::Graphics &g) override;
 
 protected:
-  void setAutoXScale(const std::vector<std::vector<float>> &x_data);
-  void setAutoYScale(const std::vector<std::vector<float>> &y_data);
-
-  void updateYDataGraph();
-  void updateXDataGraph();
+  void setAutoXScale();
+  void setAutoYScale();
 
   void updateYLim(const float &min, const float &max);
   void updateXLim(const float &min, const float &max);
+
+  virtual std::unique_ptr<GraphLine> getGraphLine() = 0;
 
   bool m_x_autoscale = true, m_y_autoscale = true;
 
@@ -54,14 +60,14 @@ public:
   ~LinearPlot() = default;
   LinearPlot(const int x, const int y, const int width, const int height);
   LinearPlot();
-  void updateYData(const std::vector<std::vector<float>> &y_data) override;
-  void updateXData(const std::vector<std::vector<float>> &x_data) override;
+
+  std::unique_ptr<GraphLine> getGraphLine() override { return std::move(std::make_unique<LinearGraphLine>()); }
 };
 
 struct SemiPlotX : Plot {
 public:
   ~SemiPlotX() = default;
   SemiPlotX();
-  void updateYData(const std::vector<std::vector<float>> &y_data) override;
-  void updateXData(const std::vector<std::vector<float>> &x_data) override;
+
+  std::unique_ptr<GraphLine> getGraphLine() override { return std::move(std::make_unique<LogXGraphLine>()); }
 };
