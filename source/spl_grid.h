@@ -7,6 +7,8 @@
 
 typedef std::vector<std::unique_ptr<GraphLine>> GridLine;
 
+/*============================================================================*/
+
 struct BaseGrid : juce::Component {
  public:
   BaseGrid(const juce::Colour grid_colour = juce::Colours::dimgrey,
@@ -60,6 +62,8 @@ struct BaseGrid : juce::Component {
   float m_font_size;
 };
 
+/*============================================================================*/
+
 struct Grid : BaseGrid {
   void createGrid() override;
   void clearAndReserveDataHolders(GridLine &vertical_grid_lines,
@@ -68,6 +72,8 @@ struct Grid : BaseGrid {
  private:
   unsigned m_num_vertical_lines, m_num_horizontal_lines;
 };
+
+/*============================================================================*/
 
 struct SemiLogXGrid : BaseGrid {
   void createGrid() override;

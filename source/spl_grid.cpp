@@ -2,6 +2,8 @@
 
 #include <stdexcept>
 
+/*============================================================================*/
+
 template <class float_type>
 static std::string convertFloatToString(const float_type value,
                                         int num_decimals, int max_string_len) {
@@ -47,6 +49,16 @@ static std::tuple<num_type, num_type, num_type, num_type> getRectangleMeasures(
   const auto height = static_cast<num_type>(m_graph_area.getHeight());
   return std::make_tuple(x, y, width, height);
 }
+
+template <class graph_type>
+static GraphLine* getAndAddGridLine(
+    std::vector<std::unique_ptr<GraphLine>>& graph_lines,
+    const juce::Colour grid_colour) {
+    graph_lines.emplace_back(std::make_unique<graph_type>(grid_colour));
+    return graph_lines.back().get();
+}
+
+/*============================================================================*/
 
 void BaseGrid::setLabels(const std::function<float(const float)> xToXPos,
                          const std::function<float(const float)> yToYPos) {
@@ -168,41 +180,54 @@ void BaseGrid::yLim(const float &min, const float &max) { m_limY = {min, max}; }
 
 void BaseGrid::xLim(const float &min, const float &max) { m_limX = {min, max}; }
 
-void SemiLogXGrid::clearAndReserveDataHolders(GridLine &vertical_grid_lines,
-                                              GridLine &horizontal_grid_lines) {
-  const unsigned width = m_graph_area.getWidth();
-  const unsigned height = m_graph_area.getHeight();
 
-  m_num_vertical_lines = 10u;
+template <class graph_type>
+void BaseGrid::addGridLineVertical(const float x_val) {
+    const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
-  m_num_horizontal_lines = 3u;
-  if (height > 375u) {
-    m_num_horizontal_lines = 11u;
-  } else if (height <= 375u && height > 135u) {
-    m_num_horizontal_lines = 5u;
-  }
+    auto GridLine =
+        getAndAddGridLine<graph_type>(m_vertical_grid_lines, m_grid_colour);
+    GridLine->setBounds(m_graph_area);
 
-  m_min_exp = std::floor(log10(m_limX.first));
-  m_max_exp = std::ceil(log10(m_limX.second));
+    GridLine->xLim(m_limX.first, m_limX.second);
+    GridLine->yLim(0.f, height);
 
-  const auto top_out_of_sight_lines = (m_max_exp - log10(m_limX.second));
-  const auto bottom_out_of_sight_lines = log10(m_limX.first) - m_min_exp;
-  const auto num_out_of_sight_lines =
-      top_out_of_sight_lines + bottom_out_of_sight_lines;
+    GridLine->setXValues({ x_val, x_val });
+    GridLine->setYValues({ 0.f, height });
 
-  m_exp_diff = static_cast<unsigned>(ceil(abs(m_max_exp) - abs(m_min_exp)));
+    if (!m_is_grid_on) {
+        const std::vector<float> dashed_lines = {
+            height * 0.025f, height - (height * 0.05f), height * 0.025f };
+        GridLine->setDashedPath(dashed_lines);
+    }
 
-  m_num_lines_exp = 10;
-
-  m_num_vertical_lines = (m_exp_diff * (m_num_lines_exp)) -
-                         (num_out_of_sight_lines * m_num_lines_exp);
-
-  vertical_grid_lines.clear();
-  vertical_grid_lines.reserve(m_num_vertical_lines);
-
-  horizontal_grid_lines.clear();
-  horizontal_grid_lines.reserve(m_num_horizontal_lines);
+    addAndMakeVisible(GridLine, 0);
 }
+
+template <class graph_type>
+void BaseGrid::addGridLineHorizontal(const float y_val) {
+    const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
+
+    auto GridLine =
+        getAndAddGridLine<graph_type>(m_horizontal_grid_lines, m_grid_colour);
+    GridLine->setBounds(m_graph_area);
+
+    GridLine->xLim(0.f, width);
+    GridLine->yLim(m_limY.first, m_limY.second);
+
+    GridLine->setXValues({ 0.f, width });
+    GridLine->setYValues({ y_val, y_val });
+
+    if (!m_is_grid_on) {
+        const std::vector<float> dashed_lines = {
+            height * 0.025f, width - (height * 0.05f), height * 0.025f };
+        GridLine->setDashedPath(dashed_lines);
+    }
+
+    addAndMakeVisible(GridLine, 0);
+}
+
+/*============================================================================*/
 
 void Grid::clearAndReserveDataHolders(GridLine &vertical_grid_lines,
                                       GridLine &horizontal_grid_lines) {
@@ -228,60 +253,6 @@ void Grid::clearAndReserveDataHolders(GridLine &vertical_grid_lines,
 
   horizontal_grid_lines.clear();
   horizontal_grid_lines.reserve(m_num_horizontal_lines);
-}
-
-template <class graph_type>
-static GraphLine *getAndAddGridLine(
-    std::vector<std::unique_ptr<GraphLine>> &graph_lines,
-    const juce::Colour grid_colour) {
-  graph_lines.emplace_back(std::make_unique<graph_type>(grid_colour));
-  return graph_lines.back().get();
-}
-
-template <class graph_type>
-void BaseGrid::addGridLineVertical(const float x_val) {
-  const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
-
-  auto GridLine =
-      getAndAddGridLine<graph_type>(m_vertical_grid_lines, m_grid_colour);
-  GridLine->setBounds(m_graph_area);
-
-  GridLine->xLim(m_limX.first, m_limX.second);
-  GridLine->yLim(0.f, height);
-
-  GridLine->setXValues({x_val, x_val});
-  GridLine->setYValues({0.f, height});
-
-  if (!m_is_grid_on) {
-    const std::vector<float> dashed_lines = {
-        height * 0.025f, height - (height * 0.05f), height * 0.025f};
-    GridLine->setDashedPath(dashed_lines);
-  }
-
-  addAndMakeVisible(GridLine, 0);
-}
-
-template <class graph_type>
-void BaseGrid::addGridLineHorizontal(const float y_val) {
-  const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
-
-  auto GridLine =
-      getAndAddGridLine<graph_type>(m_horizontal_grid_lines, m_grid_colour);
-  GridLine->setBounds(m_graph_area);
-
-  GridLine->xLim(0.f, width);
-  GridLine->yLim(m_limY.first, m_limY.second);
-
-  GridLine->setXValues({0.f, width});
-  GridLine->setYValues({y_val, y_val});
-
-  if (!m_is_grid_on) {
-    const std::vector<float> dashed_lines = {
-        height * 0.025f, width - (height * 0.05f), height * 0.025f};
-    GridLine->setDashedPath(dashed_lines);
-  }
-
-  addAndMakeVisible(GridLine, 0);
 }
 
 void Grid::createGrid() {
@@ -312,6 +283,45 @@ void Grid::createGrid() {
   };
 
   setLabels(xToXPos, yToYPos);
+}
+
+/*============================================================================*/
+
+void SemiLogXGrid::clearAndReserveDataHolders(GridLine& vertical_grid_lines,
+    GridLine& horizontal_grid_lines) {
+    const unsigned width = m_graph_area.getWidth();
+    const unsigned height = m_graph_area.getHeight();
+
+    m_num_vertical_lines = 10u;
+
+    m_num_horizontal_lines = 3u;
+    if (height > 375u) {
+        m_num_horizontal_lines = 11u;
+    }
+    else if (height <= 375u && height > 135u) {
+        m_num_horizontal_lines = 5u;
+    }
+
+    m_min_exp = std::floor(log10(m_limX.first));
+    m_max_exp = std::ceil(log10(m_limX.second));
+
+    const auto top_out_of_sight_lines = (m_max_exp - log10(m_limX.second));
+    const auto bottom_out_of_sight_lines = log10(m_limX.first) - m_min_exp;
+    const auto num_out_of_sight_lines =
+        top_out_of_sight_lines + bottom_out_of_sight_lines;
+
+    m_exp_diff = static_cast<unsigned>(ceil(abs(m_max_exp) - abs(m_min_exp)));
+
+    m_num_lines_exp = 10;
+
+    m_num_vertical_lines = (m_exp_diff * (m_num_lines_exp)) -
+        (num_out_of_sight_lines * m_num_lines_exp);
+
+    vertical_grid_lines.clear();
+    vertical_grid_lines.reserve(m_num_vertical_lines);
+
+    horizontal_grid_lines.clear();
+    horizontal_grid_lines.reserve(m_num_horizontal_lines);
 }
 
 void SemiLogXGrid::createGrid() {
