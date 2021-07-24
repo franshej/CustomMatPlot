@@ -5,6 +5,8 @@
 #include "spl_graph_line.h"
 #include "spl_grid.h"
 
+typedef std::vector<std::unique_ptr<GraphLine>> GridLine;
+
 struct BaseGrid : juce::Component {
  public:
   BaseGrid(const juce::Colour grid_colour = juce::Colours::dimgrey,
@@ -24,9 +26,7 @@ struct BaseGrid : juce::Component {
 
   void yLim(const float &min, const float &max);
   void xLim(const float &min, const float &max);
-
   void gridON(const bool grid_on) { m_is_grid_on = grid_on; }
-
   void setFontSize(const float font_size) { m_font_size = font_size; }
 
   void resized() override;
@@ -34,23 +34,20 @@ struct BaseGrid : juce::Component {
 
  private:
   virtual void createGrid() = 0;
-  virtual void resizeDataHolders() = 0;
-  virtual void calculateNumHorizontalVerticalLines() = 0;
+  virtual void clearAndReserveDataHolders(GridLine &vertical_grid_lines,
+                                          GridLine &horizontal_grid_lines) = 0;
+
+  GridLine m_vertical_grid_lines, m_horizontal_grid_lines;
 
  protected:
-  std::pair<unsigned, unsigned> getNumHorizontalVerticalLinesLog();
-
   void setLabels(const std::function<float(const float)> xToXPos,
                  const std::function<float(const float)> yToYPos);
 
-  template<class graph_type>
+  template <class graph_type>
   void addGridLineVertical(const float x_val);
 
-  template<class graph_type>
+  template <class graph_type>
   void addGridLineHorizontal(const float y_val);
-
-  std::vector<std::unique_ptr<GraphLine>> m_vertical_grid_lines,
-      m_horizontal_grid_lines;
 
   std::vector<juce::Path> m_grid_path;
   juce::Rectangle<int> m_graph_area;
@@ -61,21 +58,24 @@ struct BaseGrid : juce::Component {
 
   bool m_is_grid_on;
   float m_font_size;
-  int m_num_vertical_lines, m_num_horizontal_lines, m_num_tot_lines;
 };
 
 struct Grid : BaseGrid {
   void createGrid() override;
-  void resizeDataHolders() override;
-  void calculateNumHorizontalVerticalLines() override;
+  void clearAndReserveDataHolders(GridLine &vertical_grid_lines,
+                                  GridLine &horizontal_grid_lines) override;
+
+ private:
+  unsigned m_num_vertical_lines, m_num_horizontal_lines;
 };
 
 struct SemiLogXGrid : BaseGrid {
   void createGrid() override;
-  void resizeDataHolders() override;
-  void calculateNumHorizontalVerticalLines() override;
+  void clearAndReserveDataHolders(GridLine &vertical_grid_lines,
+                                  GridLine &horizontal_grid_lines) override;
 
  private:
   float m_min_exp, m_max_exp, m_exp_diff;
   int m_num_lines_exp;
+  unsigned m_num_vertical_lines, m_num_horizontal_lines;
 };

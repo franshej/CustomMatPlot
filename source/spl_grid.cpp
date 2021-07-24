@@ -141,8 +141,7 @@ void BaseGrid::paint(juce::Graphics &g) {
 }
 
 void BaseGrid::resized() {
-  calculateNumHorizontalVerticalLines();
-  resizeDataHolders();
+  clearAndReserveDataHolders(m_vertical_grid_lines, m_horizontal_grid_lines);
   createGrid();
 
   for (const auto &grid : m_horizontal_grid_lines) {
@@ -169,30 +168,12 @@ void BaseGrid::yLim(const float &min, const float &max) { m_limY = {min, max}; }
 
 void BaseGrid::xLim(const float &min, const float &max) { m_limX = {min, max}; }
 
-std::pair<unsigned, unsigned> BaseGrid::getNumHorizontalVerticalLinesLog() {
+void SemiLogXGrid::clearAndReserveDataHolders(GridLine &vertical_grid_lines,
+                                              GridLine &horizontal_grid_lines) {
   const unsigned width = m_graph_area.getWidth();
   const unsigned height = m_graph_area.getHeight();
 
-  unsigned num_horizontal_lines = 6u;
-  if (height > 375u) {
-    num_horizontal_lines = 22u;
-  } else if (height <= 375u && height > 135u) {
-    num_horizontal_lines = 10u;
-  }
-
-  unsigned num_vertical_lines = 6u;
-  if (width > 435u) {
-    num_vertical_lines = 22u;
-  } else if (width <= 435u && width > 175u) {
-    num_vertical_lines = 10u;
-  }
-
-  return {num_horizontal_lines, num_vertical_lines};
-}
-
-void Grid::calculateNumHorizontalVerticalLines() {
-  const unsigned width = m_graph_area.getWidth();
-  const unsigned height = m_graph_area.getHeight();
+  m_num_vertical_lines = 10u;
 
   m_num_horizontal_lines = 3u;
   if (height > 375u) {
@@ -200,6 +181,33 @@ void Grid::calculateNumHorizontalVerticalLines() {
   } else if (height <= 375u && height > 135u) {
     m_num_horizontal_lines = 5u;
   }
+
+  m_min_exp = std::floor(log10(m_limX.first));
+  m_max_exp = std::ceil(log10(m_limX.second));
+
+  const auto top_out_of_sight_lines = (m_max_exp - log10(m_limX.second));
+  const auto bottom_out_of_sight_lines = log10(m_limX.first) - m_min_exp;
+  const auto num_out_of_sight_lines =
+      top_out_of_sight_lines + bottom_out_of_sight_lines;
+
+  m_exp_diff = static_cast<unsigned>(ceil(abs(m_max_exp) - abs(m_min_exp)));
+
+  m_num_lines_exp = 10;
+
+  m_num_vertical_lines = (m_exp_diff * (m_num_lines_exp)) -
+                         (num_out_of_sight_lines * m_num_lines_exp);
+
+  vertical_grid_lines.clear();
+  vertical_grid_lines.reserve(m_num_vertical_lines);
+
+  horizontal_grid_lines.clear();
+  horizontal_grid_lines.reserve(m_num_horizontal_lines);
+}
+
+void Grid::clearAndReserveDataHolders(GridLine &vertical_grid_lines,
+                                      GridLine &horizontal_grid_lines) {
+  const unsigned width = m_graph_area.getWidth();
+  const unsigned height = m_graph_area.getHeight();
 
   m_num_vertical_lines = 3u;
   if (width > 435u) {
@@ -207,11 +215,6 @@ void Grid::calculateNumHorizontalVerticalLines() {
   } else if (width <= 435u && width > 175u) {
     m_num_vertical_lines = 5u;
   }
-}
-
-void SemiLogXGrid::calculateNumHorizontalVerticalLines() {
-  const unsigned width = m_graph_area.getWidth();
-  const unsigned height = m_graph_area.getHeight();
 
   m_num_horizontal_lines = 3u;
   if (height > 375u) {
@@ -220,15 +223,11 @@ void SemiLogXGrid::calculateNumHorizontalVerticalLines() {
     m_num_horizontal_lines = 5u;
   }
 
-  m_num_vertical_lines = 10u;
-}
+  vertical_grid_lines.clear();
+  vertical_grid_lines.reserve(m_num_vertical_lines);
 
-void Grid::resizeDataHolders() {
-  m_vertical_grid_lines.clear();
-  m_vertical_grid_lines.reserve(m_num_vertical_lines);
-
-  m_horizontal_grid_lines.clear();
-  m_horizontal_grid_lines.reserve(m_num_horizontal_lines);
+  horizontal_grid_lines.clear();
+  horizontal_grid_lines.reserve(m_num_horizontal_lines);
 }
 
 template <class graph_type>
@@ -243,46 +242,46 @@ template <class graph_type>
 void BaseGrid::addGridLineVertical(const float x_val) {
   const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
-  auto grid_line =
+  auto GridLine =
       getAndAddGridLine<graph_type>(m_vertical_grid_lines, m_grid_colour);
-  grid_line->setBounds(m_graph_area);
+  GridLine->setBounds(m_graph_area);
 
-  grid_line->xLim(m_limX.first, m_limX.second);
-  grid_line->yLim(0.f, height);
+  GridLine->xLim(m_limX.first, m_limX.second);
+  GridLine->yLim(0.f, height);
 
-  grid_line->setXValues({x_val, x_val});
-  grid_line->setYValues({0.f, height});
+  GridLine->setXValues({x_val, x_val});
+  GridLine->setYValues({0.f, height});
 
   if (!m_is_grid_on) {
     const std::vector<float> dashed_lines = {
         height * 0.025f, height - (height * 0.05f), height * 0.025f};
-    grid_line->setDashedPath(dashed_lines);
+    GridLine->setDashedPath(dashed_lines);
   }
 
-  addAndMakeVisible(grid_line, 0);
+  addAndMakeVisible(GridLine, 0);
 }
 
 template <class graph_type>
 void BaseGrid::addGridLineHorizontal(const float y_val) {
   const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
-  auto grid_line =
+  auto GridLine =
       getAndAddGridLine<graph_type>(m_horizontal_grid_lines, m_grid_colour);
-  grid_line->setBounds(m_graph_area);
+  GridLine->setBounds(m_graph_area);
 
-  grid_line->xLim(0.f, width);
-  grid_line->yLim(m_limY.first, m_limY.second);
+  GridLine->xLim(0.f, width);
+  GridLine->yLim(m_limY.first, m_limY.second);
 
-  grid_line->setXValues({0.f, width});
-  grid_line->setYValues({y_val, y_val});
+  GridLine->setXValues({0.f, width});
+  GridLine->setYValues({y_val, y_val});
 
   if (!m_is_grid_on) {
     const std::vector<float> dashed_lines = {
         height * 0.025f, width - (height * 0.05f), height * 0.025f};
-    grid_line->setDashedPath(dashed_lines);
+    GridLine->setDashedPath(dashed_lines);
   }
 
-  addAndMakeVisible(grid_line, 0);
+  addAndMakeVisible(GridLine, 0);
 }
 
 void Grid::createGrid() {
@@ -313,32 +312,6 @@ void Grid::createGrid() {
   };
 
   setLabels(xToXPos, yToYPos);
-}
-
-void SemiLogXGrid::resizeDataHolders() {
-  m_min_exp = std::floor(log10(m_limX.first));
-  m_max_exp = std::ceil(log10(m_limX.second));
-
-  const auto top_out_of_sight_lines = (m_max_exp - log10(m_limX.second));
-  const auto bottom_out_of_sight_lines = log10(m_limX.first) - m_min_exp;
-  const auto num_out_of_sight_lines =
-      top_out_of_sight_lines + bottom_out_of_sight_lines;
-
-  m_exp_diff = static_cast<unsigned>(ceil(abs(m_max_exp) - abs(m_min_exp)));
-
-  m_num_lines_exp = 10;
-  m_num_tot_lines = (m_exp_diff * (m_num_lines_exp)) -
-                    (num_out_of_sight_lines * m_num_lines_exp) +
-                    m_num_horizontal_lines;
-
-  m_num_vertical_lines = (m_exp_diff * (m_num_lines_exp)) -
-                         (num_out_of_sight_lines * m_num_lines_exp);
-
-  m_vertical_grid_lines.clear();
-  m_vertical_grid_lines.reserve(m_num_vertical_lines);
-
-  m_horizontal_grid_lines.clear();
-  m_horizontal_grid_lines.reserve(m_num_horizontal_lines);
 }
 
 void SemiLogXGrid::createGrid() {
