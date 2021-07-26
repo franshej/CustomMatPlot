@@ -45,7 +45,7 @@ void Plot::updateYLim(const float &min, const float &max) {
     graph_line->yLim(min, max);
   }
   if (m_grid != nullptr) {
-    m_grid->yLim(min, max);
+    m_grid->setYLim(min, max);
   }
 }
 
@@ -54,7 +54,7 @@ void Plot::updateXLim(const float &min, const float &max) {
     graph_line->xLim(min, max);
   }
   if (m_grid != nullptr) {
-    m_grid->xLim(min, max);
+    m_grid->setXLim(min, max);
   }
 }
 
@@ -97,7 +97,7 @@ void Plot::makeGraphDashed(const std::vector<float> &dashed_lengths,
   m_graph_lines[graph_index]->setDashedPath(dashed_lengths);
 }
 
-void Plot::gridON(const bool grid_on) { m_grid->gridON(grid_on); }
+void Plot::gridON(const bool grid_on) { m_grid->setGridON(grid_on); }
 
 void Plot::resized() {
   const auto &width = static_cast<float>(getWidth());
