@@ -99,7 +99,7 @@ TEST(test_x_lim) {
   }
 
   std::vector<float> test_data_x = std::vector<float>(100);
-  std::iota(test_data_x.begin(), test_data_x.end(), -50);
+  std::iota(test_data_x.begin(), test_data_x.end(), -49);
 
   PLOT_XY({test_data_x}, {test_data_y});
   X_LIM(0, 50);
@@ -120,6 +120,18 @@ static juce::Rectangle<int> getScreenArea() {
   return juce::Desktop::getInstance().getDisplays().getMainDisplay().userArea;
 }
 
+static Plot *getPlotFromID(
+    std::map<std::string, std::unique_ptr<Plot>> &plot_holder, const int id) {
+  auto it = plot_holder.begin();
+
+  // id != 0
+  for (int i = 1; i < plot_holder.size() + 1; ++i) {
+    if (id == i) break;
+    it++;
+  }
+  return it->second.get();
+}
+
 MainComponent::MainComponent() : m_menu_label("", "Tests: ") {
   setSize(1200, 800);
   ADD_PARENT_COMP(this);
@@ -127,14 +139,15 @@ MainComponent::MainComponent() : m_menu_label("", "Tests: ") {
   addAndMakeVisible(m_test_menu);
   addAndMakeVisible(m_menu_label);
 
+  auto it = m_plot_holder.begin();
   for (auto i = 0u; i < m_plot_holder.size(); ++i) {
-    m_test_menu.addItem(m_plot_holder[i].second, i + 1);
+    m_test_menu.addItem((*it++).first, i + 1);
   }
 
   for (auto &plot : m_plot_holder) {
-    plot.first->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
+    plot.second->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
                           getHeight() - getScreenArea().getHeight() / 15);
-    plot.first->setVisible(false);
+    plot.second->setVisible(false);
   }
 
   m_test_menu.onChange = [this]() {
@@ -143,7 +156,7 @@ MainComponent::MainComponent() : m_menu_label("", "Tests: ") {
     }
     const auto id = m_test_menu.getSelectedId();
     if (!m_plot_holder.empty()) {
-      m_current_plot = m_plot_holder[id - 1u].first.get();
+      m_current_plot = getPlotFromID(m_plot_holder, id);
       m_current_plot->setVisible(true);
     }
     resized();
@@ -163,8 +176,8 @@ void MainComponent::resized() {
                          getScreenArea().getHeight() / 30);
 
   for (auto &plot : m_plot_holder) {
-    if (plot.first->isVisible()) {
-      plot.first->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
+    if (plot.second->isVisible()) {
+      plot.second->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
                             getHeight() - getScreenArea().getHeight() / 15);
     }
   }
