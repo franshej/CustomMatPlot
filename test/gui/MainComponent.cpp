@@ -3,6 +3,43 @@
 
 extern node *head = NULL;
 
+TEST(test_xy_ticks) {
+  std::vector<float> y_test_data(10);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+
+  std::vector<float> x_ticks = {0, 1, 7};
+  std::vector<float> y_ticks = {3, 2, 9};
+  PLOT_Y({y_test_data});
+  X_TICKS(x_ticks);
+  Y_TICKS(y_ticks);
+}
+
+TEST(test_custom_x_labels) {
+  std::vector<float> y_test_data(10000);
+  std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
+  const std::vector<std::string> labels = {"MMM", "Two", "Three", "Fyra",
+                                           "Fem", "Sex", "Sju",   "Atta",
+                                           "Nio", "Tio", "Elva",  "Tolv"};
+  PLOT_Y({y_test_data});
+  X_LABELS(labels)
+  X_LABEL("X LABEL");
+  Y_LABEL("Y LABEL");
+  TITLE("TITLE");
+}
+
+TEST(test_custom_y_labels) {
+  std::vector<float> y_test_data(10000);
+  std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
+  const std::vector<std::string> labels = {"Ett", "Two", "Three", "Fyra",
+                                           "Fem", "Sex", "Sju",   "Atta",
+                                           "Nio", "Tio", "Elva",  "Tolv"};
+  PLOT_Y({y_test_data});
+  Y_LABELS(labels)
+  X_LABEL("X LABEL");
+  Y_LABEL("Y LABEL");
+  TITLE("TITLE");
+}
+
 TEST(test_semi_plot_x_1000) {
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
@@ -42,8 +79,7 @@ TEST(test_flat_curve_10000) {
 TEST(test_flat_curve_0p0001) {
   std::vector<float> y_test_data(100);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
-  for (auto &val : y_test_data)
-    val *= 0.00001;
+  for (auto &val : y_test_data) val *= 0.00001;
   PLOT_Y({y_test_data});
 };
 
@@ -146,7 +182,7 @@ MainComponent::MainComponent() : m_menu_label("", "Tests: ") {
 
   for (auto &plot : m_plot_holder) {
     plot.second->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
-                          getHeight() - getScreenArea().getHeight() / 15);
+                           getHeight() - getScreenArea().getHeight() / 15);
     plot.second->setVisible(false);
   }
 
@@ -169,7 +205,6 @@ void MainComponent::paint(juce::Graphics &g) {
 }
 
 void MainComponent::resized() {
-
   m_test_menu.setBounds(0, getScreenArea().getHeight() / 30, getWidth() / 2,
                         getScreenArea().getHeight() / 30);
   m_menu_label.setBounds(0, 0, getWidth() / 2,
@@ -178,7 +213,7 @@ void MainComponent::resized() {
   for (auto &plot : m_plot_holder) {
     if (plot.second->isVisible()) {
       plot.second->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
-                            getHeight() - getScreenArea().getHeight() / 15);
+                             getHeight() - getScreenArea().getHeight() / 15);
     }
   }
 }

@@ -54,15 +54,12 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 
 #define THIS static_cast<MainComponent *>(thiz)
 
-#define ADD_PLOT(TYPE)                                                     \
-(*(THIS->get_plot_holder()))[test_name] = std::make_unique<TYPE>(); \
-  thiz->addAndMakeVisible(((MainComponent *)thiz)                          \
-                              ->get_plot_holder()                          \
-                              ->find(test_name)                            \
-                              ->second.get());
+#define ADD_PLOT(TYPE)                                                \
+  (*(THIS->get_plot_holder()))[test_name] = std::make_unique<TYPE>(); \
+  thiz->addAndMakeVisible(                                            \
+      THIS->get_plot_holder()->find(test_name)->second.get());
 
-#define GET_PLOT \
-  ((MainComponent *)thiz)->get_plot_holder()->find(test_name)->second.get()
+#define GET_PLOT THIS->get_plot_holder()->find(test_name)->second.get()
 
 #define PLOT_Y(Y)             \
   {                           \
@@ -72,7 +69,7 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 
 #define SEMI_PLOT_Y(Y)        \
   {                           \
-    ADD_PLOT(SemiPlotX)      \
+    ADD_PLOT(SemiPlotX)       \
     GET_PLOT->updateYData(Y); \
   }
 
@@ -97,6 +94,14 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 #define Y_LABEL(TEXT) GET_PLOT->setYLabel(TEXT);
 
 #define TITLE(TEXT) GET_PLOT->setTitle(TEXT);
+
+#define X_LABELS(LABELS) GET_PLOT->setXLabels(LABELS);
+
+#define Y_LABELS(LABELS) GET_PLOT->setYLabels(LABELS);
+
+#define X_TICKS(TICKS) GET_PLOT->setXTicks(TICKS);
+
+#define Y_TICKS(TICKS) GET_PLOT->setYTicks(TICKS);
 
 class MainComponent : public juce::Component {
  public:

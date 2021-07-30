@@ -40,6 +40,11 @@ static std::string convertFloatToString(const float_type value,
   return text_out;
 }
 
+static std::string getNextCustomLabel(
+    std::vector<std::string>::reverse_iterator &custom_labels_it) {
+  return *(custom_labels_it++);
+}
+
 template <class num_type>
 static std::tuple<num_type, num_type, num_type, num_type> getRectangleMeasures(
     juce::Rectangle<int> m_graph_area) {
@@ -60,8 +65,8 @@ static GraphLine *getAndAddGridLine(
 
 /*============================================================================*/
 
-void BaseGrid::setLabels(const std::function<float(const float)> xToXPos,
-                         const std::function<float(const float)> yToYPos) {
+void BaseGrid::createLabels(const std::function<float(const float)> xToXPos,
+                            const std::function<float(const float)> yToYPos) {
   const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
   juce::Rectangle<int> *x_last_rect = nullptr;
@@ -70,31 +75,51 @@ void BaseGrid::setLabels(const std::function<float(const float)> xToXPos,
   m_x_axis_labels.clear();
   m_y_axis_labels.clear();
 
-  std::for_each(
-      std::make_reverse_iterator(m_vertical_grid_lines.end()),
-      std::make_reverse_iterator(m_vertical_grid_lines.begin()),
-      [&](const auto &grid) {
-        const auto x_val = grid->getXValues();
+  const auto use_custom_x_labels =
+      m_custom_x_labels.size() >= m_vertical_grid_lines.size();
 
-        const std::string x_label = convertFloatToString(x_val[0], 2, 6);
+  auto m_custom_x_labels_reverse_it =
+      use_custom_x_labels
+          ? std::make_reverse_iterator(m_custom_x_labels.begin()) +
+                m_custom_x_ticks.size() - m_vertical_grid_lines.size()
+          : std::make_reverse_iterator(m_custom_x_labels.begin());
 
-        auto x_label_area = juce::Rectangle<int>(
-            x + xToXPos(x_val[0]) -
-                static_cast<int>(((m_font_size / 2) * x_label.size()) / 2),
-            y + height + static_cast<int>(m_font_size),
-            static_cast<int>((m_font_size / 2) * x_label.size()),
-            static_cast<int>(m_font_size));
+  std::for_each(std::make_reverse_iterator(m_vertical_grid_lines.end()),
+                std::make_reverse_iterator(m_vertical_grid_lines.begin()),
+                [&](const auto &grid) {
+                  const auto x_val = grid->getXValues();
 
-        if (!x_last_rect) {
-          m_x_axis_labels.push_back({x_label, x_label_area});
-          x_last_rect = &m_x_axis_labels.back().second;
-        } else {
-          if (!x_last_rect->intersects(x_label_area)) {
-            m_x_axis_labels.push_back({x_label, x_label_area});
-            x_last_rect = &m_x_axis_labels.back().second;
-          }
-        }
-      });
+                  const std::string x_label =
+                      use_custom_x_labels
+                          ? getNextCustomLabel(m_custom_x_labels_reverse_it)
+                          : convertFloatToString(x_val[0], 2, 6);
+
+                  const auto x_label_width = m_font.getStringWidth(x_label);
+                  const auto font_height = m_font.getHeightInPoints();
+
+                  const auto x_label_area = juce::Rectangle<int>(
+                      x + xToXPos(x_val[0]) - x_label_width / 2,
+                      y + height + font_height, x_label_width, font_height);
+
+                  if (!x_last_rect) {
+                    m_x_axis_labels.push_back({x_label, x_label_area});
+                    x_last_rect = &m_x_axis_labels.back().second;
+                  } else {
+                    if (!x_last_rect->intersects(x_label_area)) {
+                      m_x_axis_labels.push_back({x_label, x_label_area});
+                      x_last_rect = &m_x_axis_labels.back().second;
+                    }
+                  }
+                });
+
+  const auto use_custom_y_labels =
+      m_custom_y_labels.size() >= m_horizontal_grid_lines.size();
+
+  auto m_custom_y_labels_reverse_it =
+      use_custom_y_labels
+          ? std::make_reverse_iterator(m_custom_y_labels.begin()) +
+                m_custom_y_ticks.size() - m_horizontal_grid_lines.size()
+          : std::make_reverse_iterator(m_custom_y_labels.begin());
 
   std::for_each(std::make_reverse_iterator(m_horizontal_grid_lines.end()),
                 std::make_reverse_iterator(m_horizontal_grid_lines.begin()),
@@ -102,15 +127,17 @@ void BaseGrid::setLabels(const std::function<float(const float)> xToXPos,
                   const auto y_val = grid->getYValues();
 
                   const std::string y_label =
-                      convertFloatToString(y_val[0], 2, 6);
+                      use_custom_y_labels
+                          ? getNextCustomLabel(m_custom_y_labels_reverse_it)
+                          : convertFloatToString(y_val[0], 2, 6);
 
-                  const auto width_y_label =
-                      static_cast<int>((m_font_size / 2) * y_label.size());
+                  const auto y_label_width = m_font.getStringWidth(y_label);
+                  const auto font_height = m_font.getHeightInPoints();
 
                   auto y_label_area = juce::Rectangle<int>(
-                      x - m_font_size - width_y_label,
-                      y + yToYPos(y_val[0]) - static_cast<int>(m_font_size / 2),
-                      width_y_label, static_cast<int>(m_font_size));
+                      x - font_height - y_label_width,
+                      y + yToYPos(y_val[0]) - font_height / 2, y_label_width,
+                      font_height);
 
                   if (!y_last_rect) {
                     m_y_axis_labels.push_back({y_label, y_label_area});
@@ -126,7 +153,7 @@ void BaseGrid::setLabels(const std::function<float(const float)> xToXPos,
 
 void BaseGrid::paint(juce::Graphics &g) {
   g.setColour(m_text_colour);
-  g.setFont(juce::Font("Arial Rounded MT", m_font_size, juce::Font::plain));
+  g.setFont(m_font);
   for (const auto &y_axis_text : m_y_axis_labels) {
     g.drawText(y_axis_text.first, y_axis_text.second,
                juce::Justification::centredRight);
@@ -152,21 +179,45 @@ void BaseGrid::paint(juce::Graphics &g) {
   g.drawRect(m_graph_area);
 }
 
+void BaseGrid::setXLabels(const std::vector<std::string> &x_labels) {
+  m_custom_x_labels = x_labels;
+}
+
 void BaseGrid::resized() {
+  if (m_limX.first == 0 && m_limX.second == 0) {
+    jassert("x limit must be set.");
+    return;
+  }
+
+  if (m_limY.first == 0 && m_limY.second == 0) {
+    jassert("y limit must be set.");
+    return;
+  }
+
+  if (m_graph_area.getWidth() == 0 || m_graph_area.getHeight() == 0) {
+    jassert("Make sure that the m_graph_area is set.");
+    return;
+  }
+
   prepareDataHolders(m_vertical_grid_lines, m_horizontal_grid_lines);
 
-  std::vector<float> x_positions, y_positions;
+  std::vector<float> x_auto_ticks, y_auto_ticks;
   scaling vertical_scaling, horizontal_scaling;
-  createGrid(x_positions, y_positions, vertical_scaling, horizontal_scaling);
+  createGrid(x_auto_ticks, y_auto_ticks, vertical_scaling, horizontal_scaling);
 
-  for (const auto x_val : x_positions) {
+  const auto &x_ticks =
+      m_custom_x_ticks.empty() ? x_auto_ticks : m_custom_x_ticks;
+  const auto &y_ticks =
+      m_custom_y_ticks.empty() ? y_auto_ticks : m_custom_y_ticks;
+
+  for (const auto x_val : x_ticks) {
     if (vertical_scaling == scaling::logarithmic)
       addGridLineVertical<LogXGraphLine>(x_val);
     else
       addGridLineVertical<LinearGraphLine>(x_val);
   }
 
-  for (const auto y_val : y_positions) {
+  for (const auto y_val : y_ticks) {
     if (horizontal_scaling == scaling::logarithmic)
       jassert("'LogYGraphLine' is not implemented.");
     else
@@ -188,23 +239,25 @@ void BaseGrid::resized() {
   }
   const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
-  auto valToPostion = [](const std::pair<float, float> &lim,
-                         const float measure,
-                         scaling scale) -> std::function<float(const float)> {
+  auto valToPostion =
+      [](const std::pair<float, float> &lim, const float measure,
+         const scaling scale,
+         const bool is_vertical) -> std::function<float(const float)> {
     if (scale == scaling::logarithmic)
       return [=](const float val) -> float {
         return measure * (log(val / lim.first) / log(lim.second / lim.first));
       };
 
     return [=](const float val) -> float {
-      return measure * (1.f - (lim.second - val) / (lim.second - lim.first));
+      const auto pos = measure * (lim.second - val) / (lim.second - lim.first);
+      return is_vertical ? measure - pos : pos;
     };
   };
 
-  auto xToXPos = valToPostion(m_limX, width, vertical_scaling);
-  auto yToYPos = valToPostion(m_limY, height, horizontal_scaling);
+  auto xToXPos = valToPostion(m_limX, width, vertical_scaling, true);
+  auto yToYPos = valToPostion(m_limY, height, horizontal_scaling, false);
 
-  setLabels(xToXPos, yToYPos);
+  createLabels(xToXPos, yToYPos);
 }
 
 void BaseGrid::setGraphBounds(const juce::Rectangle<int> &graph_area) {
@@ -222,6 +275,18 @@ void BaseGrid::setXLim(const float min, const float max) {
 
 void BaseGrid::setGridON(const bool grid_on) { m_is_grid_on = grid_on; }
 
+void BaseGrid::setXTicks(const std::vector<float> &x_ticks) {
+  m_custom_x_ticks = x_ticks;
+}
+
+void BaseGrid::setYLabels(const std::vector<std::string> &y_labels) {
+  m_custom_y_labels = y_labels;
+}
+
+void BaseGrid::setYTicks(const std::vector<float> &y_ticks) {
+  m_custom_y_ticks = y_ticks;
+}
+
 template <class graph_type>
 void BaseGrid::addGridLineVertical(const float x_val) {
   const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
@@ -236,9 +301,11 @@ void BaseGrid::addGridLineVertical(const float x_val) {
   GridLines->setXValues({x_val, x_val});
   GridLines->setYValues({0.f, height});
 
+  const auto font_height = m_font.getHeightInPoints();
+
   if (!m_is_grid_on) {
-    const std::vector<float> dashed_lines = {m_font_size, height - m_font_size,
-                                             m_font_size};
+    const std::vector<float> dashed_lines = {font_height, height - font_height,
+                                             font_height};
     GridLines->setDashedPath(dashed_lines);
   }
 
@@ -259,9 +326,10 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
   GridLines->setXValues({0.f, width});
   GridLines->setYValues({y_val, y_val});
 
+  const auto font_height = m_font.getHeightInPoints();
   if (!m_is_grid_on) {
-    const std::vector<float> dashed_lines = {m_font_size, width - m_font_size,
-                                             m_font_size};
+    const std::vector<float> dashed_lines = {font_height, width - font_height,
+                                             font_height};
     GridLines->setDashedPath(dashed_lines);
   }
 

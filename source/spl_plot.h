@@ -1,19 +1,19 @@
 #pragma once
 
+#include <juce_gui_basics/juce_gui_basics.h>
+
 #include "spl_graph_line.h"
 #include "spl_grid.h"
 #include "spl_label.h"
-#include <juce_gui_basics/juce_gui_basics.h>
 
-struct GraphLineData
-{
-    std::vector<float> x_data;
-    std::vector<float> y_data;
-    std::unique_ptr<GraphLine> grpah_line;
+struct GraphLineData {
+  std::vector<float> x_data;
+  std::vector<float> y_data;
+  std::unique_ptr<GraphLine> grpah_line;
 };
 
 struct Plot : juce::Component {
-public:
+ public:
   Plot() = default;
   ~Plot() = default;
 
@@ -23,9 +23,15 @@ public:
   void updateYData(const std::vector<std::vector<float>> &y_data);
   void updateXData(const std::vector<std::vector<float>> &x_data);
 
-  void setXLabel(const std::string &x_label);
-  void setYLabel(const std::string &y_label);
+  void setXLabel(const std::string& x_label);
+  void setYLabel(const std::string& y_label);
   void setTitle(const std::string &title);
+
+  void setXLabels(const std::vector<std::string> &x_labels);
+  void setYLabels(const std::vector<std::string> &y_labels);
+
+  void setXTicks(const std::vector<float> &x_ticks);
+  void setYTicks(const std::vector<float> &y_ticks);
 
   void makeGraphDashed(const std::vector<float> &dashed_lengths,
                        unsigned graph_index);
@@ -34,7 +40,7 @@ public:
   void resized() override;
   void paint(juce::Graphics &g) override;
 
-protected:
+ protected:
   void setAutoXScale();
   void setAutoYScale();
 
@@ -56,18 +62,22 @@ protected:
 };
 
 struct LinearPlot : Plot {
-public:
+ public:
   ~LinearPlot() = default;
   LinearPlot(const int x, const int y, const int width, const int height);
   LinearPlot();
 
-  std::unique_ptr<GraphLine> getGraphLine() override { return std::move(std::make_unique<LinearGraphLine>()); }
+  std::unique_ptr<GraphLine> getGraphLine() override {
+    return std::move(std::make_unique<LinearGraphLine>());
+  }
 };
 
 struct SemiPlotX : Plot {
-public:
+ public:
   ~SemiPlotX() = default;
   SemiPlotX();
 
-  std::unique_ptr<GraphLine> getGraphLine() override { return std::move(std::make_unique<LogXGraphLine>()); }
+  std::unique_ptr<GraphLine> getGraphLine() override {
+    return std::move(std::make_unique<LogXGraphLine>());
+  }
 };

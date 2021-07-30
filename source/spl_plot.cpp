@@ -82,6 +82,22 @@ void Plot::setXLabel(const std::string &x_label) {
   m_plot_label.setXLabel(x_label);
 }
 
+void Plot::setXLabels(const std::vector<std::string> &x_labels) {
+  m_grid->setXLabels(x_labels);
+}
+
+void Plot::setYLabels(const std::vector<std::string> &y_labels) {
+  m_grid->setYLabels(y_labels);
+}
+
+void Plot::setXTicks(const std::vector<float> &x_ticks) {
+  m_grid->setXTicks(x_ticks);
+}
+
+void Plot::setYTicks(const std::vector<float> &y_ticks) {
+  m_grid->setYTicks(y_ticks);
+}
+
 void Plot::setYLabel(const std::string &y_label) {
   m_plot_label.setYLabel(y_label);
 }
