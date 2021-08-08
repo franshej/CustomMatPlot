@@ -7,7 +7,8 @@ add_library(spl_plot
             spl_grid.cpp
             spl_grid.h
             spl_label.cpp
-            spl_label.h)
+            spl_label.h
+            spl_utils.h)
 
 target_include_directories(spl_plot PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/spl_plot >
