@@ -202,7 +202,7 @@ void BaseGrid::resized() {
   prepareDataHolders(m_vertical_grid_lines, m_horizontal_grid_lines);
 
   std::vector<float> x_auto_ticks, y_auto_ticks;
-  scaling vertical_scaling, horizontal_scaling;
+  scp::scaling vertical_scaling, horizontal_scaling;
   createGrid(x_auto_ticks, y_auto_ticks, vertical_scaling, horizontal_scaling);
 
   const auto &x_ticks =
@@ -211,14 +211,14 @@ void BaseGrid::resized() {
       m_custom_y_ticks.empty() ? y_auto_ticks : m_custom_y_ticks;
 
   for (const auto x_val : x_ticks) {
-    if (vertical_scaling == scaling::logarithmic)
+    if (vertical_scaling == scp::scaling::logarithmic)
       addGridLineVertical<LogXGraphLine>(x_val);
     else
       addGridLineVertical<LinearGraphLine>(x_val);
   }
 
   for (const auto y_val : y_ticks) {
-    if (horizontal_scaling == scaling::logarithmic)
+    if (horizontal_scaling == scp::scaling::logarithmic)
       jassert("'LogYGraphLine' is not implemented.");
     else
       addGridLineHorizontal<LinearGraphLine>(y_val);
@@ -239,11 +239,11 @@ void BaseGrid::resized() {
   }
   const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
-  auto valToPostion =
+  const auto valToPostion =
       [](const std::pair<float, float> &lim, const float measure,
-         const scaling scale,
+         const scp::scaling scale,
          const bool is_vertical) -> std::function<float(const float)> {
-    if (scale == scaling::logarithmic)
+    if (scale == scp::scaling::logarithmic)
       return [=](const float val) -> float {
         return measure * (log(val / lim.first) / log(lim.second / lim.first));
       };
@@ -254,8 +254,8 @@ void BaseGrid::resized() {
     };
   };
 
-  auto xToXPos = valToPostion(m_limX, width, vertical_scaling, true);
-  auto yToYPos = valToPostion(m_limY, height, horizontal_scaling, false);
+  const auto xToXPos = valToPostion(m_limX, width, vertical_scaling, true);
+  const auto yToYPos = valToPostion(m_limY, height, horizontal_scaling, false);
 
   createLabels(xToXPos, yToYPos);
 }
@@ -338,8 +338,8 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
 
 /*============================================================================*/
 
-void Grid::prepareDataHolders(GridLines &vertical_grid_lines,
-                              GridLines &horizontal_grid_lines) {
+void Grid::prepareDataHolders(scp::GridLines &vertical_grid_lines,
+                              scp::GridLines &horizontal_grid_lines) {
   const unsigned width = m_graph_area.getWidth();
   const unsigned height = m_graph_area.getHeight();
 
@@ -366,13 +366,14 @@ void Grid::prepareDataHolders(GridLines &vertical_grid_lines,
 
 void Grid::createGrid(std::vector<float> &x_positions,
                       std::vector<float> &y_positions,
-                      scaling &vertical_scaling, scaling &horizontal_scaling) {
+                      scp::scaling &vertical_scaling,
+                      scp::scaling &horizontal_scaling) {
   const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
   if (!(width > 0.f && height > 0.f)) return;
 
-  vertical_scaling = scaling::linear;
-  horizontal_scaling = scaling::linear;
+  vertical_scaling = scp::scaling::linear;
+  horizontal_scaling = scp::scaling::linear;
 
   // Create the vertical lines
   auto x_diff = (m_limX.second - m_limX.first) / float(m_num_vertical_lines);
@@ -391,8 +392,8 @@ void Grid::createGrid(std::vector<float> &x_positions,
 
 /*============================================================================*/
 
-void SemiLogXGrid::prepareDataHolders(GridLines &vertical_grid_lines,
-                                      GridLines &horizontal_grid_lines) {
+void SemiLogXGrid::prepareDataHolders(scp::GridLines &vertical_grid_lines,
+                                      scp::GridLines &horizontal_grid_lines) {
   const unsigned width = m_graph_area.getWidth();
   const unsigned height = m_graph_area.getHeight();
 
@@ -429,16 +430,16 @@ void SemiLogXGrid::prepareDataHolders(GridLines &vertical_grid_lines,
 
 void SemiLogXGrid::createGrid(std::vector<float> &x_positions,
                               std::vector<float> &y_positions,
-                              scaling &vertical_scaling,
-                              scaling &horizontal_scaling) {
+                              scp::scaling &vertical_scaling,
+                              scp::scaling &horizontal_scaling) {
   const auto [x, y, width, height] = getRectangleMeasures<float>(m_graph_area);
 
   if (!(width > 0.f && height > 0.f)) {
     return;
   }
 
-  vertical_scaling = scaling::logarithmic;
-  horizontal_scaling = scaling::linear;
+  vertical_scaling = scp::scaling::logarithmic;
+  horizontal_scaling = scp::scaling::linear;
 
   // Frist create the vertical lines
   for (float curr_exp = m_min_exp; curr_exp < m_max_exp; ++curr_exp) {

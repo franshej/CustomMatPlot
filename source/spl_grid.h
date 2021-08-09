@@ -14,18 +14,27 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "spl_graph_line.h"
+#include "spl_utils.h";
 
-typedef std::vector<std::unique_ptr<GraphLine>> GridLines;
+struct GridGraphicParams {
+  scp::ParamVal<juce::Colour> grid_colour;
+  scp::ParamVal<juce::Colour> text_colour;
+  scp::ParamVal<juce::Colour> frame_colour;
+  scp::ParamVal<juce::Font> font;
+};
 
-enum scaling { linear = 0, logarithmic = 1 };
+struct GridConfigParams {
+  scp::ParamVal<scp::Lim_f> x_lim, y_lim;
+  scp::ParamVal<juce::Rectangle<int>> graph_area;
+  scp::ParamVal<bool> grid_on;
+};
 
 /**
  * Base class implementation of grid component
  *
  * Componenet for creating grids and grid labels. The idea is to create the
  * grids behind the actual graph(s) together with graph labels outside the graph
- * area. It can alsa be used to only create the labels without the grids.
+ * area. It can also be used to only create the grid labels without the grids.
  *
  */
 
@@ -44,6 +53,8 @@ struct BaseGrid : juce::Component {
         m_font(juce::Font("Arial Rounded MT", 16.f, juce::Font::plain)) {}
 
   ~BaseGrid() = default;
+
+  void setGraphicParams(GridGraphicParams &params) {}
 
   /** @brief Set the bounds of where the grids will be drawn
    *
@@ -67,7 +78,7 @@ struct BaseGrid : juce::Component {
 
   /** @brief Set the X-limits
    *
-   * Set the limits of X-axis.
+   *  Set the limits of X-axis.
    *
    *  @param min minimum value
    *  @param max maximum value
@@ -127,21 +138,19 @@ struct BaseGrid : juce::Component {
  private:
   /** @brief Clear and reserve the vectors containing the actual grids
    *
-   *  This function must be overwritten. The idea is to use
-   *  this function to clear and reserve the data holders containing the grids
-   *  before they are being populated.
+   *  The idea is to use this function to clear and reserve the data holders
+   *  containing the grids before they are being populated.
    *
    *  @param vertical_grid_lines vertical grids to be cleared and reserved.
    *  @param horizontal_grid_lines horizontal grids to be cleared and reserved.
    *  @return void.
    */
-  virtual void prepareDataHolders(GridLines &vertical_grid_lines,
-                                  GridLines &horizontal_grid_lines) = 0;
+  virtual void prepareDataHolders(scp::GridLines &vertical_grid_lines,
+                                  scp::GridLines &horizontal_grid_lines) = 0;
   /** @brief Construct the grid
    *
-   *  This function must be overwritten. The idea is to use
-   *  this function to populate the x_ticks & y_ticks and choose the scaling of
-   *  the axis.
+   *  The idea is to use this function to populate the x_ticks & y_ticks and
+   *  choose the scaling of the axis.
    *
    *  @param x_ticks x-ticks to be populated.
    *  @param y_ticks y-ticks to be populated.
@@ -151,8 +160,8 @@ struct BaseGrid : juce::Component {
    */
   virtual void createGrid(std::vector<float> &x_ticks,
                           std::vector<float> &y_ticks,
-                          scaling &vertical_scaling,
-                          scaling &horizontal_scaling) = 0;
+                          scp::scaling &vertical_scaling,
+                          scp::scaling &horizontal_scaling) = 0;
 
   void createLabels(const std::function<float(const float)> xToXPos,
                     const std::function<float(const float)> yToYPos);
@@ -163,7 +172,8 @@ struct BaseGrid : juce::Component {
   template <class graph_type>
   void addGridLineHorizontal(const float y_val);
 
-  GridLines m_vertical_grid_lines, m_horizontal_grid_lines;
+  juce::Colour m_grid_colour, m_text_colour, m_frame_colour;
+  scp::GridLines m_vertical_grid_lines, m_horizontal_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks;
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::vector<juce::Path> m_grid_path;
@@ -171,7 +181,6 @@ struct BaseGrid : juce::Component {
 
  protected:
   juce::Rectangle<int> m_graph_area;
-  juce::Colour m_grid_colour, m_text_colour, m_frame_colour;
   std::pair<float, float> m_limX, m_limY;
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_labels,
       m_x_axis_labels;
@@ -183,11 +192,12 @@ struct BaseGrid : juce::Component {
 
 struct Grid : BaseGrid {
   void createGrid(std::vector<float> &x_positions,
-                  std::vector<float> &y_positions, scaling &vertical_scaling,
-                  scaling &horizontal_scaling) override;
+                  std::vector<float> &y_positions,
+                  scp::scaling &vertical_scaling,
+                  scp::scaling &horizontal_scaling) override;
 
-  void prepareDataHolders(GridLines &vertical_grid_lines,
-                          GridLines &horizontal_grid_lines) override;
+  void prepareDataHolders(scp::GridLines &vertical_grid_lines,
+                          scp::GridLines &horizontal_grid_lines) override;
 
  private:
   unsigned m_num_vertical_lines, m_num_horizontal_lines;
@@ -197,10 +207,11 @@ struct Grid : BaseGrid {
 
 struct SemiLogXGrid : BaseGrid {
   void createGrid(std::vector<float> &x_positions,
-                  std::vector<float> &y_positions, scaling &vertical_scaling,
-                  scaling &horizontal_scaling) override;
-  void prepareDataHolders(GridLines &vertical_grid_lines,
-                          GridLines &horizontal_grid_lines) override;
+                  std::vector<float> &y_positions,
+                  scp::scaling &vertical_scaling,
+                  scp::scaling &horizontal_scaling) override;
+  void prepareDataHolders(scp::GridLines &vertical_grid_lines,
+                          scp::GridLines &horizontal_grid_lines) override;
 
  private:
   float m_min_exp, m_max_exp, m_exp_diff;

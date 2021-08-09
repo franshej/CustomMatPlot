@@ -5,10 +5,10 @@
 #include "spl_utils.h"
 
 struct LabelGraphicParams {
-  ParamVal<juce::Font> font;
-  ParamVal<int> x_margin;
-  ParamVal<int> y_margin;
-  ParamVal<int> title_margin;
+  scp::ParamVal<juce::Font> font;
+  scp::ParamVal<int> x_margin;
+  scp::ParamVal<int> y_margin;
+  scp::ParamVal<int> title_margin;
 };
 
 class PlotLabel : public juce::Component {
