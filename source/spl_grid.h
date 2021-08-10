@@ -29,6 +29,23 @@ struct GridConfigParams {
   scp::ParamVal<bool> grid_on;
 };
 
+class FrameComponent : public juce::Component {
+ public:
+  FrameComponent(juce::Colour frame_colour) : m_frame_colour(frame_colour){};
+  ~FrameComponent() = default;
+
+  void resized() override{};
+  void paint(juce::Graphics &g) override {
+    g.setColour(m_frame_colour);
+
+    const juce::Rectangle<int> frame = {0, 0, getWidth(), getHeight()};
+    g.drawRect(frame);
+  };
+
+ private:
+  juce::Colour m_frame_colour;
+};
+
 /**
  * Base class implementation of grid component
  *
@@ -40,18 +57,7 @@ struct GridConfigParams {
 
 struct BaseGrid : juce::Component {
  public:
-  BaseGrid(const juce::Colour grid_colour = juce::Colours::dimgrey,
-           const juce::Colour text_colour = juce::Colours::white,
-           const juce::Colour frame_colour = juce::Colours::white)
-      : m_grid_colour(grid_colour),
-        m_text_colour(text_colour),
-        m_frame_colour(frame_colour),
-        m_limX({0, 0}),
-        m_limY({0, 0}),
-        m_is_grid_on(false),
-        m_graph_area({0, 0, 0, 0}),
-        m_font(juce::Font("Arial Rounded MT", 16.f, juce::Font::plain)) {}
-
+  BaseGrid() : m_graphic_params(createDefaultGraphicParams()) {}
   ~BaseGrid() = default;
 
   void setGraphicParams(GridGraphicParams &params) {}
@@ -172,20 +178,21 @@ struct BaseGrid : juce::Component {
   template <class graph_type>
   void addGridLineHorizontal(const float y_val);
 
-  juce::Colour m_grid_colour, m_text_colour, m_frame_colour;
+  GridGraphicParams createDefaultGraphicParams() const;
+
   scp::GridLines m_vertical_grid_lines, m_horizontal_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks;
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::vector<juce::Path> m_grid_path;
-  juce::Font m_font;
+
+  GridGraphicParams m_graphic_params;
+  std::unique_ptr<FrameComponent> m_frame;
 
  protected:
-  juce::Rectangle<int> m_graph_area;
-  std::pair<float, float> m_limX, m_limY;
+  GridConfigParams m_config_params;
+
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_labels,
       m_x_axis_labels;
-
-  bool m_is_grid_on;
 };
 
 /*============================================================================*/
