@@ -99,12 +99,12 @@ void GraphLine::calculateYData() {
 }
 
 void LinearGraphLine::calculateXDataIntern() {
-  const auto &x_scale =
+  const auto x_scale =
       static_cast<float>(getWidth()) / (m_x_max_lim - m_x_min_lim);
-  const auto &offset_x =
+  const auto offset_x =
       static_cast<float>(/* getX()) */ -(m_x_min_lim * x_scale));
 
-  auto i = 0u;
+  std::size_t i = 0u;
   for (const auto &x : m_x_data) {
     m_graph_points[i].setX(offset_x + (x * x_scale));
     i++;
@@ -112,14 +112,13 @@ void LinearGraphLine::calculateXDataIntern() {
 }
 
 void LinearGraphLine::calculateYDataIntern() {
-  const auto &y_scale =
+  const auto y_scale =
       static_cast<float>(getHeight()) / (m_y_max_lim - m_y_min_lim);
-  const auto &y_offset = m_y_min_lim;
+  const auto y_offset = m_y_min_lim;
 
-  const auto offset_y =
-      static_cast<float>(getHeight() /* + getY()) */ + (y_offset * y_scale));
+  const auto offset_y = float(getHeight()) + (y_offset * y_scale);
 
-  auto i = 0u;
+  std::size_t i = 0u;
   for (const auto &y : m_y_data) {
     m_graph_points[i].setY(offset_y - (y * y_scale));
     i++;
@@ -127,13 +126,13 @@ void LinearGraphLine::calculateYDataIntern() {
 }
 
 void LogXGraphLine::calculateYDataIntern() {
-  const auto &y_scale =
+  const auto y_scale =
       static_cast<float>(getHeight()) / (m_y_max_lim - m_y_min_lim);
-  const auto &y_offset = m_y_min_lim;
+  const auto y_offset = m_y_min_lim;
 
-  const auto offset_y = static_cast<float>(getHeight() + (y_offset * y_scale));
+  const auto offset_y = float(getHeight()) + (y_offset * y_scale);
 
-  auto i = 0u;
+  std::size_t i = 0u;
   for (const auto &y : m_y_data) {
     m_graph_points[i].setY(offset_y - y * y_scale);
     i++;
@@ -147,7 +146,7 @@ void LogXGraphLine::calculateXDataIntern() {
     return width * (log(x / m_x_min_lim) / log(m_x_max_lim / m_x_min_lim));
   };
 
-  auto i = 0u;
+  std::size_t i = 0u;
   for (const auto &x : m_x_data) {
     if (x < m_x_max_lim) {
       m_graph_points[i].setX(xToXPos(x));

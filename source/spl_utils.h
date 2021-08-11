@@ -14,6 +14,16 @@ struct lim {
 
 typedef lim<float> Lim_f;
 
+template <class num_type>
+constexpr std::tuple<num_type, num_type, num_type, num_type> getRectangleMeasures(
+    juce::Rectangle<int> graph_area) {
+    const auto x = static_cast<num_type>(graph_area.getX());
+    const auto y = static_cast<num_type>(graph_area.getY());
+    const auto width = static_cast<num_type>(graph_area.getWidth());
+    const auto height = static_cast<num_type>(graph_area.getHeight());
+    return std::make_tuple(x, y, width, height);
+}
+
 template <class T>
 class ParamBase {
  public:

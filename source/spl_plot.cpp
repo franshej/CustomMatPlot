@@ -188,7 +188,7 @@ void Plot::updateYData(const std::vector<std::vector<float>> &y_data) {
     for (auto &graph_line : m_graph_lines) {
       if (graph_line->getXValues().empty()) {
         auto &x_data = std::vector<float>(graph_line->getYValues().size());
-        std::iota(x_data.begin(), x_data.end(), 1);
+        std::iota(x_data.begin(), x_data.end(), 1.f);
         graph_line->setXValues(x_data);
       }
 

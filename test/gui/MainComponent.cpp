@@ -71,7 +71,7 @@ TEST(test_linear_dashed_lines) {
 }
 
 TEST(test_flat_curve_10000) {
-  std::vector<float> y_test_data(10000);
+  std::vector<float> y_test_data(100000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   PLOT_Y({y_test_data});
 };
