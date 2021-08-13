@@ -4,7 +4,11 @@
 namespace scp {
 typedef std::vector<std::unique_ptr<GraphLine>> GridLines;
 
-enum scaling { linear = 0, logarithmic = 1 };
+/*============================================================================*/
+
+enum struct scaling { linear, logarithmic };
+
+/*============================================================================*/
 
 template <class T>
 struct lim {
@@ -14,21 +18,44 @@ struct lim {
 
 typedef lim<float> Lim_f;
 
-template <class num_type>
-constexpr std::tuple<num_type, num_type, num_type, num_type> getRectangleMeasures(
-    juce::Rectangle<int> graph_area) {
-    const auto x = static_cast<num_type>(graph_area.getX());
-    const auto y = static_cast<num_type>(graph_area.getY());
-    const auto width = static_cast<num_type>(graph_area.getWidth());
-    const auto height = static_cast<num_type>(graph_area.getHeight());
-    return std::make_tuple(x, y, width, height);
+/*============================================================================*/
+
+class FrameComponent : public juce::Component {
+ public:
+  FrameComponent(juce::Colour frame_colour) : m_frame_colour(frame_colour){};
+  ~FrameComponent() = default;
+
+  void resized() override{};
+  void paint(juce::Graphics& g) override {
+    g.setColour(m_frame_colour);
+
+    const juce::Rectangle<int> frame = {0, 0, getWidth(), getHeight()};
+    g.drawRect(frame);
+  };
+
+ private:
+  juce::Colour m_frame_colour;
+};
+
+/*============================================================================*/
+
+template <class value_type>
+constexpr std::tuple<value_type, value_type, value_type, value_type>
+getRectangleMeasures(juce::Rectangle<int> grid_area) {
+  const auto x = static_cast<value_type>(grid_area.getX());
+  const auto y = static_cast<value_type>(grid_area.getY());
+  const auto width = static_cast<value_type>(grid_area.getWidth());
+  const auto height = static_cast<value_type>(grid_area.getHeight());
+  return std::make_tuple(x, y, width, height);
 }
+
+/*============================================================================*/
 
 template <class T>
 class ParamBase {
  public:
-  ParamBase(const T param) : m_is_set(false), m_param(param) {}
-  ParamBase() = default;
+  ParamBase(const T param) : m_is_set(false), m_param(param){};
+  ParamBase() : m_is_set(false), m_param(T()){};
   ~ParamBase() = default;
   operator T() const { return m_param; }
 
@@ -40,7 +67,7 @@ class ParamBase {
 template <class T>
 class ExplicitBoolOperator : public ParamBase<T> {
  public:
-  explicit operator bool() const { return m_is_set; }
+  constexpr explicit operator bool() const { return m_is_set; }
 };
 
 template <class T>
@@ -53,6 +80,14 @@ class ParamVal
     m_param = rhs;
     m_is_set = true;
     return m_param;
+  }
+  ParamVal<T> operator=(const ParamVal<T>& rhs) {
+    if (this == &rhs) return *this;
+    if (rhs) {
+      m_param = rhs;
+      m_is_set = true;
+    }
+    return *this;
   }
 };
 }  // namespace scp

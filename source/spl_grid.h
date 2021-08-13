@@ -16,61 +16,83 @@
 
 #include "spl_utils.h";
 
+/**
+ * A Parameter struct
+ * Containing graphic parameters for text front and grid, text and frame colour.
+ */
 struct GridGraphicParams {
+  /**
+   * The colour of the grids that will be drawn.
+   */
   scp::ParamVal<juce::Colour> grid_colour;
-  scp::ParamVal<juce::Colour> text_colour;
+  /**
+   * The colour of the grid labels.
+   */
+  scp::ParamVal<juce::Colour> label_colour;
+  /**
+   * The colour of the grid labels.
+   */
   scp::ParamVal<juce::Colour> frame_colour;
-  scp::ParamVal<juce::Font> font;
+  /**
+   * The font of the grid labels
+   */
+  scp::ParamVal<juce::Font> label_font;
 };
 
+/**
+ * A Parameter struct
+ * Containing parameters for grid bounds and limits of the grids.
+ */
 struct GridConfigParams {
+  /**
+   * X and Y limitation of the grid.
+   * First grid is drawn at lim.min and the last grid is drawn at lim.max
+   */
   scp::ParamVal<scp::Lim_f> x_lim, y_lim;
-  scp::ParamVal<juce::Rectangle<int>> graph_area;
+
+  /**
+   * The bounds of where the grids will be drawn.
+   */
+  scp::ParamVal<juce::Rectangle<int>> grid_area;
+
+  /**
+   * Set to true if grid should be visable.
+   */
   scp::ParamVal<bool> grid_on;
-};
 
-class FrameComponent : public juce::Component {
- public:
-  FrameComponent(juce::Colour frame_colour) : m_frame_colour(frame_colour){};
-  ~FrameComponent() = default;
-
-  void resized() override{};
-  void paint(juce::Graphics &g) override {
-    g.setColour(m_frame_colour);
-
-    const juce::Rectangle<int> frame = {0, 0, getWidth(), getHeight()};
-    g.drawRect(frame);
-  };
-
- private:
-  juce::Colour m_frame_colour;
+  /**
+   * Set to true if tiny grids should be used.
+   */
+  scp::ParamVal<bool> tiny_grid_on;
 };
 
 /**
  * Base class implementation of grid component
  *
- * Componenet for creating grids and grid labels. The idea is to create the
- * grids behind the actual graph(s) together with graph labels outside the graph
- * area. It can also be used to only create the grid labels without the grids.
+ * Componenet for creating grids and grid labels. The idea with thsi componenet
+ * is to create the grids behind the actual graph(s) together with graph labels
+ * outside the graph area. It can also be used to only create the grid labels
+ * without the grids.
  *
  */
 
 struct BaseGrid : juce::Component {
  public:
-  BaseGrid() : m_graphic_params(createDefaultGraphicParams()) {}
+  BaseGrid(const GridGraphicParams &params);
+  BaseGrid();
   ~BaseGrid() = default;
 
   void setGraphicParams(GridGraphicParams &params) {}
 
   /** @brief Set the bounds of where the grids will be drawn
    *
-   *  The graph area must be within the bounds of this componenet. The
-   *  grid labels will be draw with a half 'font_size' outside the graph area.
+   *  The grid area must be within the bounds of this componenet. The
+   *  grid labels will be draw with a half 'font_size' outside the grid area.
    *
-   *  @param graph_area The area of where the grids will be drawn
+   *  @param grid_area The area of where the grids will be drawn
    *  @return void.
    */
-  void setGraphBounds(const juce::Rectangle<int> &graph_area);
+  void setGridBounds(const juce::Rectangle<int> &grid_area);
 
   /** @brief Set the Y-limits
    *
@@ -144,6 +166,7 @@ struct BaseGrid : juce::Component {
  private:
   /** @brief Clear and reserve the vectors containing the actual grids
    *
+   *  Pure virtual function.
    *  The idea is to use this function to clear and reserve the data holders
    *  containing the grids before they are being populated.
    *
@@ -151,12 +174,13 @@ struct BaseGrid : juce::Component {
    *  @param horizontal_grid_lines horizontal grids to be cleared and reserved.
    *  @return void.
    */
-  virtual void prepareDataHolders(scp::GridLines &vertical_grid_lines,
-                                  scp::GridLines &horizontal_grid_lines) = 0;
+  virtual void prepareGridContainers(scp::GridLines &vertical_grid_lines,
+                                     scp::GridLines &horizontal_grid_lines) = 0;
   /** @brief Construct the grid
    *
+   *  Pure virtual function.
    *  The idea is to use this function to populate the x_ticks & y_ticks and
-   *  choose the scaling of the axis.
+   *  choose the scaling of the x and y axis.
    *
    *  @param x_ticks x-ticks to be populated.
    *  @param y_ticks y-ticks to be populated.
@@ -186,7 +210,7 @@ struct BaseGrid : juce::Component {
   std::vector<juce::Path> m_grid_path;
 
   GridGraphicParams m_graphic_params;
-  std::unique_ptr<FrameComponent> m_frame;
+  std::unique_ptr<scp::FrameComponent> m_frame;
 
  protected:
   GridConfigParams m_config_params;
@@ -198,29 +222,34 @@ struct BaseGrid : juce::Component {
 /*============================================================================*/
 
 struct Grid : BaseGrid {
+ public:
+  using BaseGrid::BaseGrid;
+
+ private:
   void createGrid(std::vector<float> &x_positions,
                   std::vector<float> &y_positions,
                   scp::scaling &vertical_scaling,
                   scp::scaling &horizontal_scaling) override;
 
-  void prepareDataHolders(scp::GridLines &vertical_grid_lines,
-                          scp::GridLines &horizontal_grid_lines) override;
-
- private:
+  void prepareGridContainers(scp::GridLines &vertical_grid_lines,
+                             scp::GridLines &horizontal_grid_lines) override;
   unsigned m_num_vertical_lines, m_num_horizontal_lines;
 };
 
 /*============================================================================*/
 
 struct SemiLogXGrid : BaseGrid {
+ public:
+  using BaseGrid::BaseGrid;
+
+ private:
   void createGrid(std::vector<float> &x_positions,
                   std::vector<float> &y_positions,
                   scp::scaling &vertical_scaling,
                   scp::scaling &horizontal_scaling) override;
-  void prepareDataHolders(scp::GridLines &vertical_grid_lines,
-                          scp::GridLines &horizontal_grid_lines) override;
+  void prepareGridContainers(scp::GridLines &vertical_grid_lines,
+                             scp::GridLines &horizontal_grid_lines) override;
 
- private:
   float m_min_exp, m_max_exp, m_exp_diff;
   int m_num_lines_exp;
   unsigned m_num_vertical_lines, m_num_horizontal_lines;

@@ -22,8 +22,8 @@ class PlotLabel : public juce::Component {
 
   void resized() override;
   void paint(juce::Graphics &g) override;
-  void setGraphArea(const juce::Rectangle<int> &graph_area) {
-    m_graph_area = graph_area;
+  void setGraphArea(const juce::Rectangle<int> &grid_area) {
+    m_graph_area = grid_area;
     resized();
   };
 

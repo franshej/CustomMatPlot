@@ -128,7 +128,7 @@ void Plot::resized() {
 
   if (m_grid != nullptr) {
     m_grid->setBounds(m_plot_area);
-    m_grid->setGraphBounds(m_graph_area);
+    m_grid->setGridBounds(m_graph_area);
   }
 
   m_plot_label.setBounds(m_plot_area);

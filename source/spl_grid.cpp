@@ -1,6 +1,7 @@
 #include "spl_grid.h"
 
 #include <stdexcept>
+#include <tuple>
 
 /*============================================================================*/
 
@@ -59,9 +60,9 @@ constexpr static GraphLine *getAndAddGridLine(
 void BaseGrid::createLabels(const std::function<float(const float)> xToXPos,
                             const std::function<float(const float)> yToYPos) {
   const auto [x, y, width, height] =
-      scp::getRectangleMeasures<int>(m_config_params.graph_area);
+      scp::getRectangleMeasures<int>(m_config_params.grid_area);
 
-  const auto font = juce::Font(m_graphic_params.font);
+  const auto font = juce::Font(m_graphic_params.label_font);
 
   juce::Rectangle<int> *x_last_rect = nullptr;
   juce::Rectangle<int> *y_last_rect = nullptr;
@@ -149,33 +150,23 @@ GridGraphicParams BaseGrid::createDefaultGraphicParams() const {
   GridGraphicParams params;
 
   params.grid_colour = juce::Colours::dimgrey;
-  params.text_colour = juce::Colours::white;
+  params.label_colour = juce::Colours::white;
   params.frame_colour = juce::Colours::white;
-  params.font = juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
+  params.label_font = juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
 
   return params;
 }
 
 void BaseGrid::paint(juce::Graphics &g) {
-  g.setColour(m_graphic_params.text_colour);
-  g.setFont(m_graphic_params.font);
+  g.setColour(m_graphic_params.label_colour);
+  g.setFont(m_graphic_params.label_font);
   for (const auto &y_axis_text : m_y_axis_labels) {
     g.drawText(y_axis_text.first, y_axis_text.second,
                juce::Justification::centredRight);
-    g.drawRoundedRectangle(
-        {float(y_axis_text.second.getX()), float(y_axis_text.second.getY()),
-         float(y_axis_text.second.getWidth()),
-         float(y_axis_text.second.getHeight())},
-        1.f, 1.f);
   }
   for (const auto &x_axis_text : m_x_axis_labels) {
     g.drawText(x_axis_text.first, x_axis_text.second,
                juce::Justification::centred);
-    g.drawRoundedRectangle(
-        {float(x_axis_text.second.getX()), float(x_axis_text.second.getY()),
-         float(x_axis_text.second.getWidth()),
-         float(x_axis_text.second.getHeight())},
-        1.f, 1.f);
   }
 }
 
@@ -194,18 +185,19 @@ void BaseGrid::resized() {
     return;
   }
 
-  if (!m_config_params.graph_area) {
+  if (!m_config_params.grid_area) {
     jassert(
-        "Make sure that the m_config_params.graph_area is set. Use "
-        "'setGraphBounds'");
+        "Make sure that the m_config_params.grid_area is set. Use "
+        "'setGridBounds'");
     return;
   }
 
-  m_frame = std::make_unique<FrameComponent>(m_graphic_params.frame_colour);
-  m_frame->setBounds(m_config_params.graph_area);
+  m_frame =
+      std::make_unique<scp::FrameComponent>(m_graphic_params.frame_colour);
+  m_frame->setBounds(m_config_params.grid_area);
   addAndMakeVisible(m_frame.get(), -1);
 
-  prepareDataHolders(m_vertical_grid_lines, m_horizontal_grid_lines);
+  prepareGridContainers(m_vertical_grid_lines, m_horizontal_grid_lines);
 
   std::vector<float> x_auto_ticks, y_auto_ticks;
   scp::scaling vertical_scaling, horizontal_scaling;
@@ -245,7 +237,7 @@ void BaseGrid::resized() {
     }
   }
   const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.graph_area);
+      scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
   const auto valToPostion =
       [](const scp::Lim_f &lim, const float measure, const scp::scaling scale,
@@ -269,8 +261,18 @@ void BaseGrid::resized() {
   createLabels(xToXPos, yToYPos);
 }
 
-void BaseGrid::setGraphBounds(const juce::Rectangle<int> &graph_area) {
-  m_config_params.graph_area = graph_area;
+BaseGrid::BaseGrid(const GridGraphicParams &params)
+    : m_graphic_params(createDefaultGraphicParams()) {
+  if (params.frame_colour) m_graphic_params.frame_colour = params.frame_colour;
+  if (params.grid_colour) m_graphic_params.grid_colour = params.grid_colour;
+  if (params.label_colour) m_graphic_params.label_colour = params.label_colour;
+  if (params.label_font) m_graphic_params.label_font = params.label_font;
+}
+
+BaseGrid::BaseGrid() : m_graphic_params(createDefaultGraphicParams()) {}
+
+void BaseGrid::setGridBounds(const juce::Rectangle<int> &grid_area) {
+  m_config_params.grid_area = grid_area;
   resized();
 }
 
@@ -301,13 +303,13 @@ void BaseGrid::setYTicks(const std::vector<float> &y_ticks) {
 template <class graph_type>
 void BaseGrid::addGridLineVertical(const float x_val) {
   const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.graph_area);
+      scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
   const auto x_lim = scp::Lim_f(m_config_params.x_lim);
 
   auto GridLines = getAndAddGridLine<graph_type>(m_vertical_grid_lines,
                                                  m_graphic_params.grid_colour);
-  GridLines->setBounds(m_config_params.graph_area);
+  GridLines->setBounds(m_config_params.grid_area);
 
   GridLines->xLim(x_lim.min, x_lim.max);
   GridLines->yLim(0.f, height);
@@ -315,7 +317,7 @@ void BaseGrid::addGridLineVertical(const float x_val) {
   GridLines->setXValues({x_val, x_val});
   GridLines->setYValues({0.f, height});
 
-  const auto font = juce::Font(m_graphic_params.font);
+  const auto font = juce::Font(m_graphic_params.label_font);
   const auto font_height = font.getHeightInPoints();
 
   if (!m_config_params.grid_on) {
@@ -330,13 +332,13 @@ void BaseGrid::addGridLineVertical(const float x_val) {
 template <class graph_type>
 void BaseGrid::addGridLineHorizontal(const float y_val) {
   const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.graph_area);
+      scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
   const auto y_lim = scp::Lim_f(m_config_params.y_lim);
 
   auto GridLines = getAndAddGridLine<graph_type>(m_horizontal_grid_lines,
                                                  m_graphic_params.grid_colour);
-  GridLines->setBounds(m_config_params.graph_area);
+  GridLines->setBounds(m_config_params.grid_area);
 
   GridLines->xLim(0.f, width);
   GridLines->yLim(y_lim.min, y_lim.max);
@@ -344,7 +346,7 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
   GridLines->setXValues({0.f, width});
   GridLines->setYValues({y_val, y_val});
 
-  const auto font = juce::Font(m_graphic_params.font);
+  const auto font = juce::Font(m_graphic_params.label_font);
   const auto font_height = font.getHeightInPoints();
   if (!m_config_params.grid_on) {
     const std::vector<float> dashed_lines = {font_height, width - font_height,
@@ -357,11 +359,11 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
 
 /*============================================================================*/
 
-void Grid::prepareDataHolders(scp::GridLines &vertical_grid_lines,
-                              scp::GridLines &horizontal_grid_lines) {
-  const auto graph_area = juce::Rectangle<int>(m_config_params.graph_area);
-  const unsigned width = graph_area.getWidth();
-  const unsigned height = graph_area.getHeight();
+void Grid::prepareGridContainers(scp::GridLines &vertical_grid_lines,
+                                 scp::GridLines &horizontal_grid_lines) {
+  const auto grid_area = juce::Rectangle<int>(m_config_params.grid_area);
+  const unsigned width = grid_area.getWidth();
+  const unsigned height = grid_area.getHeight();
 
   m_num_vertical_lines = 3u;
   if (width > 435u) {
@@ -389,7 +391,7 @@ void Grid::createGrid(std::vector<float> &x_positions,
                       scp::scaling &vertical_scaling,
                       scp::scaling &horizontal_scaling) {
   const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.graph_area);
+      scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
   if (!(width > 0.f && height > 0.f)) return;
 
@@ -416,11 +418,12 @@ void Grid::createGrid(std::vector<float> &x_positions,
 
 /*============================================================================*/
 
-void SemiLogXGrid::prepareDataHolders(scp::GridLines &vertical_grid_lines,
-                                      scp::GridLines &horizontal_grid_lines) {
-  const auto graph_area = juce::Rectangle<int>(m_config_params.graph_area);
-  const unsigned width = graph_area.getWidth();
-  const unsigned height = graph_area.getHeight();
+void SemiLogXGrid::prepareGridContainers(
+    scp::GridLines &vertical_grid_lines,
+    scp::GridLines &horizontal_grid_lines) {
+  const auto grid_area = juce::Rectangle<int>(m_config_params.grid_area);
+  const unsigned width = grid_area.getWidth();
+  const unsigned height = grid_area.getHeight();
 
   m_num_vertical_lines = 10u;
 
@@ -462,7 +465,7 @@ void SemiLogXGrid::createGrid(std::vector<float> &x_positions,
                               scp::scaling &vertical_scaling,
                               scp::scaling &horizontal_scaling) {
   const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.graph_area);
+      scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
   const auto x_lim = scp::Lim_f(m_config_params.x_lim);
   const auto y_lim = scp::Lim_f(m_config_params.y_lim);
@@ -484,7 +487,7 @@ void SemiLogXGrid::createGrid(std::vector<float> &x_positions,
 
   // Then create the horizontal lines
   auto y_diff = (y_lim.max - y_lim.min) / float(m_num_horizontal_lines);
-  for (std::size_t i = 0; i != m_num_horizontal_lines + 1u; ++i) {
+  for (std::size_t i = 0; i != std::size_t(m_num_horizontal_lines + 1u); ++i) {
     const auto y_val = y_lim.min + float(i) * y_diff;
     y_positions.push_back(y_val);
   }
