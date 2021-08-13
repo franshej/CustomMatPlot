@@ -1,7 +1,7 @@
 #include "MainComponent.h"
 #define PI2 6.28318530718
 
-extern node *head = NULL;
+extern std::shared_ptr<node> head = nullptr;
 
 TEST(test_xy_ticks) {
   std::vector<float> y_test_data(10);

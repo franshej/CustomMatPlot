@@ -7,14 +7,14 @@ struct node {
   void (*fun_ptr)(juce::Component *comp,
                   const std::string &test_name) = nullptr;
   std::string name;
-  node *next = NULL;
-  node *tail = NULL;
+  std::shared_ptr<node> next = nullptr;
+  std::shared_ptr<node> tail = nullptr;
 };
 
-extern node *head;
+extern std::shared_ptr<node> head;
 
 #define ADD_PARENT_COMP(COMP)              \
-  struct node *cur;                        \
+  std::shared_ptr<node> cur;               \
   for (cur = head; cur; cur = cur->next) { \
     cur->fun_ptr(COMP, cur->name);         \
   }
@@ -23,12 +23,12 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
                                            const std::string &test_name),
                        const std::string &test_name) {
   if (head == NULL) {
-    head = new node;
+    head = std::make_shared<node>();
     head->fun_ptr = new_fun_ptr;
     head->tail = head;
     head->name = test_name;
   } else {
-    head->tail->next = new node;
+    head->tail->next = std::make_shared<node>();
     head->tail->next->fun_ptr = new_fun_ptr;
     head->tail->next->name = test_name;
     head->tail = head->tail->next;
@@ -41,7 +41,7 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
   struct f##_t_ {                                                     \
     f##_t_(void) { g_test_add(&f, #f); }                              \
   };                                                                  \
-  static f##_t_ f##_;                                                 \
+  static std::unique_ptr<f##_t_> f##_ = std::make_unique<f##_t_>();   \
   static void f(juce::Component *thiz, const std::string &test_name)
 #else
 #define TEST(f)                                                                  \
