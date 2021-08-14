@@ -197,7 +197,8 @@ void BaseGrid::resized() {
   m_frame->setBounds(m_config_params.grid_area);
   addAndMakeVisible(m_frame.get(), -1);
 
-  prepareGridContainers(m_vertical_grid_lines, m_horizontal_grid_lines);
+  prepareGridContainers(m_vertical_grid_lines, m_horizontal_grid_lines,
+                        m_config_params.tiny_grid_on);
 
   std::vector<float> x_auto_ticks, y_auto_ticks;
   scp::scaling vertical_scaling, horizontal_scaling;
@@ -284,8 +285,9 @@ void BaseGrid::setXLim(const float min, const float max) {
   m_config_params.x_lim = {min, max};
 }
 
-void BaseGrid::setGridON(const bool grid_on) {
-  m_config_params.grid_on = grid_on;
+void BaseGrid::setGridON(const bool grid_on, const bool tiny_grids_on) {
+  if (grid_on) m_config_params.grid_on = grid_on;
+  if (tiny_grids_on) m_config_params.tiny_grid_on = tiny_grids_on;
 }
 
 void BaseGrid::setXTicks(const std::vector<float> &x_ticks) {
@@ -360,7 +362,8 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
 /*============================================================================*/
 
 void Grid::prepareGridContainers(scp::GridLines &vertical_grid_lines,
-                                 scp::GridLines &horizontal_grid_lines) {
+                                 scp::GridLines &horizontal_grid_lines,
+                                 const bool &tiny_grid_on) {
   const auto grid_area = juce::Rectangle<int>(m_config_params.grid_area);
   const unsigned width = grid_area.getWidth();
   const unsigned height = grid_area.getHeight();
@@ -377,6 +380,16 @@ void Grid::prepareGridContainers(scp::GridLines &vertical_grid_lines,
     m_num_horizontal_lines = 11u;
   } else if (height <= 375u && height > 135u) {
     m_num_horizontal_lines = 5u;
+  }
+
+  if (tiny_grid_on) {
+    m_num_vertical_lines *= 2;
+    m_num_horizontal_lines *= 2;
+  }
+
+  if (tiny_grid_on) {
+    m_num_vertical_lines *= 2;
+    m_num_horizontal_lines *= 2;
   }
 
   vertical_grid_lines.clear();
@@ -418,20 +431,25 @@ void Grid::createGrid(std::vector<float> &x_positions,
 
 /*============================================================================*/
 
-void SemiLogXGrid::prepareGridContainers(
-    scp::GridLines &vertical_grid_lines,
-    scp::GridLines &horizontal_grid_lines) {
+void SemiLogXGrid::prepareGridContainers(scp::GridLines &vertical_grid_lines,
+                                         scp::GridLines &horizontal_grid_lines,
+                                         const bool &tiny_grid_on) {
   const auto grid_area = juce::Rectangle<int>(m_config_params.grid_area);
   const unsigned width = grid_area.getWidth();
   const unsigned height = grid_area.getHeight();
-
-  m_num_vertical_lines = 10u;
 
   m_num_horizontal_lines = 3u;
   if (height > 375u) {
     m_num_horizontal_lines = 11u;
   } else if (height <= 375u && height > 135u) {
     m_num_horizontal_lines = 5u;
+  }
+
+  m_num_lines_exp = 3u;
+  if (width > 435u) {
+    m_num_lines_exp = 10u;
+  } else if (width <= 435u && width > 175u) {
+    m_num_lines_exp = 5u;
   }
 
   const auto x_lim = scp::Lim_f(m_config_params.x_lim);
@@ -447,11 +465,15 @@ void SemiLogXGrid::prepareGridContainers(
 
   m_exp_diff = ceil(abs(m_max_exp) - abs(m_min_exp));
 
-  m_num_lines_exp = 10;
-
   m_num_vertical_lines =
       std::size_t((m_exp_diff * m_num_lines_exp) -
                   (num_out_of_sight_lines * m_num_lines_exp));
+
+  if (tiny_grid_on) {
+    m_num_vertical_lines *= 2;
+    m_num_lines_exp *= 2;
+    m_num_horizontal_lines *= 2;
+  }
 
   vertical_grid_lines.clear();
   vertical_grid_lines.reserve(m_num_vertical_lines);

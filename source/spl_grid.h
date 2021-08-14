@@ -120,9 +120,10 @@ struct BaseGrid : juce::Component {
    *  in either case. Default is false.
    *
    *  @param grid_on set to true to show grids
+   *  @param tiny_grid_on set to true to show tiny grids
    *  @return void.
    */
-  void setGridON(const bool grid_on);
+  void setGridON(const bool grid_on, const bool tiny_grids_on);
 
   /** @brief Override the x-ticks
    *
@@ -167,15 +168,17 @@ struct BaseGrid : juce::Component {
   /** @brief Clear and reserve the vectors containing the actual grids
    *
    *  Pure virtual function.
-   *  The idea is to use this function to clear and reserve the data holders
-   *  containing the grids before they are being populated.
+   *  The idea is to use this function to clear and reserve the grid containers
+   *   before they are being populated.
    *
    *  @param vertical_grid_lines vertical grids to be cleared and reserved.
    *  @param horizontal_grid_lines horizontal grids to be cleared and reserved.
+   *  @param tiny_grid_on use this flag to reverse more grids in the container.
    *  @return void.
    */
   virtual void prepareGridContainers(scp::GridLines &vertical_grid_lines,
-                                     scp::GridLines &horizontal_grid_lines) = 0;
+                                     scp::GridLines &horizontal_grid_lines,
+                                     const bool &tiny_grid_on) = 0;
   /** @brief Construct the grid
    *
    *  Pure virtual function.
@@ -232,7 +235,8 @@ struct Grid : BaseGrid {
                   scp::scaling &horizontal_scaling) override;
 
   void prepareGridContainers(scp::GridLines &vertical_grid_lines,
-                             scp::GridLines &horizontal_grid_lines) override;
+                             scp::GridLines &horizontal_grid_lines,
+                             const bool &tiny_grid_on) override;
   unsigned m_num_vertical_lines, m_num_horizontal_lines;
 };
 
@@ -248,7 +252,8 @@ struct SemiLogXGrid : BaseGrid {
                   scp::scaling &vertical_scaling,
                   scp::scaling &horizontal_scaling) override;
   void prepareGridContainers(scp::GridLines &vertical_grid_lines,
-                             scp::GridLines &horizontal_grid_lines) override;
+                             scp::GridLines &horizontal_grid_lines,
+                             const bool &tiny_grid_ons) override;
 
   float m_min_exp, m_max_exp, m_exp_diff;
   int m_num_lines_exp;

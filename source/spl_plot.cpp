@@ -113,7 +113,9 @@ void Plot::makeGraphDashed(const std::vector<float> &dashed_lengths,
   m_graph_lines[graph_index]->setDashedPath(dashed_lengths);
 }
 
-void Plot::gridON(const bool grid_on) { m_grid->setGridON(grid_on); }
+void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
+  m_grid->setGridON(grid_on, tiny_grid_on);
+}
 
 void Plot::resized() {
   const auto &width = static_cast<float>(getWidth());

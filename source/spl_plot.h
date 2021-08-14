@@ -35,7 +35,7 @@ struct Plot : juce::Component {
 
   void makeGraphDashed(const std::vector<float> &dashed_lengths,
                        unsigned graph_index);
-  void gridON(const bool grid_on);
+  void gridON(const bool grid_on, const bool tiny_grid_on);
 
   void resized() override;
   void paint(juce::Graphics &g) override;

@@ -35,7 +35,6 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
   }
 }
 
-#ifdef __cplusplus
 #define TEST(f)                                                       \
   static void f(juce::Component *thiz, const std::string &test_name); \
   struct f##_t_ {                                                     \
@@ -43,14 +42,6 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
   };                                                                  \
   static std::unique_ptr<f##_t_> f##_ = std::make_unique<f##_t_>();   \
   static void f(juce::Component *thiz, const std::string &test_name)
-#else
-#define TEST(f)                                                                  \
-  static void f(juce::Component *thiz);                                          \
-  static void __attribute__((constructor(101)) __construct_##f(void) {        \
-    g_test_add(&f);                                                            \
-  }                                                                            \
-  static void f(juce::Component *thiz)
-#endif
 
 #define THIS static_cast<MainComponent *>(thiz)
 
@@ -84,7 +75,9 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 
 #define Y_LIM(MIN, MAX) GET_PLOT->yLim(MIN, MAX);
 
-#define GRID_ON GET_PLOT->gridON(true);
+#define GRID_ON GET_PLOT->gridON(true, false);
+
+#define TINY_GRID_ON GET_PLOT->gridON(true, true);
 
 #define MAKE_GRAPH_DASHED(D_LENGTHS, GRAPH_INDEX) \
   GET_PLOT->makeGraphDashed(D_LENGTHS, GRAPH_INDEX);

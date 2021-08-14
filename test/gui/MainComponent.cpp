@@ -45,7 +45,7 @@ TEST(test_semi_plot_x_1000) {
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
   SEMI_PLOT_Y({y_test_data});
   GRID_ON;
-};
+}
 
 TEST(test_grid_on) {
   std::vector<float> y_test_data(10);
@@ -53,6 +53,20 @@ TEST(test_grid_on) {
   PLOT_Y({y_test_data});
   GRID_ON;
 }
+
+TEST(test_tiny_grid_on) {
+  std::vector<float> y_test_data(10);
+  std::iota(y_test_data.begin(), y_test_data.end(), 0);
+  PLOT_Y({y_test_data});
+  TINY_GRID_ON;
+}
+
+TEST(test_semi_plot_x_tiny_grid_on) {
+    std::vector<float> y_test_data(1000);
+    std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+    SEMI_PLOT_Y({ y_test_data });
+    TINY_GRID_ON;
+};
 
 TEST(test_draw_flat_line) {
   std::vector<float> y_data{1, 1};
@@ -74,14 +88,14 @@ TEST(test_flat_curve_10000) {
   std::vector<float> y_test_data(100000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   PLOT_Y({y_test_data});
-};
+}
 
 TEST(test_flat_curve_0p0001) {
   std::vector<float> y_test_data(100);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
   for (auto &val : y_test_data) val *= 0.00001;
   PLOT_Y({y_test_data});
-};
+}
 
 TEST(test_labels) {
   std::vector<float> y_test_data(10000);
@@ -90,7 +104,7 @@ TEST(test_labels) {
   X_LABEL("X LABEL");
   Y_LABEL("Y LABEL");
   TITLE("TITLE");
-};
+}
 
 TEST(test_sinus_auto_lim) {
   std::vector<float> test_data = std::vector<float>(100);
@@ -105,7 +119,7 @@ TEST(test_ramp) {
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 0);
   PLOT_Y({y_test_data});
-};
+}
 
 TEST(test_two_sine) {
   std::vector<std::vector<float>> test_data_y =
