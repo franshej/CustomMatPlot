@@ -72,7 +72,7 @@ struct GridConfigParams {
  * Componenet for creating grids and grid labels. The idea with this componenet
  * is to create the grids behind the actual graph(s) together with graph labels
  * outside the graph area. It can also be used to only create the grid labels
- * without the grids.
+ * without the grids. Default are grids off.
  *
  */
 
@@ -82,6 +82,21 @@ struct BaseGrid : juce::Component {
   BaseGrid();
   ~BaseGrid() = default;
 
+  /** @brief Set the graphic parameters
+   *
+   *  Change one or more of the graphic parameters. It's possible to only change
+   *  one parameter in the struct without overriding the other parameters.
+   *  Example:
+   *  GridGraphicParams params;
+   *
+   *  params.label_font = getJuceFont();
+   *
+   *  // Only the parameter label_font will be overwritten.
+   *  setGraphicParams(params);
+   *
+   *  @param params parameter struct
+   *  @return void.
+   */
   void setGraphicParams(GridGraphicParams &params) {}
 
   /** @brief Set the bounds of where the grids will be drawn

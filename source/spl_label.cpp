@@ -26,15 +26,30 @@ void PlotLabel::setTitle(const std::string &title) {
 }
 
 LabelGraphicParams PlotLabel::createDefaultGraphicParams() {
-    LabelGraphicParams params;
+  LabelGraphicParams params;
 
-    params.font = juce::Font(20.0f, juce::Font::plain);
-    params.x_margin = 50;
-    params.y_margin = 25;
-    params.title_margin = 25;
+  params.font = juce::Font(20.0f, juce::Font::plain);
+  params.x_margin = 50;
+  params.y_margin = 25;
+  params.title_margin = 25;
 
-    return params;
+  return params;
 }
+
+void PlotLabel::setGraphicParams(const LabelGraphicParams &params) {
+  if (params.font) {
+    m_params.font = params.font;
+  }
+  if (params.x_margin) {
+    m_params.x_margin = params.x_margin;
+  }
+  if (params.y_margin) {
+    m_params.y_margin = params.y_margin;
+  }
+  if (params.title_margin) {
+    m_params.title_margin = params.title_margin;
+  }
+};
 
 void PlotLabel::resized() {
   const auto font = juce::Font(m_params.font);
@@ -68,18 +83,9 @@ void PlotLabel::resized() {
       font_height);
 }
 
-void PlotLabel::paint(juce::Graphics &g) {}
-void PlotLabel::setParams(const LabelGraphicParams &params) {
-  if (params.font) {
-    m_params.font = params.font;
-  }
-  if (params.x_margin) {
-    m_params.x_margin = params.x_margin;
-  }
-  if (params.y_margin) {
-    m_params.y_margin = params.y_margin;
-  }
-  if (params.title_margin) {
-    m_params.title_margin = params.title_margin;
-  }
+void PlotLabel::setGraphArea(const juce::Rectangle<int> &grid_area) {
+  m_graph_area = grid_area;
+  resized();
 };
+
+void PlotLabel::paint(juce::Graphics &g) {}
