@@ -69,7 +69,7 @@ struct GridConfigParams {
 /**
  * Base class implementation of grid component
  *
- * Componenet for creating grids and grid labels. The idea with thsi componenet
+ * Componenet for creating grids and grid labels. The idea with this componenet
  * is to create the grids behind the actual graph(s) together with graph labels
  * outside the graph area. It can also be used to only create the grid labels
  * without the grids.
@@ -224,6 +224,13 @@ struct BaseGrid : juce::Component {
 
 /*============================================================================*/
 
+/**
+ * Component to create X and Y grids and grid labels
+ *
+ * The idea with this componenet when both the x and y axis are scaled linear.
+ *
+ */
+
 struct Grid : BaseGrid {
  public:
   using BaseGrid::BaseGrid;
@@ -241,6 +248,14 @@ struct Grid : BaseGrid {
 };
 
 /*============================================================================*/
+
+/**
+ * Component to create X and Y grids and grid labels
+ *
+ * The idea with this componenet when both the x axis is scaled logrithmic and y
+ * axis is linear.
+ *
+ */
 
 struct SemiLogXGrid : BaseGrid {
  public:
