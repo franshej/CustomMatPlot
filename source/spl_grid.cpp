@@ -313,8 +313,8 @@ void BaseGrid::addGridLineVertical(const float x_val) {
                                                  m_graphic_params.grid_colour);
   GridLines->setBounds(m_config_params.grid_area);
 
-  GridLines->xLim(x_lim.min, x_lim.max);
-  GridLines->yLim(0.f, height);
+  GridLines->setXLim(x_lim.min, x_lim.max);
+  GridLines->setYLim(0.f, height);
 
   GridLines->setXValues({x_val, x_val});
   GridLines->setYValues({0.f, height});
@@ -342,8 +342,8 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
                                                  m_graphic_params.grid_colour);
   GridLines->setBounds(m_config_params.grid_area);
 
-  GridLines->xLim(0.f, width);
-  GridLines->yLim(y_lim.min, y_lim.max);
+  GridLines->setXLim(0.f, width);
+  GridLines->setYLim(y_lim.min, y_lim.max);
 
   GridLines->setXValues({0.f, width});
   GridLines->setYValues({y_val, y_val});
@@ -361,8 +361,8 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
 
 /*============================================================================*/
 
-void Grid::prepareGridContainers(scp::GridLines &vertical_grid_lines,
-                                 scp::GridLines &horizontal_grid_lines,
+void Grid::prepareGridContainers(GridLines &vertical_grid_lines,
+                                 GridLines &horizontal_grid_lines,
                                  const bool &tiny_grid_on) {
   const auto grid_area = juce::Rectangle<int>(m_config_params.grid_area);
   const unsigned width = grid_area.getWidth();
@@ -431,8 +431,8 @@ void Grid::createGrid(std::vector<float> &x_positions,
 
 /*============================================================================*/
 
-void SemiLogXGrid::prepareGridContainers(scp::GridLines &vertical_grid_lines,
-                                         scp::GridLines &horizontal_grid_lines,
+void SemiLogXGrid::prepareGridContainers(GridLines &vertical_grid_lines,
+                                         GridLines &horizontal_grid_lines,
                                          const bool &tiny_grid_on) {
   const auto grid_area = juce::Rectangle<int>(m_config_params.grid_area);
   const unsigned width = grid_area.getWidth();

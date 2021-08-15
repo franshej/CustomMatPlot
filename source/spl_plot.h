@@ -23,8 +23,8 @@ struct Plot : juce::Component {
   void updateYData(const std::vector<std::vector<float>> &y_data);
   void updateXData(const std::vector<std::vector<float>> &x_data);
 
-  void setXLabel(const std::string& x_label);
-  void setYLabel(const std::string& y_label);
+  void setXLabel(const std::string &x_label);
+  void setYLabel(const std::string &y_label);
   void setTitle(const std::string &title);
 
   void setXLabels(const std::vector<std::string> &x_labels);

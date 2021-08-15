@@ -42,7 +42,7 @@ static std::pair<float, float> findMinMaxValues(
 
 void Plot::updateYLim(const float &min, const float &max) {
   for (auto &graph_line : m_graph_lines) {
-    graph_line->yLim(min, max);
+    graph_line->setYLim(min, max);
   }
   if (m_grid != nullptr) {
     m_grid->setYLim(min, max);
@@ -51,7 +51,7 @@ void Plot::updateYLim(const float &min, const float &max) {
 
 void Plot::updateXLim(const float &min, const float &max) {
   for (auto &graph_line : m_graph_lines) {
-    graph_line->xLim(min, max);
+    graph_line->setXLim(min, max);
   }
   if (m_grid != nullptr) {
     m_grid->setXLim(min, max);
