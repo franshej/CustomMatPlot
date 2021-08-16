@@ -57,8 +57,7 @@ constexpr static GraphLine *getAndAddGridLine(
 
 /*============================================================================*/
 
-void BaseGrid::createLabels(const std::function<float(const float)> xToXPos,
-                            const std::function<float(const float)> yToYPos) {
+void BaseGrid::createLabels() {
   const auto [x, y, width, height] =
       scp::getRectangleMeasures<int>(m_config_params.grid_area);
 
@@ -83,6 +82,8 @@ void BaseGrid::createLabels(const std::function<float(const float)> xToXPos,
                 std::make_reverse_iterator(m_vertical_grid_lines.begin()),
                 [&](const auto &grid) {
                   const auto x_val = grid->getXValues();
+                  const auto graph_points = grid->getGraphPoints();
+                  const auto x_pos = graph_points[0].x;
 
                   const std::string x_label =
                       use_custom_x_labels
@@ -93,7 +94,7 @@ void BaseGrid::createLabels(const std::function<float(const float)> xToXPos,
                   const auto font_height = int(font.getHeightInPoints());
 
                   const auto x_label_area = juce::Rectangle<int>(
-                      x + int(xToXPos(x_val[0])) - x_label_width / 2,
+                      x + int(x_pos) - x_label_width / 2,
                       y + height + font_height, x_label_width, font_height);
 
                   if (!x_last_rect) {
@@ -120,6 +121,8 @@ void BaseGrid::createLabels(const std::function<float(const float)> xToXPos,
                 std::make_reverse_iterator(m_horizontal_grid_lines.begin()),
                 [&](const auto &grid) {
                   const auto y_val = grid->getYValues();
+                  const auto graph_points = grid->getGraphPoints();
+                  const auto y_pos = graph_points[0].y;
 
                   const std::string y_label =
                       use_custom_y_labels
@@ -129,10 +132,10 @@ void BaseGrid::createLabels(const std::function<float(const float)> xToXPos,
                   const auto y_label_width = font.getStringWidth(y_label);
                   const auto font_height = int(font.getHeightInPoints());
 
-                  auto y_label_area = juce::Rectangle<int>(
-                      x - font_height - y_label_width,
-                      y + int(yToYPos(y_val[0])) - font_height / 2,
-                      y_label_width, font_height);
+                  auto y_label_area =
+                      juce::Rectangle<int>(x - font_height - y_label_width,
+                                           y + int(y_pos) - font_height / 2,
+                                           y_label_width, font_height);
 
                   if (!y_last_rect) {
                     m_y_axis_labels.push_back({y_label, y_label_area});
@@ -240,26 +243,7 @@ void BaseGrid::resized() {
   const auto [x, y, width, height] =
       scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
-  const auto valToPostion =
-      [](const scp::Lim_f &lim, const float measure, const scp::scaling scale,
-         const bool is_vertical) -> std::function<float(const float)> {
-    if (scale == scp::scaling::logarithmic)
-      return [=](const float val) -> float {
-        return measure * (log(val / lim.min) / log(lim.max / lim.min));
-      };
-
-    return [=](const float val) -> float {
-      const auto pos = measure * (lim.max - val) / (lim.max - lim.min);
-      return is_vertical ? measure - pos : pos;
-    };
-  };
-
-  const auto xToXPos =
-      valToPostion(m_config_params.x_lim, width, vertical_scaling, true);
-  const auto yToYPos =
-      valToPostion(m_config_params.y_lim, height, horizontal_scaling, false);
-
-  createLabels(xToXPos, yToYPos);
+  createLabels();
 }
 
 BaseGrid::BaseGrid(const GridGraphicParams &params)

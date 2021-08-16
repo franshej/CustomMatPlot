@@ -214,8 +214,7 @@ struct BaseGrid : juce::Component {
                           scp::scaling &vertical_scaling,
                           scp::scaling &horizontal_scaling) = 0;
 
-  void createLabels(const std::function<float(const float)> xToXPos,
-                    const std::function<float(const float)> yToYPos);
+  void createLabels();
 
   template <class graph_type>
   void addGridLineVertical(const float x_val);

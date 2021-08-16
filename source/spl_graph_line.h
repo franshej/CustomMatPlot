@@ -4,8 +4,10 @@
 
 #include "spl_utils.h"
 
-//template <class ValueType>
-//typename std::vector<juce::Point<ValueType>> GraphPoints;
+// template <class ValueType>
+// typename std::vector<juce::Point<ValueType>> GraphPoints;
+
+typedef std::vector<juce::Point<float>> GraphPoints;
 
 struct GraphLine : juce::Component {
  public:
@@ -24,6 +26,8 @@ struct GraphLine : juce::Component {
   const std::vector<float> &getYValues();
   const std::vector<float> &getXValues();
 
+  const GraphPoints& getGraphPoints() noexcept;
+
   void setDashedPath(const std::vector<float> &dashed_lengths);
   void setGraphColour(const juce::Colour &graph_colour);
 
@@ -34,6 +38,8 @@ struct GraphLine : juce::Component {
   void calculateXData();
 
  private:
+  juce::Colour getGraphColourFromIndex(const std::size_t index);
+
   std::vector<float> m_dashed_lengths;
 
   virtual void calculateYDataIntern() = 0;
@@ -44,7 +50,7 @@ struct GraphLine : juce::Component {
   scp::ParamVal<juce::Colour> m_graph_colour;
 
   std::vector<float> m_x_data, m_y_data;
-  std::vector<juce::Point<float>> m_graph_points;
+  GraphPoints m_graph_points;
 };
 
 struct LinearGraphLine : public GraphLine {

@@ -90,6 +90,8 @@ const std::vector<float> &GraphLine::getXValues() {
   return m_x_data;
 }
 
+const GraphPoints &GraphLine::getGraphPoints() noexcept { return m_graph_points; }
+
 void GraphLine::calculateXData() {
   if (!m_x_lim) {
     jassert("x_lim must be set to calculate the xdata.");
@@ -102,6 +104,11 @@ void GraphLine::calculateXData() {
   }
 
   calculateXDataIntern();
+}
+
+juce::Colour GraphLine::getGraphColourFromIndex(const std::size_t index)
+{
+    return juce::Colour();
 }
 
 void GraphLine::calculateYData() {
