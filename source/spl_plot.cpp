@@ -21,7 +21,7 @@ static std::pair<float, float> findMinMaxValues(
 }
 
 static std::pair<float, float> findMinMaxValues(
-    const std::vector<std::unique_ptr<GraphLine>> &graph_lines,
+    const std::vector<std::unique_ptr<scp::GraphLine>> &graph_lines,
     const bool isXValue) {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();

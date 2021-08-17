@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 
+namespace scp {
 void GraphLine::setXLim(const float min, const float max) {
   scp::Lim_f x_lim;
 
@@ -38,7 +39,7 @@ void GraphLine::setYLim(const float min, const float max) {
 
 void GraphLine::resized(){};
 
-void GraphLine::paint(juce::Graphics &g) {
+void GraphLine::paint(juce::Graphics& g) {
   juce::Path graph_path;
   juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
                               juce::PathStrokeType::EndCapStyle::rounded);
@@ -47,7 +48,7 @@ void GraphLine::paint(juce::Graphics &g) {
     graph_path.startNewSubPath(m_graph_points[0]);
     std::for_each(
         m_graph_points.begin() + 1, m_graph_points.end(),
-        [&](const juce::Point<float> &point) { graph_path.lineTo(point); });
+        [&](const juce::Point<float>& point) { graph_path.lineTo(point); });
 
     if (!m_dashed_lengths.empty()) {
       p_type.createDashedStroke(graph_path, graph_path, m_dashed_lengths.data(),
@@ -59,7 +60,7 @@ void GraphLine::paint(juce::Graphics &g) {
   }
 }
 
-void GraphLine::setYValues(const std::vector<float> &y_data) noexcept {
+void GraphLine::setYValues(const std::vector<float>& y_data) noexcept {
   if (m_y_data.size() != y_data.size()) m_y_data.resize(y_data.size());
   std::copy(y_data.begin(), y_data.end(), m_y_data.begin());
 
@@ -68,7 +69,7 @@ void GraphLine::setYValues(const std::vector<float> &y_data) noexcept {
   }
 }
 
-void GraphLine::setXValues(const std::vector<float> &x_data) noexcept {
+void GraphLine::setXValues(const std::vector<float>& x_data) noexcept {
   if (m_x_data.size() != x_data.size()) m_x_data.resize(x_data.size());
   std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
 
@@ -78,19 +79,19 @@ void GraphLine::setXValues(const std::vector<float> &x_data) noexcept {
 }
 
 void GraphLine::setDashedPath(
-    const std::vector<float> &dashed_lengths) noexcept {
+    const std::vector<float>& dashed_lengths) noexcept {
   m_dashed_lengths = dashed_lengths;
 }
 
-void GraphLine::setGraphColour(const juce::Colour &graph_colour) noexcept {
+void GraphLine::setGraphColour(const juce::Colour& graph_colour) noexcept {
   m_graph_colour = graph_colour;
 }
 
-const std::vector<float> &GraphLine::getYValues() noexcept { return m_y_data; }
+const std::vector<float>& GraphLine::getYValues() noexcept { return m_y_data; }
 
-const std::vector<float> &GraphLine::getXValues() noexcept { return m_x_data; }
+const std::vector<float>& GraphLine::getXValues() noexcept { return m_x_data; }
 
-const GraphPoints &GraphLine::getGraphPoints() noexcept {
+const GraphPoints& GraphLine::getGraphPoints() noexcept {
   return m_graph_points;
 }
 
@@ -125,20 +126,20 @@ void GraphLine::calculateYData() {
   calculateYDataIntern(m_graph_points);
 }
 
-void LinearGraphLine::calculateXDataIntern(GraphPoints &graph_points) noexcept {
+void LinearGraphLine::calculateXDataIntern(GraphPoints& graph_points) noexcept {
   const auto x_lim = scp::Lim_f(m_x_lim);
 
   const auto x_scale = static_cast<float>(getWidth()) / (x_lim.max - x_lim.min);
   const auto offset_x = static_cast<float>(-(x_lim.min * x_scale));
 
   std::size_t i = 0u;
-  for (const auto &x : m_x_data) {
+  for (const auto& x : m_x_data) {
     graph_points[i].setX(offset_x + (x * x_scale));
     i++;
   }
 }
 
-void LinearGraphLine::calculateYDataIntern(GraphPoints &graph_points) noexcept {
+void LinearGraphLine::calculateYDataIntern(GraphPoints& graph_points) noexcept {
   const auto y_lim = scp::Lim_f(m_y_lim);
 
   const auto y_scale =
@@ -148,14 +149,14 @@ void LinearGraphLine::calculateYDataIntern(GraphPoints &graph_points) noexcept {
   const auto offset_y = float(getHeight()) + (y_offset * y_scale);
 
   std::size_t i = 0u;
-  for (const auto &y : m_y_data) {
+  for (const auto& y : m_y_data) {
     graph_points[i].setY(offset_y - (y * y_scale));
     i++;
   }
 }
 
-void LogXGraphLine::calculateXDataIntern(GraphPoints &graph_points) noexcept {
-  const auto &xlim = scp::Lim_f(m_x_lim);
+void LogXGraphLine::calculateXDataIntern(GraphPoints& graph_points) noexcept {
+  const auto& xlim = scp::Lim_f(m_x_lim);
   const auto width = static_cast<float>(getWidth());
 
   auto xToXPos = [&](const float x) {
@@ -163,7 +164,7 @@ void LogXGraphLine::calculateXDataIntern(GraphPoints &graph_points) noexcept {
   };
 
   std::size_t i = 0u;
-  for (const auto &x : m_x_data) {
+  for (const auto& x : m_x_data) {
     if (x < xlim.max) {
       graph_points[i].setX(xToXPos(x));
       i++;
@@ -171,7 +172,7 @@ void LogXGraphLine::calculateXDataIntern(GraphPoints &graph_points) noexcept {
   }
 }
 
-void LogXGraphLine::calculateYDataIntern(GraphPoints &graph_points) noexcept {
+void LogXGraphLine::calculateYDataIntern(GraphPoints& graph_points) noexcept {
   const auto y_lim = scp::Lim_f(m_y_lim);
 
   const auto y_scale =
@@ -181,8 +182,9 @@ void LogXGraphLine::calculateYDataIntern(GraphPoints &graph_points) noexcept {
   const auto offset_y = float(getHeight()) + (y_offset * y_scale);
 
   std::size_t i = 0u;
-  for (const auto &y : m_y_data) {
+  for (const auto& y : m_y_data) {
     graph_points[i].setY(offset_y - y * y_scale);
     i++;
   }
 }
+}  // namespace scp

@@ -9,7 +9,7 @@
 struct GraphLineData {
   std::vector<float> x_data;
   std::vector<float> y_data;
-  std::unique_ptr<GraphLine> grpah_line;
+  std::unique_ptr<scp::GraphLine> grpah_line;
 };
 
 struct Plot : juce::Component {
@@ -47,11 +47,11 @@ struct Plot : juce::Component {
   void updateYLim(const float &min, const float &max);
   void updateXLim(const float &min, const float &max);
 
-  virtual std::unique_ptr<GraphLine> getGraphLine() = 0;
+  virtual std::unique_ptr<scp::GraphLine> getGraphLine() = 0;
 
   bool m_x_autoscale = true, m_y_autoscale = true;
 
-  std::vector<std::unique_ptr<GraphLine>> m_graph_lines;
+  std::vector<std::unique_ptr<scp::GraphLine>> m_graph_lines;
   std::unique_ptr<BaseGrid> m_grid;
   PlotLabel m_plot_label;
 
@@ -67,8 +67,8 @@ struct LinearPlot : Plot {
   LinearPlot(const int x, const int y, const int width, const int height);
   LinearPlot();
 
-  std::unique_ptr<GraphLine> getGraphLine() override {
-    return std::move(std::make_unique<LinearGraphLine>());
+  std::unique_ptr<scp::GraphLine> getGraphLine() override {
+    return std::move(std::make_unique<scp::LinearGraphLine>());
   }
 };
 
@@ -77,7 +77,7 @@ struct SemiPlotX : Plot {
   ~SemiPlotX() = default;
   SemiPlotX();
 
-  std::unique_ptr<GraphLine> getGraphLine() override {
-    return std::move(std::make_unique<LogXGraphLine>());
+  std::unique_ptr<scp::GraphLine> getGraphLine() override {
+    return std::move(std::make_unique<scp::LogXGraphLine>());
   }
 };

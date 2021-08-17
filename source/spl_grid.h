@@ -17,7 +17,7 @@
 #include "spl_graph_line.h";
 #include "spl_utils.h";
 
-typedef std::vector<std::unique_ptr<GraphLine>> GridLines;
+typedef std::vector<std::unique_ptr<scp::GraphLine>> GridLines;
 
 /**
  * A Parameter struct

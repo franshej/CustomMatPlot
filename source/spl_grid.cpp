@@ -48,8 +48,8 @@ static std::string getNextCustomLabel(
 }
 
 template <class graph_type>
-constexpr static GraphLine *getAndAddGridLine(
-    std::vector<std::unique_ptr<GraphLine>> &graph_lines,
+constexpr static scp::GraphLine *getAndAddGridLine(
+    std::vector<std::unique_ptr<scp::GraphLine>> &graph_lines,
     const juce::Colour grid_colour) {
   graph_lines.emplace_back(std::make_unique<graph_type>(grid_colour));
   return graph_lines.back().get();
@@ -214,9 +214,9 @@ void BaseGrid::resized() {
 
   for (const auto x_val : x_ticks) {
     if (vertical_scaling == scp::scaling::logarithmic)
-      addGridLineVertical<LogXGraphLine>(x_val);
+      addGridLineVertical<scp::LogXGraphLine>(x_val);
     else
-      addGridLineVertical<LinearGraphLine>(x_val);
+      addGridLineVertical<scp::LinearGraphLine>(x_val);
   }
 
   for (const auto y_val : y_ticks) {
@@ -224,7 +224,7 @@ void BaseGrid::resized() {
       // TODO: add logscale for y-values.
       jassert("'LogYGraphLine' is not implemented.");
     } else
-      addGridLineHorizontal<LinearGraphLine>(y_val);
+      addGridLineHorizontal<scp::LinearGraphLine>(y_val);
   }
 
   for (const auto &grid : m_vertical_grid_lines) {

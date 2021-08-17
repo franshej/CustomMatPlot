@@ -4,6 +4,8 @@
 
 #include "spl_utils.h"
 
+namespace scp {
+
 typedef std::vector<juce::Point<float>> GraphPoints;
 
 struct GraphLine : juce::Component {
@@ -17,19 +19,19 @@ struct GraphLine : juce::Component {
   void setXLim(const float min, const float max);
   void setYLim(const float min, const float max);
 
-  void setYValues(const std::vector<float> &y_values) noexcept;
-  void setXValues(const std::vector<float> &x_values) noexcept;
+  void setYValues(const std::vector<float>& y_values) noexcept;
+  void setXValues(const std::vector<float>& x_values) noexcept;
 
-  const std::vector<float> &getYValues() noexcept;
-  const std::vector<float> &getXValues() noexcept;
+  const std::vector<float>& getYValues() noexcept;
+  const std::vector<float>& getXValues() noexcept;
 
-  const GraphPoints &getGraphPoints() noexcept;
+  const GraphPoints& getGraphPoints() noexcept;
 
-  void setDashedPath(const std::vector<float> &dashed_lengths) noexcept;
-  void setGraphColour(const juce::Colour &graph_colour) noexcept;
+  void setDashedPath(const std::vector<float>& dashed_lengths) noexcept;
+  void setGraphColour(const juce::Colour& graph_colour) noexcept;
 
   void resized() override;
-  void paint(juce::Graphics &g) override;
+  void paint(juce::Graphics& g) override;
 
   void calculateYData();
   void calculateXData();
@@ -39,8 +41,8 @@ struct GraphLine : juce::Component {
 
   std::vector<float> m_dashed_lengths;
 
-  virtual void calculateYDataIntern(GraphPoints &graph_points) noexcept = 0;
-  virtual void calculateXDataIntern(GraphPoints &graph_points) noexcept = 0;
+  virtual void calculateYDataIntern(GraphPoints& graph_points) noexcept = 0;
+  virtual void calculateXDataIntern(GraphPoints& graph_points) noexcept = 0;
 
  protected:
   scp::ParamVal<scp::Lim_f> m_x_lim, m_y_lim;
@@ -55,8 +57,8 @@ struct LinearGraphLine : public GraphLine {
   using GraphLine::GraphLine;
 
  private:
-  void calculateYDataIntern(GraphPoints &graph_points) noexcept override;
-  void calculateXDataIntern(GraphPoints &graph_points) noexcept override;
+  void calculateYDataIntern(GraphPoints& graph_points) noexcept override;
+  void calculateXDataIntern(GraphPoints& graph_points) noexcept override;
 };
 
 struct LogXGraphLine : public GraphLine {
@@ -64,6 +66,7 @@ struct LogXGraphLine : public GraphLine {
   using GraphLine::GraphLine;
 
  private:
-  void calculateYDataIntern(GraphPoints &graph_points) noexcept override;
-  void calculateXDataIntern(GraphPoints &graph_points) noexcept override;
+  void calculateYDataIntern(GraphPoints& graph_points) noexcept override;
+  void calculateXDataIntern(GraphPoints& graph_points) noexcept override;
 };
+}  // namespace scp
