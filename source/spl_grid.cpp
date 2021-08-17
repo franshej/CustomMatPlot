@@ -179,7 +179,7 @@ void BaseGrid::setXLabels(const std::vector<std::string> &x_labels) {
 
 void BaseGrid::resized() {
   if (!m_config_params.x_lim) {
-    jassert("x limit must be set. USe 'SetXLim'");
+    jassert("x limit must be set. Use 'SetXLim'");
     return;
   }
 
@@ -190,7 +190,7 @@ void BaseGrid::resized() {
 
   if (!m_config_params.grid_area) {
     jassert(
-        "Make sure that the m_config_params.grid_area is set. Use "
+        "Make sure that the grid_area is set. Use "
         "'setGridBounds'");
     return;
   }
@@ -240,8 +240,6 @@ void BaseGrid::resized() {
       grid->calculateYData();
     }
   }
-  const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
   createLabels();
 }

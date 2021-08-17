@@ -59,16 +59,18 @@ void GraphLine::paint(juce::Graphics &g) {
   }
 }
 
-void GraphLine::setYValues(const std::vector<float> &y_data) {
-  m_y_data = y_data;
+void GraphLine::setYValues(const std::vector<float> &y_data) noexcept {
+  if (m_y_data.size() != y_data.size()) m_y_data.resize(y_data.size());
+  std::copy(y_data.begin(), y_data.end(), m_y_data.begin());
 
   if (m_graph_points.size() != m_y_data.size()) {
     m_graph_points.resize(m_y_data.size());
   }
 }
 
-void GraphLine::setXValues(const std::vector<float> &x_data) {
-  m_x_data = x_data;
+void GraphLine::setXValues(const std::vector<float> &x_data) noexcept {
+  if (m_x_data.size() != x_data.size()) m_x_data.resize(x_data.size());
+  std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
 
   if (m_x_data.size() != m_graph_points.size()) {
     m_graph_points.resize(m_x_data.size());
@@ -76,21 +78,21 @@ void GraphLine::setXValues(const std::vector<float> &x_data) {
 }
 
 void GraphLine::setDashedPath(
-    const std::vector<float> &dashed_lengths) {
+    const std::vector<float> &dashed_lengths) noexcept {
   m_dashed_lengths = dashed_lengths;
 }
 
-void GraphLine::setGraphColour(const juce::Colour &graph_colour) {}
-
-const std::vector<float> &GraphLine::getYValues() {
-  return m_y_data;
+void GraphLine::setGraphColour(const juce::Colour &graph_colour) noexcept {
+  m_graph_colour = graph_colour;
 }
 
-const std::vector<float> &GraphLine::getXValues() {
-  return m_x_data;
-}
+const std::vector<float> &GraphLine::getYValues() noexcept { return m_y_data; }
 
-const GraphPoints &GraphLine::getGraphPoints() noexcept { return m_graph_points; }
+const std::vector<float> &GraphLine::getXValues() noexcept { return m_x_data; }
+
+const GraphPoints &GraphLine::getGraphPoints() noexcept {
+  return m_graph_points;
+}
 
 void GraphLine::calculateXData() {
   if (!m_x_lim) {
@@ -103,12 +105,11 @@ void GraphLine::calculateXData() {
     return;
   }
 
-  calculateXDataIntern();
+  calculateXDataIntern(m_graph_points);
 }
 
-juce::Colour GraphLine::getGraphColourFromIndex(const std::size_t index)
-{
-    return juce::Colour();
+juce::Colour GraphLine::getGraphColourFromIndex(const std::size_t index) {
+  return juce::Colour();
 }
 
 void GraphLine::calculateYData() {
@@ -121,10 +122,10 @@ void GraphLine::calculateYData() {
     return;
   }
 
-  calculateYDataIntern();
+  calculateYDataIntern(m_graph_points);
 }
 
-void LinearGraphLine::calculateXDataIntern() {
+void LinearGraphLine::calculateXDataIntern(GraphPoints &graph_points) noexcept {
   const auto x_lim = scp::Lim_f(m_x_lim);
 
   const auto x_scale = static_cast<float>(getWidth()) / (x_lim.max - x_lim.min);
@@ -132,12 +133,12 @@ void LinearGraphLine::calculateXDataIntern() {
 
   std::size_t i = 0u;
   for (const auto &x : m_x_data) {
-    m_graph_points[i].setX(offset_x + (x * x_scale));
+    graph_points[i].setX(offset_x + (x * x_scale));
     i++;
   }
 }
 
-void LinearGraphLine::calculateYDataIntern() {
+void LinearGraphLine::calculateYDataIntern(GraphPoints &graph_points) noexcept {
   const auto y_lim = scp::Lim_f(m_y_lim);
 
   const auto y_scale =
@@ -148,12 +149,12 @@ void LinearGraphLine::calculateYDataIntern() {
 
   std::size_t i = 0u;
   for (const auto &y : m_y_data) {
-    m_graph_points[i].setY(offset_y - (y * y_scale));
+    graph_points[i].setY(offset_y - (y * y_scale));
     i++;
   }
 }
 
-void LogXGraphLine::calculateXDataIntern() {
+void LogXGraphLine::calculateXDataIntern(GraphPoints &graph_points) noexcept {
   const auto &xlim = scp::Lim_f(m_x_lim);
   const auto width = static_cast<float>(getWidth());
 
@@ -164,13 +165,13 @@ void LogXGraphLine::calculateXDataIntern() {
   std::size_t i = 0u;
   for (const auto &x : m_x_data) {
     if (x < xlim.max) {
-      m_graph_points[i].setX(xToXPos(x));
+      graph_points[i].setX(xToXPos(x));
       i++;
     }
   }
 }
 
-void LogXGraphLine::calculateYDataIntern() {
+void LogXGraphLine::calculateYDataIntern(GraphPoints &graph_points) noexcept {
   const auto y_lim = scp::Lim_f(m_y_lim);
 
   const auto y_scale =
@@ -181,7 +182,7 @@ void LogXGraphLine::calculateYDataIntern() {
 
   std::size_t i = 0u;
   for (const auto &y : m_y_data) {
-    m_graph_points[i].setY(offset_y - y * y_scale);
+    graph_points[i].setY(offset_y - y * y_scale);
     i++;
   }
 }
