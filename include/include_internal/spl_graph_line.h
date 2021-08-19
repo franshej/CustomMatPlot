@@ -9,7 +9,6 @@ namespace scp {
 typedef std::vector<juce::Point<float>> GraphPoints;
 
 struct GraphLine : juce::Component {
- public:
   GraphLine(const juce::Colour graph_line_colour =
                 juce::Colour(std::rand() % 100 + 100, std::rand() % 100 + 100,
                              std::rand() % 100 + 100))

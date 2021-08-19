@@ -6,14 +6,35 @@
 #include "spl_grid.h"
 #include "spl_label.h"
 
-struct GraphLineData {
-  std::vector<float> x_data;
-  std::vector<float> y_data;
-  std::unique_ptr<scp::GraphLine> grpah_line;
-};
-
 struct Plot : juce::Component {
  public:
+  enum ColourIds : std::uint32_t {
+    graph_colour = 0xffff0000 /**< Default is showing all channels in the
+                                 LevelMeterSource without a border */
+  };
+
+  enum GraphType {
+    Default, /**< Default is  */
+    GridLine /**< Default is showing all channels in the LevelMeterSource
+                without a border */
+  };
+
+  class LookAndFeelMethods {
+   public:
+    virtual ~LookAndFeelMethods(){};
+
+    virtual void setDefaultGraphLineColour() noexcept = 0;
+
+    virtual juce::Rectangle<int> getGraphAreaBounds(
+        juce::Rectangle<int> &Bounds) const = 0;
+
+    virtual void drawBackground(juce::Graphics &g,
+                                juce::Rectangle<int> &bounds) = 0;
+
+    virtual void drawGraph(juce::Graphics &g, juce::Rectangle<int> &graph_bound,
+                           std::vector<float> &dashed_length) = 0;
+  };
+
   Plot() = default;
   ~Plot() = default;
 
