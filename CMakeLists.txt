@@ -16,7 +16,8 @@ set(INTERNAL_HEADERS include/include_internal/spl_graph_line.h
                      include/include_internal/spl_label.h
                      include/include_internal/spl_utils.h)
 
-set(PUBLIC_HEADERS include/include/spl_plot.h)
+set(PUBLIC_HEADERS include/include/spl_plot.h
+                   include/include/scp_lookandfeel.h)
 
 add_library(${PROJECT_NAME}
             STATIC

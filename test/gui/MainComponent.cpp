@@ -62,10 +62,10 @@ TEST(test_tiny_grid_on) {
 }
 
 TEST(test_semi_plot_x_tiny_grid_on) {
-    std::vector<float> y_test_data(1000);
-    std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
-    SEMI_PLOT_Y({ y_test_data });
-    TINY_GRID_ON;
+  std::vector<float> y_test_data(1000);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+  SEMI_PLOT_Y({y_test_data});
+  TINY_GRID_ON;
 };
 
 TEST(test_draw_flat_line) {
@@ -170,8 +170,9 @@ static juce::Rectangle<int> getScreenArea() {
   return juce::Desktop::getInstance().getDisplays().getMainDisplay().userArea;
 }
 
-static Plot *getPlotFromID(
-    std::map<std::string, std::unique_ptr<Plot>> &plot_holder, const int id) {
+static scp::Plot *getPlotFromID(
+    std::map<std::string, std::unique_ptr<scp::Plot>> &plot_holder,
+    const int id) {
   auto it = plot_holder.begin();
 
   // id != 0
