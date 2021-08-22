@@ -5,10 +5,12 @@
 #include "spl_utils.h"
 
 namespace scp {
-
 typedef std::vector<juce::Point<float>> GraphPoints;
 
+class LookAndFeelMethodsBase;
+
 struct GraphLine : juce::Component {
+ public:
   GraphLine(const juce::Colour graph_line_colour =
                 juce::Colour(std::rand() % 100 + 100, std::rand() % 100 + 100,
                              std::rand() % 100 + 100))
@@ -31,6 +33,7 @@ struct GraphLine : juce::Component {
 
   void resized() override;
   void paint(juce::Graphics& g) override;
+  void lookAndFeelChanged() override;
 
   void calculateYData();
   void calculateXData();
@@ -39,6 +42,7 @@ struct GraphLine : juce::Component {
   juce::Colour getGraphColourFromIndex(const std::size_t index);
 
   std::vector<float> m_dashed_lengths;
+  LookAndFeelMethodsBase* m_lookandfeel{nullptr};
 
   virtual void calculateYDataIntern(GraphPoints& graph_points) noexcept = 0;
   virtual void calculateXDataIntern(GraphPoints& graph_points) noexcept = 0;

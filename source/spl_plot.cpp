@@ -42,6 +42,14 @@ static std::pair<float, float> findMinMaxValues(
   return {min_value, max_value};
 }
 
+Plot::~Plot() {
+  m_grid->setLookAndFeel(nullptr);
+  m_plot_label->setLookAndFeel(nullptr);
+  for (auto& graph_line : m_graph_lines) {
+    graph_line->setLookAndFeel(nullptr);
+  }
+}
+
 void Plot::updateYLim(const float& min, const float& max) {
   for (auto& graph_line : m_graph_lines) {
     graph_line->setYLim(min, max);
@@ -62,8 +70,11 @@ void Plot::updateXLim(const float& min, const float& max) {
 
 void Plot::initialize() {
   m_grid = getGrid();
+  m_plot_label = std::make_unique<PlotLabel>();
+
+  lookAndFeelChanged();
   addAndMakeVisible(m_grid.get());
-  addAndMakeVisible(m_plot_label);
+  addAndMakeVisible(m_plot_label.get());
 }
 
 void Plot::setAutoXScale() {
@@ -87,7 +98,7 @@ void Plot::yLim(const float& min, const float& max) {
 }
 
 void Plot::setXLabel(const std::string& x_label) {
-  m_plot_label.setXLabel(x_label);
+  m_plot_label->setXLabel(x_label);
 }
 
 void Plot::setXLabels(const std::vector<std::string>& x_labels) {
@@ -107,10 +118,10 @@ void Plot::setYTicks(const std::vector<float>& y_ticks) {
 }
 
 void Plot::setYLabel(const std::string& y_label) {
-  m_plot_label.setYLabel(y_label);
+  m_plot_label->setYLabel(y_label);
 }
 
-void Plot::setTitle(const std::string& title) { m_plot_label.setTitle(title); }
+void Plot::setTitle(const std::string& title) { m_plot_label->setTitle(title); }
 
 void Plot::makeGraphDashed(const std::vector<float>& dashed_lengths,
                            unsigned graph_index) {
@@ -141,8 +152,8 @@ void Plot::resized() {
     m_grid->setGridBounds(m_graph_area);
   }
 
-  m_plot_label.setBounds(m_plot_area);
-  m_plot_label.setGraphArea(m_graph_area);
+  m_plot_label->setBounds(m_plot_area);
+  m_plot_label->setGraphArea(m_graph_area);
 
   for (const auto& graph_line : m_graph_lines) {
     graph_line->calculateYData();
@@ -155,14 +166,19 @@ void Plot::paint(juce::Graphics& g) {}
 void Plot::parentHierarchyChanged() { lookAndFeelChanged(); }
 
 void Plot::lookAndFeelChanged() {
-  if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
-    m_lookandfeel = lnf;
+  if (dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
+    m_lookandfeel = &getLookAndFeel();
     m_lookandfeel_default.reset();
   } else {
-    if (m_lookandfeel_default.get() == nullptr)
+    if (!m_lookandfeel_default)
       m_lookandfeel_default = std::make_unique<scp::PlotLookAndFeel>();
-
     m_lookandfeel = m_lookandfeel_default.get();
+  }
+
+  m_grid->setLookAndFeel(m_lookandfeel);
+  m_plot_label->setLookAndFeel(m_lookandfeel);
+  for (auto& graph_line : m_graph_lines) {
+    graph_line->setLookAndFeel(m_lookandfeel);
   }
 }
 
@@ -173,6 +189,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
       for (auto& graph_line : m_graph_lines) {
         if (!graph_line) {
           graph_line = getGraphLine();
+          graph_line->setLookAndFeel(m_lookandfeel);
           addAndMakeVisible(graph_line.get());
           graph_line->setBounds(m_graph_area);
         }

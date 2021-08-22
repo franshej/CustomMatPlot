@@ -7,6 +7,7 @@
 #include "spl_label.h"
 
 namespace scp {
+class LookAndFeelMethodsBase {};
 class PlotLookAndFeel;
 
 struct Plot : juce::Component {
@@ -22,7 +23,7 @@ struct Plot : juce::Component {
                 without a border */
   };
 
-  class LookAndFeelMethods {
+  class LookAndFeelMethods : public LookAndFeelMethodsBase {
    public:
     virtual ~LookAndFeelMethods(){};
 
@@ -37,14 +38,13 @@ struct Plot : juce::Component {
     /*
         virtual void drawBackground(juce::Graphics &g,
                                 juce::Rectangle<int> &bounds) = 0;
-
-       virtual void drawGraph(juce::Graphics &g, juce::Rectangle<int>
-       &graph_bound, std::vector<float> &dashed_length) = 0;
-
-    */
+                                    */
+    virtual void drawGraphLine(
+        juce::Graphics& g, const std::vector<juce::Point<float>>& graph_points,
+        const std::vector<float>& dashed_length) = 0;
   };
 
-  ~Plot() = default;
+  ~Plot();
 
   void xLim(const float& min, const float& max);
   void yLim(const float& min, const float& max);
@@ -89,10 +89,10 @@ struct Plot : juce::Component {
 
   std::vector<std::unique_ptr<scp::GraphLine>> m_graph_lines;
   std::unique_ptr<BaseGrid> m_grid;
+  std::unique_ptr<PlotLabel> m_plot_label;
 
-  LookAndFeelMethods* m_lookandfeel;
+  juce::LookAndFeel* m_lookandfeel;
   std::unique_ptr<PlotLookAndFeel> m_lookandfeel_default;
-  PlotLabel m_plot_label;
 
   juce::Rectangle<int> m_graph_area, m_plot_area;
   std::vector<std::vector<float>> m_y_data, m_x_data;

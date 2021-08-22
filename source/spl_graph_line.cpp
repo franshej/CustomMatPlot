@@ -1,4 +1,5 @@
 #include "spl_graph_line.h"
+#include "spl_plot.h"
 
 #include <stdexcept>
 
@@ -40,23 +41,18 @@ void GraphLine::setYLim(const float min, const float max) {
 void GraphLine::resized(){};
 
 void GraphLine::paint(juce::Graphics& g) {
-  juce::Path graph_path;
-  juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
-                              juce::PathStrokeType::EndCapStyle::rounded);
+  if (m_lookandfeel) {
+    auto lnf = static_cast<scp::Plot::LookAndFeelMethods*>(m_lookandfeel);
+    lnf->drawGraphLine(g, m_graph_points, m_dashed_lengths);
+  }
+}
 
-  if (m_graph_points.size() > 1) {
-    graph_path.startNewSubPath(m_graph_points[0]);
-    std::for_each(
-        m_graph_points.begin() + 1, m_graph_points.end(),
-        [&](const juce::Point<float>& point) { graph_path.lineTo(point); });
-
-    if (!m_dashed_lengths.empty()) {
-      p_type.createDashedStroke(graph_path, graph_path, m_dashed_lengths.data(),
-                                m_dashed_lengths.size());
-    }
-
-    g.setColour(m_graph_colour);
-    g.strokePath(graph_path, p_type);
+void GraphLine::lookAndFeelChanged() {
+  if (auto* lnf =
+          dynamic_cast<scp::Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
+    m_lookandfeel = lnf;
+  } else {
+    m_lookandfeel = nullptr;
   }
 }
 

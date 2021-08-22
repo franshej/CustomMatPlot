@@ -1,4 +1,5 @@
 #include "spl_grid.h"
+#include "spl_plot.h"
 
 #include <stdexcept>
 #include <tuple>
@@ -54,6 +55,8 @@ constexpr static scp::GraphLine *getAndAddGridLine(
   graph_lines.emplace_back(std::make_unique<graph_type>(grid_colour));
   return graph_lines.back().get();
 }
+
+namespace scp {
 
 /*============================================================================*/
 
@@ -173,6 +176,21 @@ void BaseGrid::paint(juce::Graphics &g) {
   }
 }
 
+void BaseGrid::lookAndFeelChanged() {
+  if (auto *lnf = dynamic_cast<scp::Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
+    m_lookandfeel = lnf;
+  } else {
+    m_lookandfeel = nullptr;
+  }
+  for (auto &grid_line : m_horizontal_grid_lines) {
+    grid_line->setLookAndFeel(&getLookAndFeel());
+  }
+
+  for (auto &grid_line : m_vertical_grid_lines) {
+    grid_line->setLookAndFeel(&getLookAndFeel());
+  }
+}
+
 void BaseGrid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
 }
@@ -226,6 +244,8 @@ void BaseGrid::resized() {
     } else
       addGridLineHorizontal<scp::LinearGraphLine>(y_val);
   }
+
+  lookAndFeelChanged();
 
   for (const auto &grid : m_vertical_grid_lines) {
     if (grid) {
@@ -496,3 +516,4 @@ void SemiLogXGrid::createGrid(std::vector<float> &x_positions,
     y_positions.push_back(y_val);
   }
 }
+}  // namespace scp
