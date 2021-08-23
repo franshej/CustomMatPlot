@@ -12,15 +12,31 @@ class PlotLookAndFeel;
 
 struct Plot : juce::Component {
  public:
-  enum ColourIds : std::uint32_t {
-    graph_colour = 0xffff0000 /**< Default is showing all channels in the
-                                 LevelMeterSource without a border */
+  enum ColourIds {
+    background_colour,   /**< Colour of the background. */
+    grid_colour,         /**< Colour of the grids. */
+    x_grid_label_colour, /**< Colour of the label for each vertical grid line.
+                          */
+    y_grid_label_colour, /**< Colour of the label for each horizontal grid line.
+                          */
+    frame_colour,        /**< Colour of the frame around the graph area. */
+    x_label_colour,      /**< Colour of the text on the x-axis. */
+    y_label_colour,      /**< Colour of the label on the y-axis. */
+    title_label_colour   /**< Colour of the title label. */
   };
 
-  enum GraphType {
-    Default, /**< Default is  */
-    GridLine /**< Default is showing all channels in the LevelMeterSource
-                without a border */
+  enum ColourIdsGraph {
+    first_graph_colour = (1u << 16u), /**< Colour of the first graph. */
+    second_graph_colour,              /**< Colour of the second graph. */
+    third_graph_colour,               /**< Colour of the third graph. */
+    fourth_graph_colour,              /**< Colour of the fourth graph. */
+    fifth_graph_colour,               /**< Colour of the fifth graph. */
+    sixth_graph_colour                /**< Colour of the sixth graph. */
+  };
+
+  enum GraphType : uint32_t {
+    GraphLine, /**< Simple graph line. */
+    GridLine   /**< GridLine used for the grids.*/
   };
 
   class LookAndFeelMethods : public LookAndFeelMethodsBase {
@@ -35,13 +51,17 @@ struct Plot : juce::Component {
     virtual juce::Rectangle<int> getGraphAreaBounds(
         juce::Rectangle<int>& bounds) const = 0;
 
+    virtual ColourIdsGraph getColourFromGraphID(
+        const std::size_t graph_id) const = 0;
+
     /*
         virtual void drawBackground(juce::Graphics &g,
                                 juce::Rectangle<int> &bounds) = 0;
                                     */
     virtual void drawGraphLine(
         juce::Graphics& g, const std::vector<juce::Point<float>>& graph_points,
-        const std::vector<float>& dashed_length) = 0;
+        const std::vector<float>& dashed_length, const GraphType graph_type,
+        const std::size_t graph_id) = 0;
   };
 
   ~Plot();
@@ -104,9 +124,7 @@ struct LinearPlot : Plot {
  public:
   LinearPlot();
 
-  std::unique_ptr<scp::GraphLine> getGraphLine() override {
-    return std::move(std::make_unique<scp::LinearGraphLine>());
-  }
+  std::unique_ptr<scp::GraphLine> getGraphLine() override;
 
   std::unique_ptr<BaseGrid> getGrid() override {
     return std::move(std::make_unique<Grid>());
@@ -117,9 +135,7 @@ struct SemiPlotX : Plot {
  public:
   SemiPlotX();
 
-  std::unique_ptr<scp::GraphLine> getGraphLine() override {
-    return std::move(std::make_unique<scp::LogXGraphLine>());
-  }
+  std::unique_ptr<scp::GraphLine> getGraphLine() override;
 
   std::unique_ptr<BaseGrid> getGrid() override {
     return std::move(std::make_unique<SemiLogXGrid>());

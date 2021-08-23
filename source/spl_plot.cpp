@@ -1,13 +1,10 @@
-#include "spl_plot.h"
-
 #include <stdexcept>
-
 #include "scp_lookandfeel.h"
 
 namespace scp {
 
 static std::pair<float, float> findMinMaxValues(
-    const std::vector<std::vector<float>>& data) {
+    const std::vector<std::vector<float>>& data) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
 
@@ -24,7 +21,7 @@ static std::pair<float, float> findMinMaxValues(
 
 static std::pair<float, float> findMinMaxValues(
     const std::vector<std::unique_ptr<scp::GraphLine>>& graph_lines,
-    const bool isXValue) {
+    const bool isXValue) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
 
@@ -186,12 +183,15 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
   if (!y_data.empty()) {
     if (y_data.size() != m_graph_lines.size()) {
       m_graph_lines.resize(y_data.size());
+      std::size_t i = 0u;
       for (auto& graph_line : m_graph_lines) {
         if (!graph_line) {
           graph_line = getGraphLine();
+          graph_line->setID(i);
           graph_line->setLookAndFeel(m_lookandfeel);
           addAndMakeVisible(graph_line.get());
           graph_line->setBounds(m_graph_area);
+          i++;
         }
       }
     }
@@ -253,5 +253,13 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
 SemiPlotX::SemiPlotX() { initialize(); }
 
 LinearPlot::LinearPlot() { initialize(); }
+
+std::unique_ptr<scp::GraphLine> LinearPlot::getGraphLine() {
+  return std::move(std::make_unique<scp::LinearGraphLine>());
+}
+
+std::unique_ptr<scp::GraphLine> SemiPlotX::getGraphLine() {
+  return std::move(std::make_unique<scp::LogXGraphLine>());
+}
 
 }  // namespace scp

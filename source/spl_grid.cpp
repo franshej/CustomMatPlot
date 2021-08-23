@@ -1,5 +1,6 @@
 #include "spl_grid.h"
 #include "spl_plot.h"
+#include "spl_graph_line.h"
 
 #include <stdexcept>
 #include <tuple>
@@ -50,9 +51,9 @@ static std::string getNextCustomLabel(
 
 template <class graph_type>
 constexpr static scp::GraphLine *getAndAddGridLine(
-    std::vector<std::unique_ptr<scp::GraphLine>> &graph_lines,
-    const juce::Colour grid_colour) {
-  graph_lines.emplace_back(std::make_unique<graph_type>(grid_colour));
+    std::vector<std::unique_ptr<scp::GraphLine>> &graph_lines) {
+  graph_lines.emplace_back(
+      std::make_unique<graph_type>(scp::Plot::GraphType::GridLine));
   return graph_lines.back().get();
 }
 
@@ -311,8 +312,7 @@ void BaseGrid::addGridLineVertical(const float x_val) {
 
   const auto x_lim = scp::Lim_f(m_config_params.x_lim);
 
-  auto GridLines = getAndAddGridLine<graph_type>(m_vertical_grid_lines,
-                                                 m_graphic_params.grid_colour);
+  auto GridLines = getAndAddGridLine<graph_type>(m_vertical_grid_lines);
   GridLines->setBounds(m_config_params.grid_area);
 
   GridLines->setXLim(x_lim.min, x_lim.max);
@@ -340,8 +340,7 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
 
   const auto y_lim = scp::Lim_f(m_config_params.y_lim);
 
-  auto GridLines = getAndAddGridLine<graph_type>(m_horizontal_grid_lines,
-                                                 m_graphic_params.grid_colour);
+  auto GridLines = getAndAddGridLine<graph_type>(m_horizontal_grid_lines);
   GridLines->setBounds(m_config_params.grid_area);
 
   GridLines->setXLim(0.f, width);

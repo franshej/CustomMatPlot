@@ -13,9 +13,8 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
-
-#include "spl_graph_line.h";
 #include "spl_utils.h";
+#include "spl_graph_line.h"
 
 namespace scp {
 class LookAndFeelMethodsBase;
