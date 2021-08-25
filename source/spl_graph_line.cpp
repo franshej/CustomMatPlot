@@ -6,12 +6,12 @@
 
 namespace scp {
 GraphLine::GraphLine()
-    : m_graph_type(scp::Plot::GraphType::GraphLine), m_id(0u) {}
+    : m_graph_type(Plot::GraphType::GraphLine), m_id(0u) {}
 GraphLine::GraphLine(const GraphType graph_type)
     : m_graph_type(graph_type), m_id(0u) {}
 
 void GraphLine::setXLim(const float min, const float max) {
-  scp::Lim_f x_lim;
+  Lim_f x_lim;
 
   if (min > max)
     throw std::invalid_argument(
@@ -28,7 +28,7 @@ void GraphLine::setXLim(const float min, const float max) {
 }
 
 void GraphLine::setYLim(const float min, const float max) {
-  scp::Lim_f y_lim;
+  Lim_f y_lim;
 
   if (min > max)
     throw std::invalid_argument(
@@ -48,15 +48,15 @@ void GraphLine::resized(){};
 
 void GraphLine::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
-    auto lnf = static_cast<scp::Plot::LookAndFeelMethods*>(m_lookandfeel);
-    const auto graph_type = static_cast<scp::Plot::GraphType>(m_graph_type);
+    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+    const auto graph_type = static_cast<Plot::GraphType>(m_graph_type);
     lnf->drawGraphLine(g, m_graph_points, m_dashed_lengths, graph_type, m_id);
   }
 }
 
 void GraphLine::lookAndFeelChanged() {
   if (auto* lnf =
-          dynamic_cast<scp::Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
+          dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {
     m_lookandfeel = nullptr;
@@ -133,7 +133,7 @@ void GraphLine::calculateYData() {
 }
 
 void LinearGraphLine::calculateXDataIntern(GraphPoints& graph_points) noexcept {
-  const auto x_lim = scp::Lim_f(m_x_lim);
+  const auto x_lim = Lim_f(m_x_lim);
 
   const auto x_scale = static_cast<float>(getWidth()) / (x_lim.max - x_lim.min);
   const auto offset_x = static_cast<float>(-(x_lim.min * x_scale));
@@ -146,7 +146,7 @@ void LinearGraphLine::calculateXDataIntern(GraphPoints& graph_points) noexcept {
 }
 
 void LinearGraphLine::calculateYDataIntern(GraphPoints& graph_points) noexcept {
-  const auto y_lim = scp::Lim_f(m_y_lim);
+  const auto y_lim = Lim_f(m_y_lim);
 
   const auto y_scale =
       static_cast<float>(getHeight()) / (y_lim.max - y_lim.min);
@@ -162,7 +162,7 @@ void LinearGraphLine::calculateYDataIntern(GraphPoints& graph_points) noexcept {
 }
 
 void LogXGraphLine::calculateXDataIntern(GraphPoints& graph_points) noexcept {
-  const auto& xlim = scp::Lim_f(m_x_lim);
+  const auto& xlim = Lim_f(m_x_lim);
   const auto width = static_cast<float>(getWidth());
 
   auto xToXPos = [&](const float x) {
@@ -179,7 +179,7 @@ void LogXGraphLine::calculateXDataIntern(GraphPoints& graph_points) noexcept {
 }
 
 void LogXGraphLine::calculateYDataIntern(GraphPoints& graph_points) noexcept {
-  const auto y_lim = scp::Lim_f(m_y_lim);
+  const auto y_lim = Lim_f(m_y_lim);
 
   const auto y_scale =
       static_cast<float>(getHeight()) / (y_lim.max - y_lim.min);
