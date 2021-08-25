@@ -31,16 +31,15 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     setColour(scp::Plot::sixth_graph_colour, juce::Colour(0xffeB984e));
   }
 
-  juce::Rectangle<int> getBounds(juce::Rectangle<int>& bounds) const override {
-    auto ret = juce::Rectangle<int>(bounds);
-    ret.setX(0);
-    ret.setY(0);
-    return ret;
+  juce::Rectangle<int> getPlotBounds(
+      juce::Rectangle<int>& bounds) const override {
+    return juce::Rectangle<int>(0, 0, bounds.getWidth(), bounds.getHeight());
   }
 
-  juce::Rectangle<int> getGraphAreaBounds(
+  juce::Rectangle<int> getGraphBounds(
       juce::Rectangle<int>& bounds) const override {
-    return juce::Rectangle<int>();
+    return juce::Rectangle<int>(100, 50, bounds.getWidth() - 150,
+                                bounds.getHeight() - 125);
   }
 
   Plot::ColourIdsGraph getColourFromGraphID(
@@ -56,6 +55,14 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
         Plot::ColourIdsGraph::sixth_graph_colour};
 
     return GraphColours[graph_id % GraphColours.size()];
+  }
+
+  void updateXGraphPoints() {
+
+  }
+
+  void updateYGraphPoints() {
+
   }
 
   void drawGraphLine(juce::Graphics& g,

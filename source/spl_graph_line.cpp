@@ -15,7 +15,7 @@ void GraphLine::setXLim(const float min, const float max) {
 
   if (min > max)
     throw std::invalid_argument(
-        "setXLim min value must be lower than max value.");
+        "Min value must be lower than max value.");
 
   if (abs(max - min) > std::numeric_limits<float>::epsilon()) {
     x_lim.min = min;

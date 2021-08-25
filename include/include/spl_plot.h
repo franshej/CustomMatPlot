@@ -45,10 +45,10 @@ struct Plot : juce::Component {
 
     virtual void setDefaultPlotColours() noexcept = 0;
 
-    virtual juce::Rectangle<int> getBounds(
+    virtual juce::Rectangle<int> getPlotBounds(
         juce::Rectangle<int>& bounds) const = 0;
 
-    virtual juce::Rectangle<int> getGraphAreaBounds(
+    virtual juce::Rectangle<int> getGraphBounds(
         juce::Rectangle<int>& bounds) const = 0;
 
     virtual ColourIdsGraph getColourFromGraphID(

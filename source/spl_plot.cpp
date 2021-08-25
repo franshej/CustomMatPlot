@@ -134,27 +134,26 @@ void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
 }
 
 void Plot::resized() {
-  const auto width = getWidth();
-  const auto height = getHeight();
+  if (auto lnf = dynamic_cast<LookAndFeelMethods*>(m_lookandfeel)) {
+    const auto plot_area = lnf->getPlotBounds(getBounds());
+    const auto graph_area = lnf->getGraphBounds(getBounds());
 
-  m_plot_area = juce::Rectangle<int>(0, 0, width, height);
-  m_graph_area.setBounds(100, 50, width - 150, height - 125);
+    for (const auto& graph_line : m_graph_lines) {
+      graph_line->setBounds(graph_area);
+    }
 
-  for (const auto& graph_line : m_graph_lines) {
-    graph_line->setBounds(m_graph_area);
-  }
+    if (m_grid != nullptr) {
+      m_grid->setBounds(plot_area);
+      m_grid->setGridBounds(graph_area);
+    }
 
-  if (m_grid != nullptr) {
-    m_grid->setBounds(m_plot_area);
-    m_grid->setGridBounds(m_graph_area);
-  }
+    m_plot_label->setBounds(plot_area);
+    m_plot_label->setGraphArea(graph_area);
 
-  m_plot_label->setBounds(m_plot_area);
-  m_plot_label->setGraphArea(m_graph_area);
-
-  for (const auto& graph_line : m_graph_lines) {
-    graph_line->calculateYData();
-    graph_line->calculateXData();
+    for (const auto& graph_line : m_graph_lines) {
+      graph_line->calculateYData();
+      graph_line->calculateXData();
+    }
   }
 }
 
