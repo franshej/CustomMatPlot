@@ -162,7 +162,7 @@ void LinearGraphLine::calculateYDataIntern(GraphPoints& graph_points) noexcept {
 }
 
 void LogXGraphLine::calculateXDataIntern(GraphPoints& graph_points) noexcept {
-  const auto& xlim = Lim_f(m_x_lim);
+  const auto xlim = Lim_f(m_x_lim);
   const auto width = static_cast<float>(getWidth());
 
   auto xToXPos = [&](const float x) {

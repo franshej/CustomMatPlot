@@ -1,9 +1,10 @@
 #include "spl_grid.h"
-#include "spl_plot.h"
-#include "spl_graph_line.h"
 
 #include <stdexcept>
 #include <tuple>
+
+#include "spl_graph_line.h"
+#include "spl_plot.h"
 
 /*============================================================================*/
 
@@ -178,7 +179,8 @@ void BaseGrid::paint(juce::Graphics &g) {
 }
 
 void BaseGrid::lookAndFeelChanged() {
-  if (auto *lnf = dynamic_cast<scp::Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
+  if (auto *lnf =
+          dynamic_cast<scp::Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {
     m_lookandfeel = nullptr;
@@ -223,7 +225,7 @@ void BaseGrid::resized() {
                         m_config_params.tiny_grid_on);
 
   std::vector<float> x_auto_ticks, y_auto_ticks;
-  scp::scaling vertical_scaling, horizontal_scaling;
+  Scaling vertical_scaling, horizontal_scaling;
   createGrid(x_auto_ticks, y_auto_ticks, vertical_scaling, horizontal_scaling);
 
   const auto &x_ticks =
@@ -232,14 +234,14 @@ void BaseGrid::resized() {
       m_custom_y_ticks.empty() ? y_auto_ticks : m_custom_y_ticks;
 
   for (const auto x_val : x_ticks) {
-    if (vertical_scaling == scp::scaling::logarithmic)
+    if (vertical_scaling == Plot::Scaling::logarithmic)
       addGridLineVertical<scp::LogXGraphLine>(x_val);
     else
       addGridLineVertical<scp::LinearGraphLine>(x_val);
   }
 
   for (const auto y_val : y_ticks) {
-    if (horizontal_scaling == scp::scaling::logarithmic) {
+    if (horizontal_scaling == Plot::Scaling::logarithmic) {
       // TODO: add logscale for y-values.
       jassert("'LogYGraphLine' is not implemented.");
     } else
@@ -402,15 +404,14 @@ void Grid::prepareGridContainers(GridLines &vertical_grid_lines,
 
 void Grid::createGrid(std::vector<float> &x_positions,
                       std::vector<float> &y_positions,
-                      scp::scaling &vertical_scaling,
-                      scp::scaling &horizontal_scaling) {
+                      Scaling &vertical_scaling, Scaling &horizontal_scaling) {
   const auto [x, y, width, height] =
       scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
   if (!(width > 0.f && height > 0.f)) return;
 
-  vertical_scaling = scp::scaling::linear;
-  horizontal_scaling = scp::scaling::linear;
+  vertical_scaling = Plot::Scaling::linear;
+  horizontal_scaling = Plot::Scaling::linear;
 
   const auto x_lim = scp::Lim_f(m_config_params.x_lim);
   const auto y_lim = scp::Lim_f(m_config_params.y_lim);
@@ -485,16 +486,16 @@ void SemiLogXGrid::prepareGridContainers(GridLines &vertical_grid_lines,
 
 void SemiLogXGrid::createGrid(std::vector<float> &x_positions,
                               std::vector<float> &y_positions,
-                              scp::scaling &vertical_scaling,
-                              scp::scaling &horizontal_scaling) {
+                              Scaling &vertical_scaling,
+                              Scaling &horizontal_scaling) {
   const auto [x, y, width, height] =
       scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
   const auto x_lim = scp::Lim_f(m_config_params.x_lim);
   const auto y_lim = scp::Lim_f(m_config_params.y_lim);
 
-  vertical_scaling = scp::scaling::logarithmic;
-  horizontal_scaling = scp::scaling::linear;
+  vertical_scaling = Plot::Scaling::logarithmic;
+  horizontal_scaling = Plot::Scaling::linear;
 
   // Frist create the vertical lines
   for (float curr_exp = m_min_exp; curr_exp < m_max_exp; ++curr_exp) {

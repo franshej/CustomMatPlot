@@ -185,12 +185,15 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
       std::size_t i = 0u;
       for (auto& graph_line : m_graph_lines) {
         if (!graph_line) {
-          graph_line = getGraphLine();
-          graph_line->setID(i);
-          graph_line->setLookAndFeel(m_lookandfeel);
-          addAndMakeVisible(graph_line.get());
-          graph_line->setBounds(m_graph_area);
-          i++;
+          if (auto lnf = dynamic_cast<LookAndFeelMethods*>(m_lookandfeel)) {
+            graph_line = getGraphLine();
+            graph_line->setID(i);
+            graph_line->setLookAndFeel(m_lookandfeel);
+            const auto graph_area = lnf->getGraphBounds(getBounds());
+            graph_line->setBounds(graph_area);
+            addAndMakeVisible(graph_line.get());
+            i++;
+          }
         }
       }
     }

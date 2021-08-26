@@ -13,10 +13,13 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
-#include "spl_utils.h";
+
 #include "spl_graph_line.h"
+#include "spl_utils.h";
 
 namespace scp {
+
+typedef uint32_t Scaling;
 class LookAndFeelMethodsBase;
 
 typedef std::vector<std::unique_ptr<scp::GraphLine>> GridLines;
@@ -214,8 +217,8 @@ struct BaseGrid : juce::Component {
    */
   virtual void createGrid(std::vector<float>& x_ticks,
                           std::vector<float>& y_ticks,
-                          scp::scaling& vertical_scaling,
-                          scp::scaling& horizontal_scaling) = 0;
+                          Scaling& vertical_scaling,
+                          Scaling& horizontal_scaling) = 0;
 
   void createLabels();
 
@@ -259,9 +262,8 @@ struct Grid : BaseGrid {
 
  private:
   void createGrid(std::vector<float>& x_positions,
-                  std::vector<float>& y_positions,
-                  scp::scaling& vertical_scaling,
-                  scp::scaling& horizontal_scaling) override;
+                  std::vector<float>& y_positions, Scaling& vertical_scaling,
+                  Scaling& horizontal_scaling) override;
 
   void prepareGridContainers(GridLines& vertical_grid_lines,
                              GridLines& horizontal_grid_lines,
@@ -285,9 +287,8 @@ struct SemiLogXGrid : BaseGrid {
 
  private:
   void createGrid(std::vector<float>& x_positions,
-                  std::vector<float>& y_positions,
-                  scp::scaling& vertical_scaling,
-                  scp::scaling& horizontal_scaling) override;
+                  std::vector<float>& y_positions, Scaling& vertical_scaling,
+                  Scaling& horizontal_scaling) override;
   void prepareGridContainers(GridLines& vertical_grid_lines,
                              GridLines& horizontal_grid_lines,
                              const bool& tiny_grid_ons) override;

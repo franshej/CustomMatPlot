@@ -39,6 +39,8 @@ struct Plot : juce::Component {
     GridLine   /**< GridLine used for the grids.*/
   };
 
+  enum Scaling : uint32_t { linear, logarithmic };
+
   class LookAndFeelMethods : public LookAndFeelMethodsBase {
    public:
     virtual ~LookAndFeelMethods(){};
@@ -53,6 +55,10 @@ struct Plot : juce::Component {
 
     virtual ColourIdsGraph getColourFromGraphID(
         const std::size_t graph_id) const = 0;
+
+    void updateXGraphPoints(std::vector<juce::Point<float>> &graph_points) {
+
+    }
 
     /*
         virtual void drawBackground(juce::Graphics &g,
@@ -114,7 +120,6 @@ struct Plot : juce::Component {
   juce::LookAndFeel* m_lookandfeel;
   std::unique_ptr<PlotLookAndFeel> m_lookandfeel_default;
 
-  juce::Rectangle<int> m_graph_area, m_plot_area;
   std::vector<std::vector<float>> m_y_data, m_x_data;
 
   float m_horizontal_margin, m_vertical_margin = 0.1f;

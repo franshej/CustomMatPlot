@@ -4,10 +4,6 @@ namespace scp {
 
 /*============================================================================*/
 
-enum struct scaling { linear, logarithmic };
-
-/*============================================================================*/
-
 template <class T>
 struct Lim {
   T min;
@@ -62,7 +58,7 @@ class ParamBase {
 template <class T>
 class ExplicitBoolOperator : public ParamBase<T> {
  public:
-  constexpr explicit operator bool() const { return m_is_set; }
+  constexpr explicit operator bool() const noexcept { return m_is_set; }
 };
 
 template <class T>
