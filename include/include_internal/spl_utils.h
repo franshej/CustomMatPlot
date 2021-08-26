@@ -1,16 +1,9 @@
 #pragma once
 
 namespace scp {
-
 /*============================================================================*/
 
-template <class T>
-struct Lim {
-  T min;
-  T max;
-};
-
-typedef Lim<float> Lim_f;
+class LookAndFeelMethodsBase;
 
 /*============================================================================*/
 

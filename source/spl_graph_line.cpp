@@ -1,8 +1,7 @@
-#include "spl_graph_line.h"
-
 #include <stdexcept>
 
 #include "spl_plot.h"
+#include "spl_graph_line.h"
 
 namespace scp {
 GraphLine::GraphLine()

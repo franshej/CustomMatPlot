@@ -3,11 +3,10 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "spl_utils.h"
+#include "scp_datamodels.h"
 
 namespace scp {
-typedef std::vector<juce::Point<float>> GraphPoints;
 typedef uint32_t GraphType;
-
 class LookAndFeelMethodsBase;
 
 struct GraphLine : juce::Component {

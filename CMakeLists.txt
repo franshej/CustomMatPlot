@@ -17,7 +17,8 @@ set(INTERNAL_HEADERS include/include_internal/spl_graph_line.h
                      include/include_internal/spl_utils.h)
 
 set(PUBLIC_HEADERS include/include/spl_plot.h
-                   include/include/scp_lookandfeel.h)
+                   include/include/scp_lookandfeel.h
+                   include/include/scp_datamodels.h)
 
 add_library(${PROJECT_NAME}
             STATIC
@@ -26,7 +27,7 @@ add_library(${PROJECT_NAME}
             ${PUBLIC_HEADERS})
 
 target_include_directories(${PROJECT_NAME} PUBLIC "include/include"
-                                           PUBLIC "include/include_internal")
+                                           PRIVATE "include/include_internal")
 
 target_link_libraries(spl_plot
                       juce::juce_gui_basics)

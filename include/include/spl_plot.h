@@ -2,14 +2,9 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "spl_graph_line.h"
-#include "spl_grid.h"
-#include "spl_label.h"
+#include "scp_datamodels.h"
 
 namespace scp {
-class LookAndFeelMethodsBase {};
-class PlotLookAndFeel;
-
 struct Plot : juce::Component {
  public:
   enum ColourIds {
@@ -56,9 +51,9 @@ struct Plot : juce::Component {
     virtual ColourIdsGraph getColourFromGraphID(
         const std::size_t graph_id) const = 0;
 
-    void updateXGraphPoints(std::vector<juce::Point<float>> &graph_points) {
-
-    }
+    virtual void updateXGraphPoints(
+        const juce::Rectangle<int>& bounds, const Scaling scaling,
+        const Lim_f& lim, std::vector<juce::Point<float>>& graph_points) = 0;
 
     /*
         virtual void drawBackground(juce::Graphics &g,
@@ -131,9 +126,7 @@ struct LinearPlot : Plot {
 
   std::unique_ptr<scp::GraphLine> getGraphLine() override;
 
-  std::unique_ptr<BaseGrid> getGrid() override {
-    return std::move(std::make_unique<Grid>());
-  }
+  std::unique_ptr<BaseGrid> getGrid() override;
 };
 
 struct SemiPlotX : Plot {
@@ -142,9 +135,7 @@ struct SemiPlotX : Plot {
 
   std::unique_ptr<scp::GraphLine> getGraphLine() override;
 
-  std::unique_ptr<BaseGrid> getGrid() override {
-    return std::move(std::make_unique<SemiLogXGrid>());
-  }
+  std::unique_ptr<BaseGrid> getGrid() override;
 };
 
 }  // namespace scp

@@ -1,10 +1,9 @@
-#include "spl_grid.h"
-
 #include <stdexcept>
 #include <tuple>
 
-#include "spl_graph_line.h"
 #include "spl_plot.h"
+#include "spl_grid.h"
+#include "spl_graph_line.h"
 
 /*============================================================================*/
 

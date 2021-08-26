@@ -57,13 +57,12 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     return GraphColours[graph_id % GraphColours.size()];
   }
 
-  void updateXGraphPoints() {
+  void updateXGraphPoints(
+      const juce::Rectangle<int>& bounds, const Plot::Scaling scaling,
+      const Lim_f& lim,
+      std::vector<juce::Point<float>>& graph_points) override {}
 
-  }
-
-  void updateYGraphPoints() {
-
-  }
+  void updateYGraphPoints() {}
 
   void drawGraphLine(juce::Graphics& g,
                      const std::vector<juce::Point<float>>& graph_points,

@@ -1,5 +1,6 @@
 #include "spl_label.h"
 
+namespace scp {
 PlotLabel::PlotLabel() : m_params(createDefaultGraphicParams()) {
   m_xlabel.setFont(m_params.font);
   m_ylabel.setFont(m_params.font);
@@ -89,3 +90,4 @@ void PlotLabel::setGraphArea(const juce::Rectangle<int> &grid_area) {
 };
 
 void PlotLabel::paint(juce::Graphics &g) {}
+}  // namespace spc

@@ -1,5 +1,9 @@
 #include <stdexcept>
+
 #include "scp_lookandfeel.h"
+#include "spl_label.h"
+#include "spl_grid.h"
+#include "spl_graph_line.h"
 
 namespace scp {
 
@@ -253,6 +257,16 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
 }
 
 SemiPlotX::SemiPlotX() { initialize(); }
+
+std::unique_ptr<BaseGrid> LinearPlot::getGrid()
+{
+    return std::move(std::make_unique<Grid>());
+}
+
+std::unique_ptr<BaseGrid> SemiPlotX::getGrid()
+{
+    return std::move(std::make_unique<SemiLogXGrid>());
+}
 
 LinearPlot::LinearPlot() { initialize(); }
 

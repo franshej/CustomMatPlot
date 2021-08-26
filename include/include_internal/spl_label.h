@@ -16,6 +16,7 @@
 
 #include "spl_utils.h"
 
+namespace scp {
 /**
  * A Parameter struct
  * Containing graphic parameters for the front and the margins from the graph
@@ -116,3 +117,4 @@ class PlotLabel : public juce::Component {
   juce::Label m_xlabel, m_ylabel, m_title;
   juce::Rectangle<int> m_graph_area;
 };
+}  // namespace scp

@@ -14,15 +14,12 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "spl_graph_line.h"
+#include "scp_datamodels.h"
 #include "spl_utils.h";
 
 namespace scp {
 
 typedef uint32_t Scaling;
-class LookAndFeelMethodsBase;
-
-typedef std::vector<std::unique_ptr<scp::GraphLine>> GridLines;
 
 /**
  * A Parameter struct
@@ -193,7 +190,7 @@ struct BaseGrid : juce::Component {
    *
    *  Pure virtual function.
    *  The idea is to use this function to clear and reserve the grid containers
-   *   before they are being populated.
+   *  before they are being populated.
    *
    *  @param vertical_grid_lines vertical grids to be cleared and reserved.
    *  @param horizontal_grid_lines horizontal grids to be cleared and reserved.
