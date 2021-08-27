@@ -81,7 +81,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
       if (!dashed_lengths.empty()) {
         p_type.createDashedStroke(graph_path, graph_path, dashed_lengths.data(),
-                                  dashed_lengths.size());
+                                  int(dashed_lengths.size()));
       }
       switch (graph_type) {
         case scp::Plot::GraphType::GraphLine:

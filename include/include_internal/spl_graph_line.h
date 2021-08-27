@@ -9,7 +9,7 @@ namespace scp {
 typedef uint32_t GraphType;
 class LookAndFeelMethodsBase;
 
-struct GraphLine : juce::Component {
+class GraphLine : public juce::Component {
  public:
   GraphLine();
   GraphLine(const GraphType graph_type);

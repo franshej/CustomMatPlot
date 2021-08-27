@@ -81,7 +81,7 @@ struct GridConfigParams {
  *
  */
 
-struct BaseGrid : juce::Component {
+class BaseGrid : public juce::Component {
  public:
   BaseGrid(const GridGraphicParams& params);
   BaseGrid();

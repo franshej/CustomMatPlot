@@ -51,7 +51,7 @@ Plot::~Plot() {
   }
 }
 
-void Plot::updateYLim(const float& min, const float& max) {
+void Plot::updateYLim(const float min, const float max) {
   for (auto& graph_line : m_graph_lines) {
     graph_line->setYLim(min, max);
   }
@@ -60,7 +60,7 @@ void Plot::updateYLim(const float& min, const float& max) {
   }
 }
 
-void Plot::updateXLim(const float& min, const float& max) {
+void Plot::updateXLim(const float min, const float max) {
   for (auto& graph_line : m_graph_lines) {
     graph_line->setXLim(min, max);
   }
@@ -88,12 +88,12 @@ void Plot::setAutoYScale() {
   updateYLim(min, max);
 }
 
-void Plot::xLim(const float& min, const float& max) {
+void Plot::xLim(const float min, const float max) {
   updateXLim(min, max);
   m_x_autoscale = false;
 }
 
-void Plot::yLim(const float& min, const float& max) {
+void Plot::yLim(const float min, const float max) {
   updateYLim(min, max);
   m_y_autoscale = false;
 }

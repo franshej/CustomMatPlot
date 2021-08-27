@@ -67,8 +67,8 @@ struct Plot : juce::Component {
 
   ~Plot();
 
-  void xLim(const float& min, const float& max);
-  void yLim(const float& min, const float& max);
+  void xLim(const float min, const float max);
+  void yLim(const float min, const float max);
 
   void updateYData(const std::vector<std::vector<float>>& y_data);
   void updateXData(const std::vector<std::vector<float>>& x_data);
@@ -100,8 +100,8 @@ struct Plot : juce::Component {
   void setAutoXScale();
   void setAutoYScale();
 
-  void updateYLim(const float& min, const float& max);
-  void updateXLim(const float& min, const float& max);
+  void updateYLim(const float min, const float max);
+  void updateXLim(const float min, const float max);
 
   virtual std::unique_ptr<scp::GraphLine> getGraphLine() = 0;
   virtual std::unique_ptr<BaseGrid> getGrid() = 0;
