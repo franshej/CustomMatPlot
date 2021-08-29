@@ -155,8 +155,8 @@ void Plot::resized() {
     m_plot_label->setGraphArea(graph_area);
 
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->calculateYData();
-      graph_line->calculateXData();
+      graph_line->updateYGraphPoints();
+      graph_line->updateXGraphPoints();
     }
   }
 }

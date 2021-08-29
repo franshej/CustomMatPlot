@@ -33,21 +33,21 @@ class GraphLine : public juce::Component {
   void paint(juce::Graphics& g) override;
   void lookAndFeelChanged() override;
 
-  void calculateYData();
-  void calculateXData();
+  void updateYGraphPoints();
+  void updateXGraphPoints();
 
  private:
   juce::Colour getGraphColourFromIndex(const std::size_t index);
 
   std::vector<float> m_dashed_lengths;
-  LookAndFeelMethodsBase* m_lookandfeel{nullptr};
   GraphType m_graph_type;
   std::size_t m_id;
 
-  virtual void calculateYDataIntern(GraphPoints& graph_points) noexcept = 0;
-  virtual void calculateXDataIntern(GraphPoints& graph_points) noexcept = 0;
+  virtual void updateYGraphPointsIntern() noexcept = 0;
+  virtual void updateXGraphPointsIntern() noexcept = 0;
 
  protected:
+  LookAndFeelMethodsBase* m_lookandfeel{nullptr};
   scp::ParamVal<scp::Lim_f> m_x_lim, m_y_lim;
 
   std::vector<float> m_x_data, m_y_data;
@@ -59,8 +59,8 @@ struct LinearGraphLine : public GraphLine {
   using GraphLine::GraphLine;
 
  private:
-  void calculateYDataIntern(GraphPoints& graph_points) noexcept override;
-  void calculateXDataIntern(GraphPoints& graph_points) noexcept override;
+  void updateYGraphPointsIntern() noexcept override;
+  void updateXGraphPointsIntern() noexcept override;
 };
 
 struct LogXGraphLine : public GraphLine {
@@ -68,7 +68,7 @@ struct LogXGraphLine : public GraphLine {
   using GraphLine::GraphLine;
 
  private:
-  void calculateYDataIntern(GraphPoints& graph_points) noexcept override;
-  void calculateXDataIntern(GraphPoints& graph_points) noexcept override;
+  void updateYGraphPointsIntern() noexcept override;
+  void updateXGraphPointsIntern() noexcept override;
 };
 }  // namespace scp

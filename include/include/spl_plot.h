@@ -51,9 +51,16 @@ struct Plot : juce::Component {
     virtual ColourIdsGraph getColourFromGraphID(
         const std::size_t graph_id) const = 0;
 
-    virtual void updateXGraphPoints(
-        const juce::Rectangle<int>& bounds, const Scaling scaling,
-        const Lim_f& lim, std::vector<juce::Point<float>>& graph_points) = 0;
+    virtual void updateXGraphPoints(const juce::Rectangle<int>& bounds,
+                                    const Scaling scaling, const Lim_f& lim,
+                                    const std::vector<float>& x_data,
+                                    GraphPoints& graph_points) noexcept = 0;
+
+    virtual void updateYGraphPoints(const juce::Rectangle<int>& bounds,
+                                    const Plot::Scaling scaling,
+                                    const Lim_f& y_lim,
+                                    const std::vector<float>& y_data,
+                                    GraphPoints& graph_points) noexcept = 0;
 
     /*
         virtual void drawBackground(juce::Graphics &g,

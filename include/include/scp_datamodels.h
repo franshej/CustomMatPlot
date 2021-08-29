@@ -2,6 +2,7 @@
 
 namespace scp {
 /*============================================================================*/
+
 class PlotLookAndFeel;
 class PlotLabel;
 class BaseGrid;

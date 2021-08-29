@@ -251,15 +251,15 @@ void BaseGrid::resized() {
 
   for (const auto &grid : m_vertical_grid_lines) {
     if (grid) {
-      grid->calculateXData();
-      grid->calculateYData();
+      grid->updateXGraphPoints();
+      grid->updateYGraphPoints();
     }
   }
 
   for (const auto &grid : m_horizontal_grid_lines) {
     if (grid) {
-      grid->calculateXData();
-      grid->calculateYData();
+      grid->updateXGraphPoints();
+      grid->updateYGraphPoints();
     }
   }
 

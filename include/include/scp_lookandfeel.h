@@ -1,7 +1,7 @@
 #pragma once
 
 #include "spl_plot.h"
-#include "spl_utils.h"
+#include "scp_datamodels.h"
 
 namespace scp {
 class PlotLookAndFeel : public juce::LookAndFeel_V3,
@@ -59,10 +59,81 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void updateXGraphPoints(
       const juce::Rectangle<int>& bounds, const Plot::Scaling scaling,
-      const Lim_f& lim,
-      std::vector<juce::Point<float>>& graph_points) override {}
+      const Lim_f& x_lim, const std::vector<float>& x_data,
+      GraphPoints& graph_points) noexcept override {
 
-  void updateYGraphPoints() {}
+    const auto addXGraphPointsLinear =
+        [&]() {
+          const auto x_scale =
+              static_cast<float>(bounds.getWidth()) / (x_lim.max - x_lim.min);
+          const auto offset_x = static_cast<float>(-(x_lim.min * x_scale));
+
+          std::size_t i = 0u;
+          for (const auto& x : x_data) {
+        graph_points[i].setX(offset_x + (x * x_scale));
+        i++;
+      }
+    };
+
+    const auto addXGraphPointsLogarithmic = [&]() {
+      const auto width = static_cast<float>(bounds.getWidth());
+
+      auto xToXPos = [&](const float x) {
+        return width * (log(x / x_lim.min) / log(x_lim.max / x_lim.min));
+      };
+
+      std::size_t i = 0u;
+      for (const auto& x : x_data) {
+        if (x < x_lim.max) {
+          graph_points[i].setX(xToXPos(x));
+          i++;
+        }
+      }
+    };
+
+    switch (scaling) {
+      case Plot::Scaling::linear:
+        addXGraphPointsLinear();
+        break;
+      case Plot::Scaling::logarithmic:
+        addXGraphPointsLogarithmic();
+        break;
+      default:
+        addXGraphPointsLinear();
+        break;
+    };
+  }
+
+  void updateYGraphPoints(const juce::Rectangle<int>& bounds,
+                          const Plot::Scaling scaling, const Lim_f& y_lim,
+                          const std::vector<float>& y_data,
+                          GraphPoints& graph_points) noexcept override {
+    const auto addYGraphPointsLinear = [&]() {
+      const auto y_scale =
+          static_cast<float>(bounds.getHeight()) / (y_lim.max - y_lim.min);
+      const auto y_offset = y_lim.min;
+
+      const auto offset_y = float(bounds.getHeight()) + (y_offset * y_scale);
+
+      std::size_t i = 0u;
+      for (const auto& y : y_data) {
+        graph_points[i].setY(offset_y - (y * y_scale));
+        i++;
+      }
+    };
+
+    switch (scaling) {
+      case Plot::Scaling::linear:
+        addYGraphPointsLinear();
+        break;
+      case Plot::Scaling::logarithmic:
+        jassert("Log scale for y axis is not implemented.");
+        break;
+      default:
+        addYGraphPointsLinear();
+        break;
+    };
+  }
 
   void drawGraphLine(juce::Graphics& g,
                      const std::vector<juce::Point<float>>& graph_points,
