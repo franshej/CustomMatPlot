@@ -1,9 +1,11 @@
+#include "spl_grid.h"
+
 #include <stdexcept>
 #include <tuple>
 
-#include "spl_plot.h"
-#include "spl_grid.h"
 #include "spl_graph_line.h"
+#include "spl_plot.h"
+#include "spl_utils.h"
 
 /*============================================================================*/
 
@@ -198,22 +200,11 @@ void BaseGrid::setXLabels(const std::vector<std::string> &x_labels) {
 }
 
 void BaseGrid::resized() {
-  if (!m_config_params.x_lim) {
-    jassert("x limit must be set. Use 'SetXLim'");
-    return;
-  }
-
-  if (!m_config_params.y_lim) {
-    jassert("y limit must be set. Use 'setYLim'");
-    return;
-  }
-
-  if (!m_config_params.grid_area) {
-    jassert(
-        "Make sure that the grid_area is set. Use "
-        "'setGridBounds'");
-    return;
-  }
+  jassert_return(m_config_params.x_lim, "x limit must be set. Use 'SetXLim'");
+  jassert_return(m_config_params.y_lim, "y limit must be set. Use 'setYLim'");
+  // jassert_return(m_config_params.grid_area,
+  //               "Make sure that the grid_area is set. Use "
+  //               "'setGridBounds'");
 
   m_frame =
       std::make_unique<scp::FrameComponent>(m_graphic_params.frame_colour);
@@ -242,7 +233,7 @@ void BaseGrid::resized() {
   for (const auto y_val : y_ticks) {
     if (horizontal_scaling == Plot::Scaling::logarithmic) {
       // TODO: add logscale for y-values.
-      jassert("'LogYGraphLine' is not implemented.");
+      jassert(false, "'LogYGraphLine' is not implemented.");
     } else
       addGridLineHorizontal<scp::LinearGraphLine>(y_val);
   }
@@ -407,7 +398,8 @@ void Grid::createGrid(std::vector<float> &x_positions,
   const auto [x, y, width, height] =
       scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
-  if (!(width > 0.f && height > 0.f)) return;
+  jassert_return(width > 0.f && height > 0.f,
+                 "width and height must be larger than zero.");
 
   vertical_scaling = Plot::Scaling::linear;
   horizontal_scaling = Plot::Scaling::linear;

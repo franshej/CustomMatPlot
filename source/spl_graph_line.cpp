@@ -122,10 +122,6 @@ void GraphLine::updateYGraphPoints() {
     updateYGraphPointsIntern();
 }
 
-juce::Colour GraphLine::getGraphColourFromIndex(const std::size_t index) {
-  return juce::Colour();
-}
-
 void LinearGraphLine::updateXGraphPointsIntern() noexcept {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);

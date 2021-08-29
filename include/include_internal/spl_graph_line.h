@@ -17,8 +17,10 @@ class GraphLine : public juce::Component {
 
   void setXLim(const float min, const float max);
   void setYLim(const float min, const float max);
+
   void setYValues(const std::vector<float>& y_values) noexcept;
   void setXValues(const std::vector<float>& x_values) noexcept;
+
   void setID(const std::size_t id) noexcept;
   std::size_t getID() const noexcept;
 
@@ -37,8 +39,6 @@ class GraphLine : public juce::Component {
   void updateXGraphPoints();
 
  private:
-  juce::Colour getGraphColourFromIndex(const std::size_t index);
-
   std::vector<float> m_dashed_lengths;
   GraphType m_graph_type;
   std::size_t m_id;

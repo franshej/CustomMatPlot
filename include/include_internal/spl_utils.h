@@ -89,3 +89,11 @@ class ParamVal
   }
 };
 }  // namespace scp
+
+/*============================================================================*/
+
+#define jassert_return(expression, help_text) \
+  jassert(expression);                        \
+  if (!expression) return;
+
+/*============================================================================*/
