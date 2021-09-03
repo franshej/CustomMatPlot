@@ -1,7 +1,6 @@
 #pragma once
 
 #include "spl_plot.h"
-#include "scp_datamodels.h"
 
 namespace scp {
 class PlotLookAndFeel : public juce::LookAndFeel_V3,
@@ -57,19 +56,52 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     return GraphColours[graph_id % GraphColours.size()];
   }
 
-  void updateXGraphPoints(
-      const juce::Rectangle<int>& bounds, const Plot::Scaling scaling,
-      const Lim_f& x_lim, const std::vector<float>& x_data,
-      GraphPoints& graph_points) noexcept override {
+  void drawGraphLine(juce::Graphics& g,
+                     const std::vector<juce::Point<float>>& graph_points,
+                     const std::vector<float>& dashed_lengths,
+                     const Plot::GraphType graph_type,
+                     const std::size_t graph_id) override {
+    juce::Path graph_path;
+    juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
+                                juce::PathStrokeType::EndCapStyle::rounded);
 
-    const auto addXGraphPointsLinear =
-        [&]() {
-          const auto x_scale =
-              static_cast<float>(bounds.getWidth()) / (x_lim.max - x_lim.min);
-          const auto offset_x = static_cast<float>(-(x_lim.min * x_scale));
+    if (graph_points.size() > 1) {
+      graph_path.startNewSubPath(graph_points[0]);
+      std::for_each(
+          graph_points.begin() + 1, graph_points.end(),
+          [&](const juce::Point<float>& point) { graph_path.lineTo(point); });
 
-          std::size_t i = 0u;
-          for (const auto& x : x_data) {
+      if (!dashed_lengths.empty()) {
+        p_type.createDashedStroke(graph_path, graph_path, dashed_lengths.data(),
+                                  int(dashed_lengths.size()));
+      }
+      switch (graph_type) {
+        case scp::Plot::GraphType::GraphLine:
+          g.setColour(findColour(getColourFromGraphID(graph_id)));
+          break;
+        case scp::Plot::GraphType::GridLine:
+          g.setColour(findColour(scp::Plot::ColourIds::grid_colour));
+          break;
+        default:
+          g.setColour(juce::Colours::pink);
+          break;
+      }
+
+      g.strokePath(graph_path, p_type);
+    }
+  }
+
+  void updateXGraphPoints(const juce::Rectangle<int>& bounds,
+                          const Plot::Scaling scaling, const Lim_f& x_lim,
+                          const std::vector<float>& x_data,
+                          GraphPoints& graph_points) noexcept override {
+    const auto addXGraphPointsLinear = [&]() {
+      const auto x_scale =
+          static_cast<float>(bounds.getWidth()) / (x_lim.max - x_lim.min);
+      const auto offset_x = static_cast<float>(-(x_lim.min * x_scale));
+
+      std::size_t i = 0u;
+      for (const auto& x : x_data) {
         graph_points[i].setX(offset_x + (x * x_scale));
         i++;
       }
@@ -127,7 +159,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
         addYGraphPointsLinear();
         break;
       case Plot::Scaling::logarithmic:
-        jassert("Log scale for y axis is not implemented.");
+        jassert_return(false, "Log scale for y axis is not implemented.");
         break;
       default:
         addYGraphPointsLinear();
@@ -135,40 +167,106 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
   }
 
-  void drawGraphLine(juce::Graphics& g,
-                     const std::vector<juce::Point<float>>& graph_points,
-                     const std::vector<float>& dashed_lengths,
-                     const scp::Plot::GraphType graph_type,
-                     const std::size_t graph_id) override {
-    juce::Path graph_path;
-    juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
-                                juce::PathStrokeType::EndCapStyle::rounded);
+  void addVerticalGridLineTicksAuto(const juce::Rectangle<int>& bounds,
+                                    const Plot::Scaling vertical_scaling,
+                                    std::vector<float>& x_ticks,
+                                    Lim_f x_lim) noexcept override {
+    x_ticks.clear();
 
-    if (graph_points.size() > 1) {
-      graph_path.startNewSubPath(graph_points[0]);
-      std::for_each(
-          graph_points.begin() + 1, graph_points.end(),
-          [&](const juce::Point<float>& point) { graph_path.lineTo(point); });
+    const auto width = bounds.getWidth();
+    const auto height = bounds.getHeight();
 
-      if (!dashed_lengths.empty()) {
-        p_type.createDashedStroke(graph_path, graph_path, dashed_lengths.data(),
-                                  int(dashed_lengths.size()));
+    const auto addVerticalTicksLinear = [&]() {
+      auto num_vertical_lines = 3u;
+      if (width > 435u) {
+        num_vertical_lines = 11u;
+      } else if (width <= 435u && width > 175u) {
+        num_vertical_lines = 5u;
       }
-      switch (graph_type) {
-        case scp::Plot::GraphType::GraphLine:
-          g.setColour(findColour(getColourFromGraphID(graph_id)));
-          break;
-        case scp::Plot::GraphType::GridLine:
-          g.setColour(findColour(scp::Plot::ColourIds::grid_colour));
-          break;
-        default:
-          g.setColour(juce::Colours::pink);
-          break;
+      // Create the vertical lines
+      auto x_diff = (x_lim.max - x_lim.min) / float(num_vertical_lines);
+      for (std::size_t i = 0; i != num_vertical_lines + 1u; ++i) {
+        const auto x_pos = x_lim.min + float(i) * x_diff;
+        x_ticks.push_back(x_pos);
+      }
+    };
+
+    const auto addVerticalTicksLogarithmic = [&]() {
+      auto num_lines_per_power = 3u;
+      if (width > 435u) {
+        num_lines_per_power = 10u;
+      } else if (width <= 435u && width > 175u) {
+        num_lines_per_power = 5u;
       }
 
-      g.strokePath(graph_path, p_type);
+      const auto min_power = std::floor(log10(x_lim.min));
+      const auto max_power = std::ceil(log10(x_lim.max));
+
+      const auto power_diff = ceil(abs(max_power) - abs(min_power));
+
+      // Frist create the vertical lines
+      for (float curr_power = min_power; curr_power < max_power; ++curr_power) {
+        const auto curr_x_pos_base = pow(10.f, curr_power);
+
+        const auto x_diff = pow(10.f, curr_power + 1.f) /
+                            static_cast<float>(num_lines_per_power);
+        for (float line = 0; line < num_lines_per_power; ++line) {
+          const auto x_tick = curr_x_pos_base + line * x_diff;
+          x_ticks.push_back(x_tick);
+        }
+      }
+    };
+
+    switch (vertical_scaling) {
+      case Plot::Scaling::linear:
+        addVerticalTicksLinear();
+        break;
+      case Plot::Scaling::logarithmic:
+        addVerticalTicksLogarithmic();
+        break;
+      default:
+        addVerticalTicksLinear();
+        break;
     }
   }
-};
 
+  void addHorizontalGridLineTicksAuto(const juce::Rectangle<int>& bounds,
+                                      const Plot::Scaling hotizontal_scaling,
+                                      std::vector<float>& y_ticks,
+                                      Lim_f y_lim) noexcept override {
+    y_ticks.clear();
+
+    const auto width = bounds.getWidth();
+    const auto height = bounds.getHeight();
+
+    const auto addHorizontalTicksLinear = [&]() {
+      auto num_horizontal_lines = 3u;
+      if (height > 375u) {
+        num_horizontal_lines = 11u;
+      } else if (height <= 375u && height > 135u) {
+        num_horizontal_lines = 5u;
+      }
+
+      // Then create the horizontal lines
+      auto y_diff = (y_lim.max - y_lim.min) / float(num_horizontal_lines);
+      for (std::size_t i = 0u; i != num_horizontal_lines + 1u; ++i) {
+        const auto y_pos = y_lim.min + float(i) * y_diff;
+        y_ticks.push_back(y_pos);
+      }
+    };
+
+    switch (hotizontal_scaling) {
+      case Plot::Scaling::linear:
+        addHorizontalTicksLinear();
+        break;
+      case Plot::Scaling::logarithmic:
+        jassert_return(false, "Not implmeneted yet.");
+        break;
+      default:
+        addHorizontalTicksLinear();
+        break;
+    }
+  }
+
+};  // class PlotLookAndFeel
 };  // namespace scp

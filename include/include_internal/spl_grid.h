@@ -186,35 +186,22 @@ class BaseGrid : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
-  /** @brief Clear and reserve the vectors containing the actual grids
+  /** @brief Populate the x and y ticks
    *
-   *  Pure virtual function.
-   *  The idea is to use this function to clear and reserve the grid containers
-   *  before they are being populated.
-   *
-   *  @param vertical_grid_lines vertical grids to be cleared and reserved.
-   *  @param horizontal_grid_lines horizontal grids to be cleared and reserved.
-   *  @param tiny_grid_on use this flag to reverse more grids in the container.
-   *  @return void.
-   */
-  virtual void prepareGridContainers(GridLines& vertical_grid_lines,
-                                     GridLines& horizontal_grid_lines,
-                                     const bool& tiny_grid_on) = 0;
-  /** @brief Construct the grid
-   *
-   *  Pure virtual function.
-   *  The idea is to use this function to populate the x_ticks & y_ticks and
-   *  choose the scaling of the x and y axis.
+   *  The idea is to use this function to populate the x_ticks & y_ticks.
    *
    *  @param x_ticks x-ticks to be populated.
    *  @param y_ticks y-ticks to be populated.
-   *  @param vertical_scaling set the scaling of the vertical axis.
-   *  @param horizontal_scaling set the scaling of the horizontal axis.
+   *  @param vertical_scaling the scaling of the vertical axis.
+   *  @param horizontal_scaling the scaling of the horizontal axis.
    *  @return void.
    */
-  virtual void createGrid(std::vector<float>& x_ticks,
-                          std::vector<float>& y_ticks,
-                          Scaling& vertical_scaling,
+  void createAutoGridTicks(std::vector<float>& x_ticks,
+                           std::vector<float>& y_ticks,
+                           Scaling vertical_scaling,
+                           Scaling horizontal_scaling);
+
+  virtual void setScaling(Scaling& vertical_scaling,
                           Scaling& horizontal_scaling) = 0;
 
   void createLabels();
@@ -235,9 +222,8 @@ class BaseGrid : public juce::Component {
   GridGraphicParams m_graphic_params;
   std::unique_ptr<scp::FrameComponent> m_frame;
 
-  LookAndFeelMethodsBase* m_lookandfeel;
-
  protected:
+  LookAndFeelMethodsBase* m_lookandfeel;
   GridConfigParams m_config_params;
 
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_labels,
@@ -258,13 +244,9 @@ struct Grid : BaseGrid {
   using BaseGrid::BaseGrid;
 
  private:
-  void createGrid(std::vector<float>& x_positions,
-                  std::vector<float>& y_positions, Scaling& vertical_scaling,
+  void setScaling(Scaling& vertical_scaling,
                   Scaling& horizontal_scaling) override;
 
-  void prepareGridContainers(GridLines& vertical_grid_lines,
-                             GridLines& horizontal_grid_lines,
-                             const bool& tiny_grid_on) override;
   unsigned m_num_vertical_lines, m_num_horizontal_lines;
 };
 
@@ -283,12 +265,8 @@ struct SemiLogXGrid : BaseGrid {
   using BaseGrid::BaseGrid;
 
  private:
-  void createGrid(std::vector<float>& x_positions,
-                  std::vector<float>& y_positions, Scaling& vertical_scaling,
+  void setScaling(Scaling& vertical_scaling,
                   Scaling& horizontal_scaling) override;
-  void prepareGridContainers(GridLines& vertical_grid_lines,
-                             GridLines& horizontal_grid_lines,
-                             const bool& tiny_grid_ons) override;
 
   float m_min_exp, m_max_exp, m_exp_diff;
   int m_num_lines_exp;

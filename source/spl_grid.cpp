@@ -202,26 +202,39 @@ void BaseGrid::setXLabels(const std::vector<std::string> &x_labels) {
 void BaseGrid::resized() {
   jassert_return(m_config_params.x_lim, "x limit must be set. Use 'SetXLim'");
   jassert_return(m_config_params.y_lim, "y limit must be set. Use 'setYLim'");
-  // jassert_return(m_config_params.grid_area,
-  //               "Make sure that the grid_area is set. Use "
-  //               "'setGridBounds'");
+  jassert_return(getBounds().getWidth() > 0 && getBounds().getHeight() > 0.f,
+                 "width and height must be larger than zero.");
+
+  // Temp, should be removed
+  if (m_lookandfeel) {
+    auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
+    m_config_params.grid_area = lnf->getGraphBounds(getBounds());
+  } else {
+    return;
+  }
 
   m_frame =
       std::make_unique<scp::FrameComponent>(m_graphic_params.frame_colour);
   m_frame->setBounds(m_config_params.grid_area);
   addAndMakeVisible(m_frame.get(), -1);
 
-  prepareGridContainers(m_vertical_grid_lines, m_horizontal_grid_lines,
-                        m_config_params.tiny_grid_on);
-
   std::vector<float> x_auto_ticks, y_auto_ticks;
-  Scaling vertical_scaling, horizontal_scaling;
-  createGrid(x_auto_ticks, y_auto_ticks, vertical_scaling, horizontal_scaling);
+  Scaling vertical_scaling{Plot::Scaling::linear},
+      horizontal_scaling{Plot::Scaling::linear};
+
+  setScaling(vertical_scaling, horizontal_scaling);
+
+  if (m_custom_x_ticks.empty() || m_custom_y_ticks.empty())
+    createAutoGridTicks(x_auto_ticks, y_auto_ticks, vertical_scaling,
+                        horizontal_scaling);
 
   const auto &x_ticks =
       m_custom_x_ticks.empty() ? x_auto_ticks : m_custom_x_ticks;
   const auto &y_ticks =
       m_custom_y_ticks.empty() ? y_auto_ticks : m_custom_y_ticks;
+
+  m_vertical_grid_lines.clear();
+  m_horizontal_grid_lines.clear();
 
   for (const auto x_val : x_ticks) {
     if (vertical_scaling == Plot::Scaling::logarithmic)
@@ -233,7 +246,7 @@ void BaseGrid::resized() {
   for (const auto y_val : y_ticks) {
     if (horizontal_scaling == Plot::Scaling::logarithmic) {
       // TODO: add logscale for y-values.
-      jassert(false, "'LogYGraphLine' is not implemented.");
+      jassert_return(false, "'LogYGraphLine' is not implemented.");
     } else
       addGridLineHorizontal<scp::LinearGraphLine>(y_val);
   }
@@ -352,159 +365,36 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
   addAndMakeVisible(GridLines, 0);
 }
 
-/*============================================================================*/
-
-void Grid::prepareGridContainers(GridLines &vertical_grid_lines,
-                                 GridLines &horizontal_grid_lines,
-                                 const bool &tiny_grid_on) {
-  const auto grid_area = juce::Rectangle<int>(m_config_params.grid_area);
-  const unsigned width = grid_area.getWidth();
-  const unsigned height = grid_area.getHeight();
-
-  m_num_vertical_lines = 3u;
-  if (width > 435u) {
-    m_num_vertical_lines = 11u;
-  } else if (width <= 435u && width > 175u) {
-    m_num_vertical_lines = 5u;
-  }
-
-  m_num_horizontal_lines = 3u;
-  if (height > 375u) {
-    m_num_horizontal_lines = 11u;
-  } else if (height <= 375u && height > 135u) {
-    m_num_horizontal_lines = 5u;
-  }
-
-  if (tiny_grid_on) {
-    m_num_vertical_lines *= 2;
-    m_num_horizontal_lines *= 2;
-  }
-
-  if (tiny_grid_on) {
-    m_num_vertical_lines *= 2;
-    m_num_horizontal_lines *= 2;
-  }
-
-  vertical_grid_lines.clear();
-  vertical_grid_lines.reserve(m_num_vertical_lines);
-
-  horizontal_grid_lines.clear();
-  horizontal_grid_lines.reserve(m_num_horizontal_lines);
-}
-
-void Grid::createGrid(std::vector<float> &x_positions,
-                      std::vector<float> &y_positions,
-                      Scaling &vertical_scaling, Scaling &horizontal_scaling) {
-  const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.grid_area);
-
-  jassert_return(width > 0.f && height > 0.f,
-                 "width and height must be larger than zero.");
-
-  vertical_scaling = Plot::Scaling::linear;
-  horizontal_scaling = Plot::Scaling::linear;
-
-  const auto x_lim = scp::Lim_f(m_config_params.x_lim);
-  const auto y_lim = scp::Lim_f(m_config_params.y_lim);
-
-  // Create the vertical lines
-  auto x_diff = (x_lim.max - x_lim.min) / float(m_num_vertical_lines);
-  for (std::size_t i = 0; i != m_num_vertical_lines + 1u; ++i) {
-    const auto x_pos = x_lim.min + float(i) * x_diff;
-    x_positions.push_back(x_pos);
-  }
-
-  // Then create the horizontal lines
-  auto y_diff = (y_lim.max - y_lim.min) / float(m_num_horizontal_lines);
-  for (std::size_t i = 0; i != m_num_horizontal_lines + 1u; ++i) {
-    const auto y_pos = y_lim.min + float(i) * y_diff;
-    y_positions.push_back(y_pos);
-  }
-}
-
-/*============================================================================*/
-
-void SemiLogXGrid::prepareGridContainers(GridLines &vertical_grid_lines,
-                                         GridLines &horizontal_grid_lines,
-                                         const bool &tiny_grid_on) {
-  const auto grid_area = juce::Rectangle<int>(m_config_params.grid_area);
-  const unsigned width = grid_area.getWidth();
-  const unsigned height = grid_area.getHeight();
-
-  m_num_horizontal_lines = 3u;
-  if (height > 375u) {
-    m_num_horizontal_lines = 11u;
-  } else if (height <= 375u && height > 135u) {
-    m_num_horizontal_lines = 5u;
-  }
-
-  m_num_lines_exp = 3u;
-  if (width > 435u) {
-    m_num_lines_exp = 10u;
-  } else if (width <= 435u && width > 175u) {
-    m_num_lines_exp = 5u;
-  }
-
-  const auto x_lim = scp::Lim_f(m_config_params.x_lim);
-  const auto y_lim = scp::Lim_f(m_config_params.y_lim);
-
-  m_min_exp = std::floor(log10(x_lim.min));
-  m_max_exp = std::ceil(log10(x_lim.max));
-
-  const auto top_out_of_sight_lines = (m_max_exp - log10(x_lim.max));
-  const auto bottom_out_of_sight_lines = log10(x_lim.min) - m_min_exp;
-  const auto num_out_of_sight_lines =
-      top_out_of_sight_lines + bottom_out_of_sight_lines;
-
-  m_exp_diff = ceil(abs(m_max_exp) - abs(m_min_exp));
-
-  m_num_vertical_lines =
-      std::size_t((m_exp_diff * m_num_lines_exp) -
-                  (num_out_of_sight_lines * m_num_lines_exp));
-
-  if (tiny_grid_on) {
-    m_num_vertical_lines *= 2;
-    m_num_lines_exp *= 2;
-    m_num_horizontal_lines *= 2;
-  }
-
-  vertical_grid_lines.clear();
-  vertical_grid_lines.reserve(m_num_vertical_lines);
-
-  horizontal_grid_lines.clear();
-  horizontal_grid_lines.reserve(m_num_horizontal_lines);
-}
-
-void SemiLogXGrid::createGrid(std::vector<float> &x_positions,
-                              std::vector<float> &y_positions,
-                              Scaling &vertical_scaling,
-                              Scaling &horizontal_scaling) {
-  const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.grid_area);
-
-  const auto x_lim = scp::Lim_f(m_config_params.x_lim);
-  const auto y_lim = scp::Lim_f(m_config_params.y_lim);
-
-  vertical_scaling = Plot::Scaling::logarithmic;
-  horizontal_scaling = Plot::Scaling::linear;
-
-  // Frist create the vertical lines
-  for (float curr_exp = m_min_exp; curr_exp < m_max_exp; ++curr_exp) {
-    const auto curr_x_pos_base = pow(10.f, curr_exp);
-
-    const auto x_diff =
-        pow(10.f, curr_exp + 1.f) / static_cast<float>(m_num_lines_exp);
-    for (float line = 0; line < m_num_lines_exp; ++line) {
-      const auto x_val = curr_x_pos_base + line * x_diff;
-      x_positions.push_back(x_val);
+void BaseGrid::createAutoGridTicks(std::vector<float> &x_ticks,
+                                   std::vector<float> &y_ticks,
+                                   Scaling vertical_scaling,
+                                   Scaling horizontal_scaling) {
+  if (m_lookandfeel) {
+    if (auto *lnf =
+            static_cast<scp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
+      lnf->addVerticalGridLineTicksAuto(
+          getBounds(), static_cast<Plot::Scaling>(vertical_scaling), x_ticks,
+          m_config_params.x_lim);
+      lnf->addHorizontalGridLineTicksAuto(
+          getBounds(), static_cast<Plot::Scaling>(horizontal_scaling), y_ticks,
+          m_config_params.y_lim);
     }
   }
-
-  // Then create the horizontal lines
-  auto y_diff = (y_lim.max - y_lim.min) / float(m_num_horizontal_lines);
-  for (std::size_t i = 0; i != std::size_t(m_num_horizontal_lines + 1u); ++i) {
-    const auto y_val = y_lim.min + float(i) * y_diff;
-    y_positions.push_back(y_val);
-  }
 }
+
+/*============================================================================*/
+
+void Grid::setScaling(Scaling &vertical_scaling, Scaling &horizontal_scaling) {
+  vertical_scaling = Plot::Scaling::linear;
+  horizontal_scaling = Plot::Scaling::linear;
+}
+
+/*============================================================================*/
+
+void SemiLogXGrid::setScaling(Scaling &vertical_scaling,
+                              Scaling &horizontal_scaling) {
+  vertical_scaling = Plot::Scaling::logarithmic;
+  horizontal_scaling = Plot::Scaling::linear;
+}
+
 }  // namespace scp

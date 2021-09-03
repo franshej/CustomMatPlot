@@ -40,6 +40,21 @@ struct Plot : juce::Component {
    public:
     virtual ~LookAndFeelMethods(){};
 
+    virtual void addVerticalGridLineTicksAuto(
+        const juce::Rectangle<int>& bounds,
+        const Plot::Scaling vertical_scaling, std::vector<float>& x_ticks,
+        Lim_f x_lim) noexcept = 0;
+
+    virtual void addHorizontalGridLineTicksAuto(
+        const juce::Rectangle<int>& bounds,
+        const Plot::Scaling hotizontal_scaling, std::vector<float>& y_ticks,
+        Lim_f y_lim) noexcept = 0;
+
+    virtual void drawGraphLine(
+        juce::Graphics& g, const std::vector<juce::Point<float>>& graph_points,
+        const std::vector<float>& dashed_length, const GraphType graph_type,
+        const std::size_t graph_id) = 0;
+
     virtual void setDefaultPlotColours() noexcept = 0;
 
     virtual juce::Rectangle<int> getPlotBounds(
@@ -66,10 +81,6 @@ struct Plot : juce::Component {
         virtual void drawBackground(juce::Graphics &g,
                                 juce::Rectangle<int> &bounds) = 0;
                                     */
-    virtual void drawGraphLine(
-        juce::Graphics& g, const std::vector<juce::Point<float>>& graph_points,
-        const std::vector<float>& dashed_length, const GraphType graph_type,
-        const std::size_t graph_id) = 0;
   };
 
   ~Plot();
