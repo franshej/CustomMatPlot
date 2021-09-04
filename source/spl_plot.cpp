@@ -30,7 +30,7 @@ static std::pair<float, float> findMinMaxValues(
   auto min_value = std::numeric_limits<float>::max();
 
   for (const auto& graph : graph_lines) {
-    const auto single_data_vector =
+    const auto &single_data_vector =
         isXValue ? graph->getXValues() : graph->getYValues();
 
     const auto& current_max =
