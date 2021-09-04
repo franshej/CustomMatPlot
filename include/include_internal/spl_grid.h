@@ -202,7 +202,7 @@ class BaseGrid : public juce::Component {
                            Scaling horizontal_scaling);
 
   virtual void setScaling(Scaling& vertical_scaling,
-                          Scaling& horizontal_scaling) = 0;
+                          Scaling& horizontal_scaling) noexcept = 0;
 
   void createLabels();
 
@@ -245,9 +245,7 @@ struct Grid : BaseGrid {
 
  private:
   void setScaling(Scaling& vertical_scaling,
-                  Scaling& horizontal_scaling) override;
-
-  unsigned m_num_vertical_lines, m_num_horizontal_lines;
+                  Scaling& horizontal_scaling) noexcept override;
 };
 
 /*============================================================================*/
@@ -266,11 +264,7 @@ struct SemiLogXGrid : BaseGrid {
 
  private:
   void setScaling(Scaling& vertical_scaling,
-                  Scaling& horizontal_scaling) override;
-
-  float m_min_exp, m_max_exp, m_exp_diff;
-  int m_num_lines_exp;
-  unsigned m_num_vertical_lines, m_num_horizontal_lines;
+                  Scaling& horizontal_scaling) noexcept override;
 };
 
 }  // namespace scp

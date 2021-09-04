@@ -26,18 +26,6 @@ class FrameComponent : public juce::Component {
 
 /*============================================================================*/
 
-template <class value_type>
-constexpr std::tuple<value_type, value_type, value_type, value_type>
-getRectangleMeasures(juce::Rectangle<int> grid_area) {
-  const auto x = static_cast<value_type>(grid_area.getX());
-  const auto y = static_cast<value_type>(grid_area.getY());
-  const auto width = static_cast<value_type>(grid_area.getWidth());
-  const auto height = static_cast<value_type>(grid_area.getHeight());
-  return std::make_tuple(x, y, width, height);
-}
-
-/*============================================================================*/
-
 template <class T>
 class ParamBase {
  public:

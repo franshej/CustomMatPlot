@@ -58,10 +58,10 @@ struct Plot : juce::Component {
     virtual void setDefaultPlotColours() noexcept = 0;
 
     virtual juce::Rectangle<int> getPlotBounds(
-        juce::Rectangle<int>& bounds) const = 0;
+        juce::Rectangle<int>& bounds) const noexcept = 0;
 
     virtual juce::Rectangle<int> getGraphBounds(
-        juce::Rectangle<int>& bounds) const = 0;
+        const juce::Rectangle<int>& bounds) const noexcept = 0;
 
     virtual ColourIdsGraph getColourFromGraphID(
         const std::size_t graph_id) const = 0;
@@ -76,6 +76,20 @@ struct Plot : juce::Component {
                                     const Lim_f& y_lim,
                                     const std::vector<float>& y_data,
                                     GraphPoints& graph_points) noexcept = 0;
+
+    virtual juce::Font getGridLabelFont() const noexcept = 0;
+
+    virtual void createGridLabelsVertical(
+        const juce::Rectangle<int>& bounds,
+        const GridLines& vertical_grid_lines,
+        const std::vector<float>& custom_x_ticks, StringVector& custom_x_labels,
+        LabelVector& x_axis_labels) = 0;
+
+    virtual void createGridLabelsHorizontal(
+        const juce::Rectangle<int>& bounds,
+        const GridLines& horizontal_grid_lines,
+        const std::vector<float>& custom_y_ticks, StringVector& custom_y_labels,
+        LabelVector& y_axis_labels) = 0;
 
     /*
         virtual void drawBackground(juce::Graphics &g,

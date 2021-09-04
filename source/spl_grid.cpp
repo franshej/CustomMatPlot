@@ -9,48 +9,6 @@
 
 /*============================================================================*/
 
-template <class float_type>
-constexpr static std::string convertFloatToString(const float_type value,
-                                                  std::size_t num_decimals,
-                                                  std::size_t max_string_len) {
-  if (!(std::is_same<float, float_type>::value ||
-        std::is_same<double, float_type>::value)) {
-    throw std::invalid_argument("Type must be either float or double");
-  }
-  const auto pow_of_ten = value == 0.f ? 0 : int(floor(log10(abs(value))));
-  const auto is_neg = std::size_t(value < 0);
-
-  auto text_out = std::to_string(value);
-
-  const auto len_before_dec = pow_of_ten < 0
-                                  ? std::size_t(abs(float(pow_of_ten)))
-                                  : std::size_t(pow_of_ten) + 1u;
-  const auto req_len = len_before_dec + is_neg + num_decimals + 1 /* 1 = dot */;
-
-  if (max_string_len < req_len) {
-    if (pow_of_ten >= 0) {
-      const auto two_decimals =
-          text_out.substr(is_neg + std::size_t(pow_of_ten) + 1u, 3);
-      const auto first_digit = text_out.substr(0, 1u + is_neg);
-      text_out = first_digit + two_decimals + "e" + std::to_string(pow_of_ten);
-    } else {
-      auto three_decimals = text_out.substr(len_before_dec + is_neg + 1u, 4);
-      three_decimals.insert(0, ".");
-      text_out = std::to_string(-1 * is_neg) + three_decimals + "e" +
-                 std::to_string(pow_of_ten);
-    }
-  } else {
-    text_out = text_out.substr(0, len_before_dec + is_neg + 1u + num_decimals);
-  }
-
-  return text_out;
-}
-
-static std::string getNextCustomLabel(
-    std::vector<std::string>::reverse_iterator &custom_labels_it) {
-  return *(custom_labels_it++);
-}
-
 template <class graph_type>
 constexpr static scp::GraphLine *getAndAddGridLine(
     std::vector<std::unique_ptr<scp::GraphLine>> &graph_lines) {
@@ -58,101 +16,22 @@ constexpr static scp::GraphLine *getAndAddGridLine(
       std::make_unique<graph_type>(scp::Plot::GraphType::GridLine));
   return graph_lines.back().get();
 }
+/*============================================================================*/
 
 namespace scp {
 
 /*============================================================================*/
 
 void BaseGrid::createLabels() {
-  const auto [x, y, width, height] =
-      scp::getRectangleMeasures<int>(m_config_params.grid_area);
-
-  const auto font = juce::Font(m_graphic_params.label_font);
-
-  juce::Rectangle<int> *x_last_rect = nullptr;
-  juce::Rectangle<int> *y_last_rect = nullptr;
-
-  m_x_axis_labels.clear();
-  m_y_axis_labels.clear();
-
-  const auto use_custom_x_labels =
-      m_custom_x_labels.size() >= m_vertical_grid_lines.size();
-
-  auto m_custom_x_labels_reverse_it =
-      use_custom_x_labels
-          ? std::make_reverse_iterator(m_custom_x_labels.begin()) +
-                m_custom_x_ticks.size() - m_vertical_grid_lines.size()
-          : std::make_reverse_iterator(m_custom_x_labels.begin());
-
-  std::for_each(std::make_reverse_iterator(m_vertical_grid_lines.end()),
-                std::make_reverse_iterator(m_vertical_grid_lines.begin()),
-                [&](const auto &grid) {
-                  const auto x_val = grid->getXValues();
-                  const auto graph_points = grid->getGraphPoints();
-                  const auto x_pos = graph_points[0].x;
-
-                  const std::string x_label =
-                      use_custom_x_labels
-                          ? getNextCustomLabel(m_custom_x_labels_reverse_it)
-                          : convertFloatToString(x_val[0], 2, 6);
-
-                  const auto x_label_width = font.getStringWidth(x_label);
-                  const auto font_height = int(font.getHeightInPoints());
-
-                  const auto x_label_area = juce::Rectangle<int>(
-                      x + int(x_pos) - x_label_width / 2,
-                      y + height + font_height, x_label_width, font_height);
-
-                  if (!x_last_rect) {
-                    m_x_axis_labels.push_back({x_label, x_label_area});
-                    x_last_rect = &m_x_axis_labels.back().second;
-                  } else {
-                    if (!x_last_rect->intersects(x_label_area)) {
-                      m_x_axis_labels.push_back({x_label, x_label_area});
-                      x_last_rect = &m_x_axis_labels.back().second;
-                    }
-                  }
-                });
-
-  const auto use_custom_y_labels =
-      m_custom_y_labels.size() >= m_horizontal_grid_lines.size();
-
-  auto m_custom_y_labels_reverse_it =
-      use_custom_y_labels
-          ? std::make_reverse_iterator(m_custom_y_labels.begin()) +
-                m_custom_y_ticks.size() - m_horizontal_grid_lines.size()
-          : std::make_reverse_iterator(m_custom_y_labels.begin());
-
-  std::for_each(std::make_reverse_iterator(m_horizontal_grid_lines.end()),
-                std::make_reverse_iterator(m_horizontal_grid_lines.begin()),
-                [&](const auto &grid) {
-                  const auto y_val = grid->getYValues();
-                  const auto graph_points = grid->getGraphPoints();
-                  const auto y_pos = graph_points[0].y;
-
-                  const std::string y_label =
-                      use_custom_y_labels
-                          ? getNextCustomLabel(m_custom_y_labels_reverse_it)
-                          : convertFloatToString(y_val[0], 2, 6);
-
-                  const auto y_label_width = font.getStringWidth(y_label);
-                  const auto font_height = int(font.getHeightInPoints());
-
-                  auto y_label_area =
-                      juce::Rectangle<int>(x - font_height - y_label_width,
-                                           y + int(y_pos) - font_height / 2,
-                                           y_label_width, font_height);
-
-                  if (!y_last_rect) {
-                    m_y_axis_labels.push_back({y_label, y_label_area});
-                    y_last_rect = &m_y_axis_labels.back().second;
-                  } else {
-                    if (!y_last_rect->intersects(y_label_area)) {
-                      m_y_axis_labels.push_back({y_label, y_label_area});
-                      y_last_rect = &m_y_axis_labels.back().second;
-                    }
-                  }
-                });
+  if (m_lookandfeel) {
+    auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
+    lnf->createGridLabelsHorizontal(getBounds(), m_horizontal_grid_lines,
+                                    m_custom_y_ticks, m_custom_y_labels,
+                                    m_y_axis_labels);
+    lnf->createGridLabelsVertical(getBounds(), m_vertical_grid_lines,
+                                  m_custom_x_ticks, m_custom_x_labels,
+                                  m_x_axis_labels);
+  }
 }
 
 GridGraphicParams BaseGrid::createDefaultGraphicParams() const {
@@ -317,14 +196,14 @@ void BaseGrid::addGridLineVertical(const float x_val) {
 
   const auto x_lim = scp::Lim_f(m_config_params.x_lim);
 
-  auto GridLines = getAndAddGridLine<graph_type>(m_vertical_grid_lines);
-  GridLines->setBounds(m_config_params.grid_area);
+  auto GridLine = getAndAddGridLine<graph_type>(m_vertical_grid_lines);
+  GridLine->setBounds(m_config_params.grid_area);
 
-  GridLines->setXLim(x_lim.min, x_lim.max);
-  GridLines->setYLim(0.f, height);
+  GridLine->setXLim(x_lim.min, x_lim.max);
+  GridLine->setYLim(0.f, height);
 
-  GridLines->setXValues({x_val, x_val});
-  GridLines->setYValues({0.f, height});
+  GridLine->setXValues({x_val, x_val});
+  GridLine->setYValues({0.f, height});
 
   const auto font = juce::Font(m_graphic_params.label_font);
   const auto font_height = font.getHeightInPoints();
@@ -332,10 +211,10 @@ void BaseGrid::addGridLineVertical(const float x_val) {
   if (!m_config_params.grid_on) {
     const std::vector<float> dashed_lines = {font_height, height - font_height,
                                              font_height};
-    GridLines->setDashedPath(dashed_lines);
+    GridLine->setDashedPath(dashed_lines);
   }
 
-  addAndMakeVisible(GridLines, 0);
+  addAndMakeVisible(GridLine, 0);
 }
 
 template <class graph_type>
@@ -345,24 +224,24 @@ void BaseGrid::addGridLineHorizontal(const float y_val) {
 
   const auto y_lim = scp::Lim_f(m_config_params.y_lim);
 
-  auto GridLines = getAndAddGridLine<graph_type>(m_horizontal_grid_lines);
-  GridLines->setBounds(m_config_params.grid_area);
+  auto GridLine = getAndAddGridLine<graph_type>(m_horizontal_grid_lines);
+  GridLine->setBounds(m_config_params.grid_area);
 
-  GridLines->setXLim(0.f, width);
-  GridLines->setYLim(y_lim.min, y_lim.max);
+  GridLine->setXLim(0.f, width);
+  GridLine->setYLim(y_lim.min, y_lim.max);
 
-  GridLines->setXValues({0.f, width});
-  GridLines->setYValues({y_val, y_val});
+  GridLine->setXValues({0.f, width});
+  GridLine->setYValues({y_val, y_val});
 
   const auto font = juce::Font(m_graphic_params.label_font);
   const auto font_height = font.getHeightInPoints();
   if (!m_config_params.grid_on) {
     const std::vector<float> dashed_lines = {font_height, width - font_height,
                                              font_height};
-    GridLines->setDashedPath(dashed_lines);
+    GridLine->setDashedPath(dashed_lines);
   }
 
-  addAndMakeVisible(GridLines, 0);
+  addAndMakeVisible(GridLine, 0);
 }
 
 void BaseGrid::createAutoGridTicks(std::vector<float> &x_ticks,
@@ -384,7 +263,7 @@ void BaseGrid::createAutoGridTicks(std::vector<float> &x_ticks,
 
 /*============================================================================*/
 
-void Grid::setScaling(Scaling &vertical_scaling, Scaling &horizontal_scaling) {
+void Grid::setScaling(Scaling &vertical_scaling, Scaling &horizontal_scaling) noexcept {
   vertical_scaling = Plot::Scaling::linear;
   horizontal_scaling = Plot::Scaling::linear;
 }
@@ -392,7 +271,7 @@ void Grid::setScaling(Scaling &vertical_scaling, Scaling &horizontal_scaling) {
 /*============================================================================*/
 
 void SemiLogXGrid::setScaling(Scaling &vertical_scaling,
-                              Scaling &horizontal_scaling) {
+                              Scaling &horizontal_scaling) noexcept {
   vertical_scaling = Plot::Scaling::logarithmic;
   horizontal_scaling = Plot::Scaling::linear;
 }
