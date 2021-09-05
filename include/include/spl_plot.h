@@ -40,16 +40,6 @@ struct Plot : juce::Component {
    public:
     virtual ~LookAndFeelMethods(){};
 
-    virtual void addVerticalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds,
-        const Plot::Scaling vertical_scaling, const bool tiny_grids,
-        const Lim_f x_lim, std::vector<float>& x_ticks) noexcept = 0;
-
-    virtual void addHorizontalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds,
-        const Plot::Scaling hotizontal_scaling, const bool tiny_grids,
-        const Lim_f y_lim, std::vector<float>& y_ticks) noexcept = 0;
-
     virtual void drawGraphLine(
         juce::Graphics& g, const std::vector<juce::Point<float>>& graph_points,
         const std::vector<float>& dashed_length, const GraphType graph_type,
@@ -69,6 +59,16 @@ struct Plot : juce::Component {
 
     virtual ColourIdsGraph getColourFromGraphID(
         const std::size_t graph_id) const = 0;
+
+    virtual void updateVerticalGridLineTicksAuto(
+        const juce::Rectangle<int>& bounds,
+        const Plot::Scaling vertical_scaling, const bool tiny_grids,
+        const Lim_f x_lim, std::vector<float>& x_ticks) noexcept = 0;
+
+    virtual void updateHorizontalGridLineTicksAuto(
+        const juce::Rectangle<int>& bounds,
+        const Plot::Scaling hotizontal_scaling, const bool tiny_grids,
+        const Lim_f y_lim, std::vector<float>& y_ticks) noexcept = 0;
 
     virtual void updateXGraphPoints(const juce::Rectangle<int>& bounds,
                                     const Scaling scaling, const Lim_f& lim,

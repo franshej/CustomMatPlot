@@ -225,7 +225,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
   }
 
-  void addVerticalGridLineTicksAuto(
+  void updateVerticalGridLineTicksAuto(
       const juce::Rectangle<int>& bounds, const Plot::Scaling vertical_scaling,
       const bool tiny_grids, const Lim_f x_lim,
       std::vector<float>& x_ticks) noexcept override {
@@ -293,7 +293,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     }
   }
 
-  void addHorizontalGridLineTicksAuto(
+  void updateHorizontalGridLineTicksAuto(
       const juce::Rectangle<int>& bounds,
       const Plot::Scaling hotizontal_scaling, const bool tiny_grids,
       const Lim_f y_lim, std::vector<float>& y_ticks) noexcept override {

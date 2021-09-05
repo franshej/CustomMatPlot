@@ -235,10 +235,10 @@ void BaseGrid::createAutoGridTicks(std::vector<float> &x_ticks,
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<scp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
-      lnf->addVerticalGridLineTicksAuto(
+      lnf->updateVerticalGridLineTicksAuto(
           getBounds(), static_cast<Plot::Scaling>(vertical_scaling),
           m_config_params.tiny_grid_on, m_config_params.x_lim, x_ticks);
-      lnf->addHorizontalGridLineTicksAuto(
+      lnf->updateHorizontalGridLineTicksAuto(
           getBounds(), static_cast<Plot::Scaling>(horizontal_scaling),
           m_config_params.tiny_grid_on, m_config_params.y_lim, y_ticks);
     }
