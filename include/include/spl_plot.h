@@ -55,6 +55,10 @@ struct Plot : juce::Component {
         const std::vector<float>& dashed_length, const GraphType graph_type,
         const std::size_t graph_id) = 0;
 
+    virtual void drawGridLabels(juce::Graphics& g,
+                                const LabelVector& x_axis_labels,
+                                const LabelVector& y_axis_labels) = 0;
+
     virtual void setDefaultPlotColours() noexcept = 0;
 
     virtual juce::Rectangle<int> getPlotBounds(

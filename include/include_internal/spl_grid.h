@@ -23,29 +23,6 @@ typedef uint32_t Scaling;
 
 /**
  * A Parameter struct
- * Containing graphic parameters for text front and grid, text and frame colour.
- */
-struct GridGraphicParams {
-  /**
-   * The colour of the grids that will be drawn.
-   */
-  scp::ParamVal<juce::Colour> grid_colour;
-  /**
-   * The colour of the grid labels.
-   */
-  scp::ParamVal<juce::Colour> label_colour;
-  /**
-   * The colour of the grid labels.
-   */
-  scp::ParamVal<juce::Colour> frame_colour;
-  /**
-   * The font of the grid labels
-   */
-  scp::ParamVal<juce::Font> label_font;
-};
-
-/**
- * A Parameter struct
  * Containing parameters for grid bounds and limits of the grids.
  */
 struct GridConfigParams {
@@ -83,26 +60,8 @@ struct GridConfigParams {
 
 class BaseGrid : public juce::Component {
  public:
-  BaseGrid(const GridGraphicParams& params);
-  BaseGrid();
+  BaseGrid() = default;
   ~BaseGrid() = default;
-
-  /** @brief Set the graphic parameters
-   *
-   *  Change one or more of the graphic parameters. It's possible to only change
-   *  one parameter in the struct without overriding the other parameters.
-   *  Example:
-   *  GridGraphicParams params;
-   *
-   *  params.label_font = getJuceFont();
-   *
-   *  // Only the parameter label_font will be overwritten.
-   *  setGraphicParams(params);
-   *
-   *  @param params parameter struct
-   *  @return void.
-   */
-  void setGraphicParams(GridGraphicParams& params) {}
 
   /** @brief Set the bounds of where the grids will be drawn
    *
@@ -212,14 +171,11 @@ class BaseGrid : public juce::Component {
   template <class graph_type>
   void addGridLineHorizontal(const float y_val);
 
-  GridGraphicParams createDefaultGraphicParams() const;
-
   GridLines m_vertical_grid_lines, m_horizontal_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks;
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::vector<juce::Path> m_grid_path;
 
-  GridGraphicParams m_graphic_params;
   std::unique_ptr<scp::FrameComponent> m_frame;
 
  protected:

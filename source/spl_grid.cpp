@@ -34,27 +34,10 @@ void BaseGrid::createLabels() {
   }
 }
 
-GridGraphicParams BaseGrid::createDefaultGraphicParams() const {
-  GridGraphicParams params;
-
-  params.grid_colour = juce::Colours::dimgrey;
-  params.label_colour = juce::Colours::white;
-  params.frame_colour = juce::Colours::white;
-  params.label_font = juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
-
-  return params;
-}
-
 void BaseGrid::paint(juce::Graphics &g) {
-  g.setColour(m_graphic_params.label_colour);
-  g.setFont(m_graphic_params.label_font);
-  for (const auto &y_axis_text : m_y_axis_labels) {
-    g.drawText(y_axis_text.first, y_axis_text.second,
-               juce::Justification::centredRight);
-  }
-  for (const auto &x_axis_text : m_x_axis_labels) {
-    g.drawText(x_axis_text.first, x_axis_text.second,
-               juce::Justification::centred);
+  if (m_lookandfeel) {
+    auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
+    lnf->drawGridLabels(g, m_x_axis_labels, m_y_axis_labels);
   }
 }
 
@@ -93,7 +76,7 @@ void BaseGrid::resized() {
   }
 
   m_frame =
-      std::make_unique<scp::FrameComponent>(m_graphic_params.frame_colour);
+      std::make_unique<scp::FrameComponent>(juce::Colours::white);
   m_frame->setBounds(m_config_params.grid_area);
   addAndMakeVisible(m_frame.get(), -1);
 
@@ -149,16 +132,6 @@ void BaseGrid::resized() {
   createLabels();
 }
 
-BaseGrid::BaseGrid(const GridGraphicParams &params)
-    : m_graphic_params(createDefaultGraphicParams()) {
-  if (params.frame_colour) m_graphic_params.frame_colour = params.frame_colour;
-  if (params.grid_colour) m_graphic_params.grid_colour = params.grid_colour;
-  if (params.label_colour) m_graphic_params.label_colour = params.label_colour;
-  if (params.label_font) m_graphic_params.label_font = params.label_font;
-}
-
-BaseGrid::BaseGrid() : m_graphic_params(createDefaultGraphicParams()) {}
-
 void BaseGrid::setGridBounds(const juce::Rectangle<int> &grid_area) {
   m_config_params.grid_area = grid_area;
   resized();
@@ -191,57 +164,68 @@ void BaseGrid::setYTicks(const std::vector<float> &y_ticks) {
 
 template <class graph_type>
 void BaseGrid::addGridLineVertical(const float x_val) {
-  const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.grid_area);
+  if (m_lookandfeel) {
+    if (auto *lnf =
+            static_cast<scp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
+      const auto [x, y, width, height] =
+          scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
-  const auto x_lim = scp::Lim_f(m_config_params.x_lim);
+      const auto x_lim = scp::Lim_f(m_config_params.x_lim);
 
-  auto GridLine = getAndAddGridLine<graph_type>(m_vertical_grid_lines);
-  GridLine->setBounds(m_config_params.grid_area);
+      auto GridLine = getAndAddGridLine<graph_type>(m_vertical_grid_lines);
+      GridLine->setBounds(m_config_params.grid_area);
 
-  GridLine->setXLim(x_lim.min, x_lim.max);
-  GridLine->setYLim(0.f, height);
+      GridLine->setXLim(x_lim.min, x_lim.max);
+      GridLine->setYLim(0.f, height);
 
-  GridLine->setXValues({x_val, x_val});
-  GridLine->setYValues({0.f, height});
+      GridLine->setXValues({x_val, x_val});
+      GridLine->setYValues({0.f, height});
 
-  const auto font = juce::Font(m_graphic_params.label_font);
-  const auto font_height = font.getHeightInPoints();
+      const auto font = lnf->getGridLabelFont();
+      const auto font_height = font.getHeightInPoints();
 
-  if (!m_config_params.grid_on) {
-    const std::vector<float> dashed_lines = {font_height, height - font_height,
-                                             font_height};
-    GridLine->setDashedPath(dashed_lines);
+      if (!m_config_params.grid_on) {
+        const std::vector<float> dashed_lines = {
+            font_height, height - font_height, font_height};
+        GridLine->setDashedPath(dashed_lines);
+      }
+
+      addAndMakeVisible(GridLine, 0);
+    }
   }
-
-  addAndMakeVisible(GridLine, 0);
 }
 
 template <class graph_type>
 void BaseGrid::addGridLineHorizontal(const float y_val) {
-  const auto [x, y, width, height] =
-      scp::getRectangleMeasures<float>(m_config_params.grid_area);
+  if (m_lookandfeel) {
+    if (auto *lnf =
+            static_cast<scp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
+      const auto [x, y, width, height] =
+          scp::getRectangleMeasures<float>(m_config_params.grid_area);
 
-  const auto y_lim = scp::Lim_f(m_config_params.y_lim);
+      const auto y_lim = scp::Lim_f(m_config_params.y_lim);
 
-  auto GridLine = getAndAddGridLine<graph_type>(m_horizontal_grid_lines);
-  GridLine->setBounds(m_config_params.grid_area);
+      auto GridLine = getAndAddGridLine<graph_type>(m_horizontal_grid_lines);
+      GridLine->setBounds(m_config_params.grid_area);
 
-  GridLine->setXLim(0.f, width);
-  GridLine->setYLim(y_lim.min, y_lim.max);
+      GridLine->setXLim(0.f, width);
+      GridLine->setYLim(y_lim.min, y_lim.max);
 
-  GridLine->setXValues({0.f, width});
-  GridLine->setYValues({y_val, y_val});
+      GridLine->setXValues({0.f, width});
+      GridLine->setYValues({y_val, y_val});
 
-  const auto font = juce::Font(m_graphic_params.label_font);
-  const auto font_height = font.getHeightInPoints();
-  if (!m_config_params.grid_on) {
-    const std::vector<float> dashed_lines = {font_height, width - font_height,
-                                             font_height};
-    GridLine->setDashedPath(dashed_lines);
+      const auto font = lnf->getGridLabelFont();
+      const auto font_height = font.getHeightInPoints();
+
+      if (!m_config_params.grid_on) {
+        const std::vector<float> dashed_lines = {
+            font_height, width - font_height, font_height};
+        GridLine->setDashedPath(dashed_lines);
+      }
+
+      addAndMakeVisible(GridLine, 0);
+    }
   }
-
-  addAndMakeVisible(GridLine, 0);
 }
 
 void BaseGrid::createAutoGridTicks(std::vector<float> &x_ticks,
