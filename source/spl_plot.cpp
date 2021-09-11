@@ -4,6 +4,7 @@
 #include "spl_label.h"
 #include "spl_grid.h"
 #include "spl_graph_line.h"
+#include "scp_frame.h"
 
 namespace scp {
 
@@ -46,6 +47,7 @@ static std::pair<float, float> findMinMaxValues(
 Plot::~Plot() {
   m_grid->setLookAndFeel(nullptr);
   m_plot_label->setLookAndFeel(nullptr);
+  m_frame->setLookAndFeel(nullptr);
   for (auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(nullptr);
   }
@@ -72,10 +74,13 @@ void Plot::updateXLim(const float min, const float max) {
 void Plot::initialize() {
   m_grid = getGrid();
   m_plot_label = std::make_unique<PlotLabel>();
+  m_frame = std::make_unique<Frame>();
 
   lookAndFeelChanged();
+
   addAndMakeVisible(m_grid.get());
   addAndMakeVisible(m_plot_label.get());
+  addAndMakeVisible(m_frame.get());
 }
 
 void Plot::setAutoXScale() {
@@ -148,11 +153,14 @@ void Plot::resized() {
 
     if (m_grid != nullptr) {
       m_grid->setBounds(plot_area);
+      // (TODO) REMOVE !!!
       m_grid->setGridBounds(graph_area);
     }
 
     m_plot_label->setBounds(plot_area);
     m_plot_label->setGraphArea(graph_area);
+
+    m_frame->setBounds(graph_area);
 
     for (const auto& graph_line : m_graph_lines) {
       graph_line->updateYGraphPoints();
@@ -177,6 +185,7 @@ void Plot::lookAndFeelChanged() {
 
   m_grid->setLookAndFeel(m_lookandfeel);
   m_plot_label->setLookAndFeel(m_lookandfeel);
+  m_frame->setLookAndFeel(m_lookandfeel);
   for (auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(m_lookandfeel);
   }

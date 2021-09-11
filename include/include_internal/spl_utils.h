@@ -7,25 +7,6 @@ class LookAndFeelMethodsBase;
 
 /*============================================================================*/
 
-class FrameComponent : public juce::Component {
- public:
-  FrameComponent(juce::Colour frame_colour) : m_frame_colour(frame_colour){};
-  ~FrameComponent() = default;
-
-  void resized() override{};
-  void paint(juce::Graphics& g) override {
-    g.setColour(m_frame_colour);
-
-    const juce::Rectangle<int> frame = {0, 0, getWidth(), getHeight()};
-    g.drawRect(frame);
-  };
-
- private:
-  juce::Colour m_frame_colour;
-};
-
-/*============================================================================*/
-
 template <class T>
 class ParamBase {
  public:

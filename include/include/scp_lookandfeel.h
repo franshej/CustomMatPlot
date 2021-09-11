@@ -138,7 +138,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void drawGridLabels(juce::Graphics& g, const LabelVector& x_axis_labels,
-                      const LabelVector& y_axis_labels) {
+                      const LabelVector& y_axis_labels) override {
     g.setColour(findColour(Plot::ColourIds::x_grid_label_colour));
     g.setFont(getGridLabelFont());
     for (const auto& x_axis_text : x_axis_labels) {
@@ -149,6 +149,15 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       g.drawText(y_axis_text.first, y_axis_text.second,
                  juce::Justification::centredRight);
     }
+  }
+
+  void drawFrame(juce::Graphics& g,
+                 const juce::Rectangle<int> bounds) override {
+    g.setColour(findColour(Plot::frame_colour));
+
+    const juce::Rectangle<int> frame = {0, 0, bounds.getWidth(),
+                                        bounds.getHeight()};
+    g.drawRect(frame);
   }
 
   void updateXGraphPoints(const juce::Rectangle<int>& bounds,

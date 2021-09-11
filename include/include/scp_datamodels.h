@@ -3,10 +3,11 @@
 namespace scp {
 /*============================================================================*/
 
+class BaseGrid;
+class Frame;
+class GraphLine;
 class PlotLookAndFeel;
 class PlotLabel;
-class BaseGrid;
-class GraphLine;
 
 /*============================================================================*/
 

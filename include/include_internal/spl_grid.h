@@ -176,8 +176,6 @@ class BaseGrid : public juce::Component {
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::vector<juce::Path> m_grid_path;
 
-  std::unique_ptr<scp::FrameComponent> m_frame;
-
  protected:
   LookAndFeelMethodsBase* m_lookandfeel;
   GridConfigParams m_config_params;

@@ -49,6 +49,9 @@ struct Plot : juce::Component {
                                 const LabelVector& x_axis_labels,
                                 const LabelVector& y_axis_labels) = 0;
 
+    virtual void drawFrame(juce::Graphics& g,
+                           const juce::Rectangle<int> bounds) = 0;
+
     virtual void setDefaultPlotColours() noexcept = 0;
 
     virtual juce::Rectangle<int> getPlotBounds(
@@ -147,6 +150,7 @@ struct Plot : juce::Component {
   std::vector<std::unique_ptr<scp::GraphLine>> m_graph_lines;
   std::unique_ptr<BaseGrid> m_grid;
   std::unique_ptr<PlotLabel> m_plot_label;
+  std::unique_ptr<Frame> m_frame;
 
   juce::LookAndFeel* m_lookandfeel;
   std::unique_ptr<PlotLookAndFeel> m_lookandfeel_default;
