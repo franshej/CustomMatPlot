@@ -64,9 +64,9 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     setColour(Plot::x_grid_label_colour, juce::Colour(0xffaab7b8));
     setColour(Plot::y_grid_label_colour, juce::Colour(0xffaab7b8));
 
-    setColour(Plot::title_label_colour, juce::Colour(0xffecf0f1));
     setColour(Plot::x_label_colour, juce::Colour(0xffecf0f1));
     setColour(Plot::y_label_colour, juce::Colour(0xffecf0f1));
+    setColour(Plot::title_label_colour, juce::Colour(0xffecf0f1));
 
     setColour(Plot::first_graph_colour, juce::Colour(0xffec7063));
     setColour(Plot::second_graph_colour, juce::Colour(0xffa569Bd));
@@ -347,7 +347,11 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     return juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
   }
 
-  void createGridLabelsVertical(const juce::Rectangle<int>& bounds,
+  juce::Font getXYTitleFont() const noexcept override {
+    return juce::Font(20.0f, juce::Font::plain);
+  }
+
+  void updateGridLabelsVertical(const juce::Rectangle<int>& bounds,
                                 const GridLines& vertical_grid_lines,
                                 const std::vector<float>& custom_x_ticks,
                                 StringVector& custom_x_labels,
@@ -402,7 +406,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                   });
   }
 
-  void createGridLabelsHorizontal(const juce::Rectangle<int>& bounds,
+  void updateGridLabelsHorizontal(const juce::Rectangle<int>& bounds,
                                   const GridLines& horizontal_grid_lines,
                                   const std::vector<float>& custom_y_ticks,
                                   StringVector& custom_y_labels,
@@ -455,6 +459,58 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                       }
                     }
                   });
+  }
+
+  void updateXYTitleLabels(const juce::Rectangle<int>& bounds,
+                           juce::Label& x_label, juce::Label& y_label,
+                           juce::Label& title_label) override {
+    const auto font = getXYTitleFont();
+    const auto graph_area = getGraphBounds(bounds);
+
+    constexpr auto x_margin = 50;
+    constexpr auto y_margin = 25;
+    constexpr auto title_margin = 25;
+
+    const auto y_label_width = font.getStringWidth(x_label.getText());
+    const auto x_label_width = font.getStringWidth(y_label.getText());
+    const auto title_width = font.getStringWidth(title_label.getText());
+    const auto font_height = int(font.getHeightInPoints());
+
+    x_label.setFont(font);
+    y_label.setFont(font);
+    title_label.setFont(font);
+    x_label.setJustificationType(juce::Justification::centred);
+    y_label.setJustificationType(juce::Justification::centred);
+    title_label.setJustificationType(juce::Justification::centred);
+
+    x_label.setColour(juce::Label::textColourId,
+                      findColour(Plot::x_label_colour));
+    y_label.setColour(juce::Label::textColourId,
+                      findColour(Plot::y_label_colour));
+    title_label.setColour(juce::Label::textColourId,
+                          findColour(Plot::title_label_colour));
+
+    const juce::Rectangle<int> y_area = {
+        graph_area.getX() / 2 - y_margin,
+        graph_area.getY() + graph_area.getHeight() / 2 + y_margin,
+        y_label_width, font_height};
+
+    y_label.setTransform(juce::AffineTransform::rotation(
+        -juce::MathConstants<float>::halfPi, y_area.getX(), y_area.getY()));
+
+    const auto y_mid_point_bottom =
+        (bounds.getHeight() - (graph_area.getY() + graph_area.getHeight())) / 2;
+
+    y_label.setBounds(y_area);
+
+    x_label.setBounds(
+        graph_area.getX() + graph_area.getWidth() / 2 - x_margin,
+        graph_area.getY() + graph_area.getHeight() + y_mid_point_bottom,
+        x_label_width, font_height);
+
+    title_label.setBounds(
+        graph_area.getX() + graph_area.getWidth() / 2 - title_margin,
+        graph_area.getY() / 2 - title_margin / 2, title_width, font_height);
   }
 };  // class PlotLookAndFeel
 };  // namespace scp

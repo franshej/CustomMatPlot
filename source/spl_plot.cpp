@@ -158,8 +158,6 @@ void Plot::resized() {
     }
 
     m_plot_label->setBounds(plot_area);
-    m_plot_label->setGraphArea(graph_area);
-
     m_frame->setBounds(graph_area);
 
     for (const auto& graph_line : m_graph_lines) {
@@ -186,6 +184,7 @@ void Plot::lookAndFeelChanged() {
   m_grid->setLookAndFeel(m_lookandfeel);
   m_plot_label->setLookAndFeel(m_lookandfeel);
   m_frame->setLookAndFeel(m_lookandfeel);
+  m_plot_label->setLookAndFeel(m_lookandfeel);
   for (auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(m_lookandfeel);
   }

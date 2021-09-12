@@ -86,17 +86,23 @@ struct Plot : juce::Component {
 
     virtual juce::Font getGridLabelFont() const noexcept = 0;
 
-    virtual void createGridLabelsVertical(
+    virtual juce::Font getXYTitleFont() const noexcept = 0;
+
+    virtual void updateGridLabelsVertical(
         const juce::Rectangle<int>& bounds,
         const GridLines& vertical_grid_lines,
         const std::vector<float>& custom_x_ticks, StringVector& custom_x_labels,
         LabelVector& x_axis_labels) = 0;
 
-    virtual void createGridLabelsHorizontal(
+    virtual void updateGridLabelsHorizontal(
         const juce::Rectangle<int>& bounds,
         const GridLines& horizontal_grid_lines,
         const std::vector<float>& custom_y_ticks, StringVector& custom_y_labels,
         LabelVector& y_axis_labels) = 0;
+
+    virtual void updateXYTitleLabels(const juce::Rectangle<int>& bounds,
+                                     juce::Label& x_label, juce::Label& y_label,
+                                     juce::Label& title_label) = 0;
 
     /*
         virtual void drawBackground(juce::Graphics &g,

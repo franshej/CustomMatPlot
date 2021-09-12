@@ -25,10 +25,10 @@ namespace scp {
 void BaseGrid::createLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->createGridLabelsHorizontal(getBounds(), m_horizontal_grid_lines,
+    lnf->updateGridLabelsHorizontal(getBounds(), m_horizontal_grid_lines,
                                     m_custom_y_ticks, m_custom_y_labels,
                                     m_y_axis_labels);
-    lnf->createGridLabelsVertical(getBounds(), m_vertical_grid_lines,
+    lnf->updateGridLabelsVertical(getBounds(), m_vertical_grid_lines,
                                   m_custom_x_ticks, m_custom_x_labels,
                                   m_x_axis_labels);
   }
