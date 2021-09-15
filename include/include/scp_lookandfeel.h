@@ -479,6 +479,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     x_label.setFont(font);
     y_label.setFont(font);
     title_label.setFont(font);
+
     x_label.setJustificationType(juce::Justification::centred);
     y_label.setJustificationType(juce::Justification::centred);
     title_label.setJustificationType(juce::Justification::centred);

@@ -5,15 +5,25 @@
 #include "scp_datamodels.h"
 
 namespace scp {
+//==============================================================================
+/*
+   \class Plot
+   \brief A Base Class component to plot 2-D lines/marker symbols
+   Y versus the corresponding values in X.
+
+   This class is used to plot 2-D lines/marker symbols. It's also possible to
+   trace the graph and zoom in/out of specific area. Other featureas: set the x-
+   and y-limits, ticks and labels. The axis scaling is choosen using the
+   subclasses below.
+*/
+
 struct Plot : juce::Component {
  public:
   enum ColourIds {
     background_colour,   /**< Colour of the background. */
     grid_colour,         /**< Colour of the grids. */
-    x_grid_label_colour, /**< Colour of the label for each vertical grid line.
-                          */
-    y_grid_label_colour, /**< Colour of the label for each horizontal grid line.
-                          */
+    x_grid_label_colour, /**< Colour of the label for each x-grid line. */
+    y_grid_label_colour, /**< Colour of the label for each y-grid line. */
     frame_colour,        /**< Colour of the frame around the graph area. */
     x_label_colour,      /**< Colour of the text on the x-axis. */
     y_label_colour,      /**< Colour of the label on the y-axis. */
@@ -29,45 +39,64 @@ struct Plot : juce::Component {
     sixth_graph_colour                /**< Colour of the sixth graph. */
   };
 
+  /**< Used in LookAndFeel to choose scaling of a graph_lines. */
   enum GraphType : uint32_t {
     GraphLine, /**< Simple graph line. */
     GridLine   /**< GridLine used for the grids.*/
   };
 
-  enum Scaling : uint32_t { linear, logarithmic };
+  /**< Used in LookAndFeel to define the scaling of a graph line. */
+  enum Scaling : uint32_t {
+    linear /**< Linear scaling of the graph line. */,
+    logarithmic /**< Logarithmic scaling of the graph line. */
+  };
 
+  /**
+     These methods define a interface for the LookAndFeel class of juce.
+     The Plot class needs a LookAndFeel, that implements these methods.
+     The default implementation can be seen in, \see LookAndFeelMethods.h
+ */
   class LookAndFeelMethods : public LookAndFeelMethodsBase {
    public:
     virtual ~LookAndFeelMethods(){};
 
+    /** This method draws a single graph line. */
     virtual void drawGraphLine(
         juce::Graphics& g, const std::vector<juce::Point<float>>& graph_points,
         const std::vector<float>& dashed_length, const GraphType graph_type,
         const std::size_t graph_id) = 0;
 
+    /** This method draws the labels on the x and y axis. */
     virtual void drawGridLabels(juce::Graphics& g,
                                 const LabelVector& x_axis_labels,
                                 const LabelVector& y_axis_labels) = 0;
 
+    /** This method draws a frame aroudn the graph area. */
     virtual void drawFrame(juce::Graphics& g,
                            const juce::Rectangle<int> bounds) = 0;
 
+    /** Defines the default colours */
     virtual void setDefaultPlotColours() noexcept = 0;
 
+    /** Get the bounds of the componenet */
     virtual juce::Rectangle<int> getPlotBounds(
         juce::Rectangle<int>& bounds) const noexcept = 0;
 
+    /** Get the graph area bounds, where the graphs and grids are to be drawn.*/
     virtual juce::Rectangle<int> getGraphBounds(
         const juce::Rectangle<int>& bounds) const noexcept = 0;
 
+    /** Returns the graph colour id from ColourIdsGraph for a given id.*/
     virtual ColourIdsGraph getColourFromGraphID(
         const std::size_t graph_id) const = 0;
 
+    /** Updates the x-ticks with auto generated ticks. */
     virtual void updateVerticalGridLineTicksAuto(
         const juce::Rectangle<int>& bounds,
         const Plot::Scaling vertical_scaling, const bool tiny_grids,
         const Lim_f x_lim, std::vector<float>& x_ticks) noexcept = 0;
 
+    /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
         const juce::Rectangle<int>& bounds,
         const Plot::Scaling hotizontal_scaling, const bool tiny_grids,
