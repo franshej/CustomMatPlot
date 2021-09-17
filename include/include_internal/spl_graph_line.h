@@ -1,34 +1,138 @@
+/**
+ * @file scp_graph_line.h
+ *
+ * @brief Componenets for drawing graph lines.
+ *
+ * @ingroup SimpleCustomPlotInternal
+ *
+ * @author Frans Rosencrantz
+ * Contact: Frans.Rosencrantz@gmail.com
+ *
+ */
+
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "spl_utils.h"
 #include "scp_datamodels.h"
+#include "spl_utils.h"
 
 namespace scp {
-typedef uint32_t GraphType;
-class LookAndFeelMethodsBase;
-
+//==============================================================================
+/**
+ *  \class GraphLine
+ *  \brief A Base Class component to draw 2-D lines/marker symbols. This is a
+ *  subcomponenet to scp::Plot.
+ *
+ *  This class is used to draw 2-D lines/marker symbols. The axis scaling is
+ *  choosen using the subclasses below.
+ */
 class GraphLine : public juce::Component {
  public:
+  /** Constructor */
   GraphLine();
+
+  /** @brief Constructor with graph-type argument
+   *
+   *  Set the type of graph \see scp_plot.h
+   *
+   *  @param graph_type type of graph.
+   */
   GraphLine(const GraphType graph_type);
+
+  /** Default destructor */
   ~GraphLine() = default;
 
+  /** @brief Set the x-limits
+   *
+   *  Set the limits of x-axis.
+   *
+   *  @param min minimum value
+   *  @param max maximum value
+   *  @return void.
+   */
   void setXLim(const float min, const float max);
+
+  /** @brief Set the y-limits
+   *
+   *  Set the limits of y-axis.
+   *
+   *  @param min minimum value
+   *  @param max maximum value
+   *  @return void.
+   */
   void setYLim(const float min, const float max);
 
+  /** @brief Set the y-values for the graph-line
+   *
+   *  Set the y-values.
+   *
+   *  @param y_values vector of y-values.
+   *  @return void.
+   */
   void setYValues(const std::vector<float>& y_values) noexcept;
+
+  /** @brief Set the x-values for the graph-line
+   *
+   *  Set the x-values.
+   *
+   *  @param x_values vector of x-values.
+   *  @return void.
+   */
   void setXValues(const std::vector<float>& x_values) noexcept;
 
+  /** @brief Set id
+   *
+   *  The id is used to identify which graph line, every graph line should have
+   *  a unique id.
+   *
+   *  @param id a real value number.
+   *  @return void.
+   */
   void setID(const std::size_t id) noexcept;
+
+  /** @brief Get id
+   *
+   *  The id is used to identify which graph line, every graph line should have
+   *  a unique id.
+   *
+   *  @return the id a real value number.
+   */
   std::size_t getID() const noexcept;
 
+  /** @brief Get y-values
+   *
+   *  Get a const reference of the y-values.
+   *
+   *  @return a const reference of the y-values.
+   */
   const std::vector<float>& getYValues() noexcept;
+
+  /** @brief Get x-values
+   *
+   *  Get a const reference of the x-values.
+   *
+   *  @return a const reference of the x-values.
+   */
   const std::vector<float>& getXValues() noexcept;
 
+  /** @brief Get the graph points
+   *
+   *  Get a const reference of the calculated graph points.
+   *
+   *  @return const reference of the calculated graph points.
+   */
   const GraphPoints& getGraphPoints() noexcept;
 
+  /** @brief Set a dashed path
+   *
+   *  Use custom dash-lengths to draw a dashed line. e.g. dashed_lengths = {2,
+   *  2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 3 pixels, skip
+   *  6 pixels, and then repeat.
+   *
+   *  @param dashed_lengths
+   *  @return void.
+   */
   void setDashedPath(const std::vector<float>& dashed_lengths) noexcept;
 
   void resized() override;
@@ -54,6 +158,12 @@ class GraphLine : public juce::Component {
   GraphPoints m_graph_points;
 };
 
+/**
+ *  \class LinearGraphLine
+ *  \brief Component to draw 2-D graph line with linear x and y axis.
+ *
+ *  Both x and y axis are linearly scaled.
+ */
 struct LinearGraphLine : public GraphLine {
  public:
   using GraphLine::GraphLine;
@@ -63,6 +173,12 @@ struct LinearGraphLine : public GraphLine {
   void updateXGraphPointsIntern() noexcept override;
 };
 
+/**
+ *  \class LinearGraphLine
+ *  \brief Component to draw 2-D graph line with logarithmic x axis.
+ *
+ *  The x axis is linearly scaled and y axis is logarithmically scaled.
+ */
 struct LogXGraphLine : public GraphLine {
  public:
   using GraphLine::GraphLine;

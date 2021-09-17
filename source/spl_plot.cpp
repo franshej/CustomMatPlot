@@ -107,11 +107,11 @@ void Plot::setXLabel(const std::string& x_label) {
   m_plot_label->setXLabel(x_label);
 }
 
-void Plot::setXLabels(const std::vector<std::string>& x_labels) {
+void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
   m_grid->setXLabels(x_labels);
 }
 
-void Plot::setYLabels(const std::vector<std::string>& y_labels) {
+void Plot::setYTickLabels(const std::vector<std::string>& y_labels) {
   m_grid->setYLabels(y_labels);
 }
 

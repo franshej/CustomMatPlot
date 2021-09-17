@@ -3,7 +3,7 @@
  *
  * @brief Componenets for creating x,y and title labels
  *
- * @ingroup SimpleCustomPlot
+ * @ingroup SimpleCustomPlotInternal
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com
@@ -18,7 +18,8 @@
 
 namespace scp {
 /**
- * A class for creating x, y and title labels
+ * \class Plot
+ * \brief A class for creating x, y and title labels
  *
  * The idea is to use this componenet to draw the x, y and title labels.
  */

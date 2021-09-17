@@ -3,7 +3,7 @@
  *
  * @brief Componenets for creating grids and grid labels
  *
- * @ingroup SimpleCustomPlot
+ * @ingroup SimpleCustomPlotInternal
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com

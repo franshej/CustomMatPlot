@@ -88,9 +88,9 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 
 #define TITLE(TEXT) GET_PLOT->setTitle(TEXT);
 
-#define X_LABELS(LABELS) GET_PLOT->setXLabels(LABELS);
+#define X_LABELS(LABELS) GET_PLOT->setXTickLabels(LABELS);
 
-#define Y_LABELS(LABELS) GET_PLOT->setYLabels(LABELS);
+#define Y_LABELS(LABELS) GET_PLOT->setYTickLabels(LABELS);
 
 #define X_TICKS(TICKS) GET_PLOT->setXTicks(TICKS);
 
