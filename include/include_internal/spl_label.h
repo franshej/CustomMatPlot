@@ -18,7 +18,7 @@
 
 namespace scp {
 /**
- * \class Plot
+ * \class PlotBase
  * \brief A class for creating x, y and title labels
  *
  * The idea is to use this componenet to draw the x, y and title labels.

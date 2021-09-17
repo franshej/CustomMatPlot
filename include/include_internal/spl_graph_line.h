@@ -22,7 +22,7 @@ namespace scp {
 /**
  *  \class GraphLine
  *  \brief A Base Class component to draw 2-D lines/marker symbols. This is a
- *  subcomponenet to scp::Plot.
+ *  subcomponenet to scp::PlotBase.
  *
  *  This class is used to draw 2-D lines/marker symbols. The axis scaling is
  *  choosen using the subclasses below.

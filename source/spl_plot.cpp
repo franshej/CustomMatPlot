@@ -44,7 +44,7 @@ static std::pair<float, float> findMinMaxValues(
   return {min_value, max_value};
 }
 
-Plot::~Plot() {
+PlotBase::~PlotBase() {
   m_grid->setLookAndFeel(nullptr);
   m_plot_label->setLookAndFeel(nullptr);
   m_frame->setLookAndFeel(nullptr);
@@ -53,7 +53,7 @@ Plot::~Plot() {
   }
 }
 
-void Plot::updateYLim(const float min, const float max) {
+void PlotBase::updateYLim(const float min, const float max) {
   for (auto& graph_line : m_graph_lines) {
     graph_line->setYLim(min, max);
   }
@@ -62,7 +62,7 @@ void Plot::updateYLim(const float min, const float max) {
   }
 }
 
-void Plot::updateXLim(const float min, const float max) {
+void PlotBase::updateXLim(const float min, const float max) {
   for (auto& graph_line : m_graph_lines) {
     graph_line->setXLim(min, max);
   }
@@ -71,7 +71,7 @@ void Plot::updateXLim(const float min, const float max) {
   }
 }
 
-void Plot::initialize() {
+void PlotBase::initialize() {
   m_grid = getGrid();
   m_plot_label = std::make_unique<PlotLabel>();
   m_frame = std::make_unique<Frame>();
@@ -83,53 +83,73 @@ void Plot::initialize() {
   addAndMakeVisible(m_frame.get());
 }
 
-void Plot::setAutoXScale() {
+void PlotBase::setAutoXScale() {
   const auto [min, max] = findMinMaxValues(m_graph_lines, true);
   updateXLim(min, max);
 }
 
-void Plot::setAutoYScale() {
+void PlotBase::setAutoYScale() {
   const auto [min, max] = findMinMaxValues(m_graph_lines, false);
   updateYLim(min, max);
 }
 
-void Plot::xLim(const float min, const float max) {
+void PlotBase::xLim(const float min, const float max) {
   updateXLim(min, max);
   m_x_autoscale = false;
 }
 
-void Plot::yLim(const float min, const float max) {
+void PlotBase::yLim(const float min, const float max) {
   updateYLim(min, max);
   m_y_autoscale = false;
 }
 
-void Plot::setXLabel(const std::string& x_label) {
+void PlotBase::Plot(const std::vector<std::vector<float>>& y_data) {
+  updateYData(y_data);
+  if (m_lookandfeel) {
+    auto lnf = reinterpret_cast<LookAndFeelMethods*>(m_lookandfeel);
+    const auto graph_area = lnf->getGraphBounds(getBounds());
+    repaint(graph_area);
+  }
+}
+
+void PlotBase::Plot(const std::vector<std::vector<float>>& y_data,
+                    const std::vector<std::vector<float>>& x_data) {
+  updateYData(y_data);
+  updateXData(x_data);
+  if (m_lookandfeel) {
+    auto lnf = reinterpret_cast<LookAndFeelMethods*>(m_lookandfeel);
+    const auto graph_area = lnf->getGraphBounds(getBounds());
+    repaint(graph_area);
+  }
+}
+
+void PlotBase::setXLabel(const std::string& x_label) {
   m_plot_label->setXLabel(x_label);
 }
 
-void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
+void PlotBase::setXTickLabels(const std::vector<std::string>& x_labels) {
   m_grid->setXLabels(x_labels);
 }
 
-void Plot::setYTickLabels(const std::vector<std::string>& y_labels) {
+void PlotBase::setYTickLabels(const std::vector<std::string>& y_labels) {
   m_grid->setYLabels(y_labels);
 }
 
-void Plot::setXTicks(const std::vector<float>& x_ticks) {
+void PlotBase::setXTicks(const std::vector<float>& x_ticks) {
   m_grid->setXTicks(x_ticks);
 }
 
-void Plot::setYTicks(const std::vector<float>& y_ticks) {
+void PlotBase::setYTicks(const std::vector<float>& y_ticks) {
   m_grid->setYTicks(y_ticks);
 }
 
-void Plot::setYLabel(const std::string& y_label) {
+void PlotBase::setYLabel(const std::string& y_label) {
   m_plot_label->setYLabel(y_label);
 }
 
-void Plot::setTitle(const std::string& title) { m_plot_label->setTitle(title); }
+void PlotBase::setTitle(const std::string& title) { m_plot_label->setTitle(title); }
 
-void Plot::makeGraphDashed(const std::vector<float>& dashed_lengths,
+void PlotBase::makeGraphDashed(const std::vector<float>& dashed_lengths,
                            unsigned graph_index) {
   if (graph_index >= m_graph_lines.size()) {
     throw std::invalid_argument(
@@ -138,12 +158,13 @@ void Plot::makeGraphDashed(const std::vector<float>& dashed_lengths,
   m_graph_lines[graph_index]->setDashedPath(dashed_lengths);
 }
 
-void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
+void PlotBase::gridON(const bool grid_on, const bool tiny_grid_on) {
   m_grid->setGridON(grid_on, tiny_grid_on);
 }
 
-void Plot::resized() {
-  if (auto lnf = dynamic_cast<LookAndFeelMethods*>(m_lookandfeel)) {
+void PlotBase::resized() {
+
+  if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base)) {
     const auto plot_area = lnf->getPlotBounds(getBounds());
     const auto graph_area = lnf->getGraphBounds(getBounds());
 
@@ -167,37 +188,38 @@ void Plot::resized() {
   }
 }
 
-void Plot::paint(juce::Graphics& g) {}
+void PlotBase::paint(juce::Graphics& g) {}
 
-void Plot::parentHierarchyChanged() { lookAndFeelChanged(); }
+void PlotBase::parentHierarchyChanged() { lookAndFeelChanged(); }
 
-void Plot::lookAndFeelChanged() {
-  if (dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
+void PlotBase::lookAndFeelChanged() {
+  if (auto *lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = &getLookAndFeel();
     m_lookandfeel_default.reset();
+    m_lookandfeel_base = lnf;
   } else {
     if (!m_lookandfeel_default)
       m_lookandfeel_default = std::make_unique<scp::PlotLookAndFeel>();
     m_lookandfeel = m_lookandfeel_default.get();
+    m_lookandfeel_base = m_lookandfeel_default.get();
   }
 
   m_grid->setLookAndFeel(m_lookandfeel);
   m_plot_label->setLookAndFeel(m_lookandfeel);
   m_frame->setLookAndFeel(m_lookandfeel);
-  m_plot_label->setLookAndFeel(m_lookandfeel);
   for (auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(m_lookandfeel);
   }
 }
 
-void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
+void PlotBase::updateYData(const std::vector<std::vector<float>>& y_data) {
   if (!y_data.empty()) {
     if (y_data.size() != m_graph_lines.size()) {
       m_graph_lines.resize(y_data.size());
       std::size_t i = 0u;
       for (auto& graph_line : m_graph_lines) {
         if (!graph_line) {
-          if (auto lnf = dynamic_cast<LookAndFeelMethods*>(m_lookandfeel)) {
+          if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base)) {
             graph_line = getGraphLine();
             graph_line->setID(i);
             graph_line->setLookAndFeel(m_lookandfeel);
@@ -234,7 +256,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
   }
 }
 
-void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
+void PlotBase::updateXData(const std::vector<std::vector<float>>& x_data) {
   if (!x_data.empty()) {
     if (x_data.size() != m_graph_lines.size()) {
       throw std::invalid_argument(

@@ -55,20 +55,19 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 #define PLOT_Y(Y)             \
   {                           \
     ADD_PLOT(scp::LinearPlot) \
-    GET_PLOT->updateYData(Y); \
+    GET_PLOT->Plot(Y);        \
   }
 
-#define SEMI_PLOT_Y(Y)        \
-  {                           \
-    ADD_PLOT(scp::SemiPlotX)  \
-    GET_PLOT->updateYData(Y); \
+#define SEMI_PLOT_Y(Y)       \
+  {                          \
+    ADD_PLOT(scp::SemiPlotX) \
+    GET_PLOT->Plot(Y);       \
   }
 
 #define PLOT_XY(X, Y)         \
   {                           \
     ADD_PLOT(scp::LinearPlot) \
-    GET_PLOT->updateYData(Y); \
-    GET_PLOT->updateXData(X); \
+    GET_PLOT->Plot(Y, X);     \
   }
 
 #define X_LIM(MIN, MAX) GET_PLOT->xLim(MIN, MAX);
@@ -102,13 +101,13 @@ class MainComponent : public juce::Component {
 
   void paint(juce::Graphics &) override;
   void resized() override;
-  std::map<std::string, std::unique_ptr<scp::Plot>> *get_plot_holder() {
+  std::map<std::string, std::unique_ptr<scp::PlotBase>> *get_plot_holder() {
     return &m_plot_holder;
   }
 
  private:
-  std::map<std::string, std::unique_ptr<scp::Plot>> m_plot_holder;
-  scp::Plot *m_current_plot = nullptr;
+  std::map<std::string, std::unique_ptr<scp::PlotBase>> m_plot_holder;
+  scp::PlotBase *m_current_plot = nullptr;
   juce::ComboBox m_test_menu;
   juce::Label m_menu_label;
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)

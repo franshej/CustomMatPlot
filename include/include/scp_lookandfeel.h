@@ -50,30 +50,30 @@ std::string getNextCustomLabel(
 
 namespace scp {
 class PlotLookAndFeel : public juce::LookAndFeel_V3,
-                        public Plot::LookAndFeelMethods {
+                        public PlotBase::LookAndFeelMethods {
  public:
   PlotLookAndFeel() { setDefaultPlotColours(); }
 
   virtual ~PlotLookAndFeel() override{};
 
   void setDefaultPlotColours() noexcept override {
-    setColour(Plot::background_colour, juce::Colour(0xff566573));
-    setColour(Plot::frame_colour, juce::Colour(0xffcacfd2));
+    setColour(PlotBase::background_colour, juce::Colour(0xff566573));
+    setColour(PlotBase::frame_colour, juce::Colour(0xffcacfd2));
 
-    setColour(Plot::grid_colour, juce::Colour(0xff99A3A4));
-    setColour(Plot::x_grid_label_colour, juce::Colour(0xffaab7b8));
-    setColour(Plot::y_grid_label_colour, juce::Colour(0xffaab7b8));
+    setColour(PlotBase::grid_colour, juce::Colour(0xff99A3A4));
+    setColour(PlotBase::x_grid_label_colour, juce::Colour(0xffaab7b8));
+    setColour(PlotBase::y_grid_label_colour, juce::Colour(0xffaab7b8));
 
-    setColour(Plot::x_label_colour, juce::Colour(0xffecf0f1));
-    setColour(Plot::y_label_colour, juce::Colour(0xffecf0f1));
-    setColour(Plot::title_label_colour, juce::Colour(0xffecf0f1));
+    setColour(PlotBase::x_label_colour, juce::Colour(0xffecf0f1));
+    setColour(PlotBase::y_label_colour, juce::Colour(0xffecf0f1));
+    setColour(PlotBase::title_label_colour, juce::Colour(0xffecf0f1));
 
-    setColour(Plot::first_graph_colour, juce::Colour(0xffec7063));
-    setColour(Plot::second_graph_colour, juce::Colour(0xffa569Bd));
-    setColour(Plot::third_graph_colour, juce::Colour(0xff85c1e9));
-    setColour(Plot::fourth_graph_colour, juce::Colour(0xff73c6b6));
-    setColour(Plot::fifth_graph_colour, juce::Colour(0xfff4d03f));
-    setColour(Plot::sixth_graph_colour, juce::Colour(0xffeB984e));
+    setColour(PlotBase::first_graph_colour, juce::Colour(0xffec7063));
+    setColour(PlotBase::second_graph_colour, juce::Colour(0xffa569Bd));
+    setColour(PlotBase::third_graph_colour, juce::Colour(0xff85c1e9));
+    setColour(PlotBase::fourth_graph_colour, juce::Colour(0xff73c6b6));
+    setColour(PlotBase::fifth_graph_colour, juce::Colour(0xfff4d03f));
+    setColour(PlotBase::sixth_graph_colour, juce::Colour(0xffeB984e));
   }
 
   juce::Rectangle<int> getPlotBounds(
@@ -87,17 +87,17 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                                 bounds.getHeight() - 125);
   }
 
-  Plot::ColourIdsGraph getColourFromGraphID(
+  PlotBase::ColourIdsGraph getColourFromGraphID(
       const std::size_t graph_id) const override {
     /**< Colour vector which is useful when iterating over the six graph
      * colours.*/
-    static const std::vector<Plot::ColourIdsGraph> GraphColours{
-        Plot::ColourIdsGraph::first_graph_colour,
-        Plot::ColourIdsGraph::second_graph_colour,
-        Plot::ColourIdsGraph::third_graph_colour,
-        Plot::ColourIdsGraph::fourth_graph_colour,
-        Plot::ColourIdsGraph::fifth_graph_colour,
-        Plot::ColourIdsGraph::sixth_graph_colour};
+    static const std::vector<PlotBase::ColourIdsGraph> GraphColours{
+        PlotBase::ColourIdsGraph::first_graph_colour,
+        PlotBase::ColourIdsGraph::second_graph_colour,
+        PlotBase::ColourIdsGraph::third_graph_colour,
+        PlotBase::ColourIdsGraph::fourth_graph_colour,
+        PlotBase::ColourIdsGraph::fifth_graph_colour,
+        PlotBase::ColourIdsGraph::sixth_graph_colour};
 
     return GraphColours[graph_id % GraphColours.size()];
   }
@@ -105,7 +105,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   void drawGraphLine(juce::Graphics& g,
                      const std::vector<juce::Point<float>>& graph_points,
                      const std::vector<float>& dashed_lengths,
-                     const Plot::GraphType graph_type,
+                     const PlotBase::GraphType graph_type,
                      const std::size_t graph_id) override {
     juce::Path graph_path;
     juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
@@ -122,11 +122,11 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                                   int(dashed_lengths.size()));
       }
       switch (graph_type) {
-        case Plot::GraphType::GraphLine:
+        case PlotBase::GraphType::GraphLine:
           g.setColour(findColour(getColourFromGraphID(graph_id)));
           break;
-        case Plot::GraphType::GridLine:
-          g.setColour(findColour(Plot::ColourIds::grid_colour));
+        case PlotBase::GraphType::GridLine:
+          g.setColour(findColour(PlotBase::ColourIds::grid_colour));
           break;
         default:
           g.setColour(juce::Colours::pink);
@@ -139,7 +139,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void drawGridLabels(juce::Graphics& g, const LabelVector& x_axis_labels,
                       const LabelVector& y_axis_labels) override {
-    g.setColour(findColour(Plot::ColourIds::x_grid_label_colour));
+    g.setColour(findColour(PlotBase::ColourIds::x_grid_label_colour));
     g.setFont(getGridLabelFont());
     for (const auto& x_axis_text : x_axis_labels) {
       g.drawText(x_axis_text.first, x_axis_text.second,
@@ -153,7 +153,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void drawFrame(juce::Graphics& g,
                  const juce::Rectangle<int> bounds) override {
-    g.setColour(findColour(Plot::frame_colour));
+    g.setColour(findColour(PlotBase::frame_colour));
 
     const juce::Rectangle<int> frame = {0, 0, bounds.getWidth(),
                                         bounds.getHeight()};
@@ -161,7 +161,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void updateXGraphPoints(const juce::Rectangle<int>& bounds,
-                          const Plot::Scaling scaling, const Lim_f& x_lim,
+                          const PlotBase::Scaling scaling, const Lim_f& x_lim,
                           const std::vector<float>& x_data,
                           GraphPoints& graph_points) noexcept override {
     const auto addXGraphPointsLinear = [&]() {
@@ -191,10 +191,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
 
     switch (scaling) {
-      case Plot::Scaling::linear:
+      case PlotBase::Scaling::linear:
         addXGraphPointsLinear();
         break;
-      case Plot::Scaling::logarithmic:
+      case PlotBase::Scaling::logarithmic:
         addXGraphPointsLogarithmic();
         break;
       default:
@@ -204,7 +204,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void updateYGraphPoints(const juce::Rectangle<int>& bounds,
-                          const Plot::Scaling scaling, const Lim_f& y_lim,
+                          const PlotBase::Scaling scaling, const Lim_f& y_lim,
                           const std::vector<float>& y_data,
                           GraphPoints& graph_points) noexcept override {
     const auto addYGraphPointsLinear = [&]() {
@@ -222,10 +222,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
 
     switch (scaling) {
-      case Plot::Scaling::linear:
+      case PlotBase::Scaling::linear:
         addYGraphPointsLinear();
         break;
-      case Plot::Scaling::logarithmic:
+      case PlotBase::Scaling::logarithmic:
         jassert_return(false, "Log scale for y axis is not implemented.");
         break;
       default:
@@ -235,7 +235,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void updateVerticalGridLineTicksAuto(
-      const juce::Rectangle<int>& bounds, const Plot::Scaling vertical_scaling,
+      const juce::Rectangle<int>& bounds, const PlotBase::Scaling vertical_scaling,
       const bool tiny_grids, const Lim_f x_lim,
       std::vector<float>& x_ticks) noexcept override {
     x_ticks.clear();
@@ -290,10 +290,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
 
     switch (vertical_scaling) {
-      case Plot::Scaling::linear:
+      case PlotBase::Scaling::linear:
         addVerticalTicksLinear();
         break;
-      case Plot::Scaling::logarithmic:
+      case PlotBase::Scaling::logarithmic:
         addVerticalTicksLogarithmic();
         break;
       default:
@@ -304,7 +304,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void updateHorizontalGridLineTicksAuto(
       const juce::Rectangle<int>& bounds,
-      const Plot::Scaling hotizontal_scaling, const bool tiny_grids,
+      const PlotBase::Scaling hotizontal_scaling, const bool tiny_grids,
       const Lim_f y_lim, std::vector<float>& y_ticks) noexcept override {
     y_ticks.clear();
 
@@ -331,10 +331,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
 
     switch (hotizontal_scaling) {
-      case Plot::Scaling::linear:
+      case PlotBase::Scaling::linear:
         addHorizontalTicksLinear();
         break;
-      case Plot::Scaling::logarithmic:
+      case PlotBase::Scaling::logarithmic:
         jassert_return(false, "Not implmeneted yet.");
         break;
       default:
@@ -485,11 +485,11 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     title_label.setJustificationType(juce::Justification::centred);
 
     x_label.setColour(juce::Label::textColourId,
-                      findColour(Plot::x_label_colour));
+                      findColour(PlotBase::x_label_colour));
     y_label.setColour(juce::Label::textColourId,
-                      findColour(Plot::y_label_colour));
+                      findColour(PlotBase::y_label_colour));
     title_label.setColour(juce::Label::textColourId,
-                          findColour(Plot::title_label_colour));
+                          findColour(PlotBase::title_label_colour));
 
     const juce::Rectangle<int> y_area = {
         graph_area.getX() / 2 - y_margin,

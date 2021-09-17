@@ -20,7 +20,7 @@ namespace scp {
 
 //==============================================================================
 /*
- *  \class Plot
+ *  \class PlotBase
  *  \brief A Base Class component to plot 2-D lines/marker symbols.
  *
  *  This class is used to plot 2-D lines/marker symbols. It's also possible to
@@ -28,7 +28,7 @@ namespace scp {
  *  x- and y-limits, ticks and ticklabels. The axis scaling is choosen using the
  *  subclasses below.
  */
-struct Plot : juce::Component {
+struct PlotBase : juce::Component {
  public:
   enum ColourIds {
     background_colour,   /**< Colour of the background. */
@@ -110,13 +110,13 @@ struct Plot : juce::Component {
     /** Updates the x-ticks with auto generated ticks. */
     virtual void updateVerticalGridLineTicksAuto(
         const juce::Rectangle<int>& bounds,
-        const Plot::Scaling vertical_scaling, const bool tiny_grids,
+        const Scaling vertical_scaling, const bool tiny_grids,
         const Lim_f x_lim, std::vector<float>& x_ticks) noexcept = 0;
 
     /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
         const juce::Rectangle<int>& bounds,
-        const Plot::Scaling hotizontal_scaling, const bool tiny_grids,
+        const Scaling hotizontal_scaling, const bool tiny_grids,
         const Lim_f y_lim, std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-cordinates of the graph points used when drawing a graph
@@ -129,7 +129,7 @@ struct Plot : juce::Component {
     /** Updates the y-cordinates of the graph points used when drawing a graph
      * line. */
     virtual void updateYGraphPoints(const juce::Rectangle<int>& bounds,
-                                    const Plot::Scaling scaling,
+                                    const Scaling scaling,
                                     const Lim_f& y_lim,
                                     const std::vector<float>& y_data,
                                     GraphPoints& graph_points) noexcept = 0;
@@ -161,7 +161,7 @@ struct Plot : juce::Component {
 
   /** Destructor, making sure to set the lookandfeel in all subcomponenets to
    * nullptr. */
-  ~Plot();
+  ~PlotBase();
 
   /** @brief Set the X-limits
    *
@@ -183,28 +183,30 @@ struct Plot : juce::Component {
    */
   void yLim(const float min, const float max);
 
-  /** @brief Update the Y-data for the graph lines
+  /** @brief Plot y-data
    *
-   *  Update the Y-data. Each vector is the Y-data for a new graph line.
-   *  E.g. If 'y_data.size() == 3', three graph lines will be drawn. The
-   *  x-values are provided using 'updateXData'. Linear increasing x-values from
-   *  0 with the size of y-values are added if no x-values are given.
+   *  Plot y-data. Each vector in y-data represents a single graph line.
+   *  E.g. If 'y_data.size() == 3', three graph lines will be plotted. The
+   *  x-data are provided using the 'Plot' function with argument for x_data. By
+   *  using this function the x-data are Linear increasing from 0 with the size
+   *  of y-data.
    *
    *  @param y_data vector of vectors with the y-values.
    *  @return void.
    */
-  void updateYData(const std::vector<std::vector<float>>& y_data);
+  void Plot(const std::vector<std::vector<float>>& y_data);
 
-  /** @brief Update the X-data for the graph lines
+  /** @brief Plot y-data
    *
-   *  Update the X-data. Each vector is the X-data for a graph line.
-   *  The x_data vector must have the same size as the y_data vector in
-   *  'updateYData'.
+   *  Plot y-data/x-data. Each vector in y-data/x-data represents a single graph
+   *  line. E.g. If 'y_data.size() == 3', three graph lines will be plotted.
    *
-   *  @param x_data vector of vectors with the x-values.
+   *  @param y_data vector of vectors with the y-values.
+   *  @param x_data vector of vectors with the y-values.
    *  @return void.
    */
-  void updateXData(const std::vector<std::vector<float>>& x_data);
+  void Plot(const std::vector<std::vector<float>>& y_data,
+            const std::vector<std::vector<float>>& x_data);
 
   /** @brief Set the text for label on the X-axis
    *
@@ -302,6 +304,9 @@ struct Plot : juce::Component {
   void initialize();
 
  private:
+  void updateYData(const std::vector<std::vector<float>>& y_data);
+  void updateXData(const std::vector<std::vector<float>>& x_data);
+
   void setAutoXScale();
   void setAutoYScale();
 
@@ -319,6 +324,7 @@ struct Plot : juce::Component {
   std::unique_ptr<Frame> m_frame;
 
   juce::LookAndFeel* m_lookandfeel;
+  LookAndFeelMethodsBase* m_lookandfeel_base;
   std::unique_ptr<PlotLookAndFeel> m_lookandfeel_default;
 };
 
@@ -326,7 +332,7 @@ struct Plot : juce::Component {
  *  \class LinearPlot
  *  \brief Component for plotting 2-D graph lines with linear x and y axis.
  */
-struct LinearPlot : Plot {
+struct LinearPlot : PlotBase {
  public:
   LinearPlot();
 
@@ -340,7 +346,7 @@ struct LinearPlot : Plot {
  *  \brief Component for plotting 2-D graph lines with logarithmic x axis and
  *  linear y axis.
  */
-struct SemiPlotX : Plot {
+struct SemiPlotX : PlotBase {
  public:
   SemiPlotX();
 
