@@ -8,6 +8,7 @@ class Frame;
 class GraphLine;
 class PlotLookAndFeel;
 class PlotLabel;
+class Legend;
 
 /*============================================================================*/
 
@@ -26,9 +27,11 @@ class LookAndFeelMethodsBase {};
 /*============================================================================*/
 
 typedef std::vector<std::unique_ptr<GraphLine>> GridLines;
+typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
 typedef std::vector<juce::Point<float>> GraphPoints;
 typedef std::vector<std::pair<std::string, juce::Rectangle<int>>> LabelVector;
 typedef std::vector<std::string> StringVector;
+typedef std::vector<juce::Colour> ColourVector;
 
 /*============================================================================*/
 

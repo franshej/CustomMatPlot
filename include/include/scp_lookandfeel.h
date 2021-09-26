@@ -67,6 +67,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     setColour(PlotBase::x_label_colour, juce::Colour(0xffecf0f1));
     setColour(PlotBase::y_label_colour, juce::Colour(0xffecf0f1));
     setColour(PlotBase::title_label_colour, juce::Colour(0xffecf0f1));
+    setColour(PlotBase::legend_label_colour, juce::Colour(0xffecf0f1));
 
     setColour(PlotBase::first_graph_colour, juce::Colour(0xffec7063));
     setColour(PlotBase::second_graph_colour, juce::Colour(0xffa569Bd));
@@ -74,6 +75,16 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     setColour(PlotBase::fourth_graph_colour, juce::Colour(0xff73c6b6));
     setColour(PlotBase::fifth_graph_colour, juce::Colour(0xfff4d03f));
     setColour(PlotBase::sixth_graph_colour, juce::Colour(0xffeB984e));
+  }
+
+  juce::Colour findAndGetColourFromId(
+      const PlotBase::ColourIdsGraph colour_id) const noexcept override {
+    return findColour(colour_id);
+  }
+
+  juce::Colour findAndGetColourFromId(
+      const PlotBase::ColourIds colour_id) const noexcept override {
+    return findColour(colour_id);
   }
 
   juce::Rectangle<int> getPlotBounds(
@@ -85,6 +96,48 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       const juce::Rectangle<int>& bounds) const noexcept override {
     return juce::Rectangle<int>(100, 50, bounds.getWidth() - 150,
                                 bounds.getHeight() - 125);
+  }
+
+  juce::Point<int> getLegendPosition(
+      const juce::Rectangle<int>& graph_bounds,
+      const juce::Rectangle<int>& legend_bounds) const noexcept override {
+    constexpr std::size_t margin_width = 5u;
+    constexpr std::size_t margin_height = 5u;
+
+    const auto graph_top_right = graph_bounds.getTopRight();
+    const auto x_pos =
+        graph_top_right.getX() - legend_bounds.getWidth() - margin_width;
+    const auto y_pos = graph_top_right.getY() + margin_height;
+
+    return juce::Point<int>(x_pos, y_pos);
+  }
+
+  juce::Rectangle<int> getLegendBounds(
+      [[maybe_unused]] const juce::Rectangle<int>& graph_bounds,
+      const std::vector<std::string>& label_texts) const noexcept override {
+    constexpr std::size_t margin_width = 5u;
+    constexpr std::size_t margin_height = 5u;
+
+    const auto font = getLegendFont();
+    const auto height = label_texts.size() * font.getHeightInPoints() + (label_texts.size() + 0.5)*margin_height;
+
+    std::size_t text_width = 0u;
+    for (const auto& label : label_texts) {
+      const auto new_text_width = std::size_t(font.getStringWidth(label));
+      text_width = std::max(new_text_width, text_width);
+    }
+
+    const auto width = text_width + 6 * margin_width;
+
+    auto bounds_retval = juce::Rectangle<int>(0, 0, width, height);
+    const auto xy_positions = getLegendPosition(graph_bounds, bounds_retval);
+    bounds_retval.setPosition(xy_positions);
+
+    return bounds_retval;
+  }
+
+  juce::Font getLegendFont() const noexcept override {
+    return juce::Font(14.0f, juce::Font::plain);
   }
 
   PlotBase::ColourIdsGraph getColourFromGraphID(
@@ -106,7 +159,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                      const std::vector<juce::Point<float>>& graph_points,
                      const std::vector<float>& dashed_lengths,
                      const PlotBase::GraphType graph_type,
-                     const std::size_t graph_id) override {
+                     const juce::Colour graph_colour) override {
     juce::Path graph_path;
     juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
                                 juce::PathStrokeType::EndCapStyle::rounded);
@@ -123,7 +176,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       }
       switch (graph_type) {
         case PlotBase::GraphType::GraphLine:
-          g.setColour(findColour(getColourFromGraphID(graph_id)));
+          g.setColour(graph_colour);
           break;
         case PlotBase::GraphType::GridLine:
           g.setColour(findColour(PlotBase::ColourIds::grid_colour));
@@ -139,7 +192,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void drawGridLabels(juce::Graphics& g, const LabelVector& x_axis_labels,
                       const LabelVector& y_axis_labels) override {
-    g.setColour(findColour(PlotBase::ColourIds::x_grid_label_colour));
+    g.setColour(findColour(PlotBase::x_grid_label_colour));
     g.setFont(getGridLabelFont());
     for (const auto& x_axis_text : x_axis_labels) {
       g.drawText(x_axis_text.first, x_axis_text.second,
@@ -157,6 +210,41 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
     const juce::Rectangle<int> frame = {0, 0, bounds.getWidth(),
                                         bounds.getHeight()};
+    g.drawRect(frame);
+  }
+
+  void drawLegend(juce::Graphics& g, const StringVector& label_texts,
+                  const std::vector<juce::Colour>& graph_line_colours,
+                  const juce::Rectangle<int>& bounds) override {
+    jassert_return(
+        graph_line_colours.size() == label_texts.size(),
+        "\'label_texts\' and \'graph_line_colours\ must have the same size.'");
+
+    constexpr std::size_t margin_width = 5u;
+    constexpr std::size_t margin_height = 5u;
+    const auto font = getLegendFont();
+
+    const juce::Rectangle<int> frame = {0, 0, bounds.getWidth(),
+                                        bounds.getHeight()};
+
+    g.setFont(getLegendFont());
+
+    const auto height = int(font.getHeightInPoints());
+    int i = 0u;
+    for (const auto label : label_texts) {
+      const auto width = font.getStringWidth(label);
+      const auto x = margin_width;
+      const int y = i * (height + margin_height) + margin_height;
+      juce::Rectangle<int> label_bounds = {x, y, width, height};
+
+      g.setColour(findColour(PlotBase::legend_label_colour));
+      g.drawText(label, label_bounds, juce::Justification::centredLeft);
+      g.setColour(graph_line_colours[i]);
+      g.fillRect(x + width + margin_width, y + height / 2, margin_width * 2, 2);
+      i++;
+    }
+
+    g.setColour(findColour(PlotBase::frame_colour));
     g.drawRect(frame);
   }
 
@@ -235,9 +323,9 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void updateVerticalGridLineTicksAuto(
-      const juce::Rectangle<int>& bounds, const PlotBase::Scaling vertical_scaling,
-      const bool tiny_grids, const Lim_f x_lim,
-      std::vector<float>& x_ticks) noexcept override {
+      const juce::Rectangle<int>& bounds,
+      const PlotBase::Scaling vertical_scaling, const bool tiny_grids,
+      const Lim_f x_lim, std::vector<float>& x_ticks) noexcept override {
     x_ticks.clear();
 
     const auto width = bounds.getWidth();
@@ -369,7 +457,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     const auto use_custom_x_labels =
         custom_x_labels.size() >= vertical_grid_lines.size();
 
-    auto m_custom_x_labels_reverse_it =
+    auto custom_x_labels_reverse_it =
         use_custom_x_labels
             ? std::make_reverse_iterator(custom_x_labels.begin()) +
                   custom_x_ticks.size() - vertical_grid_lines.size()
@@ -384,7 +472,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
                     const std::string x_label =
                         use_custom_x_labels
-                            ? getNextCustomLabel(m_custom_x_labels_reverse_it)
+                            ? getNextCustomLabel(custom_x_labels_reverse_it)
                             : convertFloatToString(x_val[0], 2, 6);
 
                     const auto x_label_width = font.getStringWidth(x_label);
@@ -423,7 +511,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     const auto use_custom_y_labels =
         custom_y_labels.size() >= horizontal_grid_lines.size();
 
-    auto m_custom_y_labels_reverse_it =
+    auto custom_y_labels_reverse_it =
         use_custom_y_labels
             ? std::make_reverse_iterator(custom_y_labels.begin()) +
                   custom_y_ticks.size() - horizontal_grid_lines.size()
@@ -438,7 +526,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
                     const std::string y_label =
                         use_custom_y_labels
-                            ? getNextCustomLabel(m_custom_y_labels_reverse_it)
+                            ? getNextCustomLabel(custom_y_labels_reverse_it)
                             : convertFloatToString(y_val[0], 2, 6);
 
                     const auto y_label_width = font.getStringWidth(y_label);

@@ -43,6 +43,24 @@ class GraphLine : public juce::Component {
   /** Default destructor */
   ~GraphLine() = default;
 
+  /** @brief Set the colour of graph
+   *
+   *  Set the colour of graph.
+   *
+   *  @param graph_colour the colour of the graph
+   *  @return void.
+   */
+  void setColour(const juce::Colour graph_colour);
+
+  /** @brief Get the colour of graph
+   *
+   *  Get the colour of graph.
+   *
+   *  @param graph_colour the colour of the graph
+   *  @return void.
+   */
+  juce::Colour getColour() const noexcept;
+
   /** @brief Set the x-limits
    *
    *  Set the limits of x-axis.
@@ -80,25 +98,6 @@ class GraphLine : public juce::Component {
    *  @return void.
    */
   void setXValues(const std::vector<float>& x_values) noexcept;
-
-  /** @brief Set id
-   *
-   *  The id is used to identify which graph line, every graph line should have
-   *  a unique id.
-   *
-   *  @param id a real value number.
-   *  @return void.
-   */
-  void setID(const std::size_t id) noexcept;
-
-  /** @brief Get id
-   *
-   *  The id is used to identify which graph line, every graph line should have
-   *  a unique id.
-   *
-   *  @return the id a real value number.
-   */
-  std::size_t getID() const noexcept;
 
   /** @brief Get y-values
    *
@@ -146,6 +145,7 @@ class GraphLine : public juce::Component {
   std::vector<float> m_dashed_lengths;
   GraphType m_graph_type;
   std::size_t m_id;
+  juce::Colour m_graph_colour;
 
   virtual void updateYGraphPointsIntern() noexcept = 0;
   virtual void updateXGraphPointsIntern() noexcept = 0;

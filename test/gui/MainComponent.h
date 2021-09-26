@@ -95,6 +95,8 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 
 #define Y_TICKS(TICKS) GET_PLOT->setYTicks(TICKS);
 
+#define LEGEND(TEXTS) GET_PLOT->setLegend(TEXTS);
+
 class MainComponent : public juce::Component {
  public:
   MainComponent();

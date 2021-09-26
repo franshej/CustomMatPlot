@@ -5,9 +5,18 @@
 #include "spl_plot.h"
 
 namespace scp {
-GraphLine::GraphLine() : m_graph_type(PlotBase::GraphType::GraphLine), m_id(0u) {}
+GraphLine::GraphLine()
+    : m_graph_type(PlotBase::GraphType::GraphLine), m_id(0u) {}
 GraphLine::GraphLine(const GraphType graph_type)
     : m_graph_type(graph_type), m_id(0u) {}
+
+void GraphLine::setColour(const juce::Colour graph_colour) {
+  m_graph_colour = graph_colour;
+}
+
+juce::Colour GraphLine::getColour() const noexcept {
+  return m_graph_colour;
+}
 
 void GraphLine::setXLim(const float min, const float max) {
   Lim_f x_lim;
@@ -48,7 +57,7 @@ void GraphLine::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
     auto lnf = static_cast<PlotBase::LookAndFeelMethods*>(m_lookandfeel);
     const auto graph_type = static_cast<PlotBase::GraphType>(m_graph_type);
-    lnf->drawGraphLine(g, m_graph_points, m_dashed_lengths, graph_type, m_id);
+    lnf->drawGraphLine(g, m_graph_points, m_dashed_lengths, graph_type, m_graph_colour);
   }
 }
 
@@ -77,10 +86,6 @@ void GraphLine::setXValues(const std::vector<float>& x_data) noexcept {
     m_graph_points.resize(m_x_data.size());
   }
 }
-
-void GraphLine::setID(const std::size_t id) noexcept { m_id = id; }
-
-std::size_t GraphLine::getID() const noexcept { return m_id; }
 
 void GraphLine::setDashedPath(
     const std::vector<float>& dashed_lengths) noexcept {

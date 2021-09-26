@@ -38,7 +38,8 @@ struct PlotBase : juce::Component {
     frame_colour,        /**< Colour of the frame around the graph area. */
     x_label_colour,      /**< Colour of the text on the x-axis. */
     y_label_colour,      /**< Colour of the label on the y-axis. */
-    title_label_colour   /**< Colour of the title label. */
+    title_label_colour,  /**< Colour of the title label. */
+    legend_label_colour  /**< Colour of the legend label(s). */
   };
 
   enum ColourIdsGraph {
@@ -50,9 +51,9 @@ struct PlotBase : juce::Component {
     sixth_graph_colour                /**< Colour of the sixth graph. */
   };
 
-  /**< Used in LookAndFeel to choose scaling of a graph_lines. */
+  /**< Used in LookAndFeel to choose type of a graph line. */
   enum GraphType : uint32_t {
-    GraphLine, /**< Simple graph line. */
+    GraphLine, /**< Graph line. */
     GridLine   /**< GridLine used for the grids.*/
   };
 
@@ -63,10 +64,10 @@ struct PlotBase : juce::Component {
   };
 
   /**
-     These methods define a interface for the LookAndFeel class of juce.
-     The Plot class needs a LookAndFeel, that implements these methods.
-     The default implementation can be seen in, \see scp_lookandfeelmethods.h
- */
+   *   These methods define a interface for the LookAndFeel class of juce.
+   *   The Plot class needs a LookAndFeel, that implements these methods.
+   *   The default implementation can be seen in, \see scp_lookandfeelmethods.h
+   */
   class LookAndFeelMethods : public LookAndFeelMethodsBase {
    public:
     virtual ~LookAndFeelMethods(){};
@@ -79,12 +80,26 @@ struct PlotBase : juce::Component {
     virtual void drawGraphLine(
         juce::Graphics& g, const std::vector<juce::Point<float>>& graph_points,
         const std::vector<float>& dashed_length, const GraphType graph_type,
-        const std::size_t graph_id) = 0;
+        const juce::Colour graph_colour) = 0;
 
     /** This method draws the labels on the x and y axis. */
     virtual void drawGridLabels(juce::Graphics& g,
                                 const LabelVector& x_axis_labels,
                                 const LabelVector& y_axis_labels) = 0;
+
+    /** This method draws the legend. */
+    virtual void drawLegend(juce::Graphics& g, const StringVector& label_texts,
+                            const std::vector<juce::Colour> &graph_line_colours,
+                            const juce::Rectangle<int>& bounds) = 0;
+
+    /** A method to find and get the colour for either a 'ColourIdsGraph'
+     * enum.*/
+    virtual juce::Colour findAndGetColourFromId(
+        const ColourIdsGraph colour_id) const noexcept = 0;
+
+    /** A method to find and get the colour for a 'ColourIds' enum. */
+    virtual juce::Colour findAndGetColourFromId(
+        const ColourIds colour_id) const noexcept = 0;
 
     /** Returns the 'ColourIdsGraph' for a given id.*/
     virtual ColourIdsGraph getColourFromGraphID(
@@ -96,6 +111,19 @@ struct PlotBase : juce::Component {
 
     /** Returns the Font used when drawing the grid labels. */
     virtual juce::Font getGridLabelFont() const noexcept = 0;
+
+    /** Get the legend position */
+    virtual juce::Point<int> getLegendPosition(
+        const juce::Rectangle<int>& graph_bounds,
+        const juce::Rectangle<int>& legend_bounds) const noexcept = 0;
+
+    /** Get the legend bounds */
+    virtual juce::Rectangle<int> getLegendBounds(
+        [[maybe_unused]] const juce::Rectangle<int>& bounds,
+        const std::vector<std::string>& label_texts) const noexcept = 0;
+
+    /** Returns the Font used when drawing legends. */
+    virtual juce::Font getLegendFont() const noexcept = 0;
 
     /** Get the bounds of the componenet */
     virtual juce::Rectangle<int> getPlotBounds(
@@ -183,30 +211,21 @@ struct PlotBase : juce::Component {
    */
   void yLim(const float min, const float max);
 
-  /** @brief Plot y-data
+  /** @brief Plot y-data or y-data/x-data.
    *
-   *  Plot y-data. Each vector in y-data represents a single graph line.
-   *  E.g. If 'y_data.size() == 3', three graph lines will be plotted. The
-   *  x-data are provided using the 'Plot' function with argument for x_data. By
-   *  using this function the x-data are Linear increasing from 0 with the size
-   *  of y-data.
-   *
-   *  @param y_data vector of vectors with the y-values.
-   *  @return void.
-   */
-  void Plot(const std::vector<std::vector<float>>& y_data);
-
-  /** @brief Plot y-data
-   *
-   *  Plot y-data/x-data. Each vector in y-data/x-data represents a single graph
-   *  line. E.g. If 'y_data.size() == 3', three graph lines will be plotted.
+   *  Plot y-data or y-data/x-data. Each vector in y-data represents a single
+   *  graph line. E.g. If 'y_data.size() == 3', three graph lines will be
+   *  plotted. If 'x_data' is empty the x-data is Linear increasing from 0 with
+   *  the size of y-data. By populating 'custom_graph_colours' custom colours
+   *  for the graphs are used, if empty 'ColourIdsGraph' is used.
    *
    *  @param y_data vector of vectors with the y-values.
    *  @param x_data vector of vectors with the y-values.
    *  @return void.
    */
   void Plot(const std::vector<std::vector<float>>& y_data,
-            const std::vector<std::vector<float>>& x_data);
+            const std::vector<std::vector<float>>& x_data = {},
+            ColourVector graph_colours = {});
 
   /** @brief Set the text for label on the X-axis
    *
@@ -295,6 +314,17 @@ struct PlotBase : juce::Component {
    */
   void gridON(const bool grid_on, const bool tiny_grid_on);
 
+  /** @brief Set Legend
+   *
+   *  Set descriptions for each graph. The label 'label1..N' will be used if
+   *  fewers numbers of graph_descriptions are provided than existing numbers of
+   *  graphs.
+   *
+   *  @param graph_descriptions description of the graphs
+   *  @return void.
+   */
+  void setLegend(const std::vector<std::string>& graph_descriptions);
+
   void resized() override;
   void paint(juce::Graphics& g) override;
   void parentHierarchyChanged() override;
@@ -304,6 +334,9 @@ struct PlotBase : juce::Component {
   void initialize();
 
  private:
+  void PlotInternal(const std::vector<std::vector<float>>& y_data,
+                    const std::vector<std::vector<float>>& x_data = {},
+                    ColourVector graph_colours = {});
   void updateYData(const std::vector<std::vector<float>>& y_data);
   void updateXData(const std::vector<std::vector<float>>& x_data);
 
@@ -318,10 +351,11 @@ struct PlotBase : juce::Component {
 
   bool m_x_autoscale = true, m_y_autoscale = true;
 
-  std::vector<std::unique_ptr<scp::GraphLine>> m_graph_lines;
+  GraphLines m_graph_lines;
   std::unique_ptr<BaseGrid> m_grid;
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;
+  std::unique_ptr<Legend> m_legend;
 
   juce::LookAndFeel* m_lookandfeel;
   LookAndFeelMethodsBase* m_lookandfeel_base;

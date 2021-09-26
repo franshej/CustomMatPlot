@@ -166,6 +166,48 @@ TEST(test_y_lim) {
   Y_LIM(0, 1);
 }
 
+TEST(test_legend_6) {
+  std::vector<std::vector<float>> test_data_y =
+      std::vector<std::vector<float>>(6, std::vector<float>(100));
+  std::vector<std::string> legends;
+
+  float i = 0;
+  for (auto &y_vec : test_data_y) {
+    std::iota(y_vec.begin(), y_vec.end(), 0);
+    for (auto &y : y_vec) {
+      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+    }
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(0) << (i + 1);
+    legends.emplace_back("First sine with amplitude of: " + stream.str());
+    i++;
+  }
+
+  PLOT_Y(test_data_y);
+  LEGEND(legends);
+}
+
+TEST(test_legend_2) {
+  std::vector<std::vector<float>> test_data_y =
+      std::vector<std::vector<float>>(2, std::vector<float>(100));
+  std::vector<std::string> legends;
+
+  float i = 0;
+  for (auto &y_vec : test_data_y) {
+    std::iota(y_vec.begin(), y_vec.end(), 0);
+    for (auto &y : y_vec) {
+      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+    }
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(0) << (i + 1);
+    legends.emplace_back("First sine with amplitude of: " + stream.str());
+    i++;
+  }
+
+  PLOT_Y(test_data_y);
+  LEGEND(legends);
+}
+
 static juce::Rectangle<int> getScreenArea() {
   return juce::Desktop::getInstance().getDisplays().getMainDisplay().userArea;
 }
