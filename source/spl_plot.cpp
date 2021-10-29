@@ -1,11 +1,11 @@
 #include <stdexcept>
 
-#include "scp_lookandfeel.h"
-#include "spl_label.h"
-#include "spl_grid.h"
-#include "spl_graph_line.h"
 #include "scp_frame.h"
 #include "scp_legend.h"
+#include "scp_lookandfeel.h"
+#include "spl_graph_line.h"
+#include "spl_grid.h"
+#include "spl_label.h"
 
 namespace scp {
 
@@ -32,7 +32,7 @@ static std::pair<float, float> findMinMaxValues(
   auto min_value = std::numeric_limits<float>::max();
 
   for (const auto& graph : graph_lines) {
-    const auto &single_data_vector =
+    const auto& single_data_vector =
         isXValue ? graph->getXValues() : graph->getYValues();
 
     const auto& current_max =
@@ -144,7 +144,9 @@ void PlotBase::setYLabel(const std::string& y_label) {
   m_plot_label->setYLabel(y_label);
 }
 
-void PlotBase::setTitle(const std::string& title) { m_plot_label->setTitle(title); }
+void PlotBase::setTitle(const std::string& title) {
+  m_plot_label->setTitle(title);
+}
 
 void PlotBase::makeGraphDashed(const std::vector<float>& dashed_lengths,
                                unsigned graph_index) {
@@ -193,7 +195,10 @@ void PlotBase::resized() {
 
 void PlotBase::paint(juce::Graphics& g) {}
 
-void PlotBase::parentHierarchyChanged() { lookAndFeelChanged(); }
+void PlotBase::parentHierarchyChanged() {
+  getParentComponent()->addMouseListener(this, true);
+  lookAndFeelChanged();
+}
 
 void PlotBase::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
@@ -325,19 +330,26 @@ void PlotBase::setLegend(const StringVector& graph_descriptions) {
 
     m_legend->setBounds(bounds);
     m_legend->setLegend(graph_descriptions_ref);
+    m_legend->setAlwaysOnTop(true);
+  }
+}
+
+void PlotBase::mouseDrag(const juce::MouseEvent& event) {
+  if (isVisible()) {
+    if (m_legend.get() == event.eventComponent) {
+      m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
+    }
   }
 }
 
 SemiPlotX::SemiPlotX() { initialize(); }
 
-std::unique_ptr<BaseGrid> LinearPlot::getGrid()
-{
-    return std::move(std::make_unique<Grid>());
+std::unique_ptr<BaseGrid> LinearPlot::getGrid() {
+  return std::move(std::make_unique<Grid>());
 }
 
-std::unique_ptr<BaseGrid> SemiPlotX::getGrid()
-{
-    return std::move(std::make_unique<SemiLogXGrid>());
+std::unique_ptr<BaseGrid> SemiPlotX::getGrid() {
+  return std::move(std::make_unique<SemiLogXGrid>());
 }
 
 LinearPlot::LinearPlot() { initialize(); }

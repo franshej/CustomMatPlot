@@ -72,7 +72,7 @@ struct PlotBase : juce::Component {
    public:
     virtual ~LookAndFeelMethods(){};
 
-    /** This method draws a frame aroudn the graph area. */
+    /** This method draws a frame around the graph area. */
     virtual void drawFrame(juce::Graphics& g,
                            const juce::Rectangle<int> bounds) = 0;
 
@@ -89,7 +89,7 @@ struct PlotBase : juce::Component {
 
     /** This method draws the legend. */
     virtual void drawLegend(juce::Graphics& g, const StringVector& label_texts,
-                            const std::vector<juce::Colour> &graph_line_colours,
+                            const std::vector<juce::Colour>& graph_line_colours,
                             const juce::Rectangle<int>& bounds) = 0;
 
     /** A method to find and get the colour for either a 'ColourIdsGraph'
@@ -137,15 +137,15 @@ struct PlotBase : juce::Component {
 
     /** Updates the x-ticks with auto generated ticks. */
     virtual void updateVerticalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds,
-        const Scaling vertical_scaling, const bool tiny_grids,
-        const Lim_f x_lim, std::vector<float>& x_ticks) noexcept = 0;
+        const juce::Rectangle<int>& bounds, const Scaling vertical_scaling,
+        const bool tiny_grids, const Lim_f x_lim,
+        std::vector<float>& x_ticks) noexcept = 0;
 
     /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds,
-        const Scaling hotizontal_scaling, const bool tiny_grids,
-        const Lim_f y_lim, std::vector<float>& y_ticks) noexcept = 0;
+        const juce::Rectangle<int>& bounds, const Scaling hotizontal_scaling,
+        const bool tiny_grids, const Lim_f y_lim,
+        std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-cordinates of the graph points used when drawing a graph
      * line. */
@@ -157,8 +157,7 @@ struct PlotBase : juce::Component {
     /** Updates the y-cordinates of the graph points used when drawing a graph
      * line. */
     virtual void updateYGraphPoints(const juce::Rectangle<int>& bounds,
-                                    const Scaling scaling,
-                                    const Lim_f& y_lim,
+                                    const Scaling scaling, const Lim_f& y_lim,
                                     const std::vector<float>& y_data,
                                     GraphPoints& graph_points) noexcept = 0;
 
@@ -295,8 +294,8 @@ struct PlotBase : juce::Component {
   /** @brief Make a graph dashed
    *
    *  Use custom dash-lengths to draw a dashed line. e.g. dashed_lengths = {2,
-   *  2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 3 pixels, skip 6
-   *  pixels, and then repeat.
+   *  2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 3 pixels, skip
+   * 6 pixels, and then repeat.
    *
    *  @param dashed_lengths
    *  @param y_ticks y-postions of ticks
@@ -325,12 +324,19 @@ struct PlotBase : juce::Component {
    */
   void setLegend(const std::vector<std::string>& graph_descriptions);
 
+  /** @internal */
   void resized() override;
+  /** @internal */
   void paint(juce::Graphics& g) override;
+  /** @internal */
   void parentHierarchyChanged() override;
+  /** @internal */
   void lookAndFeelChanged() override;
+  /** @internal */
+  void mouseDrag(const juce::MouseEvent& event) override;
 
  protected:
+  /** @internal */
   void initialize();
 
  private:
@@ -360,6 +366,8 @@ struct PlotBase : juce::Component {
   juce::LookAndFeel* m_lookandfeel;
   LookAndFeelMethodsBase* m_lookandfeel_base;
   std::unique_ptr<PlotLookAndFeel> m_lookandfeel_default;
+
+  juce::ComponentDragger m_comp_dragger;
 };
 
 /**

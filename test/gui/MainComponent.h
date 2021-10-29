@@ -45,10 +45,10 @@ static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
 
 #define THIS static_cast<MainComponent *>(thiz)
 
-#define ADD_PLOT(TYPE)                                                \
-  (*(THIS->get_plot_holder()))[test_name] = std::make_unique<TYPE>(); \
-  thiz->addAndMakeVisible(                                            \
-      THIS->get_plot_holder()->find(test_name)->second.get());
+#define ADD_PLOT(TYPE)                         \
+  auto __plot_comp = std::make_unique<TYPE>(); \
+  thiz->addAndMakeVisible(__plot_comp.get());  \
+  (*(THIS->get_plot_holder()))[test_name] = std::move(__plot_comp);
 
 #define GET_PLOT THIS->get_plot_holder()->find(test_name)->second.get()
 
