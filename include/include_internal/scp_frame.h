@@ -24,9 +24,6 @@ namespace scp {
  */
 class Frame : public juce::Component {
  public:
-  Frame() = default;
-  ~Frame() = default;
-
   void resized() override;
   void paint(juce::Graphics& g) override;
   void lookAndFeelChanged() override;

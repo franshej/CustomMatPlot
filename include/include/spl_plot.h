@@ -18,7 +18,6 @@
 
 namespace scp {
 
-//==============================================================================
 /*
  *  \class PlotBase
  *  \brief A Base Class component to plot 2-D lines/marker symbols.
