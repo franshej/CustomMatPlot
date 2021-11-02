@@ -274,3 +274,4 @@ void MainComponent::resized() {
     }
   }
 }
+

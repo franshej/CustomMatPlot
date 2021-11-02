@@ -56,6 +56,7 @@ PlotBase::~PlotBase() {
 }
 
 void PlotBase::updateYLim(const float min, const float max) {
+  m_y_lim = {min, max};
   for (auto& graph_line : m_graph_lines) {
     graph_line->setYLim(min, max);
   }
@@ -65,6 +66,7 @@ void PlotBase::updateYLim(const float min, const float max) {
 }
 
 void PlotBase::updateXLim(const float min, const float max) {
+  m_x_lim = {min, max};
   for (auto& graph_line : m_graph_lines) {
     graph_line->setXLim(min, max);
   }
@@ -334,15 +336,37 @@ void PlotBase::setLegend(const StringVector& graph_descriptions) {
   }
 }
 
+static std::pair<const float, const float> covertXYCordinatesToXYValues(
+    const float x, const float y, const juce::Rectangle<int> graph_bounds,
+    const scp::Scaling scaling, const Lim_f x_lim, const Lim_f y_lim) {
+  const auto dmin_max_x = x_lim.max - x_lim.min;
+  const auto dmin_max_y = y_lim.max - y_lim.min;
+}
+
 void PlotBase::mouseDrag(const juce::MouseEvent& event) {
   if (isVisible()) {
     if (m_legend.get() == event.eventComponent) {
       m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
+    } else if (m_graph_lines.back().get() == event.eventComponent) {
+        const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base);
+        const auto graph_bounds = lnf->getGraphBounds(getBounds());
+      DBG("x, y value: [ "
+          << std::to_string(getXFromXCoordinate(
+                 event.position.getX(), graph_bounds.getWidth(), m_x_lim, m_x_scaling))
+          << ", "
+          << std::to_string(getYFromYCoordinate(
+                 event.position.getY(), graph_bounds.getHeight(), m_y_lim, m_y_scaling))
+          << " ]");
+      DBG("Pos: " << event.position.toString());
     }
   }
 }
 
-SemiPlotX::SemiPlotX() { initialize(); }
+SemiPlotX::SemiPlotX() {
+  m_x_scaling = Scaling::logarithmic;
+  m_y_scaling = Scaling::linear;
+  initialize();
+}
 
 std::unique_ptr<BaseGrid> LinearPlot::getGrid() {
   return std::move(std::make_unique<Grid>());
@@ -352,7 +376,11 @@ std::unique_ptr<BaseGrid> SemiPlotX::getGrid() {
   return std::move(std::make_unique<SemiLogXGrid>());
 }
 
-LinearPlot::LinearPlot() { initialize(); }
+LinearPlot::LinearPlot() {
+  m_x_scaling = Scaling::linear;
+  m_y_scaling = Scaling::linear;
+  initialize();
+}
 
 std::unique_ptr<scp::GraphLine> LinearPlot::getGraphLine() {
   return std::move(std::make_unique<scp::LinearGraphLine>());

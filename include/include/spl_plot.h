@@ -51,18 +51,6 @@ struct PlotBase : juce::Component {
     sixth_graph_colour                /**< Colour of the sixth graph. */
   };
 
-  /**< Used in LookAndFeel to choose type of a graph line. */
-  enum GraphType : uint32_t {
-    GraphLine, /**< Graph line. */
-    GridLine   /**< GridLine used for the grids.*/
-  };
-
-  /**< Used in LookAndFeel to define the scaling of a graph line. */
-  enum Scaling : uint32_t {
-    linear,     /**< Linear scaling of the graph line. */
-    logarithmic /**< Logarithmic scaling of the graph line. */
-  };
-
   /**
    *   These methods define a interface for the LookAndFeel class of juce.
    *   The Plot class needs a LookAndFeel, that implements these methods.
@@ -339,6 +327,8 @@ struct PlotBase : juce::Component {
   /** @internal */
   void initialize();
 
+  PlotBase::Scaling m_x_scaling, m_y_scaling;
+
  private:
   void PlotInternal(const std::vector<std::vector<float>>& y_data,
                     const std::vector<std::vector<float>>& x_data = {},
@@ -356,6 +346,7 @@ struct PlotBase : juce::Component {
   virtual std::unique_ptr<BaseGrid> getGrid() = 0;
 
   bool m_x_autoscale = true, m_y_autoscale = true;
+  scp::Lim_f m_x_lim, m_y_lim;
 
   GraphLines m_graph_lines;
   std::unique_ptr<BaseGrid> m_grid;

@@ -158,7 +158,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   void drawGraphLine(juce::Graphics& g,
                      const std::vector<juce::Point<float>>& graph_points,
                      const std::vector<float>& dashed_lengths,
-                     const PlotBase::GraphType graph_type,
+                     const GraphType graph_type,
                      const juce::Colour graph_colour) override {
     juce::Path graph_path;
     juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
@@ -175,10 +175,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                                   int(dashed_lengths.size()));
       }
       switch (graph_type) {
-        case PlotBase::GraphType::GraphLine:
+      case GraphType::graph_line:
           g.setColour(graph_colour);
           break;
-        case PlotBase::GraphType::GridLine:
+      case GraphType::grid_line:
           g.setColour(findColour(PlotBase::ColourIds::grid_colour));
           break;
         default:
@@ -249,7 +249,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void updateXGraphPoints(const juce::Rectangle<int>& bounds,
-                          const PlotBase::Scaling scaling, const Lim_f& x_lim,
+                          const Scaling scaling, const Lim_f& x_lim,
                           const std::vector<float>& x_data,
                           GraphPoints& graph_points) noexcept override {
     const auto addXGraphPointsLinear = [&]() {
@@ -268,7 +268,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       const auto width = static_cast<float>(bounds.getWidth());
 
       auto xToXPos = [&](const float x) {
-        return width * (log(x / x_lim.min) / log(x_lim.max / x_lim.min));
+        return width * (log10(x / x_lim.min) / log10(x_lim.max / x_lim.min));
       };
 
       std::size_t i = 0u;
@@ -279,10 +279,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
 
     switch (scaling) {
-      case PlotBase::Scaling::linear:
+      case Scaling::linear:
         addXGraphPointsLinear();
         break;
-      case PlotBase::Scaling::logarithmic:
+      case Scaling::logarithmic:
         addXGraphPointsLogarithmic();
         break;
       default:
@@ -292,7 +292,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void updateYGraphPoints(const juce::Rectangle<int>& bounds,
-                          const PlotBase::Scaling scaling, const Lim_f& y_lim,
+                          const Scaling scaling, const Lim_f& y_lim,
                           const std::vector<float>& y_data,
                           GraphPoints& graph_points) noexcept override {
     const auto addYGraphPointsLinear = [&]() {
@@ -310,10 +310,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
 
     switch (scaling) {
-      case PlotBase::Scaling::linear:
+      case Scaling::linear:
         addYGraphPointsLinear();
         break;
-      case PlotBase::Scaling::logarithmic:
+      case Scaling::logarithmic:
         jassert_return(false, "Log scale for y axis is not implemented.");
         break;
       default:
@@ -324,7 +324,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void updateVerticalGridLineTicksAuto(
       const juce::Rectangle<int>& bounds,
-      const PlotBase::Scaling vertical_scaling, const bool tiny_grids,
+      const Scaling vertical_scaling, const bool tiny_grids,
       const Lim_f x_lim, std::vector<float>& x_ticks) noexcept override {
     x_ticks.clear();
 
@@ -378,10 +378,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
 
     switch (vertical_scaling) {
-      case PlotBase::Scaling::linear:
+      case Scaling::linear:
         addVerticalTicksLinear();
         break;
-      case PlotBase::Scaling::logarithmic:
+      case Scaling::logarithmic:
         addVerticalTicksLogarithmic();
         break;
       default:
@@ -392,7 +392,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void updateHorizontalGridLineTicksAuto(
       const juce::Rectangle<int>& bounds,
-      const PlotBase::Scaling hotizontal_scaling, const bool tiny_grids,
+      const Scaling hotizontal_scaling, const bool tiny_grids,
       const Lim_f y_lim, std::vector<float>& y_ticks) noexcept override {
     y_ticks.clear();
 
@@ -419,10 +419,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     };
 
     switch (hotizontal_scaling) {
-      case PlotBase::Scaling::linear:
+      case Scaling::linear:
         addHorizontalTicksLinear();
         break;
-      case PlotBase::Scaling::logarithmic:
+      case Scaling::logarithmic:
         jassert_return(false, "Not implmeneted yet.");
         break;
       default:

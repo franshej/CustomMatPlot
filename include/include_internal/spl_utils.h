@@ -4,7 +4,6 @@ namespace scp {
 /*============================================================================*/
 
 class LookAndFeelMethodsBase;
-typedef uint32_t GraphType; /**< Opaque type for scp::Plot::GraphType. */
 
 /*============================================================================*/
 

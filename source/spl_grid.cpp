@@ -13,7 +13,7 @@ template <class graph_type>
 constexpr static scp::GraphLine *getAndAddGridLine(
     std::vector<std::unique_ptr<scp::GraphLine>> &graph_lines) {
   graph_lines.emplace_back(
-      std::make_unique<graph_type>(scp::PlotBase::GraphType::GridLine));
+      std::make_unique<graph_type>(scp::GraphType::grid_line));
   return graph_lines.back().get();
 }
 /*============================================================================*/
@@ -62,7 +62,7 @@ void BaseGrid::setXLabels(const std::vector<std::string> &x_labels) {
 }
 
 void BaseGrid::resized() {
-  jassert_return(m_config_params.x_lim, "x limit must be set. Use 'SetXLim'");
+  jassert_return(m_config_params.x_lim, "x limit must be set. Use 'setXLim'");
   jassert_return(m_config_params.y_lim, "y limit must be set. Use 'setYLim'");
   jassert_return(getBounds().getWidth() > 0 && getBounds().getHeight() > 0.f,
                  "width and height must be larger than zero.");
@@ -76,8 +76,7 @@ void BaseGrid::resized() {
   }
 
   std::vector<float> x_auto_ticks, y_auto_ticks;
-  Scaling vertical_scaling{PlotBase::Scaling::linear},
-      horizontal_scaling{PlotBase::Scaling::linear};
+  Scaling vertical_scaling{Scaling::linear},horizontal_scaling{Scaling::linear};
 
   setScaling(vertical_scaling, horizontal_scaling);
 
@@ -94,14 +93,14 @@ void BaseGrid::resized() {
   m_horizontal_grid_lines.clear();
 
   for (const auto x_val : x_ticks) {
-    if (vertical_scaling == PlotBase::Scaling::logarithmic)
+    if (vertical_scaling == Scaling::logarithmic)
       addGridLineVertical<scp::LogXGraphLine>(x_val);
     else
       addGridLineVertical<scp::LinearGraphLine>(x_val);
   }
 
   for (const auto y_val : y_ticks) {
-    if (horizontal_scaling == PlotBase::Scaling::logarithmic) {
+    if (horizontal_scaling == Scaling::logarithmic) {
       // TODO: add logscale for y-values.
       jassert_return(false, "'LogYGraphLine' is not implemented.");
     } else
@@ -227,10 +226,10 @@ void BaseGrid::createAutoGridTicks(std::vector<float> &x_ticks,
     if (auto *lnf =
             static_cast<scp::PlotBase::LookAndFeelMethods *>(m_lookandfeel)) {
       lnf->updateVerticalGridLineTicksAuto(
-          getBounds(), static_cast<PlotBase::Scaling>(vertical_scaling),
+          getBounds(), vertical_scaling,
           m_config_params.tiny_grid_on, m_config_params.x_lim, x_ticks);
       lnf->updateHorizontalGridLineTicksAuto(
-          getBounds(), static_cast<PlotBase::Scaling>(horizontal_scaling),
+          getBounds(), horizontal_scaling,
           m_config_params.tiny_grid_on, m_config_params.y_lim, y_ticks);
     }
   }
@@ -240,16 +239,16 @@ void BaseGrid::createAutoGridTicks(std::vector<float> &x_ticks,
 
 void Grid::setScaling(Scaling &vertical_scaling,
                       Scaling &horizontal_scaling) noexcept {
-  vertical_scaling = PlotBase::Scaling::linear;
-  horizontal_scaling = PlotBase::Scaling::linear;
+  vertical_scaling = Scaling::linear;
+  horizontal_scaling = Scaling::linear;
 }
 
 /*============================================================================*/
 
 void SemiLogXGrid::setScaling(Scaling &vertical_scaling,
                               Scaling &horizontal_scaling) noexcept {
-  vertical_scaling = PlotBase::Scaling::logarithmic;
-  horizontal_scaling = PlotBase::Scaling::linear;
+  vertical_scaling = Scaling::logarithmic;
+  horizontal_scaling = Scaling::linear;
 }
 
 }  // namespace scp

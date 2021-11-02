@@ -19,8 +19,6 @@
 
 namespace scp {
 
-typedef uint32_t Scaling;
-
 /**
  * A Parameter struct
  * Containing parameters for grid bounds and limits of the grids.
