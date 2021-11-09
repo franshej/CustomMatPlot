@@ -34,38 +34,16 @@ void BaseGrid::createLabels() {
   }
 }
 
-void BaseGrid::paint(juce::Graphics &g) {
-  if (m_lookandfeel) {
-    auto lnf = static_cast<PlotBase::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->drawGridLabels(g, m_x_axis_labels, m_y_axis_labels);
-  }
-}
-
-void BaseGrid::lookAndFeelChanged() {
-  if (auto *lnf =
-          dynamic_cast<PlotBase::LookAndFeelMethods *>(&getLookAndFeel())) {
-    m_lookandfeel = lnf;
-  } else {
-    m_lookandfeel = nullptr;
-  }
-  for (auto &grid_line : m_horizontal_grid_lines) {
-    grid_line->setLookAndFeel(&getLookAndFeel());
+void BaseGrid::updateGridInternal() {
+  if (!m_config_params.x_lim || !m_config_params.y_lim) {
+    DBG("Both x_lim and y_lim must be set.");
+    return;
   }
 
-  for (auto &grid_line : m_vertical_grid_lines) {
-    grid_line->setLookAndFeel(&getLookAndFeel());
+  if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
+    DBG("width and height must be larger than zero.");
+    return;
   }
-}
-
-void BaseGrid::setXLabels(const std::vector<std::string> &x_labels) {
-  m_custom_x_labels = x_labels;
-}
-
-void BaseGrid::resized() {
-  jassert_return(m_config_params.x_lim, "x limit must be set. Use 'setXLim'");
-  jassert_return(m_config_params.y_lim, "y limit must be set. Use 'setYLim'");
-  jassert_return(getBounds().getWidth() > 0 && getBounds().getHeight() > 0.f,
-                 "width and height must be larger than zero.");
 
   // Temp, should be removed
   if (m_lookandfeel) {
@@ -76,7 +54,8 @@ void BaseGrid::resized() {
   }
 
   std::vector<float> x_auto_ticks, y_auto_ticks;
-  Scaling vertical_scaling{Scaling::linear},horizontal_scaling{Scaling::linear};
+  Scaling vertical_scaling{Scaling::linear},
+      horizontal_scaling{Scaling::linear};
 
   setScaling(vertical_scaling, horizontal_scaling);
 
@@ -126,9 +105,39 @@ void BaseGrid::resized() {
   createLabels();
 }
 
+void BaseGrid::paint(juce::Graphics &g) {
+  if (m_lookandfeel) {
+    auto lnf = static_cast<PlotBase::LookAndFeelMethods *>(m_lookandfeel);
+    lnf->drawGridLabels(g, m_x_axis_labels, m_y_axis_labels);
+  }
+}
+
+void BaseGrid::lookAndFeelChanged() {
+  if (auto *lnf =
+          dynamic_cast<PlotBase::LookAndFeelMethods *>(&getLookAndFeel())) {
+    m_lookandfeel = lnf;
+  } else {
+    m_lookandfeel = nullptr;
+  }
+  for (auto &grid_line : m_horizontal_grid_lines) {
+    grid_line->setLookAndFeel(&getLookAndFeel());
+  }
+
+  for (auto &grid_line : m_vertical_grid_lines) {
+    grid_line->setLookAndFeel(&getLookAndFeel());
+  }
+}
+
+void BaseGrid::setXLabels(const std::vector<std::string> &x_labels) {
+  m_custom_x_labels = x_labels;
+}
+
+void BaseGrid::updateGrid() { updateGridInternal(); }
+
+void BaseGrid::resized() { updateGridInternal(); }
+
 void BaseGrid::setGridBounds(const juce::Rectangle<int> &grid_area) {
   m_config_params.grid_area = grid_area;
-  resized();
 }
 
 void BaseGrid::setYLim(const float min, const float max) {
@@ -225,12 +234,12 @@ void BaseGrid::createAutoGridTicks(std::vector<float> &x_ticks,
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<scp::PlotBase::LookAndFeelMethods *>(m_lookandfeel)) {
-      lnf->updateVerticalGridLineTicksAuto(
-          getBounds(), vertical_scaling,
-          m_config_params.tiny_grid_on, m_config_params.x_lim, x_ticks);
-      lnf->updateHorizontalGridLineTicksAuto(
-          getBounds(), horizontal_scaling,
-          m_config_params.tiny_grid_on, m_config_params.y_lim, y_ticks);
+      lnf->updateVerticalGridLineTicksAuto(getBounds(), vertical_scaling,
+                                           m_config_params.tiny_grid_on,
+                                           m_config_params.x_lim, x_ticks);
+      lnf->updateHorizontalGridLineTicksAuto(getBounds(), horizontal_scaling,
+                                             m_config_params.tiny_grid_on,
+                                             m_config_params.y_lim, y_ticks);
     }
   }
 }

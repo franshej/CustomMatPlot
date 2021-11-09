@@ -38,7 +38,8 @@ struct PlotBase : juce::Component {
     x_label_colour,      /**< Colour of the text on the x-axis. */
     y_label_colour,      /**< Colour of the label on the y-axis. */
     title_label_colour,  /**< Colour of the title label. */
-    legend_label_colour  /**< Colour of the legend label(s). */
+    legend_label_colour, /**< Colour of the legend label(s). */
+    zoom_area_colour     /**< Colour of the dashed zoom rectangle. */
   };
 
   enum ColourIdsGraph {
@@ -78,6 +79,12 @@ struct PlotBase : juce::Component {
     virtual void drawLegend(juce::Graphics& g, const StringVector& label_texts,
                             const std::vector<juce::Colour>& graph_line_colours,
                             const juce::Rectangle<int>& bounds) = 0;
+
+    /** This method draws the area the user wants to zoom in on. */
+    virtual void drawZoomArea(
+        juce::Graphics& g, juce::Point<int>& start_coordinates,
+        const juce::Point<int>& end_coordinates,
+        const juce::Rectangle<int>& graph_bounds) noexcept = 0;
 
     /** A method to find and get the colour for either a 'ColourIdsGraph'
      * enum.*/
@@ -321,6 +328,10 @@ struct PlotBase : juce::Component {
   void lookAndFeelChanged() override;
   /** @internal */
   void mouseDrag(const juce::MouseEvent& event) override;
+  /** @internal */
+  void mouseDown(const juce::MouseEvent& event) override;
+  /** @internal */
+  void mouseUp(const juce::MouseEvent& event) override;
 
  protected:
   /** @internal */
@@ -341,17 +352,20 @@ struct PlotBase : juce::Component {
   void updateYLim(const float min, const float max);
   void updateXLim(const float min, const float max);
 
-  virtual std::unique_ptr<scp::GraphLine> getGraphLine() = 0;
+  void updateGridAndGraphs();
+
+  virtual std::unique_ptr<GraphLine> getGraphLine() = 0;
   virtual std::unique_ptr<BaseGrid> getGrid() = 0;
 
   bool m_x_autoscale = true, m_y_autoscale = true;
-  scp::Lim_f m_x_lim, m_y_lim;
+  scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
 
   GraphLines m_graph_lines;
   std::unique_ptr<BaseGrid> m_grid;
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;
   std::unique_ptr<Legend> m_legend;
+  std::unique_ptr<Zoom> m_zoom;
 
   juce::LookAndFeel* m_lookandfeel;
   LookAndFeelMethodsBase* m_lookandfeel_base;

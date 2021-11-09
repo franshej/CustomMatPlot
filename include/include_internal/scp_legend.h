@@ -46,8 +46,11 @@ class Legend : public juce::Component {
    */
   void setDataSeries(const GraphLines* data_series);
 
+  /** @internal */
   void resized() override;
+  /** @internal */
   void paint(juce::Graphics& g) override;
+  /** @internal */
   void lookAndFeelChanged() override;
 
  private:

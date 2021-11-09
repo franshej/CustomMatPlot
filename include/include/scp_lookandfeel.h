@@ -63,6 +63,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     setColour(PlotBase::grid_colour, juce::Colour(0xff99A3A4));
     setColour(PlotBase::x_grid_label_colour, juce::Colour(0xffaab7b8));
     setColour(PlotBase::y_grid_label_colour, juce::Colour(0xffaab7b8));
+    setColour(PlotBase::zoom_area_colour, juce::Colour(0xff99A3A4));
 
     setColour(PlotBase::x_label_colour, juce::Colour(0xffecf0f1));
     setColour(PlotBase::y_label_colour, juce::Colour(0xffecf0f1));
@@ -119,7 +120,8 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     constexpr std::size_t margin_height = 5u;
 
     const auto font = getLegendFont();
-    const auto height = label_texts.size() * font.getHeightInPoints() + (label_texts.size() + 0.5)*margin_height;
+    const auto height = label_texts.size() * font.getHeightInPoints() +
+                        (label_texts.size() + 0.5) * margin_height;
 
     std::size_t text_width = 0u;
     for (const auto& label : label_texts) {
@@ -175,10 +177,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                                   int(dashed_lengths.size()));
       }
       switch (graph_type) {
-      case GraphType::graph_line:
+        case GraphType::graph_line:
           g.setColour(graph_colour);
           break;
-      case GraphType::grid_line:
+        case GraphType::grid_line:
           g.setColour(findColour(PlotBase::ColourIds::grid_colour));
           break;
         default:
@@ -246,6 +248,64 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
     g.setColour(findColour(PlotBase::frame_colour));
     g.drawRect(frame);
+  }
+
+  void drawZoomArea(
+      juce::Graphics& g, juce::Point<int>& start_coordinates,
+      const juce::Point<int>& end_coordinates,
+      const juce::Rectangle<int>& graph_bounds) noexcept override {
+    const auto dx = start_coordinates.getX() - end_coordinates.getX();
+    const auto dy = start_coordinates.getY() - end_coordinates.getY();
+
+    auto width{0};
+    auto height{0};
+
+    auto x{0};
+    auto y{0};
+
+    if (dx < 0) {
+      x = start_coordinates.getX();
+    } else {
+      x = start_coordinates.getX() - dx;
+    }
+
+    if (dy < 0) {
+      y = start_coordinates.getY();
+    } else {
+      y = start_coordinates.getY() - dy;
+    }
+
+    if (end_coordinates.getX() > graph_bounds.getRight()) {
+      width = abs(start_coordinates.getX() - graph_bounds.getRight());
+    } else if (end_coordinates.getX() < graph_bounds.getX()) {
+      width = abs(start_coordinates.getX() - graph_bounds.getX());
+      x = graph_bounds.getX();
+    } else {
+      width = abs(dx);
+    }
+
+    if (end_coordinates.getY() > graph_bounds.getBottom()) {
+      height = abs(start_coordinates.getY() - graph_bounds.getBottom());
+    } else if (end_coordinates.getY() < graph_bounds.getY()) {
+      height = abs(start_coordinates.getY() - graph_bounds.getY());
+      y = graph_bounds.getY();
+    } else {
+      height = abs(dy);
+    }
+
+    const auto zoom_area = juce::Rectangle<int>(x, y, width, height);
+
+    juce::Path path;
+    path.addRectangle(zoom_area);
+    juce::PathStrokeType pathStrokType(1.0);
+
+    float dashedLengh[2];
+    dashedLengh[0] = 4;
+    dashedLengh[1] = 4;
+    pathStrokType.createDashedStroke(path, path, dashedLengh, 2);
+
+    g.setColour(findColour(PlotBase::zoom_area_colour));
+    g.strokePath(path, pathStrokType);
   }
 
   void updateXGraphPoints(const juce::Rectangle<int>& bounds,
@@ -323,9 +383,9 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void updateVerticalGridLineTicksAuto(
-      const juce::Rectangle<int>& bounds,
-      const Scaling vertical_scaling, const bool tiny_grids,
-      const Lim_f x_lim, std::vector<float>& x_ticks) noexcept override {
+      const juce::Rectangle<int>& bounds, const Scaling vertical_scaling,
+      const bool tiny_grids, const Lim_f x_lim,
+      std::vector<float>& x_ticks) noexcept override {
     x_ticks.clear();
 
     const auto width = bounds.getWidth();
@@ -391,9 +451,9 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void updateHorizontalGridLineTicksAuto(
-      const juce::Rectangle<int>& bounds,
-      const Scaling hotizontal_scaling, const bool tiny_grids,
-      const Lim_f y_lim, std::vector<float>& y_ticks) noexcept override {
+      const juce::Rectangle<int>& bounds, const Scaling hotizontal_scaling,
+      const bool tiny_grids, const Lim_f y_lim,
+      std::vector<float>& y_ticks) noexcept override {
     y_ticks.clear();
 
     const auto width = bounds.getWidth();

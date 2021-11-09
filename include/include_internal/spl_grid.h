@@ -138,6 +138,15 @@ class BaseGrid : public juce::Component {
    */
   void setYTicks(const std::vector<float>& y_ticks);
 
+ /** @brief Update grids and grid labels
+   *
+   *  This function updates the grid if any new parameter is set. Should be
+   *  called after an parameter is set to update the grid.
+   *
+   *  @return void.
+   */
+  void updateGrid();
+
   void resized() override;
   void paint(juce::Graphics& g) override;
   void lookAndFeelChanged() override;
@@ -162,6 +171,8 @@ class BaseGrid : public juce::Component {
                           Scaling& horizontal_scaling) noexcept = 0;
 
   void createLabels();
+
+  void updateGridInternal();
 
   template <class graph_type>
   void addGridLineVertical(const float x_val);

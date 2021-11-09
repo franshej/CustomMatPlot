@@ -24,6 +24,7 @@ class GraphLine;
 class PlotLookAndFeel;
 class PlotLabel;
 class Legend;
+class Zoom;
 
 /*============================================================================*/
 
@@ -66,16 +67,16 @@ getRectangleMeasures(juce::Rectangle<int> grid_area) noexcept {
   return std::make_tuple(x, y, width, height);
 }
 
-constexpr float getXFromXCoordinate(const float x_pos, const float width,
-                                    const Lim_f x_lim,
+constexpr float getXFromXCoordinate(const float x_pos, const float graph_x,
+                                    const float width, const Lim_f x_lim,
                                     const Scaling x_scaling) noexcept {
   const auto coordinateToXLinear = [&]() {
     const auto x_scale = width / (x_lim.max - x_lim.min);
-    return (x_pos / x_scale) + x_lim.min;
+    return ((x_pos - graph_x) / x_scale) + x_lim.min;
   };
 
   const auto coordinateToXLog = [&]() {
-    return pow(10, ((x_pos / width) * log10(x_lim.max / x_lim.min))) *
+    return pow(10, ((x_pos - graph_x) / width) * log10(x_lim.max / x_lim.min)) *
            x_lim.min;
   };
 
@@ -92,14 +93,14 @@ constexpr float getXFromXCoordinate(const float x_pos, const float width,
   }
 }
 
-constexpr float getYFromYCoordinate(const float y_pos, const float height,
-                                    const Lim_f y_lim,
+constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
+                                    const float height, const Lim_f y_lim,
                                     const Scaling y_scaling) noexcept {
   const auto coordinateToYLinear = [&]() {
     const auto y_scale = height / (y_lim.max - y_lim.min);
     const auto y_offset = y_lim.min;
 
-    return y_lim.max - ((y_pos - y_offset) / y_scale);
+    return y_lim.max - (((y_pos - graph_y) - y_offset) / y_scale);
   };
   switch (y_scaling) {
     case Scaling::linear:

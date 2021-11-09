@@ -11,14 +11,16 @@ set(SOURCE source/spl_plot.cpp
            source/spl_grid.cpp
            source/spl_label.cpp
            source/scp_frame.cpp
-           source/scp_legend.cpp)
+           source/scp_legend.cpp
+           source/scp_zoom.cpp)
 
 set(INTERNAL_HEADERS include/include_internal/spl_graph_line.h
  	                 include/include_internal/spl_grid.h
                      include/include_internal/spl_label.h
                      include/include_internal/spl_utils.h
                      include/include_internal/scp_frame.h
-                     include/include_internal/scp_legend.h)
+                     include/include_internal/scp_legend.h
+                     include/include_internal/scp_zoom.h)
 
 set(PUBLIC_HEADERS include/include/spl_plot.h
                    include/include/scp_lookandfeel.h
