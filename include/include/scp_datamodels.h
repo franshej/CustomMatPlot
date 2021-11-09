@@ -97,10 +97,9 @@ constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
                                     const float height, const Lim_f y_lim,
                                     const Scaling y_scaling) noexcept {
   const auto coordinateToYLinear = [&]() {
-    const auto y_scale = height / (y_lim.max - y_lim.min);
-    const auto y_offset = y_lim.min;
+    const auto y_scale = height / std::abs(y_lim.max - y_lim.min);
 
-    return y_lim.max - (((y_pos - graph_y) - y_offset) / y_scale);
+    return y_lim.max - ((y_pos - graph_y) / y_scale);
   };
   switch (y_scaling) {
     case Scaling::linear:
