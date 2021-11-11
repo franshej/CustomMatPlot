@@ -65,10 +65,11 @@ struct PlotBase : juce::Component {
                            const juce::Rectangle<int> bounds) = 0;
 
     /** This method draws a single graph line. */
-    virtual void drawGraphLine(
-        juce::Graphics& g, const std::vector<juce::Point<float>>& graph_points,
-        const std::vector<float>& dashed_length, const GraphType graph_type,
-        const juce::Colour graph_colour) = 0;
+    virtual void drawGraphLine(juce::Graphics& g,
+                               const GraphPoints& graph_points,
+                               const std::vector<float>& dashed_lengths,
+                               const GraphType graph_type,
+                               const juce::Colour graph_colour) = 0;
 
     /** This method draws the labels on the x and y axis. */
     virtual void drawGridLabels(juce::Graphics& g,

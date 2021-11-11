@@ -142,9 +142,16 @@ class GraphLine : public juce::Component {
   void updateXGraphPoints();
 
  private:
+  /** @brief An enum to describe the state of the graph.  */
+  enum class State {
+    Uninitialized,
+    XInitialized,
+    YInitialized,
+    XYInitialized
+  } m_state{State::Uninitialized};
+
   std::vector<float> m_dashed_lengths;
   GraphType m_graph_type;
-  std::size_t m_id;
   juce::Colour m_graph_colour;
 
   virtual void updateYGraphPointsIntern() noexcept = 0;

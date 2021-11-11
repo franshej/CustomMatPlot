@@ -157,8 +157,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     return GraphColours[graph_id % GraphColours.size()];
   }
 
-  void drawGraphLine(juce::Graphics& g,
-                     const std::vector<juce::Point<float>>& graph_points,
+  void drawGraphLine(juce::Graphics& g, const GraphPoints& graph_points,
                      const std::vector<float>& dashed_lengths,
                      const GraphType graph_type,
                      const juce::Colour graph_colour) override {
@@ -355,31 +354,54 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                           const Scaling scaling, const Lim_f& y_lim,
                           const std::vector<float>& y_data,
                           GraphPoints& graph_points) noexcept override {
-    const auto addYGraphPointsLinear = [&]() {
+    const auto getYLinear = [&](const float y) -> float {
       const auto y_scale =
           static_cast<float>(bounds.getHeight()) / (y_lim.max - y_lim.min);
       const auto y_offset = y_lim.min;
 
       const auto offset_y = float(bounds.getHeight()) + (y_offset * y_scale);
 
-      std::size_t i = 0u;
-      for (const auto& y : y_data) {
-        graph_points[i].setY(offset_y - (y * y_scale));
-        i++;
-      }
+      return offset_y - (y * y_scale);
     };
+
+    std::function<float(float)> getYPos;
 
     switch (scaling) {
       case Scaling::linear:
-        addYGraphPointsLinear();
+        getYPos = getYLinear;
         break;
       case Scaling::logarithmic:
         jassert_return(false, "Log scale for y axis is not implemented.");
         break;
       default:
-        addYGraphPointsLinear();
+        getYPos = getYLinear;
         break;
     };
+
+    graph_points[0].setY(getYPos(y_data[0]));
+
+    std::size_t prev_insert_index = 0u;
+    std::size_t current_check_index = 1u;
+
+    std::for_each(y_data.begin() + 1, y_data.end(), [&](const auto y) {
+      graph_points[current_check_index].setY(getYPos(y));
+      if (graph_points[prev_insert_index].toInt() !=
+          graph_points[current_check_index].toInt()) {
+        prev_insert_index++;
+        graph_points[prev_insert_index] = graph_points[current_check_index];
+      }
+      current_check_index++;
+    });
+
+    graph_points.resize(prev_insert_index + 1);
+
+    /*
+    std::size_t i = 0u;
+    for (const auto& y : y_data) {
+        graph_points[i].setY(getYPos(y));
+        i++;
+    }
+    */
   }
 
   void updateVerticalGridLineTicksAuto(

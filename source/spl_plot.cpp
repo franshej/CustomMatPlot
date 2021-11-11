@@ -81,8 +81,8 @@ void PlotBase::updateGridAndGraphs() {
   m_grid->updateGrid();
 
   for (const auto& graph_line : m_graph_lines) {
-    graph_line->updateYGraphPoints();
     graph_line->updateXGraphPoints();
+    graph_line->updateYGraphPoints();
   }
 }
 
@@ -200,8 +200,8 @@ void PlotBase::resized() {
 
     for (const auto& graph_line : m_graph_lines) {
       graph_line->setBounds(graph_area);
-      graph_line->updateYGraphPoints();
       graph_line->updateXGraphPoints();
+      graph_line->updateYGraphPoints();
     }
 
     if (m_legend) {
