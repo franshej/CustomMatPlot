@@ -311,43 +311,16 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                           const Scaling scaling, const Lim_f& x_lim,
                           const std::vector<float>& x_data,
                           GraphPoints& graph_points) noexcept override {
-    const auto addXGraphPointsLinear = [&]() {
-      const auto x_scale =
-          static_cast<float>(bounds.getWidth()) / (x_lim.max - x_lim.min);
-      const auto offset_x = static_cast<float>(-(x_lim.min * x_scale));
+    const auto width = static_cast<float>(bounds.getWidth());
 
-      std::size_t i = 0u;
-      for (const auto& x : x_data) {
-        graph_points[i].setX(offset_x + (x * x_scale));
-        i++;
-      }
-    };
+    const auto [x_scale, x_offset] = getXScaleAndOffset(width, x_lim, scaling);
+    const auto getXPos = getXGraphPointConversionFunction(scaling);
 
-    const auto addXGraphPointsLogarithmic = [&]() {
-      const auto width = static_cast<float>(bounds.getWidth());
-
-      auto xToXPos = [&](const float x) {
-        return width * (log10(x / x_lim.min) / log10(x_lim.max / x_lim.min));
-      };
-
-      std::size_t i = 0u;
-      for (const auto& x : x_data) {
-        graph_points[i].setX(xToXPos(x));
-        i++;
-      }
-    };
-
-    switch (scaling) {
-      case Scaling::linear:
-        addXGraphPointsLinear();
-        break;
-      case Scaling::logarithmic:
-        addXGraphPointsLogarithmic();
-        break;
-      default:
-        addXGraphPointsLinear();
-        break;
-    };
+    std::size_t i = 0u;
+    for (const auto& x : x_data) {
+      graph_points[i].setX(getXPos(x, x_scale, x_offset));
+      i++;
+    }
   }
 
   void updateYGraphPoints(const juce::Rectangle<int>& bounds,
@@ -394,14 +367,6 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     });
 
     graph_points.resize(prev_insert_index + 1);
-
-    /*
-    std::size_t i = 0u;
-    for (const auto& y : y_data) {
-        graph_points[i].setY(getYPos(y));
-        i++;
-    }
-    */
   }
 
   void updateVerticalGridLineTicksAuto(

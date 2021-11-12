@@ -76,7 +76,8 @@ constexpr float getXFromXCoordinate(const float x_pos, const float graph_x,
   };
 
   const auto coordinateToXLog = [&]() {
-    return pow(10, ((x_pos - graph_x) / width) * log10(x_lim.max / x_lim.min)) *
+    return powf(10,
+                ((x_pos - graph_x) / width) * log10(x_lim.max / x_lim.min)) *
            x_lim.min;
   };
 
@@ -114,6 +115,52 @@ constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
       break;
   }
 }
+
+constexpr auto getXGraphPointsLinear = [](const float x, const float x_scale,
+                                          const float x_offset) -> float {
+  return x_offset + (x * x_scale);
+};
+
+constexpr auto getXGraphPointsLogarithmic =
+    [](const float x, const float x_scale_log, const float x_offset) -> float {
+  return (x_scale_log * log10(x)) - x_offset;
+};
+
+constexpr auto getXScaleAndOffset =
+    [](const float width, const Lim_f& x_lim,
+       Scaling scaling) -> std::tuple<float, float> {
+  float x_scale, x_offset;
+
+  switch (scaling) {
+    case scp::linear:
+      x_scale = width / (x_lim.max - x_lim.min);
+      x_offset = -(x_lim.min * x_scale);
+      break;
+    case scp::logarithmic:
+      x_scale = width / log10(x_lim.max / x_lim.min);
+      x_offset = log10(x_lim.min);
+      break;
+    default:
+      break;
+  }
+
+  return {x_scale, x_offset};
+};
+
+constexpr auto getXGraphPointConversionFunction =
+    [&](const Scaling scaling) -> std::function<float(float, float, float)> {
+  switch (scaling) {
+    case Scaling::linear:
+      return getXGraphPointsLinear;
+      break;
+    case Scaling::logarithmic:
+      return getXGraphPointsLogarithmic;
+      break;
+    default:
+      return getXGraphPointsLinear;
+      break;
+  }
+};
 
 /*============================================================================*/
 
