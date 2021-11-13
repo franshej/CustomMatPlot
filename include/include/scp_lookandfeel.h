@@ -327,37 +327,19 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                           const Scaling scaling, const Lim_f& y_lim,
                           const std::vector<float>& y_data,
                           GraphPoints& graph_points) noexcept override {
-    const auto getYLinear = [&](const float y) -> float {
-      const auto y_scale =
-          static_cast<float>(bounds.getHeight()) / (y_lim.max - y_lim.min);
-      const auto y_offset = y_lim.min;
-
-      const auto offset_y = float(bounds.getHeight()) + (y_offset * y_scale);
-
-      return offset_y - (y * y_scale);
-    };
-
-    std::function<float(float)> getYPos;
-
-    switch (scaling) {
-      case Scaling::linear:
-        getYPos = getYLinear;
-        break;
-      case Scaling::logarithmic:
-        jassert_return(false, "Log scale for y axis is not implemented.");
-        break;
-      default:
-        getYPos = getYLinear;
-        break;
-    };
-
-    graph_points[0].setY(getYPos(y_data[0]));
+    const auto getYPos = getYGraphPointConversionFunction(scaling);
+    const auto [y_scale, y_offset] =
+        getYScaleAndOffset(bounds.toFloat().getHeight(), y_lim, scaling);
 
     std::size_t prev_insert_index = 0u;
     std::size_t current_check_index = 1u;
 
+    graph_points[prev_insert_index].setY(
+        getYPos(y_data.front(), y_scale, y_offset));
+
     std::for_each(y_data.begin() + 1, y_data.end(), [&](const auto y) {
-      graph_points[current_check_index].setY(getYPos(y));
+      graph_points[current_check_index].setY(getYPos(y, y_scale, y_offset));
+
       if (graph_points[prev_insert_index].toInt() !=
           graph_points[current_check_index].toInt()) {
         prev_insert_index++;
