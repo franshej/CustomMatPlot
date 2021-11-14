@@ -171,37 +171,6 @@ constexpr auto getYScaleAndOffset =
   return {y_scale, y_offset};
 };
 
-constexpr auto getXGraphPointConversionFunction =
-    [&](const Scaling scaling) -> std::function<float(float, float, float)> {
-  switch (scaling) {
-    case Scaling::linear:
-      return getXGraphPointsLinear;
-      break;
-    case Scaling::logarithmic:
-      return getXGraphPointsLogarithmic;
-      break;
-    default:
-      return getXGraphPointsLinear;
-      break;
-  }
-};
-
-constexpr auto getYGraphPointConversionFunction =
-    [&](const Scaling scaling) -> std::function<float(float, float, float)> {
-  switch (scaling) {
-    case Scaling::linear:
-      return getYGraphPointsLinear;
-      break;
-    case Scaling::logarithmic:
-      // TODO: y-log scale is not implemented.
-      jassertfalse;
-      break;
-    default:
-      return getYGraphPointsLinear;
-      break;
-  }
-};
-
 /*============================================================================*/
 
 }  // namespace scp

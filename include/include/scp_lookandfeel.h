@@ -314,12 +314,25 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     const auto width = static_cast<float>(bounds.getWidth());
 
     const auto [x_scale, x_offset] = getXScaleAndOffset(width, x_lim, scaling);
-    const auto getXPos = getXGraphPointConversionFunction(scaling);
 
     std::size_t i = 0u;
-    for (const auto& x : x_data) {
-      graph_points[i].setX(getXPos(x, x_scale, x_offset));
-      i++;
+
+    switch (scaling) {
+      case Scaling::linear:
+        for (const auto& x : x_data) {
+          graph_points[i].setX(getXGraphPointsLinear(x, x_scale, x_offset));
+          i++;
+        }
+        break;
+      case Scaling::logarithmic:
+        for (const auto& x : x_data) {
+          graph_points[i].setX(
+              getXGraphPointsLogarithmic(x, x_scale, x_offset));
+          i++;
+        }
+        break;
+      default:
+        break;
     }
   }
 
@@ -327,26 +340,34 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                           const Scaling scaling, const Lim_f& y_lim,
                           const std::vector<float>& y_data,
                           GraphPoints& graph_points) noexcept override {
-    const auto getYPos = getYGraphPointConversionFunction(scaling);
     const auto [y_scale, y_offset] =
         getYScaleAndOffset(bounds.toFloat().getHeight(), y_lim, scaling);
 
     std::size_t prev_insert_index = 0u;
     std::size_t current_check_index = 1u;
 
-    graph_points[prev_insert_index].setY(
-        getYPos(y_data.front(), y_scale, y_offset));
+    switch (scaling) {
+      case Scaling::linear:
+        graph_points[prev_insert_index].setY(
+            getYGraphPointsLinear(y_data.front(), y_scale, y_offset));
 
-    std::for_each(y_data.begin() + 1, y_data.end(), [&](const auto y) {
-      graph_points[current_check_index].setY(getYPos(y, y_scale, y_offset));
+        std::for_each(y_data.begin() + 1, y_data.end(), [&](const auto y) {
+          graph_points[current_check_index].setY(
+              getYGraphPointsLinear(y, y_scale, y_offset));
 
-      if (graph_points[prev_insert_index].toInt() !=
-          graph_points[current_check_index].toInt()) {
-        prev_insert_index++;
-        graph_points[prev_insert_index] = graph_points[current_check_index];
-      }
-      current_check_index++;
-    });
+          if (graph_points[prev_insert_index].toInt() !=
+              graph_points[current_check_index].toInt()) {
+            prev_insert_index++;
+            graph_points[prev_insert_index] = graph_points[current_check_index];
+          }
+          current_check_index++;
+        });
+        break;
+      case Scaling::logarithmic:
+        break;
+      default:
+        break;
+    }
 
     graph_points.resize(prev_insert_index + 1);
   }
