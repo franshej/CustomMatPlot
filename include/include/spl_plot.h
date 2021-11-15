@@ -143,18 +143,20 @@ struct PlotBase : juce::Component {
         std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-cordinates of the graph points used when drawing a graph
-     * line. */
-    virtual void updateXGraphPoints(const juce::Rectangle<int>& bounds,
-                                    const Scaling scaling, const Lim_f& lim,
+     * line. It also updates the graph point indices used in 'updateYGraphPoints' */
+    virtual void updateXGraphPointsAndIndices(const juce::Rectangle<int>& bounds,
+                                    const Scaling scaling, const Lim_f& x_lim,
                                     const std::vector<float>& x_data,
+        std::vector<std::size_t> & graph_points_indices,
                                     GraphPoints& graph_points) noexcept = 0;
 
     /** Updates the y-cordinates of the graph points used when drawing a graph
      * line. */
-    virtual void updateYGraphPoints(const juce::Rectangle<int>& bounds,
-                                    const Scaling scaling, const Lim_f& y_lim,
-                                    const std::vector<float>& y_data,
-                                    GraphPoints& graph_points) noexcept = 0;
+    virtual   void updateYGraphPoints(const juce::Rectangle<int>& bounds,
+        const Scaling scaling, const Lim_f& y_lim,
+        const std::vector<float>& y_data,
+        const std::vector<std::size_t>& graph_points_indices,
+        GraphPoints& graph_points) noexcept = 0;
 
     /** Updates the vertical grid lines with ticks. */
     virtual void updateGridLabelsVertical(

@@ -5,13 +5,13 @@ namespace scp {
 /*============================================================================*/
 
 /**< Enum to define the type of graph line. */
-enum GraphType : uint32_t {
+enum class GraphType : uint32_t {
   graph_line, /**< Graph line. */
   grid_line   /**< GridLine used for the grids.*/
 };
 
 /**< Enum to define the scaling of an axis. */
-enum Scaling : uint32_t {
+enum class Scaling : uint32_t {
   linear,     /**< Linear scaling of the graph line. */
   logarithmic /**< Logarithmic scaling of the graph line. */
 };
@@ -118,7 +118,7 @@ constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
 
 constexpr auto getXGraphPointsLinear = [](const float x, const float x_scale,
                                           const float x_offset) -> float {
-  return x_offset + (x * x_scale);
+  return (x * x_scale) - x_offset;
 };
 
 constexpr auto getYGraphPointsLinear = [](const float y, const float y_scale,
@@ -137,13 +137,13 @@ constexpr auto getXScaleAndOffset =
   float x_scale, x_offset;
 
   switch (scaling) {
-    case scp::linear:
+    case Scaling::linear:
       x_scale = width / (x_lim.max - x_lim.min);
-      x_offset = -(x_lim.min * x_scale);
+      x_offset = x_lim.min * x_scale;
       break;
-    case scp::logarithmic:
+    case Scaling::logarithmic:
       x_scale = width / log10(x_lim.max / x_lim.min);
-      x_offset = x_scale*log10(x_lim.min);
+      x_offset = x_scale * log10(x_lim.min);
       break;
     default:
       break;
@@ -158,11 +158,11 @@ constexpr auto getYScaleAndOffset =
   float y_scale, y_offset;
 
   switch (scaling) {
-    case scp::linear:
+    case Scaling::linear:
       y_scale = height / (y_lim.max - y_lim.min);
       y_offset = height + (y_lim.min * y_scale);
       break;
-    case scp::logarithmic:
+    case Scaling::logarithmic:
       break;
     default:
       break;

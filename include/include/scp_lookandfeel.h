@@ -307,27 +307,75 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     g.strokePath(path, pathStrokType);
   }
 
-  void updateXGraphPoints(const juce::Rectangle<int>& bounds,
-                          const Scaling scaling, const Lim_f& x_lim,
-                          const std::vector<float>& x_data,
-                          GraphPoints& graph_points) noexcept override {
-    const auto width = static_cast<float>(bounds.getWidth());
+  void updateXGraphPointsAndIndices(
+      const juce::Rectangle<int>& bounds, const Scaling scaling,
+      const Lim_f& x_lim, const std::vector<float>& x_data,
+      std::vector<std::size_t>& graph_points_indices,
+      GraphPoints& graph_points) noexcept override {
+    graph_points_indices.resize(0);
+    graph_points_indices.reserve(x_data.size());
 
+    graph_points.resize(x_data.size());
+
+    const auto width = static_cast<float>(bounds.getWidth());
     const auto [x_scale, x_offset] = getXScaleAndOffset(width, x_lim, scaling);
 
-    std::size_t i = 0u;
+    std::size_t min_x_index{0u};
+    for (const auto& x : x_data) {
+      if (x >= x_lim.min) {
+        if (min_x_index) {
+          min_x_index = min_x_index - 1;
+        }
+        break;
+      }
+      min_x_index++;
+    }
 
+    std::size_t max_x_index{x_data.size() - 1u};
+    for (auto x = x_data.rbegin(); x != x_data.rend(); ++x) {
+      if (*x <= x_lim.max || max_x_index == 0u) {
+        if (max_x_index < x_data.size() - 1u) {
+          max_x_index = max_x_index + 1;
+        }
+        break;
+      }
+      max_x_index--;
+    }
+
+    if (min_x_index >= max_x_index) {
+      min_x_index = 0;
+      max_x_index = x_data.size() - 1u;
+    }
+
+    graph_points_indices.push_back(min_x_index);
+
+    float last_added_x = std::numeric_limits<float>::min();
+    if (max_x_index - min_x_index > 1) {
+      std::size_t current_index = min_x_index;
+      for (auto x = x_data.begin() + min_x_index + 1;
+           x != x_data.begin() + max_x_index - 1; ++x) {
+        if (abs(*x - last_added_x) > 1 / x_scale) {
+          last_added_x = *x;
+          graph_points_indices.push_back(current_index);
+        }
+        current_index++;
+      }
+    }
+    graph_points_indices.push_back(max_x_index);
+
+    std::size_t i{0u};
     switch (scaling) {
       case Scaling::linear:
-        for (const auto& x : x_data) {
-          graph_points[i].setX(getXGraphPointsLinear(x, x_scale, x_offset));
+        for (const auto i_x : graph_points_indices) {
+          graph_points[i].setX(
+              getXGraphPointsLinear(x_data[i_x], x_scale, x_offset));
           i++;
         }
         break;
       case Scaling::logarithmic:
-        for (const auto& x : x_data) {
+        for (const auto i_x : graph_points_indices) {
           graph_points[i].setX(
-              getXGraphPointsLogarithmic(x, x_scale, x_offset));
+              getXGraphPointsLogarithmic(x_data[i_x], x_scale, x_offset));
           i++;
         }
         break;
@@ -339,29 +387,20 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   void updateYGraphPoints(const juce::Rectangle<int>& bounds,
                           const Scaling scaling, const Lim_f& y_lim,
                           const std::vector<float>& y_data,
+                          const std::vector<std::size_t>& graph_points_indices,
                           GraphPoints& graph_points) noexcept override {
     const auto [y_scale, y_offset] =
         getYScaleAndOffset(bounds.toFloat().getHeight(), y_lim, scaling);
 
-    std::size_t prev_insert_index = 0u;
-    std::size_t current_check_index = 1u;
+    std::size_t i = 0u;
 
     switch (scaling) {
       case Scaling::linear:
-        graph_points[prev_insert_index].setY(
-            getYGraphPointsLinear(y_data.front(), y_scale, y_offset));
-
-        std::for_each(y_data.begin() + 1, y_data.end(), [&](const auto y) {
-          graph_points[current_check_index].setY(
-              getYGraphPointsLinear(y, y_scale, y_offset));
-
-          if (graph_points[prev_insert_index].toInt() !=
-              graph_points[current_check_index].toInt()) {
-            prev_insert_index++;
-            graph_points[prev_insert_index] = graph_points[current_check_index];
-          }
-          current_check_index++;
-        });
+        for (const auto i_x : graph_points_indices) {
+          graph_points[i].setY(
+              getYGraphPointsLinear(y_data[i_x], y_scale, y_offset));
+          i++;
+        }
         break;
       case Scaling::logarithmic:
         break;
@@ -369,7 +408,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
         break;
     }
 
-    graph_points.resize(prev_insert_index + 1);
+    graph_points.resize(i);
   }
 
   void updateVerticalGridLineTicksAuto(

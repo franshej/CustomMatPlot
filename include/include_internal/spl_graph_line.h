@@ -151,6 +151,7 @@ class GraphLine : public juce::Component {
   } m_state{State::Uninitialized};
 
   std::vector<float> m_dashed_lengths;
+
   GraphType m_graph_type;
   juce::Colour m_graph_colour;
 
@@ -163,6 +164,7 @@ class GraphLine : public juce::Component {
 
   std::vector<float> m_x_data, m_y_data;
   GraphPoints m_graph_points;
+  std::vector<std::size_t> m_graph_point_indices;
 };
 
 /**
