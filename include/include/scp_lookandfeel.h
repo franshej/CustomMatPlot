@@ -312,13 +312,15 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       const Lim_f& x_lim, const std::vector<float>& x_data,
       std::vector<std::size_t>& graph_points_indices,
       GraphPoints& graph_points) noexcept override {
-    graph_points_indices.resize(0);
-    graph_points_indices.reserve(x_data.size());
-
+    graph_points_indices.resize(x_data.size());
     graph_points.resize(x_data.size());
 
     const auto width = static_cast<float>(bounds.getWidth());
     const auto [x_scale, x_offset] = getXScaleAndOffset(width, x_lim, scaling);
+
+    if (x_data.size() == 1u) {
+      goto calculate_x_label;
+    }
 
     std::size_t min_x_index{0u};
     for (const auto& x : x_data) {
@@ -345,23 +347,48 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     if (min_x_index >= max_x_index) {
       min_x_index = 0;
       max_x_index = x_data.size() - 1u;
+      graph_points_indices.resize(max_x_index - min_x_index);
     }
 
-    graph_points_indices.push_back(min_x_index);
+    graph_points_indices.front() = min_x_index;
 
-    float last_added_x = std::numeric_limits<float>::min();
-    if (max_x_index - min_x_index > 1) {
+    if (max_x_index - min_x_index > 1u) {
+      float last_added_x = std::numeric_limits<float>::min();
       std::size_t current_index = min_x_index;
-      for (auto x = x_data.begin() + min_x_index + 1;
-           x != x_data.begin() + max_x_index - 1; ++x) {
-        if (abs(*x - last_added_x) > 1 / x_scale) {
-          last_added_x = *x;
-          graph_points_indices.push_back(current_index);
-        }
-        current_index++;
+      std::size_t graph_point_index{0u};
+      const auto inverse_x_scale = 1.f / x_scale;
+
+      switch (scaling) {
+        case Scaling::linear:
+          for (auto x = x_data.begin() + min_x_index + 1;
+               x != x_data.begin() + max_x_index - 1; ++x) {
+            if (abs(*x - last_added_x) > inverse_x_scale) {
+              last_added_x = *x;
+              graph_points_indices[graph_point_index++] = current_index;
+            }
+            current_index++;
+          }
+          break;
+        case Scaling::logarithmic:
+          for (auto x = x_data.begin() + min_x_index + 1;
+               x != x_data.begin() + max_x_index - 1; ++x) {
+            if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
+              last_added_x = *x;
+              graph_points_indices[graph_point_index++] = current_index;
+            }
+            current_index++;
+          }
+          break;
+        default:
+          break;
       }
+
+      graph_points_indices.resize(graph_point_index + 1);
     }
-    graph_points_indices.push_back(max_x_index);
+
+    graph_points_indices.back() = max_x_index;
+
+  calculate_x_label:
 
     std::size_t i{0u};
     switch (scaling) {
