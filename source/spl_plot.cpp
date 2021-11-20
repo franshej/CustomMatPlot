@@ -95,9 +95,9 @@ void PlotBase::initialize() {
 
   lookAndFeelChanged();
 
+  addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
   addAndMakeVisible(m_zoom.get());
-  addAndMakeVisible(m_grid.get());
   addAndMakeVisible(m_plot_label.get());
   addAndMakeVisible(m_frame.get());
 

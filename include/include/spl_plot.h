@@ -76,6 +76,10 @@ struct PlotBase : juce::Component {
                                 const LabelVector& x_axis_labels,
                                 const LabelVector& y_axis_labels) = 0;
 
+    /** This method draws either a vertical or horizontal gridline. */
+    virtual void drawGridLine(juce::Graphics& g, const GridLine& grid_line,
+                              const bool grid_on) = 0;
+
     /** This method draws the legend. */
     virtual void drawLegend(juce::Graphics& g, const StringVector& label_texts,
                             const std::vector<juce::Colour>& graph_line_colours,
@@ -143,36 +147,31 @@ struct PlotBase : juce::Component {
         std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-cordinates of the graph points used when drawing a graph
-     * line. It also updates the graph point indices used in 'updateYGraphPoints' */
-    virtual void updateXGraphPointsAndIndices(const juce::Rectangle<int>& bounds,
-                                    const Scaling scaling, const Lim_f& x_lim,
-                                    const std::vector<float>& x_data,
-        std::vector<std::size_t> & graph_points_indices,
-                                    GraphPoints& graph_points) noexcept = 0;
+     * line. It also updates the graph point indices used in
+     * 'updateYGraphPoints' */
+    virtual void updateXGraphPointsAndIndices(
+        const juce::Rectangle<int>& bounds, const Scaling scaling,
+        const Lim_f& x_lim, const std::vector<float>& x_data,
+        std::vector<std::size_t>& graph_points_indices,
+        GraphPoints& graph_points) noexcept = 0;
 
     /** Updates the y-cordinates of the graph points used when drawing a graph
      * line. */
-    virtual   void updateYGraphPoints(const juce::Rectangle<int>& bounds,
-        const Scaling scaling, const Lim_f& y_lim,
-        const std::vector<float>& y_data,
+    virtual void updateYGraphPoints(
+        const juce::Rectangle<int>& bounds, const Scaling scaling,
+        const Lim_f& y_lim, const std::vector<float>& y_data,
         const std::vector<std::size_t>& graph_points_indices,
         GraphPoints& graph_points) noexcept = 0;
 
-    /** Updates the vertical grid lines with ticks. */
-    virtual void updateGridLabelsVertical(
-        const juce::Rectangle<int>& bounds,
-        const GridLines& vertical_grid_lines,
-        const std::vector<float>& custom_x_ticks, StringVector& custom_x_labels,
-        LabelVector& x_axis_labels) = 0;
+    /** Updates both the vertical and horizontal grid labels. */
+    virtual void updateGridLabels(const juce::Rectangle<int>& bounds,
+                                  const std::vector<GridLine>& grid_lines,
+                                  StringVector& x_label_ticks,
+                                  StringVector& y_label_ticks,
+                                  LabelVector& x_axis_labels,
+                                  LabelVector& y_axis_labels) = 0;
 
-    /** Updates the hotizonal grid lines with ticks. */
-    virtual void updateGridLabelsHorizontal(
-        const juce::Rectangle<int>& bounds,
-        const GridLines& horizontal_grid_lines,
-        const std::vector<float>& custom_y_ticks, StringVector& custom_y_labels,
-        LabelVector& y_axis_labels) = 0;
-
-    /** Updates the hotizonal grid lines */
+    /** Update the title, x and y axis labels. */
     virtual void updateXYTitleLabels(const juce::Rectangle<int>& bounds,
                                      juce::Label& x_label, juce::Label& y_label,
                                      juce::Label& title_label) = 0;

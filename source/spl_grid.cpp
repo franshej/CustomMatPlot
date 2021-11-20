@@ -7,17 +7,6 @@
 #include "spl_plot.h"
 #include "spl_utils.h"
 
-/*============================================================================*/
-
-template <class graph_type>
-constexpr static scp::GraphLine *getAndAddGridLine(
-    std::vector<std::unique_ptr<scp::GraphLine>> &graph_lines) {
-  graph_lines.emplace_back(
-      std::make_unique<graph_type>(scp::GraphType::grid_line));
-  return graph_lines.back().get();
-}
-/*============================================================================*/
-
 namespace scp {
 
 /*============================================================================*/
@@ -25,12 +14,8 @@ namespace scp {
 void BaseGrid::createLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<PlotBase::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->updateGridLabelsHorizontal(getBounds(), m_horizontal_grid_lines,
-                                    m_custom_y_ticks, m_custom_y_labels,
-                                    m_y_axis_labels);
-    lnf->updateGridLabelsVertical(getBounds(), m_vertical_grid_lines,
-                                  m_custom_x_ticks, m_custom_x_labels,
-                                  m_x_axis_labels);
+    lnf->updateGridLabels(getBounds(), m_grid_lines, m_custom_x_labels,
+                          m_custom_y_labels, m_x_axis_labels, m_y_axis_labels);
   }
 }
 
@@ -68,47 +53,79 @@ void BaseGrid::updateGridInternal() {
   const auto &y_ticks =
       m_custom_y_ticks.empty() ? y_auto_ticks : m_custom_y_ticks;
 
-  m_vertical_grid_lines.clear();
-  m_horizontal_grid_lines.clear();
+  m_grid_lines.clear();
+  m_grid_lines.reserve(x_ticks.size() + y_ticks.size());
 
-  for (const auto x_val : x_ticks) {
-    if (vertical_scaling == Scaling::logarithmic)
-      addGridLineVertical<scp::LogXGraphLine>(x_val);
-    else
-      addGridLineVertical<scp::LinearGraphLine>(x_val);
-  }
-
-  for (const auto y_val : y_ticks) {
-    if (horizontal_scaling == Scaling::logarithmic) {
-      // TODO: add logscale for y-values.
-      jassert_return(false, "'LogYGraphLine' is not implemented.");
-    } else
-      addGridLineHorizontal<scp::LinearGraphLine>(y_val);
-  }
-
-  lookAndFeelChanged();
-
-  for (const auto &grid : m_vertical_grid_lines) {
-    if (grid) {
-      grid->updateXGraphPoints();
-      grid->updateYGraphPoints();
-    }
-  }
-
-  for (const auto &grid : m_horizontal_grid_lines) {
-    if (grid) {
-      grid->updateXGraphPoints();
-      grid->updateYGraphPoints();
-    }
-  }
+  addGridLines(x_ticks, GridLine::Direction::vertical, vertical_scaling);
+  addGridLines(y_ticks, GridLine::Direction::horizontal, horizontal_scaling);
 
   createLabels();
+}
+
+void BaseGrid::addGridLines(const std::vector<float> &ticks,
+                            const GridLine::Direction direction,
+                            const Scaling scaling) {
+  if (m_lookandfeel) {
+    auto lnf = static_cast<PlotBase::LookAndFeelMethods *>(m_lookandfeel);
+
+    const auto graph_bound = lnf->getGraphBounds(getBounds()).toFloat();
+
+    const auto [x_scale, x_offset] = getXScaleAndOffset(
+        float(graph_bound.getWidth()), Lim_f(m_config_params.x_lim), scaling);
+    const auto [y_scale, y_offset] = getYScaleAndOffset(
+        float(graph_bound.getHeight()), Lim_f(m_config_params.y_lim), scaling);
+
+    switch (direction) {
+      case GridLine::Direction::vertical:
+        for (const auto t : ticks) {
+          GridLine grid_line;
+          grid_line.position = {
+
+              graph_bound.getX() +
+                  (scaling == Scaling::linear
+                       ? getXGraphPointsLinear(t, x_scale, x_offset)
+                       : getXGraphPointsLogarithmic(t, x_scale, x_offset)),
+              graph_bound.getY()};
+          grid_line.tick = t;
+          grid_line.length = float(graph_bound.getHeight());
+          grid_line.direction = GridLine::Direction::vertical;
+
+          m_grid_lines.emplace_back(grid_line);
+        }
+
+        break;
+
+      case GridLine::Direction::horizontal:
+        for (const auto t : ticks) {
+          GridLine grid_line;
+
+          grid_line.position = {
+              graph_bound.getX(),
+              graph_bound.getY() +
+                  (scaling == Scaling::linear
+                       ? getYGraphPointsLinear(t, y_scale, y_offset)
+                       : getYGraphPointsLogarithmic(t, y_scale, y_offset))};
+          grid_line.tick = t;
+          grid_line.direction = GridLine::Direction::horizontal;
+          grid_line.length = float(graph_bound.getWidth());
+
+          m_grid_lines.emplace_back(grid_line);
+        }
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 void BaseGrid::paint(juce::Graphics &g) {
   if (m_lookandfeel) {
     auto lnf = static_cast<PlotBase::LookAndFeelMethods *>(m_lookandfeel);
     lnf->drawGridLabels(g, m_x_axis_labels, m_y_axis_labels);
+
+    for (const auto &grid_line : m_grid_lines) {
+      lnf->drawGridLine(g, grid_line, m_config_params.grid_on);
+    }
   }
 }
 
@@ -118,13 +135,6 @@ void BaseGrid::lookAndFeelChanged() {
     m_lookandfeel = lnf;
   } else {
     m_lookandfeel = nullptr;
-  }
-  for (auto &grid_line : m_horizontal_grid_lines) {
-    grid_line->setLookAndFeel(&getLookAndFeel());
-  }
-
-  for (auto &grid_line : m_vertical_grid_lines) {
-    grid_line->setLookAndFeel(&getLookAndFeel());
   }
 }
 
@@ -163,68 +173,6 @@ void BaseGrid::setYLabels(const std::vector<std::string> &y_labels) {
 
 void BaseGrid::setYTicks(const std::vector<float> &y_ticks) {
   m_custom_y_ticks = y_ticks;
-}
-
-template <class graph_type>
-void BaseGrid::addGridLineVertical(const float x_val) {
-  if (m_lookandfeel) {
-    auto *lnf = static_cast<scp::PlotBase::LookAndFeelMethods *>(m_lookandfeel);
-    const auto [x, y, width, height] =
-        scp::getRectangleMeasures<float>(m_config_params.grid_area);
-
-    const auto x_lim = scp::Lim_f(m_config_params.x_lim);
-
-    auto GridLine = getAndAddGridLine<graph_type>(m_vertical_grid_lines);
-    GridLine->setBounds(m_config_params.grid_area);
-
-    GridLine->setXLim(x_lim.min, x_lim.max);
-    GridLine->setYLim(0.f, height);
-
-    GridLine->setXValues({x_val, x_val});
-    GridLine->setYValues({0.f, height});
-
-    const auto font = lnf->getGridLabelFont();
-    const auto font_height = font.getHeightInPoints();
-
-    if (!m_config_params.grid_on) {
-      const std::vector<float> dashed_lines = {
-          font_height, height - font_height, font_height};
-      GridLine->setDashedPath(dashed_lines);
-    }
-
-    addAndMakeVisible(GridLine, 0);
-  }
-}
-
-template <class graph_type>
-void BaseGrid::addGridLineHorizontal(const float y_val) {
-  if (m_lookandfeel) {
-    auto *lnf = static_cast<scp::PlotBase::LookAndFeelMethods *>(m_lookandfeel);
-    const auto [x, y, width, height] =
-        scp::getRectangleMeasures<float>(m_config_params.grid_area);
-
-    const auto y_lim = scp::Lim_f(m_config_params.y_lim);
-
-    auto GridLine = getAndAddGridLine<graph_type>(m_horizontal_grid_lines);
-    GridLine->setBounds(m_config_params.grid_area);
-
-    GridLine->setXLim(0.f, width);
-    GridLine->setYLim(y_lim.min, y_lim.max);
-
-    GridLine->setXValues({0.f, width});
-    GridLine->setYValues({y_val, y_val});
-
-    const auto font = lnf->getGridLabelFont();
-    const auto font_height = font.getHeightInPoints();
-
-    if (!m_config_params.grid_on) {
-      const std::vector<float> dashed_lines = {font_height, width - font_height,
-                                               font_height};
-      GridLine->setDashedPath(dashed_lines);
-    }
-
-    addAndMakeVisible(GridLine, 0);
-  }
 }
 
 void BaseGrid::createAutoGridTicks(std::vector<float> &x_ticks,

@@ -138,7 +138,7 @@ class BaseGrid : public juce::Component {
    */
   void setYTicks(const std::vector<float>& y_ticks);
 
- /** @brief Update grids and grid labels
+  /** @brief Update grids and grid labels
    *
    *  This function updates the grid if any new parameter is set. Should be
    *  called after an parameter is set to update the grid.
@@ -174,13 +174,10 @@ class BaseGrid : public juce::Component {
 
   void updateGridInternal();
 
-  template <class graph_type>
-  void addGridLineVertical(const float x_val);
+  void addGridLines(const std::vector<float>& ticks,
+                    const GridLine::Direction direction, const Scaling scaling);
 
-  template <class graph_type>
-  void addGridLineHorizontal(const float y_val);
-
-  GridLines m_vertical_grid_lines, m_horizontal_grid_lines;
+  std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks;
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::vector<juce::Path> m_grid_path;
@@ -216,7 +213,7 @@ struct Grid : BaseGrid {
 /**
  * Component to create X and Y grids and grid labels
  *
- * The idea with this componenet when both the x axis is scaled logrithmic and y
+ * The idea with this componenet where the x axis is scaled logrithmic and y
  * axis is linear.
  *
  */

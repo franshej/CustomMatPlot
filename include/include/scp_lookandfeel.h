@@ -214,6 +214,47 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     g.drawRect(frame);
   }
 
+  void drawGridLine(juce::Graphics& g, const GridLine& grid_line,
+                    const bool grid_on) override {
+    constexpr auto margin = 8;
+    const auto y_and_len = grid_line.length + grid_line.position.getY();
+    const auto x_and_len = grid_line.length + grid_line.position.getX();
+
+    switch (grid_line.direction) {
+      g.setColour(findColour(PlotBase::grid_colour));
+      case GridLine::Direction::vertical:
+
+        if (grid_on) {
+          g.drawVerticalLine(grid_line.position.getX(),
+                             grid_line.position.getY(), y_and_len);
+        } else {
+          g.drawVerticalLine(grid_line.position.getX(),
+                             grid_line.position.getY(),
+                             grid_line.position.getY() + margin);
+
+          g.drawVerticalLine(grid_line.position.getX(), y_and_len - margin,
+                             y_and_len);
+        }
+
+        break;
+      case GridLine::Direction::horizontal:
+
+        if (grid_on) {
+          g.drawHorizontalLine(grid_line.position.getY(),
+                               grid_line.position.getX(), x_and_len);
+        } else {
+          g.drawHorizontalLine(grid_line.position.getY(),
+                               grid_line.position.getX(),
+                               grid_line.position.getX() + margin);
+          g.drawHorizontalLine(grid_line.position.getY(), x_and_len - margin,
+                               x_and_len);
+        }
+        break;
+      default:
+        break;
+    }
+  }
+
   void drawLegend(juce::Graphics& g, const StringVector& label_texts,
                   const std::vector<juce::Colour>& graph_line_colours,
                   const juce::Rectangle<int>& bounds) override {
@@ -296,11 +337,9 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
     juce::Path path;
     path.addRectangle(zoom_area);
-    juce::PathStrokeType pathStrokType(1.0);
+    const juce::PathStrokeType pathStrokType(1.0);
 
-    float dashedLengh[2];
-    dashedLengh[0] = 4;
-    dashedLengh[1] = 4;
+    constexpr float dashedLengh[2] = {4, 4};
     pathStrokType.createDashedStroke(path, path, dashedLengh, 2);
 
     g.setColour(findColour(PlotBase::zoom_area_colour));
@@ -555,114 +594,119 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     return juce::Font(20.0f, juce::Font::plain);
   }
 
-  void updateGridLabelsVertical(const juce::Rectangle<int>& bounds,
-                                const GridLines& vertical_grid_lines,
-                                const std::vector<float>& custom_x_ticks,
-                                StringVector& custom_x_labels,
-                                LabelVector& x_axis_labels) override {
+  void updateGridLabels(const juce::Rectangle<int>& bounds,
+                        const std::vector<GridLine>& grid_lines,
+                        StringVector& x_custom_label_ticks,
+                        StringVector& y_custom_label_ticks,
+                        LabelVector& x_axis_labels_out,
+                        LabelVector& y_axis_labels_out) override {
     const auto grid_area = getGraphBounds(bounds);
-    const auto [x, y, width, height] =
-        scp::getRectangleMeasures<int>(grid_area);
-
+    const auto [x, y, width, height] = getRectangleMeasures<int>(grid_area);
     const auto font = getGridLabelFont();
 
-    juce::Rectangle<int>* x_last_rect = nullptr;
+    const auto num_horizonal_lines =
+        std::count_if(grid_lines.begin(), grid_lines.end(), [](const auto& gl) {
+          return gl.direction == GridLine::Direction::horizontal;
+        });
 
-    x_axis_labels.clear();
+    const auto num_vertical_lines =
+        std::count_if(grid_lines.begin(), grid_lines.end(), [](const auto& gl) {
+          return gl.direction == GridLine::Direction::vertical;
+        });
 
-    const auto use_custom_x_labels =
-        custom_x_labels.size() >= vertical_grid_lines.size();
+    juce::Rectangle<int>* x_last_label_bound = nullptr;
+    juce::Rectangle<int>* y_last_label_bound = nullptr;
 
-    auto custom_x_labels_reverse_it =
-        use_custom_x_labels
-            ? std::make_reverse_iterator(custom_x_labels.begin()) +
-                  custom_x_ticks.size() - vertical_grid_lines.size()
-            : std::make_reverse_iterator(custom_x_labels.begin());
+    x_axis_labels_out.clear();
+    y_axis_labels_out.clear();
 
-    std::for_each(std::make_reverse_iterator(vertical_grid_lines.end()),
-                  std::make_reverse_iterator(vertical_grid_lines.begin()),
-                  [&](const auto& grid) {
-                    const auto x_val = grid->getXValues();
-                    const auto graph_points = grid->getGraphPoints();
-                    const auto x_pos = graph_points[0].x;
+    const auto use_custom_x_labels = x_custom_label_ticks.size() > 0u;
+    const auto use_custom_y_labels = y_custom_label_ticks.size() > 0u;
 
-                    const std::string x_label =
-                        use_custom_x_labels
-                            ? getNextCustomLabel(custom_x_labels_reverse_it)
-                            : convertFloatToString(x_val[0], 2, 6);
+    auto custom_x_labels_reverse_it = x_custom_label_ticks.rbegin();
+    if (use_custom_x_labels) {
+      if (x_custom_label_ticks.size() >= num_vertical_lines) {
+        custom_x_labels_reverse_it = x_custom_label_ticks.rbegin() +
+                                     x_custom_label_ticks.size() -
+                                     num_vertical_lines;
+      } else {
+        x_custom_label_ticks.resize(num_vertical_lines);
+      }
+    }
 
-                    const auto x_label_width = font.getStringWidth(x_label);
-                    const auto font_height = int(font.getHeightInPoints());
+    auto custom_y_labels_reverse_it = y_custom_label_ticks.rbegin();
+    if (use_custom_y_labels) {
+      if (y_custom_label_ticks.size() >= num_horizonal_lines) {
+        custom_y_labels_reverse_it = y_custom_label_ticks.rbegin() +
+                                     y_custom_label_ticks.size() -
+                                     num_horizonal_lines;
+      } else {
+        y_custom_label_ticks.resize(num_horizonal_lines);
+      }
+    }
 
-                    const auto x_label_area = juce::Rectangle<int>(
-                        x + int(x_pos) - x_label_width / 2,
-                        y + height + font_height, x_label_width, font_height);
+    const auto checkInterectionWithLastLabelAndAdd =
+        [&](auto& last_rect, auto& axis_labels, const auto& label,
+            const auto& bound) {
+          if (!last_rect) {
+            axis_labels.push_back({label, bound});
+            last_rect = &axis_labels.back().second;
+          } else {
+            if (!last_rect->intersects(bound)) {
+              axis_labels.push_back({label, bound});
+              last_rect = &axis_labels.back().second;
+            }
+          }
+        };
 
-                    if (!x_last_rect) {
-                      x_axis_labels.push_back({x_label, x_label_area});
-                      x_last_rect = &x_axis_labels.back().second;
-                    } else {
-                      if (!x_last_rect->intersects(x_label_area)) {
-                        x_axis_labels.push_back({x_label, x_label_area});
-                        x_last_rect = &x_axis_labels.back().second;
-                      }
-                    }
-                  });
-  }
+    const auto getLabelWidthAndHeight =
+        [](const auto& font, const auto& label) -> std::pair<int, int> {
+      return std::make_pair(font.getStringWidth(label),
+                            int(font.getHeightInPoints()));
+    };
 
-  void updateGridLabelsHorizontal(const juce::Rectangle<int>& bounds,
-                                  const GridLines& horizontal_grid_lines,
-                                  const std::vector<float>& custom_y_ticks,
-                                  StringVector& custom_y_labels,
-                                  LabelVector& y_axis_labels) override {
-    const auto grid_area = getGraphBounds(bounds);
-    const auto [x, y, width, height] =
-        scp::getRectangleMeasures<int>(grid_area);
+    for (auto it = grid_lines.rbegin(); it != grid_lines.rend(); it++) {
+      const auto position = it->position;
+      const auto direction = it->direction;
+      const auto tick = it->tick;
 
-    const auto font = getGridLabelFont();
-    juce::Rectangle<int>* y_last_rect = nullptr;
+      switch (direction) {
+        case GridLine::Direction::vertical: {
+          const auto label =
+              use_custom_x_labels
+                  ? getNextCustomLabel(custom_x_labels_reverse_it)
+                  : convertFloatToString(tick, 2, 6);
 
-    y_axis_labels.clear();
+          const auto [label_width, label_height] =
+              getLabelWidthAndHeight(font, label);
 
-    const auto use_custom_y_labels =
-        custom_y_labels.size() >= horizontal_grid_lines.size();
+          const auto bound = juce::Rectangle<int>(
+              int(position.x) - label_width / 2, y + height + label_height,
+              label_width, label_height);
 
-    auto custom_y_labels_reverse_it =
-        use_custom_y_labels
-            ? std::make_reverse_iterator(custom_y_labels.begin()) +
-                  custom_y_ticks.size() - horizontal_grid_lines.size()
-            : std::make_reverse_iterator(custom_y_labels.begin());
+          checkInterectionWithLastLabelAndAdd(x_last_label_bound,
+                                              x_axis_labels_out, label, bound);
+        } break;
+        case GridLine::Direction::horizontal: {
+          const auto label =
+              use_custom_y_labels
+                  ? getNextCustomLabel(custom_y_labels_reverse_it)
+                  : convertFloatToString(tick, 2, 6);
 
-    std::for_each(std::make_reverse_iterator(horizontal_grid_lines.end()),
-                  std::make_reverse_iterator(horizontal_grid_lines.begin()),
-                  [&](const auto& grid) {
-                    const auto y_val = grid->getYValues();
-                    const auto graph_points = grid->getGraphPoints();
-                    const auto y_pos = graph_points[0].y;
+          const auto [label_width, label_height] =
+              getLabelWidthAndHeight(font, label);
 
-                    const std::string y_label =
-                        use_custom_y_labels
-                            ? getNextCustomLabel(custom_y_labels_reverse_it)
-                            : convertFloatToString(y_val[0], 2, 6);
+          const auto bound = juce::Rectangle<int>(
+              x - label_height - label_width,
+              int(position.y) - label_height / 2, label_width, label_height);
 
-                    const auto y_label_width = font.getStringWidth(y_label);
-                    const auto font_height = int(font.getHeightInPoints());
-
-                    auto y_label_area =
-                        juce::Rectangle<int>(x - font_height - y_label_width,
-                                             y + int(y_pos) - font_height / 2,
-                                             y_label_width, font_height);
-
-                    if (!y_last_rect) {
-                      y_axis_labels.push_back({y_label, y_label_area});
-                      y_last_rect = &y_axis_labels.back().second;
-                    } else {
-                      if (!y_last_rect->intersects(y_label_area)) {
-                        y_axis_labels.push_back({y_label, y_label_area});
-                        y_last_rect = &y_axis_labels.back().second;
-                      }
-                    }
-                  });
+          checkInterectionWithLastLabelAndAdd(y_last_label_bound,
+                                              y_axis_labels_out, label, bound);
+        } break;
+        default:
+          break;
+      }
+    }
   }
 
   void updateXYTitleLabels(const juce::Rectangle<int>& bounds,

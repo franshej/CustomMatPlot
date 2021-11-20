@@ -1,6 +1,24 @@
 #pragma once
 
 namespace scp {
+/*============================================================================*/
+
+class BaseGrid;
+class Frame;
+class GraphLine;
+class PlotLookAndFeel;
+class PlotLabel;
+class Legend;
+class Zoom;
+
+/*============================================================================*/
+
+typedef std::vector<std::unique_ptr<GraphLine>> GridLines;
+typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
+typedef std::vector<juce::Point<float>> GraphPoints;
+typedef std::vector<std::pair<std::string, juce::Rectangle<int>>> LabelVector;
+typedef std::vector<std::string> StringVector;
+typedef std::vector<juce::Colour> ColourVector;
 
 /*============================================================================*/
 
@@ -16,15 +34,23 @@ enum class Scaling : uint32_t {
   logarithmic /**< Logarithmic scaling of the graph line. */
 };
 
-/*============================================================================*/
+/** @brief A struct that defines a single gridline.
+ *
+ * The struct defines either a vertical or horizontal gridline.
+ */
+struct GridLine {
+  /** Direction of the gridline. */
+  enum class Direction { vertical, horizontal } direction;
 
-class BaseGrid;
-class Frame;
-class GraphLine;
-class PlotLookAndFeel;
-class PlotLabel;
-class Legend;
-class Zoom;
+  /** The x and y position. */
+  juce::Point<float> position;
+
+  /** The x or y data/tick value. */
+  float tick;
+
+  /** The length of the gridline. */
+  float length;
+};
 
 /*============================================================================*/
 
@@ -39,15 +65,6 @@ typedef Lim<float> Lim_f;
 /*============================================================================*/
 
 class LookAndFeelMethodsBase {};
-
-/*============================================================================*/
-
-typedef std::vector<std::unique_ptr<GraphLine>> GridLines;
-typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
-typedef std::vector<juce::Point<float>> GraphPoints;
-typedef std::vector<std::pair<std::string, juce::Rectangle<int>>> LabelVector;
-typedef std::vector<std::string> StringVector;
-typedef std::vector<juce::Colour> ColourVector;
 
 /*============================================================================*/
 
@@ -129,6 +146,13 @@ constexpr auto getYGraphPointsLinear = [](const float y, const float y_scale,
 constexpr auto getXGraphPointsLogarithmic =
     [](const float x, const float x_scale_log, const float x_offset) -> float {
   return (x_scale_log * log10(x)) - x_offset;
+};
+
+constexpr auto getYGraphPointsLogarithmic =
+    [](const float y, const float y_scale_log, const float y_offset) -> float {
+  // not implemented.
+  jassertfalse;
+  return y;
 };
 
 constexpr auto getXScaleAndOffset =
