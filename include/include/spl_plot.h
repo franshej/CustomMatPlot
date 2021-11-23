@@ -369,8 +369,8 @@ struct PlotBase : juce::Component {
   [[nodiscard]] std::unique_ptr<GraphLine> getGraphLine() const noexcept;
   [[nodiscard]] std::unique_ptr<BaseGrid> getGrid() const noexcept;
 
-  virtual constexpr const Scaling getXScaling() const noexcept = 0;
-  virtual constexpr const Scaling getYScaling() const noexcept = 0;
+  virtual CONSTEXPR20 const Scaling getXScaling() const noexcept = 0;
+  virtual CONSTEXPR20 const Scaling getYScaling() const noexcept = 0;
 
   bool m_x_autoscale = true, m_y_autoscale = true;
   scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
