@@ -285,7 +285,7 @@ void PlotBase::updateYData(const std::vector<std::vector<float>>& y_data) {
 
     for (auto& graph_line : m_graph_lines) {
       if (graph_line->getXValues().empty()) {
-        auto& x_data = std::vector<float>(graph_line->getYValues().size());
+        auto x_data = std::vector<float>(graph_line->getYValues().size());
         std::iota(x_data.begin(), x_data.end(), 1.f);
         graph_line->setXValues(x_data);
       }
@@ -395,11 +395,11 @@ void PlotBase::mouseDrag(const juce::MouseEvent& event) {
       DBG("x, y value: [ "
           << std::to_string(getXFromXCoordinate(event.position.getX(), 0,
                                                 graph_bounds.getWidth(),
-                                                m_x_lim, m_x_scaling))
+                                                m_x_lim, getXScaling()))
           << ", "
           << std::to_string(getYFromYCoordinate(event.position.getY(), 0,
                                                 graph_bounds.getHeight(),
-                                                m_y_lim, m_y_scaling))
+                                                m_y_lim, getYScaling()))
           << " ]");
       DBG("Pos: " << event.position.toString());
       m_zoom->setEndPosition(event.getPosition());
@@ -419,14 +419,15 @@ void PlotBase::mouseUp(const juce::MouseEvent& event) {
       const auto end_pos = m_zoom->getEndPosition();
 
       const auto x_min = getXFromXCoordinate(
-          start_pos.getX(), 0, graph_bounds.getWidth(), m_x_lim, m_x_scaling);
+          start_pos.getX(), 0, graph_bounds.getWidth(), m_x_lim, getXScaling());
       const auto x_max = getXFromXCoordinate(
-          end_pos.getX(), 0, graph_bounds.getWidth(), m_x_lim, m_x_scaling);
+          end_pos.getX(), 0, graph_bounds.getWidth(), m_x_lim, getXScaling());
 
-      const auto y_min = getYFromYCoordinate(
-          start_pos.getY(), 0, graph_bounds.getHeight(), m_y_lim, m_y_scaling);
+      const auto y_min =
+          getYFromYCoordinate(start_pos.getY(), 0, graph_bounds.getHeight(),
+                              m_y_lim, getYScaling());
       const auto y_max = getYFromYCoordinate(
-          end_pos.getY(), 0, graph_bounds.getHeight(), m_y_lim, m_y_scaling);
+          end_pos.getY(), 0, graph_bounds.getHeight(), m_y_lim, getYScaling());
 
       updateXLim(std::min(x_min, x_max), std::max(x_min, x_max));
       updateYLim(std::min(y_min, y_max), std::max(y_min, y_max));
@@ -439,32 +440,24 @@ void PlotBase::mouseUp(const juce::MouseEvent& event) {
   }
 }
 
-SemiPlotX::SemiPlotX() {
-  m_x_scaling = Scaling::logarithmic;
-  m_y_scaling = Scaling::linear;
-  initialize();
-}
+[[nodiscard]] std::unique_ptr<BaseGrid> PlotBase::getGrid() const noexcept {
+  if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
+    return std::move(std::make_unique<Grid>());
+  }
 
-std::unique_ptr<BaseGrid> LinearPlot::getGrid() {
-  return std::move(std::make_unique<Grid>());
-}
-
-std::unique_ptr<BaseGrid> SemiPlotX::getGrid() {
   return std::move(std::make_unique<SemiLogXGrid>());
 }
 
-LinearPlot::LinearPlot() {
-  m_x_scaling = Scaling::linear;
-  m_y_scaling = Scaling::linear;
-  initialize();
-}
-
-std::unique_ptr<scp::GraphLine> LinearPlot::getGraphLine() {
-  return std::move(std::make_unique<scp::LinearGraphLine>());
-}
-
-std::unique_ptr<scp::GraphLine> SemiPlotX::getGraphLine() {
+[[nodiscard]] std::unique_ptr<scp::GraphLine> PlotBase::getGraphLine()
+    const noexcept {
+  if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
+    return std::move(std::make_unique<scp::LinearGraphLine>());
+  }
   return std::move(std::make_unique<scp::LogXGraphLine>());
 }
+
+LinearPlot::LinearPlot() { initialize(); }
+
+SemiPlotX::SemiPlotX() { initialize(); };
 
 }  // namespace scp

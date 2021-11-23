@@ -40,9 +40,6 @@ class GraphLine : public juce::Component {
    */
   GraphLine(const GraphType graph_type);
 
-  /** Default destructor */
-  ~GraphLine() = default;
-
   /** @brief Set the colour of graph
    *
    *  Set the colour of graph.

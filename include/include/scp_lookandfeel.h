@@ -54,8 +54,6 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
  public:
   PlotLookAndFeel() { setDefaultPlotColours(); }
 
-  virtual ~PlotLookAndFeel() override{};
-
   void setDefaultPlotColours() noexcept override {
     setColour(PlotBase::background_colour, juce::Colour(0xff566573));
     setColour(PlotBase::frame_colour, juce::Colour(0xffcacfd2));
@@ -89,12 +87,12 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   juce::Rectangle<int> getPlotBounds(
-      juce::Rectangle<int>& bounds) const noexcept override {
+      juce::Rectangle<int> bounds) const noexcept override {
     return juce::Rectangle<int>(0, 0, bounds.getWidth(), bounds.getHeight());
   }
 
   juce::Rectangle<int> getGraphBounds(
-      const juce::Rectangle<int>& bounds) const noexcept override {
+      const juce::Rectangle<int> bounds) const noexcept override {
     return juce::Rectangle<int>(100, 50, bounds.getWidth() - 150,
                                 bounds.getHeight() - 125);
   }
@@ -357,11 +355,12 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     const auto width = static_cast<float>(bounds.getWidth());
     const auto [x_scale, x_offset] = getXScaleAndOffset(width, x_lim, scaling);
 
+    std::size_t min_x_index{ 0u }, max_x_index{ x_data.size() - 1u };
+
     if (x_data.size() == 1u) {
       goto calculate_x_label;
     }
 
-    std::size_t min_x_index{0u};
     for (const auto& x : x_data) {
       if (x >= x_lim.min) {
         if (min_x_index) {
@@ -372,7 +371,6 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       min_x_index++;
     }
 
-    std::size_t max_x_index{x_data.size() - 1u};
     for (auto x = x_data.rbegin(); x != x_data.rend(); ++x) {
       if (*x <= x_lim.max || max_x_index == 0u) {
         if (max_x_index < x_data.size() - 1u) {
@@ -496,7 +494,6 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       num_vertical_lines = tiny_grids ? std::size_t(num_vertical_lines * 1.5)
                                       : num_vertical_lines;
 
-      // Create the vertical lines
       auto x_diff = (x_lim.max - x_lim.min) / float(num_vertical_lines);
       for (std::size_t i = 0; i != num_vertical_lines + 1u; ++i) {
         const auto x_pos = x_lim.min + float(i) * x_diff;
@@ -565,7 +562,6 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
                                  ? std::size_t(num_horizontal_lines * 1.5)
                                  : num_horizontal_lines;
 
-      // Then create the horizontal lines
       auto y_diff = (y_lim.max - y_lim.min) / float(num_horizontal_lines);
       for (std::size_t i = 0u; i != num_horizontal_lines + 1u; ++i) {
         const auto y_pos = y_lim.min + float(i) * y_diff;
