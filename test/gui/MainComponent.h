@@ -8,49 +8,51 @@ struct node {
                   const std::string &test_name) = nullptr;
   std::string name;
   std::shared_ptr<node> next = nullptr;
-  std::shared_ptr<node> tail = nullptr;
 };
 
 extern std::shared_ptr<node> head;
 
-#define ADD_PARENT_COMP(COMP)              \
+#define ADD_PARENT_COMP(PARENT)            \
   std::shared_ptr<node> cur;               \
   for (cur = head; cur; cur = cur->next) { \
-    cur->fun_ptr(COMP, cur->name);         \
+    cur->fun_ptr(PARENT, cur->name);       \
   }
 
-static void g_test_add(void (*new_fun_ptr)(juce::Component *comp,
-                                           const std::string &test_name),
-                       const std::string &test_name) {
-  if (head == NULL) {
+static void add_test(void (*new_fun_ptr)(juce::Component *comp,
+                                         const std::string &test_name),
+                     const std::string &test_name) {
+  static std::shared_ptr<node> curr{nullptr};
+
+  if (!head) {
     head = std::make_shared<node>();
     head->fun_ptr = new_fun_ptr;
-    head->tail = head;
+    curr = head;
     head->name = test_name;
   } else {
-    head->tail->next = std::make_shared<node>();
-    head->tail->next->fun_ptr = new_fun_ptr;
-    head->tail->next->name = test_name;
-    head->tail = head->tail->next;
+    curr->next = std::make_shared<node>();
+    curr->next->fun_ptr = new_fun_ptr;
+    curr->next->name = test_name;
+    curr = curr->next;
   }
 }
 
-#define TEST(f)                                                       \
-  static void f(juce::Component *thiz, const std::string &test_name); \
-  struct f##_t_ {                                                     \
-    f##_t_(void) { g_test_add(&f, #f); }                              \
-  };                                                                  \
-  static std::unique_ptr<f##_t_> f##_ = std::make_unique<f##_t_>();   \
-  static void f(juce::Component *thiz, const std::string &test_name)
+#define TEST(f)                                                     \
+  static void f(juce::Component *parent_component,                  \
+                const std::string &test_name);                      \
+  struct f##_t_ {                                                   \
+    f##_t_(void) { add_test(&f, #f); }                              \
+  };                                                                \
+  static std::unique_ptr<f##_t_> f##_ = std::make_unique<f##_t_>(); \
+  static void f(juce::Component *parent_component, const std::string &test_name)
 
-#define THIS static_cast<MainComponent *>(thiz)
+#define PARENT static_cast<MainComponent *>(parent_component)
 
-#define ADD_PLOT(TYPE)                         \
-  auto __plot_comp = std::make_unique<TYPE>(); \
-  thiz->addAndMakeVisible(__plot_comp.get());  \
-  (*(THIS->get_plot_holder()))[test_name] = std::move(__plot_comp);
+#define ADD_PLOT(TYPE)                                    \
+  auto __plot_comp = std::make_unique<TYPE>();            \
+  parent_component->addAndMakeVisible(__plot_comp.get()); \
+  (*(PARENT->get_plot_holder()))[test_name] = std::move(__plot_comp);
 
-#define GET_PLOT THIS->get_plot_holder()->find(test_name)->second.get()
+#define GET_PLOT PARENT->get_plot_holder()->find(test_name)->second.get()
 
 #define PLOT_Y(Y)             \
   {                           \

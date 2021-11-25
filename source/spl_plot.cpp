@@ -10,7 +10,7 @@
 
 namespace scp {
 
-static std::pair<float, float> findMinMaxValues(
+static std::pair<float, float> findMinMaxValuesInGraphLines(
     const std::vector<std::vector<float>>& data) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
@@ -26,7 +26,7 @@ static std::pair<float, float> findMinMaxValues(
   return {min_value, max_value};
 }
 
-static std::pair<float, float> findMinMaxValues(
+static std::pair<float, float> findMinMaxValuesInGraphLines(
     const std::vector<std::unique_ptr<scp::GraphLine>>& graph_lines,
     const bool isXValue) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
@@ -106,13 +106,13 @@ void PlotBase::initialize() {
 }
 
 void PlotBase::setAutoXScale() {
-  const auto [min, max] = findMinMaxValues(m_graph_lines, true);
+  const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, true);
   m_x_lim_default = {min, max};
   updateXLim(min, max);
 }
 
 void PlotBase::setAutoYScale() {
-  const auto [min, max] = findMinMaxValues(m_graph_lines, false);
+  const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, false);
   m_y_lim_default = {min, max};
   updateYLim(min, max);
 }
@@ -254,8 +254,8 @@ void PlotBase::updateYData(const std::vector<std::vector<float>>& y_data) {
       m_graph_lines.resize(y_data.size());
       std::size_t i = 0u;
       for (auto& graph_line : m_graph_lines) {
-        if (!graph_line) {
-          if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base)) {
+        if (!graph_line && m_lookandfeel_base) {
+            auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base);
             const auto colour_id = lnf->getColourFromGraphID(i);
             const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
@@ -268,7 +268,6 @@ void PlotBase::updateYData(const std::vector<std::vector<float>>& y_data) {
             addAndMakeVisible(graph_line.get());
             graph_line->toBehind(m_zoom.get());
             i++;
-          }
         }
       }
     }
