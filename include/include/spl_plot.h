@@ -24,8 +24,8 @@ namespace scp {
  *
  *  This class is used to plot 2-D lines/marker symbols. It's also possible to
  *  trace the graph and zoom in/out of specific area. Other featureas: set the
- *  x- and y-limits, ticks and ticklabels. The axis scaling is choosen using the
- *  subclasses below.
+ *  x- and y-limits, ticks and ticklabels. Logarithmic scaling is choosen
+ *  using the subclasses below.
  */
 struct Plot : juce::Component {
  public:
@@ -403,9 +403,6 @@ struct Plot : juce::Component {
  *  linear y axis.
  */
 struct SemiPlotX : Plot {
- public:
-  SemiPlotX();
-
  private:
   const Scaling getXScaling() const noexcept override {
     return Scaling::logarithmic;

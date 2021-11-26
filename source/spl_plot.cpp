@@ -89,7 +89,6 @@ void Plot::updateGridAndGraphs() {
 }
 
 void Plot::initialize() {
-  m_grid = getGrid();
   m_plot_label = std::make_unique<PlotLabel>();
   m_frame = std::make_unique<Frame>();
   m_legend = std::make_unique<Legend>();
@@ -97,7 +96,6 @@ void Plot::initialize() {
 
   lookAndFeelChanged();
 
-  addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
   addAndMakeVisible(m_zoom.get());
   addAndMakeVisible(m_plot_label.get());
@@ -252,6 +250,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
   if (!y_data.empty()) {
     if (y_data.size() != m_graph_lines.size()) {
       m_graph_lines.resize(y_data.size());
+
       std::size_t i = 0u;
       for (auto& graph_line : m_graph_lines) {
         if (!graph_line && m_lookandfeel_base) {
@@ -269,6 +268,14 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
           addAndMakeVisible(graph_line.get());
           graph_line->toBehind(m_zoom.get());
           i++;
+
+          // Create the grid when the first graph line is created.
+          if (!m_grid) {
+            m_grid = getGrid();
+            m_grid->setLookAndFeel(m_lookandfeel);
+            addAndMakeVisible(m_grid.get());
+            m_grid->toBack();
+          }
         }
       }
     }
@@ -458,6 +465,5 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
 }
 
 Plot::Plot() { initialize(); };
-SemiPlotX::SemiPlotX() { initialize(); };
 
 }  // namespace scp
