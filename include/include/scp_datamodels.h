@@ -1,17 +1,18 @@
 #pragma once
 
-#if __cplusplus >= 202002L
-#define CONSTEXPR20 \
+#if __cpp_constexpr >= 201907L  // Check for a specific version of a feature
+#define CONSTEXPR \
   constexpr  // This macro should be used in those cases where C++20 only allows
-             // it. Example: virtual CONSTEXPR20 foo() = 0;
+             // it. Example: virtual CONSTEXPR foo() = 0;
 #else
-#define CONSTEXPR20
+#define CONSTEXPR inline
 #endif
+
 
 namespace scp {
 /*============================================================================*/
 
-class BaseGrid;
+class Grid;
 class Frame;
 class GraphLine;
 class PlotLookAndFeel;

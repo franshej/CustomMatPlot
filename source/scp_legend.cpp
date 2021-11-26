@@ -15,7 +15,7 @@ void scp::Legend::resized() {}
 
 void scp::Legend::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
-    auto* lnf = static_cast<PlotBase::LookAndFeelMethods*>(m_lookandfeel);
+    auto* lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
     auto getColourVector =
         [](const auto* graph_lines) -> std::vector<juce::Colour> {
@@ -32,7 +32,7 @@ void scp::Legend::paint(juce::Graphics& g) {
 
 void scp::Legend::lookAndFeelChanged() {
   if (auto* lnf =
-          dynamic_cast<PlotBase::LookAndFeelMethods*>(&getLookAndFeel())) {
+          dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {
     m_lookandfeel = nullptr;

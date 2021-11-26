@@ -51,8 +51,8 @@ void GraphLine::resized() { m_state = State::Uninitialized; };
 
 void GraphLine::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
-      if (m_graph_points.size() > 2) DBG("Size: " << m_graph_points.size());
-    auto lnf = static_cast<PlotBase::LookAndFeelMethods*>(m_lookandfeel);
+    if (m_graph_points.size() > 2) DBG("Size: " << m_graph_points.size());
+    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->drawGraphLine(g, m_graph_points, m_dashed_lengths, m_graph_type,
                        m_graph_colour);
   }
@@ -60,7 +60,7 @@ void GraphLine::paint(juce::Graphics& g) {
 
 void GraphLine::lookAndFeelChanged() {
   if (auto* lnf =
-          dynamic_cast<PlotBase::LookAndFeelMethods*>(&getLookAndFeel())) {
+          dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {
     m_lookandfeel = nullptr;
@@ -79,7 +79,6 @@ void GraphLine::setXValues(const std::vector<float>& x_data) noexcept {
   std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
 
   m_graph_point_indices.resize(x_data.size());
-
 }
 
 void GraphLine::setDashedPath(
@@ -133,35 +132,20 @@ void GraphLine::updateYGraphPoints() {
   updateYGraphPointsIntern();
 }
 
-void LinearGraphLine::updateXGraphPointsIntern() noexcept {
+void GraphLine::updateXGraphPointsIntern() noexcept {
   if (m_lookandfeel) {
-    auto lnf = static_cast<PlotBase::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateXGraphPointsAndIndices(getBounds(), Scaling::linear, m_x_lim, m_x_data,
-        m_graph_point_indices, m_graph_points);
+    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+    lnf->updateXGraphPointsAndIndices(getBounds(), getXScaling(), m_x_lim,
+                                      m_x_data, m_graph_point_indices,
+                                      m_graph_points);
   }
 }
 
-void LinearGraphLine::updateYGraphPointsIntern() noexcept {
+void GraphLine::updateYGraphPointsIntern() noexcept {
   if (m_lookandfeel) {
-    auto lnf = static_cast<PlotBase::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateYGraphPoints(getBounds(), Scaling::linear, m_y_lim, m_y_data,
+    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+    lnf->updateYGraphPoints(getBounds(), getYScaling(), m_y_lim, m_y_data,
                             m_graph_point_indices, m_graph_points);
-  }
-}
-
-void LogXGraphLine::updateXGraphPointsIntern() noexcept {
-  if (m_lookandfeel) {
-    auto lnf = static_cast<PlotBase::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateXGraphPointsAndIndices(getBounds(), Scaling::logarithmic, m_x_lim,
-                            m_x_data, m_graph_point_indices, m_graph_points);
-  }
-}
-
-void LogXGraphLine::updateYGraphPointsIntern() noexcept {
-  if (m_lookandfeel) {
-    auto lnf = static_cast<PlotBase::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateYGraphPoints(getBounds(), Scaling::linear, m_y_lim, m_y_data,
-                            m_graph_point_indices,m_graph_points);
   }
 }
 }  // namespace scp

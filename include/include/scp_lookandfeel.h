@@ -50,39 +50,39 @@ std::string getNextCustomLabel(
 
 namespace scp {
 class PlotLookAndFeel : public juce::LookAndFeel_V3,
-                        public PlotBase::LookAndFeelMethods {
+                        public Plot::LookAndFeelMethods {
  public:
   PlotLookAndFeel() { setDefaultPlotColours(); }
 
   void setDefaultPlotColours() noexcept override {
-    setColour(PlotBase::background_colour, juce::Colour(0xff566573));
-    setColour(PlotBase::frame_colour, juce::Colour(0xffcacfd2));
+    setColour(Plot::background_colour, juce::Colour(0xff566573));
+    setColour(Plot::frame_colour, juce::Colour(0xffcacfd2));
 
-    setColour(PlotBase::grid_colour, juce::Colour(0xff99A3A4));
-    setColour(PlotBase::x_grid_label_colour, juce::Colour(0xffaab7b8));
-    setColour(PlotBase::y_grid_label_colour, juce::Colour(0xffaab7b8));
-    setColour(PlotBase::zoom_area_colour, juce::Colour(0xff99A3A4));
+    setColour(Plot::grid_colour, juce::Colour(0xff99A3A4));
+    setColour(Plot::x_grid_label_colour, juce::Colour(0xffaab7b8));
+    setColour(Plot::y_grid_label_colour, juce::Colour(0xffaab7b8));
+    setColour(Plot::zoom_area_colour, juce::Colour(0xff99A3A4));
 
-    setColour(PlotBase::x_label_colour, juce::Colour(0xffecf0f1));
-    setColour(PlotBase::y_label_colour, juce::Colour(0xffecf0f1));
-    setColour(PlotBase::title_label_colour, juce::Colour(0xffecf0f1));
-    setColour(PlotBase::legend_label_colour, juce::Colour(0xffecf0f1));
+    setColour(Plot::x_label_colour, juce::Colour(0xffecf0f1));
+    setColour(Plot::y_label_colour, juce::Colour(0xffecf0f1));
+    setColour(Plot::title_label_colour, juce::Colour(0xffecf0f1));
+    setColour(Plot::legend_label_colour, juce::Colour(0xffecf0f1));
 
-    setColour(PlotBase::first_graph_colour, juce::Colour(0xffec7063));
-    setColour(PlotBase::second_graph_colour, juce::Colour(0xffa569Bd));
-    setColour(PlotBase::third_graph_colour, juce::Colour(0xff85c1e9));
-    setColour(PlotBase::fourth_graph_colour, juce::Colour(0xff73c6b6));
-    setColour(PlotBase::fifth_graph_colour, juce::Colour(0xfff4d03f));
-    setColour(PlotBase::sixth_graph_colour, juce::Colour(0xffeB984e));
+    setColour(Plot::first_graph_colour, juce::Colour(0xffec7063));
+    setColour(Plot::second_graph_colour, juce::Colour(0xffa569Bd));
+    setColour(Plot::third_graph_colour, juce::Colour(0xff85c1e9));
+    setColour(Plot::fourth_graph_colour, juce::Colour(0xff73c6b6));
+    setColour(Plot::fifth_graph_colour, juce::Colour(0xfff4d03f));
+    setColour(Plot::sixth_graph_colour, juce::Colour(0xffeB984e));
   }
 
   juce::Colour findAndGetColourFromId(
-      const PlotBase::ColourIdsGraph colour_id) const noexcept override {
+      const Plot::ColourIdsGraph colour_id) const noexcept override {
     return findColour(colour_id);
   }
 
   juce::Colour findAndGetColourFromId(
-      const PlotBase::ColourIds colour_id) const noexcept override {
+      const Plot::ColourIds colour_id) const noexcept override {
     return findColour(colour_id);
   }
 
@@ -140,17 +140,17 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     return juce::Font(14.0f, juce::Font::plain);
   }
 
-  PlotBase::ColourIdsGraph getColourFromGraphID(
+  Plot::ColourIdsGraph getColourFromGraphID(
       const std::size_t graph_id) const override {
     /**< Colour vector which is useful when iterating over the six graph
      * colours.*/
-    static const std::vector<PlotBase::ColourIdsGraph> GraphColours{
-        PlotBase::ColourIdsGraph::first_graph_colour,
-        PlotBase::ColourIdsGraph::second_graph_colour,
-        PlotBase::ColourIdsGraph::third_graph_colour,
-        PlotBase::ColourIdsGraph::fourth_graph_colour,
-        PlotBase::ColourIdsGraph::fifth_graph_colour,
-        PlotBase::ColourIdsGraph::sixth_graph_colour};
+    static const std::vector<Plot::ColourIdsGraph> GraphColours{
+        Plot::ColourIdsGraph::first_graph_colour,
+        Plot::ColourIdsGraph::second_graph_colour,
+        Plot::ColourIdsGraph::third_graph_colour,
+        Plot::ColourIdsGraph::fourth_graph_colour,
+        Plot::ColourIdsGraph::fifth_graph_colour,
+        Plot::ColourIdsGraph::sixth_graph_colour};
 
     return GraphColours[graph_id % GraphColours.size()];
   }
@@ -178,7 +178,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
           g.setColour(graph_colour);
           break;
         case GraphType::grid_line:
-          g.setColour(findColour(PlotBase::ColourIds::grid_colour));
+          g.setColour(findColour(Plot::ColourIds::grid_colour));
           break;
         default:
           g.setColour(juce::Colours::pink);
@@ -191,7 +191,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void drawGridLabels(juce::Graphics& g, const LabelVector& x_axis_labels,
                       const LabelVector& y_axis_labels) override {
-    g.setColour(findColour(PlotBase::x_grid_label_colour));
+    g.setColour(findColour(Plot::x_grid_label_colour));
     g.setFont(getGridLabelFont());
     for (const auto& x_axis_text : x_axis_labels) {
       g.drawText(x_axis_text.first, x_axis_text.second,
@@ -205,7 +205,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void drawFrame(juce::Graphics& g,
                  const juce::Rectangle<int> bounds) override {
-    g.setColour(findColour(PlotBase::frame_colour));
+    g.setColour(findColour(Plot::frame_colour));
 
     const juce::Rectangle<int> frame = {0, 0, bounds.getWidth(),
                                         bounds.getHeight()};
@@ -219,7 +219,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     const auto x_and_len = grid_line.length + grid_line.position.getX();
 
     switch (grid_line.direction) {
-      g.setColour(findColour(PlotBase::grid_colour));
+      g.setColour(findColour(Plot::grid_colour));
       case GridLine::Direction::vertical:
 
         if (grid_on) {
@@ -277,14 +277,14 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       const int y = i * (height + margin_height) + margin_height;
       juce::Rectangle<int> label_bounds = {x, y, width, height};
 
-      g.setColour(findColour(PlotBase::legend_label_colour));
+      g.setColour(findColour(Plot::legend_label_colour));
       g.drawText(label, label_bounds, juce::Justification::centredLeft);
       g.setColour(graph_line_colours[i]);
       g.fillRect(x + width + margin_width, y + height / 2, margin_width * 2, 2);
       i++;
     }
 
-    g.setColour(findColour(PlotBase::frame_colour));
+    g.setColour(findColour(Plot::frame_colour));
     g.drawRect(frame);
   }
 
@@ -340,7 +340,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     constexpr float dashedLengh[2] = {4, 4};
     pathStrokType.createDashedStroke(path, path, dashedLengh, 2);
 
-    g.setColour(findColour(PlotBase::zoom_area_colour));
+    g.setColour(findColour(Plot::zoom_area_colour));
     g.strokePath(path, pathStrokType);
   }
 
@@ -729,11 +729,11 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     title_label.setJustificationType(juce::Justification::centred);
 
     x_label.setColour(juce::Label::textColourId,
-                      findColour(PlotBase::x_label_colour));
+                      findColour(Plot::x_label_colour));
     y_label.setColour(juce::Label::textColourId,
-                      findColour(PlotBase::y_label_colour));
+                      findColour(Plot::y_label_colour));
     title_label.setColour(juce::Label::textColourId,
-                          findColour(PlotBase::title_label_colour));
+                          findColour(Plot::title_label_colour));
 
     const juce::Rectangle<int> y_area = {
         graph_area.getX() / 2 - y_margin,

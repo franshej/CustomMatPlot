@@ -23,14 +23,14 @@ void PlotLabel::setTitle(const std::string &title) {
 
 void PlotLabel::resized() {
   if (m_lookandfeel) {
-    auto lnf = static_cast<PlotBase::LookAndFeelMethods *>(m_lookandfeel);
+    auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
     lnf->updateXYTitleLabels(getBounds(), m_x_label, m_y_label, m_title_label);
   }
 }
 
 void PlotLabel::paint(juce::Graphics &g) {}
 void PlotLabel::lookAndFeelChanged() {
-  if (auto *lnf = dynamic_cast<PlotBase::LookAndFeelMethods *>(&getLookAndFeel())) {
+  if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {
     m_lookandfeel = nullptr;

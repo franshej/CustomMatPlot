@@ -10,7 +10,8 @@
 
 namespace scp {
 
-static std::pair<float, float> findMinMaxValuesInGraphLines(
+static inline [[nodiscard]] std::pair<float, float>
+findMinMaxValuesInGraphLines(
     const std::vector<std::vector<float>>& data) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
@@ -26,7 +27,8 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
   return {min_value, max_value};
 }
 
-static std::pair<float, float> findMinMaxValuesInGraphLines(
+static inline [[nodiscard]] std::pair<float, float>
+findMinMaxValuesInGraphLines(
     const std::vector<std::unique_ptr<scp::GraphLine>>& graph_lines,
     const bool isXValue) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
@@ -46,7 +48,7 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
   return {min_value, max_value};
 }
 
-PlotBase::~PlotBase() {
+Plot::~Plot() {
   m_grid->setLookAndFeel(nullptr);
   m_plot_label->setLookAndFeel(nullptr);
   m_frame->setLookAndFeel(nullptr);
@@ -57,7 +59,7 @@ PlotBase::~PlotBase() {
   }
 }
 
-void PlotBase::updateYLim(const float min, const float max) {
+void Plot::updateYLim(const float min, const float max) {
   m_y_lim = {min, max};
   for (auto& graph_line : m_graph_lines) {
     graph_line->setYLim(min, max);
@@ -67,7 +69,7 @@ void PlotBase::updateYLim(const float min, const float max) {
   }
 }
 
-void PlotBase::updateXLim(const float min, const float max) {
+void Plot::updateXLim(const float min, const float max) {
   m_x_lim = {min, max};
   for (auto& graph_line : m_graph_lines) {
     graph_line->setXLim(min, max);
@@ -77,7 +79,7 @@ void PlotBase::updateXLim(const float min, const float max) {
   }
 }
 
-void PlotBase::updateGridAndGraphs() {
+void Plot::updateGridAndGraphs() {
   m_grid->updateGrid();
 
   for (const auto& graph_line : m_graph_lines) {
@@ -86,7 +88,7 @@ void PlotBase::updateGridAndGraphs() {
   }
 }
 
-void PlotBase::initialize() {
+void Plot::initialize() {
   m_grid = getGrid();
   m_plot_label = std::make_unique<PlotLabel>();
   m_frame = std::make_unique<Frame>();
@@ -105,33 +107,33 @@ void PlotBase::initialize() {
   m_zoom->toBehind(m_legend.get());
 }
 
-void PlotBase::setAutoXScale() {
+void Plot::setAutoXScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, true);
   m_x_lim_default = {min, max};
   updateXLim(min, max);
 }
 
-void PlotBase::setAutoYScale() {
+void Plot::setAutoYScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, false);
   m_y_lim_default = {min, max};
   updateYLim(min, max);
 }
 
-void PlotBase::xLim(const float min, const float max) {
+void Plot::xLim(const float min, const float max) {
   updateXLim(min, max);
   m_x_lim_default = {min, max};
   m_x_autoscale = false;
 }
 
-void PlotBase::yLim(const float min, const float max) {
+void Plot::yLim(const float min, const float max) {
   updateYLim(min, max);
   m_y_lim_default = {min, max};
   m_y_autoscale = false;
 }
 
-void PlotBase::Plot(const std::vector<std::vector<float>>& y_data,
-                    const std::vector<std::vector<float>>& x_data,
-                    ColourVector custom_graph_colours) {
+void Plot::plot(const std::vector<std::vector<float>>& y_data,
+                const std::vector<std::vector<float>>& x_data,
+                ColourVector custom_graph_colours) {
   updateYData(y_data);
   if (!x_data.empty()) updateXData(x_data);
 
@@ -142,36 +144,34 @@ void PlotBase::Plot(const std::vector<std::vector<float>>& y_data,
   }
 }
 
-void PlotBase::setXLabel(const std::string& x_label) {
+void Plot::setXLabel(const std::string& x_label) {
   m_plot_label->setXLabel(x_label);
 }
 
-void PlotBase::setXTickLabels(const std::vector<std::string>& x_labels) {
+void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
   m_grid->setXLabels(x_labels);
 }
 
-void PlotBase::setYTickLabels(const std::vector<std::string>& y_labels) {
+void Plot::setYTickLabels(const std::vector<std::string>& y_labels) {
   m_grid->setYLabels(y_labels);
 }
 
-void PlotBase::setXTicks(const std::vector<float>& x_ticks) {
+void Plot::setXTicks(const std::vector<float>& x_ticks) {
   m_grid->setXTicks(x_ticks);
 }
 
-void PlotBase::setYTicks(const std::vector<float>& y_ticks) {
+void Plot::setYTicks(const std::vector<float>& y_ticks) {
   m_grid->setYTicks(y_ticks);
 }
 
-void PlotBase::setYLabel(const std::string& y_label) {
+void Plot::setYLabel(const std::string& y_label) {
   m_plot_label->setYLabel(y_label);
 }
 
-void PlotBase::setTitle(const std::string& title) {
-  m_plot_label->setTitle(title);
-}
+void Plot::setTitle(const std::string& title) { m_plot_label->setTitle(title); }
 
-void PlotBase::makeGraphDashed(const std::vector<float>& dashed_lengths,
-                               unsigned graph_index) {
+void Plot::makeGraphDashed(const std::vector<float>& dashed_lengths,
+                           unsigned graph_index) {
   if (graph_index >= m_graph_lines.size()) {
     throw std::invalid_argument(
         "graph_index out of range, updateYData before 'makeGraphDashed'");
@@ -179,11 +179,11 @@ void PlotBase::makeGraphDashed(const std::vector<float>& dashed_lengths,
   m_graph_lines[graph_index]->setDashedPath(dashed_lengths);
 }
 
-void PlotBase::gridON(const bool grid_on, const bool tiny_grid_on) {
+void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
   m_grid->setGridON(grid_on, tiny_grid_on);
 }
 
-void PlotBase::resized() {
+void Plot::resized() {
   if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base)) {
     const auto plot_area = lnf->getPlotBounds(getBounds());
     const auto graph_area = lnf->getGraphBounds(getBounds());
@@ -219,14 +219,14 @@ void PlotBase::resized() {
   }
 }
 
-void PlotBase::paint(juce::Graphics& g) {}
+void Plot::paint(juce::Graphics& g) {}
 
-void PlotBase::parentHierarchyChanged() {
+void Plot::parentHierarchyChanged() {
   getParentComponent()->addMouseListener(this, true);
   lookAndFeelChanged();
 }
 
-void PlotBase::lookAndFeelChanged() {
+void Plot::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = &getLookAndFeel();
     m_lookandfeel_default.reset();
@@ -248,26 +248,27 @@ void PlotBase::lookAndFeelChanged() {
   }
 }
 
-void PlotBase::updateYData(const std::vector<std::vector<float>>& y_data) {
+void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
   if (!y_data.empty()) {
     if (y_data.size() != m_graph_lines.size()) {
       m_graph_lines.resize(y_data.size());
       std::size_t i = 0u;
       for (auto& graph_line : m_graph_lines) {
         if (!graph_line && m_lookandfeel_base) {
-            auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base);
-            const auto colour_id = lnf->getColourFromGraphID(i);
-            const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
+          auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base);
+          const auto colour_id = lnf->getColourFromGraphID(i);
+          const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
-            graph_line = getGraphLine();
-            graph_line->setColour(graph_colour);
-            graph_line->setLookAndFeel(m_lookandfeel);
-            const auto graph_area = lnf->getGraphBounds(getBounds());
-            graph_line->setBounds(graph_area);
+          graph_line = getGraphLine();
+          graph_line->setColour(graph_colour);
+          graph_line->setLookAndFeel(m_lookandfeel);
 
-            addAndMakeVisible(graph_line.get());
-            graph_line->toBehind(m_zoom.get());
-            i++;
+          const auto graph_area = lnf->getGraphBounds(getBounds());
+          graph_line->setBounds(graph_area);
+
+          addAndMakeVisible(graph_line.get());
+          graph_line->toBehind(m_zoom.get());
+          i++;
         }
       }
     }
@@ -296,7 +297,7 @@ void PlotBase::updateYData(const std::vector<std::vector<float>>& y_data) {
   }
 }
 
-void PlotBase::updateXData(const std::vector<std::vector<float>>& x_data) {
+void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
   if (!x_data.empty()) {
     if (x_data.size() != m_graph_lines.size()) {
       throw std::invalid_argument(
@@ -326,7 +327,7 @@ void PlotBase::updateXData(const std::vector<std::vector<float>>& x_data) {
   }
 }
 
-void PlotBase::setLegend(const StringVector& graph_descriptions) {
+void Plot::setLegend(const StringVector& graph_descriptions) {
   if (m_lookandfeel_base && m_legend) {
     m_legend->setVisible(graph_descriptions.size() && m_graph_lines.size());
     m_legend->setDataSeries(&m_graph_lines);
@@ -367,7 +368,7 @@ static std::pair<const float, const float> covertXYCordinatesToXYValues(
   const auto dmin_max_y = y_lim.max - y_lim.min;
 }
 
-void PlotBase::mouseDown(const juce::MouseEvent& event) {
+void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
     if (m_zoom.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
@@ -384,7 +385,7 @@ void PlotBase::mouseDown(const juce::MouseEvent& event) {
   }
 }
 
-void PlotBase::mouseDrag(const juce::MouseEvent& event) {
+void Plot::mouseDrag(const juce::MouseEvent& event) {
   if (isVisible()) {
     if (m_legend.get() == event.eventComponent) {
       m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
@@ -407,7 +408,7 @@ void PlotBase::mouseDrag(const juce::MouseEvent& event) {
   }
 }
 
-void PlotBase::mouseUp(const juce::MouseEvent& event) {
+void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
     if (m_zoom.get() == event.eventComponent &&
         !event.mods.isRightButtonDown()) {
@@ -439,7 +440,7 @@ void PlotBase::mouseUp(const juce::MouseEvent& event) {
   }
 }
 
-[[nodiscard]] std::unique_ptr<BaseGrid> PlotBase::getGrid() const noexcept {
+[[nodiscard]] std::unique_ptr<Grid> Plot::getGrid() const noexcept {
   if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
     return std::move(std::make_unique<Grid>());
   }
@@ -447,16 +448,16 @@ void PlotBase::mouseUp(const juce::MouseEvent& event) {
   return std::move(std::make_unique<SemiLogXGrid>());
 }
 
-[[nodiscard]] std::unique_ptr<scp::GraphLine> PlotBase::getGraphLine()
+[[nodiscard]] std::unique_ptr<scp::GraphLine> Plot::getGraphLine()
     const noexcept {
   if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
-    return std::move(std::make_unique<scp::LinearGraphLine>());
+    return std::move(std::make_unique<scp::GraphLine>());
   }
+
   return std::move(std::make_unique<scp::LogXGraphLine>());
 }
 
-LinearPlot::LinearPlot() { initialize(); }
-
+Plot::Plot() { initialize(); };
 SemiPlotX::SemiPlotX() { initialize(); };
 
 }  // namespace scp

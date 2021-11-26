@@ -212,8 +212,8 @@ static juce::Rectangle<int> getScreenArea() {
   return juce::Desktop::getInstance().getDisplays().getMainDisplay().userArea;
 }
 
-static scp::PlotBase *getPlotFromID(
-    std::map<std::string, std::unique_ptr<scp::PlotBase>> &plot_holder,
+static scp::Plot *getPlotFromID(
+    std::map<std::string, std::unique_ptr<scp::Plot>> &plot_holder,
     const int id) {
   auto it = plot_holder.begin();
 

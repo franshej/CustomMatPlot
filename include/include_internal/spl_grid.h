@@ -47,7 +47,7 @@ struct GridConfigParams {
 };
 
 /**
- * Base class implementation of grid component
+ * Grid class implementation of grid component
  *
  * Componenet for creating grids and grid labels. The idea with this componenet
  * is to create the grids behind the actual graph(s) together with graph labels
@@ -56,11 +56,8 @@ struct GridConfigParams {
  *
  */
 
-class BaseGrid : public juce::Component {
+class Grid : public juce::Component {
  public:
-  BaseGrid() = default;
-  ~BaseGrid() = default;
-
   /** @brief Set the bounds of where the grids will be drawn
    *
    *  The grid area must be within the bounds of this componenet. The
@@ -167,8 +164,13 @@ class BaseGrid : public juce::Component {
                            Scaling vertical_scaling,
                            Scaling horizontal_scaling);
 
-  virtual void setScaling(Scaling& vertical_scaling,
-                          Scaling& horizontal_scaling) noexcept = 0;
+  virtual [[nodiscard]] CONSTEXPR const Scaling getXScaling() const noexcept {
+    return Scaling::linear;
+  };
+
+  virtual [[nodiscard]] CONSTEXPR const Scaling getYScaling() const noexcept {
+    return Scaling::linear;
+  };
 
   void createLabels();
 
@@ -195,36 +197,23 @@ class BaseGrid : public juce::Component {
 /**
  * Component to create X and Y grids and grid labels
  *
- * The idea with this componenet when both the x and y axis are scaled linear.
- *
- */
-
-struct Grid : BaseGrid {
- public:
-  using BaseGrid::BaseGrid;
-
- private:
-  void setScaling(Scaling& vertical_scaling,
-                  Scaling& horizontal_scaling) noexcept override;
-};
-
-/*============================================================================*/
-
-/**
- * Component to create X and Y grids and grid labels
- *
  * The idea with this componenet where the x axis is scaled logrithmic and y
  * axis is linear.
  *
  */
 
-struct SemiLogXGrid : BaseGrid {
+struct SemiLogXGrid : Grid {
  public:
-  using BaseGrid::BaseGrid;
+  using Grid::Grid;
 
  private:
-  void setScaling(Scaling& vertical_scaling,
-                  Scaling& horizontal_scaling) noexcept override;
+  const Scaling getXScaling() const noexcept override {
+    return Scaling::logarithmic;
+  };
+
+  const Scaling getYScaling() const noexcept override {
+    return Scaling::linear;
+  };
 };
 
 }  // namespace scp

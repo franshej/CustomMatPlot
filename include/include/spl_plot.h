@@ -19,7 +19,7 @@
 namespace scp {
 
 /*
- *  \class PlotBase
+ *  \class Plot
  *  \brief A Base Class component to plot 2-D lines/marker symbols.
  *
  *  This class is used to plot 2-D lines/marker symbols. It's also possible to
@@ -27,11 +27,14 @@ namespace scp {
  *  x- and y-limits, ticks and ticklabels. The axis scaling is choosen using the
  *  subclasses below.
  */
-struct PlotBase : juce::Component {
+struct Plot : juce::Component {
  public:
   /** Destructor, making sure to set the lookandfeel in all subcomponenets to
    * nullptr. */
-  ~PlotBase();
+  ~Plot();
+
+  /** Constructor */
+  Plot();
 
   /** @brief Set the X-limits
    *
@@ -65,7 +68,7 @@ struct PlotBase : juce::Component {
    *  @param x_data vector of vectors with the y-values.
    *  @return void.
    */
-  void Plot(const std::vector<std::vector<float>>& y_data,
+  void plot(const std::vector<std::vector<float>>& y_data,
             const std::vector<std::vector<float>>& x_data = {},
             ColourVector graph_colours = {});
 
@@ -367,16 +370,21 @@ struct PlotBase : juce::Component {
   void updateGridAndGraphs();
 
   [[nodiscard]] std::unique_ptr<GraphLine> getGraphLine() const noexcept;
-  [[nodiscard]] std::unique_ptr<BaseGrid> getGrid() const noexcept;
+  [[nodiscard]] std::unique_ptr<Grid> getGrid() const noexcept;
 
-  virtual CONSTEXPR20 const Scaling getXScaling() const noexcept = 0;
-  virtual CONSTEXPR20 const Scaling getYScaling() const noexcept = 0;
+  virtual [[nodiscard]] CONSTEXPR const Scaling getXScaling() const noexcept {
+    return Scaling::linear;
+  };
+
+  virtual [[nodiscard]] CONSTEXPR const Scaling getYScaling() const noexcept {
+    return Scaling::linear;
+  };
 
   bool m_x_autoscale = true, m_y_autoscale = true;
   scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
 
   GraphLines m_graph_lines;
-  std::unique_ptr<BaseGrid> m_grid;
+  std::unique_ptr<Grid> m_grid;
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;
   std::unique_ptr<Legend> m_legend;
@@ -390,28 +398,11 @@ struct PlotBase : juce::Component {
 };
 
 /**
- *  \class LinearPlot
- *  \brief Component for plotting 2-D graph lines with linear x and y axis.
- */
-struct LinearPlot : PlotBase {
- public:
-  LinearPlot();
-
- private:
-  const Scaling getXScaling() const noexcept override {
-    return Scaling::linear;
-  };
-  const Scaling getYScaling() const noexcept override {
-    return Scaling::linear;
-  };
-};
-
-/**
  *  \class SemiPlotX
  *  \brief Component for plotting 2-D graph lines with logarithmic x axis and
  *  linear y axis.
  */
-struct SemiPlotX : PlotBase {
+struct SemiPlotX : Plot {
  public:
   SemiPlotX();
 

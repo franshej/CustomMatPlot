@@ -18,7 +18,7 @@
 
 namespace scp {
 /**
- * \class PlotBase
+ * \class Plot
  * \brief A class for creating x, y and title labels
  *
  * The idea is to use this componenet to draw the x, y and title labels.
@@ -60,6 +60,6 @@ class PlotLabel : public juce::Component {
 
  private:
   juce::Label m_x_label, m_y_label, m_title_label;
-  LookAndFeelMethodsBase* m_lookandfeel;
+  LookAndFeelMethodsBase *m_lookandfeel;
 };
 }  // namespace scp

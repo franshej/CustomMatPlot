@@ -21,11 +21,12 @@ namespace scp {
 //==============================================================================
 /**
  *  \class GraphLine
- *  \brief A Base Class component to draw 2-D lines/marker symbols. This is a
- *  subcomponenet to scp::PlotBase.
+ *  \brief A Class component to draw 2-D lines/marker symbols. This is a
+ *  subcomponenet to scp::Plot.
  *
  *  This class is used to draw 2-D lines/marker symbols. The axis scaling is
- *  choosen using the subclasses below.
+ *  linear for both the x/y-axis. The axis scaling can be choosen by using the
+ *  child classes below.
  */
 class GraphLine : public juce::Component {
  public:
@@ -152,8 +153,16 @@ class GraphLine : public juce::Component {
   GraphType m_graph_type;
   juce::Colour m_graph_colour;
 
-  virtual void updateYGraphPointsIntern() noexcept = 0;
-  virtual void updateXGraphPointsIntern() noexcept = 0;
+  virtual void updateYGraphPointsIntern() noexcept;
+  virtual void updateXGraphPointsIntern() noexcept;
+
+  virtual [[nodiscard]] CONSTEXPR const Scaling getXScaling() const noexcept {
+    return Scaling::linear;
+  };
+
+  virtual [[nodiscard]] CONSTEXPR const Scaling getYScaling() const noexcept {
+    return Scaling::linear;
+  };
 
  protected:
   LookAndFeelMethodsBase* m_lookandfeel{nullptr};
@@ -165,22 +174,7 @@ class GraphLine : public juce::Component {
 };
 
 /**
- *  \class LinearGraphLine
- *  \brief Component to draw 2-D graph line with linear x and y axis.
- *
- *  Both x and y axis are linearly scaled.
- */
-struct LinearGraphLine : public GraphLine {
- public:
-  using GraphLine::GraphLine;
-
- private:
-  void updateYGraphPointsIntern() noexcept override;
-  void updateXGraphPointsIntern() noexcept override;
-};
-
-/**
- *  \class LinearGraphLine
+ *  \class LogXGraphLine
  *  \brief Component to draw 2-D graph line with logarithmic x axis.
  *
  *  The x axis is linearly scaled and y axis is logarithmically scaled.
@@ -190,7 +184,11 @@ struct LogXGraphLine : public GraphLine {
   using GraphLine::GraphLine;
 
  private:
-  void updateYGraphPointsIntern() noexcept override;
-  void updateXGraphPointsIntern() noexcept override;
+  const Scaling getXScaling() const noexcept override {
+    return Scaling::logarithmic;
+  };
+  const Scaling getYScaling() const noexcept override {
+    return Scaling::linear;
+  };
 };
 }  // namespace scp

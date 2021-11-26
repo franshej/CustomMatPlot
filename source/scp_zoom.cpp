@@ -23,7 +23,7 @@ void Zoom::resized() {}
 
 void Zoom::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
-    auto* lnf = static_cast<PlotBase::LookAndFeelMethods*>(m_lookandfeel);
+    auto* lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->drawZoomArea(g, m_start_pos, m_end_pos,
                       {{0, 0}, {getWidth(), getHeight()}});
   }
@@ -31,7 +31,7 @@ void Zoom::paint(juce::Graphics& g) {
 
 void Zoom::lookAndFeelChanged() {
   if (auto* lnf =
-          dynamic_cast<PlotBase::LookAndFeelMethods*>(&getLookAndFeel())) {
+          dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {
     m_lookandfeel = nullptr;
