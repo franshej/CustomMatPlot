@@ -5,7 +5,7 @@
 
 #include "spl_graph_line.h"
 #include "spl_plot.h"
-#include "spl_utils.h"
+#include "scp_internal_datamodels.h"
 
 namespace scp {
 
@@ -41,8 +41,7 @@ void Grid::updateGridInternal() {
   std::vector<float> x_auto_ticks, y_auto_ticks;
 
   if (m_custom_x_ticks.empty() || m_custom_y_ticks.empty())
-    createAutoGridTicks(x_auto_ticks, y_auto_ticks, getXScaling(),
-                        getYScaling());
+    createAutoGridTicks(x_auto_ticks, y_auto_ticks);
 
   const auto &x_ticks =
       m_custom_x_ticks.empty() ? x_auto_ticks : m_custom_x_ticks;
@@ -181,16 +180,14 @@ void Grid::setYTicks(const std::vector<float> &y_ticks) {
 }
 
 void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
-                               std::vector<float> &y_ticks,
-                               Scaling vertical_scaling,
-                               Scaling horizontal_scaling) {
+                               std::vector<float> &y_ticks) {
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<scp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
-      lnf->updateVerticalGridLineTicksAuto(getBounds(), vertical_scaling,
+      lnf->updateVerticalGridLineTicksAuto(getBounds(), getXScaling(),
                                            m_config_params.tiny_grid_on,
                                            m_config_params.x_lim, x_ticks);
-      lnf->updateHorizontalGridLineTicksAuto(getBounds(), horizontal_scaling,
+      lnf->updateHorizontalGridLineTicksAuto(getBounds(), getYScaling(),
                                              m_config_params.tiny_grid_on,
                                              m_config_params.y_lim, y_ticks);
     }

@@ -14,7 +14,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "spl_utils.h"
+#include "scp_internal_datamodels.h"
 
 namespace scp {
 /**

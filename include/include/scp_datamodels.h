@@ -8,13 +8,12 @@
 #define CONSTEXPR inline
 #endif
 
-
 namespace scp {
 /*============================================================================*/
 
 class Grid;
 class Frame;
-class GraphLine;
+class BaseGraphLine;
 class PlotLookAndFeel;
 class PlotLabel;
 class Legend;
@@ -22,8 +21,7 @@ class Zoom;
 
 /*============================================================================*/
 
-typedef std::vector<std::unique_ptr<GraphLine>> GridLines;
-typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
+typedef std::vector<std::unique_ptr<BaseGraphLine>> GraphLines;
 typedef std::vector<juce::Point<float>> GraphPoints;
 typedef std::vector<std::pair<std::string, juce::Rectangle<int>>> LabelVector;
 typedef std::vector<std::string> StringVector;

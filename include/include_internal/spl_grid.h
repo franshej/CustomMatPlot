@@ -15,7 +15,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "scp_datamodels.h"
-#include "spl_utils.h";
+#include "scp_internal_datamodels.h";
 
 namespace scp {
 
@@ -154,14 +154,12 @@ class Grid : public juce::Component {
    *
    *  @param x_ticks x-ticks to be populated.
    *  @param y_ticks y-ticks to be populated.
-   *  @param vertical_scaling the scaling of the vertical axis.
-   *  @param horizontal_scaling the scaling of the horizontal axis.
    *  @return void.
    */
   void createAutoGridTicks(std::vector<float>& x_ticks,
-                           std::vector<float>& y_ticks,
-                           Scaling vertical_scaling,
-                           Scaling horizontal_scaling);
+                           std::vector<float>& y_ticks);
+
+  static constexpr auto x_scale = Scaling::linear;
 
   virtual [[nodiscard]] CONSTEXPR const Scaling getXScaling() const noexcept {
     return Scaling::linear;
@@ -203,6 +201,8 @@ class Grid : public juce::Component {
 
 struct SemiLogXGrid : Grid {
  private:
+     static constexpr auto x_scale = Scaling::logarithmic;
+
   const Scaling getXScaling() const noexcept override {
     return Scaling::logarithmic;
   };
@@ -223,6 +223,8 @@ struct SemiLogXGrid : Grid {
 
 struct SemiLogYGrid : Grid {
  private:
+     static constexpr auto x_scale = Scaling::logarithmic;
+
   const Scaling getXScaling() const noexcept override {
     return Scaling::linear;
   };

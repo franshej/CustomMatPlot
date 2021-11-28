@@ -15,9 +15,9 @@ set(SOURCE source/spl_plot.cpp
            source/scp_zoom.cpp)
 
 set(INTERNAL_HEADERS include/include_internal/spl_graph_line.h
- 	                 include/include_internal/spl_grid.h
+ 	             include/include_internal/spl_grid.h
                      include/include_internal/spl_label.h
-                     include/include_internal/spl_utils.h
+                     include/include_internal/scp_internal_datamodels.h
                      include/include_internal/scp_frame.h
                      include/include_internal/scp_legend.h
                      include/include_internal/scp_zoom.h)

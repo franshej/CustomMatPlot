@@ -29,7 +29,7 @@ findMinMaxValuesInGraphLines(
 
 static inline [[nodiscard]] std::pair<float, float>
 findMinMaxValuesInGraphLines(
-    const std::vector<std::unique_ptr<scp::GraphLine>>& graph_lines,
+    const std::vector<std::unique_ptr<scp::BaseGraphLine>>& graph_lines,
     const bool isXValue) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
@@ -454,10 +454,10 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
   return std::move(std::make_unique<SemiLogXGrid>());
 }
 
-[[nodiscard]] std::unique_ptr<scp::GraphLine> Plot::getGraphLine()
+[[nodiscard]] std::unique_ptr<scp::BaseGraphLine> Plot::getGraphLine()
     const noexcept {
   if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
-    return std::move(std::make_unique<scp::GraphLine>());
+    return std::move(std::make_unique<scp::LinearGraphLine>());
   }
 
   return std::move(std::make_unique<scp::LogXGraphLine>());

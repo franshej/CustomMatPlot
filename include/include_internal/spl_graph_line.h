@@ -15,20 +15,21 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "scp_datamodels.h"
-#include "spl_utils.h"
+#include "scp_internal_datamodels.h"
 
 namespace scp {
 //==============================================================================
 /**
  *  \class GraphLine
- *  \brief A Class component to draw 2-D lines/marker symbols. This is a
- *  subcomponenet to scp::Plot.
+ *  \brief A templated class component to draw 2-D lines/marker symbols. This is
+ *  a subcomponenet to scp::Plot.
  *
- *  This class is used to draw 2-D lines/marker symbols. The axis scaling is
- *  linear for both the x/y-axis. The axis scaling can be choosen by using the
- *  child classes below.
+ *  Never use this directley, always use one of the derived classes to choose
+ *  the scaling.
  */
-class GraphLine : public juce::Component {
+class BaseGrapheLine;
+template <Scaling x_scaling_T, Scaling y_scaling_T>
+class GraphLine : public BaseGraphLine {
  public:
   /** Constructor */
   GraphLine();
@@ -48,7 +49,7 @@ class GraphLine : public juce::Component {
    *  @param graph_colour the colour of the graph
    *  @return void.
    */
-  void setColour(const juce::Colour graph_colour);
+  void setColour(const juce::Colour graph_colour) override;
 
   /** @brief Get the colour of graph
    *
@@ -57,7 +58,7 @@ class GraphLine : public juce::Component {
    *  @param graph_colour the colour of the graph
    *  @return void.
    */
-  juce::Colour getColour() const noexcept;
+  juce::Colour getColour() const noexcept override;
 
   /** @brief Set the x-limits
    *
@@ -67,7 +68,7 @@ class GraphLine : public juce::Component {
    *  @param max maximum value
    *  @return void.
    */
-  void setXLim(const float min, const float max);
+  void setXLim(const float min, const float max) override;
 
   /** @brief Set the y-limits
    *
@@ -77,7 +78,7 @@ class GraphLine : public juce::Component {
    *  @param max maximum value
    *  @return void.
    */
-  void setYLim(const float min, const float max);
+  void setYLim(const float min, const float max) override;
 
   /** @brief Set the y-values for the graph-line
    *
@@ -86,7 +87,7 @@ class GraphLine : public juce::Component {
    *  @param y_values vector of y-values.
    *  @return void.
    */
-  void setYValues(const std::vector<float>& y_values) noexcept;
+  void setYValues(const std::vector<float>& y_values) noexcept override;
 
   /** @brief Set the x-values for the graph-line
    *
@@ -95,7 +96,7 @@ class GraphLine : public juce::Component {
    *  @param x_values vector of x-values.
    *  @return void.
    */
-  void setXValues(const std::vector<float>& x_values) noexcept;
+  void setXValues(const std::vector<float>& x_values) noexcept override;
 
   /** @brief Get y-values
    *
@@ -103,7 +104,7 @@ class GraphLine : public juce::Component {
    *
    *  @return a const reference of the y-values.
    */
-  const std::vector<float>& getYValues() noexcept;
+  const std::vector<float>& getYValues() noexcept override;
 
   /** @brief Get x-values
    *
@@ -111,7 +112,7 @@ class GraphLine : public juce::Component {
    *
    *  @return a const reference of the x-values.
    */
-  const std::vector<float>& getXValues() noexcept;
+  const std::vector<float>& getXValues() noexcept override;
 
   /** @brief Get the graph points
    *
@@ -119,7 +120,7 @@ class GraphLine : public juce::Component {
    *
    *  @return const reference of the calculated graph points.
    */
-  const GraphPoints& getGraphPoints() noexcept;
+  const GraphPoints& getGraphPoints() noexcept override;
 
   /** @brief Set a dashed path
    *
@@ -130,14 +131,15 @@ class GraphLine : public juce::Component {
    *  @param dashed_lengths
    *  @return void.
    */
-  void setDashedPath(const std::vector<float>& dashed_lengths) noexcept;
+  void setDashedPath(
+      const std::vector<float>& dashed_lengths) noexcept override;
 
   void resized() override;
   void paint(juce::Graphics& g) override;
   void lookAndFeelChanged() override;
 
-  void updateYGraphPoints();
-  void updateXGraphPoints();
+  void updateYGraphPoints() override;
+  void updateXGraphPoints() override;
 
  private:
   /** @brief An enum to describe the state of the graph.  */
@@ -149,20 +151,14 @@ class GraphLine : public juce::Component {
   } m_state{State::Uninitialized};
 
   std::vector<float> m_dashed_lengths;
-
-  GraphType m_graph_type;
   juce::Colour m_graph_colour;
+  GraphType m_graph_type;
 
   virtual void updateYGraphPointsIntern() noexcept;
   virtual void updateXGraphPointsIntern() noexcept;
 
-  virtual [[nodiscard]] CONSTEXPR const Scaling getXScaling() const noexcept {
-    return Scaling::linear;
-  };
-
-  virtual [[nodiscard]] CONSTEXPR const Scaling getYScaling() const noexcept {
-    return Scaling::linear;
-  };
+  static constexpr auto x_scaling = x_scaling_T;
+  static constexpr auto y_scaling = y_scaling_T;
 
  protected:
   LookAndFeelMethodsBase* m_lookandfeel{nullptr};
@@ -174,40 +170,32 @@ class GraphLine : public juce::Component {
 };
 
 /**
- *  \class LogXGraphLine
- *  \brief Component to draw 2-D graph line with logarithmic x axis.
+ *  \class LinearGraphLine
+ *  \brief Component to draw 2-D graph line.
  *
- *  The x axis is linearly scaled and y axis is logarithmically scaled.
+ *  Both the x and y axis are linearly scaled.
  */
-struct LogXGraphLine : public GraphLine {
- public:
+class LinearGraphLine : public GraphLine<Scaling::linear, Scaling::linear> {
   using GraphLine::GraphLine;
-
- private:
-  const Scaling getXScaling() const noexcept override {
-    return Scaling::logarithmic;
-  };
-  const Scaling getYScaling() const noexcept override {
-    return Scaling::linear;
-  };
 };
 
 /**
- *  \class LogYGraphLine
+ *  \class LogXGraphLine
  *  \brief Component to draw 2-D graph line with logarithmic x axis.
  *
  *  The x axis is logarithmic scaled and y axis is linearly scaled.
  */
-struct LogYGraphLine : public GraphLine {
- public:
+class LogXGraphLine : public GraphLine<Scaling::logarithmic, Scaling::linear> {
   using GraphLine::GraphLine;
+};
 
- private:
-  const Scaling getXScaling() const noexcept override {
-    return Scaling::linear;
-  };
-  const Scaling getYScaling() const noexcept override {
-    return Scaling::logarithmic;
-  };
+/**
+ *  \class LogYGraphLine
+ *  \brief Component to draw 2-D graph line with logarithmic y axis.
+ *
+ *  The x axis is linearly scaled and y axis is logarithmic scaled.
+ */
+class LogYGraphLine : public GraphLine<Scaling::linear, Scaling::logarithmic> {
+  using GraphLine::GraphLine;
 };
 }  // namespace scp

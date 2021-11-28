@@ -369,7 +369,7 @@ struct Plot : juce::Component {
 
   void updateGridAndGraphs();
 
-  [[nodiscard]] std::unique_ptr<GraphLine> getGraphLine() const noexcept;
+  [[nodiscard]] std::unique_ptr<BaseGraphLine> getGraphLine() const noexcept;
   [[nodiscard]] std::unique_ptr<Grid> getGrid() const noexcept;
 
   virtual [[nodiscard]] CONSTEXPR const Scaling getXScaling() const noexcept {
