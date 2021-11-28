@@ -446,9 +446,9 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
   }
 }
 
-[[nodiscard]] std::unique_ptr<Grid> Plot::getGrid() const noexcept {
+[[nodiscard]] std::unique_ptr<BaseGrid> Plot::getGrid() const noexcept {
   if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
-    return std::move(std::make_unique<Grid>());
+    return std::move(std::make_unique<LinearGrid>());
   }
 
   return std::move(std::make_unique<SemiLogXGrid>());

@@ -5,7 +5,6 @@
 #include "spl_plot.h"
 
 namespace scp {
-
 template <Scaling x_scaling_T, Scaling y_scaling_T>
 GraphLine<x_scaling_T, y_scaling_T>::GraphLine()
     : m_graph_type(GraphType::graph_line) {}

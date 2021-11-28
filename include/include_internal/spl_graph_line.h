@@ -27,7 +27,6 @@ namespace scp {
  *  Never use this directley, always use one of the derived classes to choose
  *  the scaling.
  */
-class BaseGrapheLine;
 template <Scaling x_scaling_T, Scaling y_scaling_T>
 class GraphLine : public BaseGraphLine {
  public:

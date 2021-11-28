@@ -370,7 +370,7 @@ struct Plot : juce::Component {
   void updateGridAndGraphs();
 
   [[nodiscard]] std::unique_ptr<BaseGraphLine> getGraphLine() const noexcept;
-  [[nodiscard]] std::unique_ptr<Grid> getGrid() const noexcept;
+  [[nodiscard]] std::unique_ptr<BaseGrid> getGrid() const noexcept;
 
   virtual [[nodiscard]] CONSTEXPR const Scaling getXScaling() const noexcept {
     return Scaling::linear;
@@ -384,7 +384,7 @@ struct Plot : juce::Component {
   scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
 
   GraphLines m_graph_lines;
-  std::unique_ptr<Grid> m_grid;
+  std::unique_ptr<BaseGrid> m_grid;
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;
   std::unique_ptr<Legend> m_legend;
