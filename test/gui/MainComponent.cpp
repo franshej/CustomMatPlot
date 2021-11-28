@@ -43,7 +43,7 @@ TEST(test_custom_y_labels) {
 TEST(test_semi_plot_x_1000) {
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
-  SEMI_PLOT_Y({y_test_data});
+  SEMI_LOG_X({y_test_data});
   GRID_ON;
 }
 
@@ -64,7 +64,7 @@ TEST(test_tiny_grid_on) {
 TEST(test_semi_plot_x_tiny_grid_on) {
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
-  SEMI_PLOT_Y({y_test_data});
+  SEMI_LOG_X({y_test_data});
   TINY_GRID_ON;
 };
 

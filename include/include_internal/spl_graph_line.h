@@ -191,4 +191,23 @@ struct LogXGraphLine : public GraphLine {
     return Scaling::linear;
   };
 };
+
+/**
+ *  \class LogYGraphLine
+ *  \brief Component to draw 2-D graph line with logarithmic x axis.
+ *
+ *  The x axis is logarithmic scaled and y axis is linearly scaled.
+ */
+struct LogYGraphLine : public GraphLine {
+ public:
+  using GraphLine::GraphLine;
+
+ private:
+  const Scaling getXScaling() const noexcept override {
+    return Scaling::linear;
+  };
+  const Scaling getYScaling() const noexcept override {
+    return Scaling::logarithmic;
+  };
+};
 }  // namespace scp

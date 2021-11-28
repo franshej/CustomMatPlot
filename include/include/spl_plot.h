@@ -398,17 +398,32 @@ struct Plot : juce::Component {
 };
 
 /**
- *  \class SemiPlotX
+ *  \class SemiLogX
  *  \brief Component for plotting 2-D graph lines with logarithmic x axis and
  *  linear y axis.
  */
-struct SemiPlotX : Plot {
+struct SemiLogX : Plot {
  private:
   const Scaling getXScaling() const noexcept override {
     return Scaling::logarithmic;
   };
   const Scaling getYScaling() const noexcept override {
     return Scaling::linear;
+  };
+};
+
+/**
+ *  \class SemiLogY
+ *  \brief Component for plotting 2-D graph lines with linear x axis and
+ *  logarithmic y axis.
+ */
+struct SemiLogY : Plot {
+ private:
+  const Scaling getXScaling() const noexcept override {
+    return Scaling::linear;
+  };
+  const Scaling getYScaling() const noexcept override {
+    return Scaling::logarithmic;
   };
 };
 

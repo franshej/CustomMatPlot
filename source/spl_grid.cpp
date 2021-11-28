@@ -52,43 +52,49 @@ void Grid::updateGridInternal() {
   m_grid_lines.clear();
   m_grid_lines.reserve(x_ticks.size() + y_ticks.size());
 
-  addGridLines(x_ticks, GridLine::Direction::vertical, getXScaling());
-  addGridLines(y_ticks, GridLine::Direction::horizontal, getYScaling());
+  addGridLines(x_ticks, GridLine::Direction::vertical);
+  addGridLines(y_ticks, GridLine::Direction::horizontal);
 
   createLabels();
 }
 
 void Grid::addGridLines(const std::vector<float> &ticks,
-                        const GridLine::Direction direction,
-                        const Scaling scaling) {
+                        const GridLine::Direction direction) {
+
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
     const auto graph_bound = lnf->getGraphBounds(getBounds()).toFloat();
 
-    const auto [x_scale, x_offset] = getXScaleAndOffset(
-        float(graph_bound.getWidth()), Lim_f(m_config_params.x_lim), scaling);
-    const auto [y_scale, y_offset] = getYScaleAndOffset(
-        float(graph_bound.getHeight()), Lim_f(m_config_params.y_lim), scaling);
+    const auto getScaleOffset = [&]() {
+      if (direction == GridLine::Direction::vertical) {
+        return getXScaleAndOffset(float(graph_bound.getWidth()),
+                                  Lim_f(m_config_params.x_lim), getXScaling());
+      }
+      return getYScaleAndOffset(float(graph_bound.getHeight()),
+                                Lim_f(m_config_params.y_lim), getYScaling());
+    };
+
+    const auto [scale, offset] = getScaleOffset();
 
     switch (direction) {
       case GridLine::Direction::vertical:
         for (const auto t : ticks) {
           GridLine grid_line;
-          grid_line.position = {
 
+          grid_line.position = {
               graph_bound.getX() +
-                  (scaling == Scaling::linear
-                       ? getXGraphPointsLinear(t, x_scale, x_offset)
-                       : getXGraphPointsLogarithmic(t, x_scale, x_offset)),
+                  (getXScaling() == Scaling::linear
+                       ? getXGraphPointsLinear(t, scale, offset)
+                       : getXGraphPointsLogarithmic(t, scale, offset)),
               graph_bound.getY()};
+
           grid_line.tick = t;
           grid_line.length = float(graph_bound.getHeight());
           grid_line.direction = GridLine::Direction::vertical;
 
           m_grid_lines.emplace_back(grid_line);
         }
-
         break;
 
       case GridLine::Direction::horizontal:
@@ -98,9 +104,10 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           grid_line.position = {
               graph_bound.getX(),
               graph_bound.getY() +
-                  (scaling == Scaling::linear
-                       ? getYGraphPointsLinear(t, y_scale, y_offset)
-                       : getYGraphPointsLogarithmic(t, y_scale, y_offset))};
+                  (getYScaling() == Scaling::linear
+                       ? getYGraphPointsLinear(t, scale, offset)
+                       : getYGraphPointsLogarithmic(t, scale, offset))};
+
           grid_line.tick = t;
           grid_line.direction = GridLine::Direction::horizontal;
           grid_line.length = float(graph_bound.getWidth());
@@ -108,7 +115,10 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           m_grid_lines.emplace_back(grid_line);
         }
         break;
+
       default:
+        // invalid direction.
+        jassertfalse;
         break;
     }
   }

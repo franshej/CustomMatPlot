@@ -196,6 +196,8 @@ constexpr auto getYScaleAndOffset =
       y_offset = height + (y_lim.min * y_scale);
       break;
     case Scaling::logarithmic:
+      // not implemented.
+      jassertfalse;
       break;
     default:
       break;

@@ -54,22 +54,28 @@ static void add_test(void (*new_fun_ptr)(juce::Component *comp,
 
 #define GET_PLOT PARENT->get_plot_holder()->find(test_name)->second.get()
 
-#define PLOT_Y(Y)             \
-  {                           \
+#define PLOT_Y(Y)       \
+  {                     \
     ADD_PLOT(scp::Plot) \
-    GET_PLOT->plot(Y);        \
+    GET_PLOT->plot(Y);  \
   }
 
-#define SEMI_PLOT_Y(Y)       \
-  {                          \
-    ADD_PLOT(scp::SemiPlotX) \
-    GET_PLOT->plot(Y);       \
+#define SEMI_LOG_X(X)       \
+  {                         \
+    ADD_PLOT(scp::SemiLogX) \
+    GET_PLOT->plot(X);      \
   }
 
-#define PLOT_XY(X, Y)         \
-  {                           \
-    ADD_PLOT(scp::Plot) \
-    GET_PLOT->plot(Y, X);     \
+#define SEMI_LOG_Y(Y)       \
+  {                         \
+    ADD_PLOT(scp::SemiLogY) \
+    GET_PLOT->plot(Y);      \
+  }
+
+#define PLOT_XY(X, Y)     \
+  {                       \
+    ADD_PLOT(scp::Plot)   \
+    GET_PLOT->plot(Y, X); \
   }
 
 #define X_LIM(MIN, MAX) GET_PLOT->xLim(MIN, MAX);

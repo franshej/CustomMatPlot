@@ -250,7 +250,6 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
   if (!y_data.empty()) {
     if (y_data.size() != m_graph_lines.size()) {
       m_graph_lines.resize(y_data.size());
-
       std::size_t i = 0u;
       for (auto& graph_line : m_graph_lines) {
         if (!graph_line && m_lookandfeel_base) {

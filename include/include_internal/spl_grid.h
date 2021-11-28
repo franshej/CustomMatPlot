@@ -55,7 +55,6 @@ struct GridConfigParams {
  * without the grids. Default are grids off.
  *
  */
-
 class Grid : public juce::Component {
  public:
   /** @brief Set the bounds of where the grids will be drawn
@@ -177,7 +176,7 @@ class Grid : public juce::Component {
   void updateGridInternal();
 
   void addGridLines(const std::vector<float>& ticks,
-                    const GridLine::Direction direction, const Scaling scaling);
+                    const GridLine::Direction direction);
 
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks;
@@ -197,15 +196,12 @@ class Grid : public juce::Component {
 /**
  * Component to create X and Y grids and grid labels
  *
- * The idea with this componenet where the x axis is scaled logrithmic and y
- * axis is linear.
+ * The idea with this componenet where the x axis is scaled logrithmically and y
+ * axis is linearly.
  *
  */
 
 struct SemiLogXGrid : Grid {
- public:
-  using Grid::Grid;
-
  private:
   const Scaling getXScaling() const noexcept override {
     return Scaling::logarithmic;
@@ -216,4 +212,23 @@ struct SemiLogXGrid : Grid {
   };
 };
 
+/**
+ * Component to create X and Y grids and grid labels
+ *
+ * The idea with this componenet where the y axis is scaled linearly and y
+ * axis is logarithmic.
+ *
+ *
+ */
+
+struct SemiLogYGrid : Grid {
+ private:
+  const Scaling getXScaling() const noexcept override {
+    return Scaling::linear;
+  };
+
+  const Scaling getYScaling() const noexcept override {
+    return Scaling::logarithmic;
+  };
+};
 }  // namespace scp
