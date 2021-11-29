@@ -363,8 +363,9 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
     for (const auto& x : x_data) {
       if (x >= x_lim.min) {
-        if (min_x_index) {
-          min_x_index = min_x_index - 1;
+        if (min_x_index - 1u) {
+          // Two indices outside the left side to get rid of artifacts.
+          min_x_index = min_x_index - 2u;
         }
         break;
       }
@@ -373,8 +374,9 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
     for (auto x = x_data.rbegin(); x != x_data.rend(); ++x) {
       if (*x <= x_lim.max || max_x_index == 0u) {
-        if (max_x_index < x_data.size() - 1u) {
-          max_x_index = max_x_index + 1;
+        if (max_x_index < x_data.size() - 2u) {
+          // Two indices outside the right side to get rid of artifacts.
+          max_x_index = max_x_index + 2;
         }
         break;
       }
