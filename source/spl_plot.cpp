@@ -449,6 +449,9 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
 [[nodiscard]] std::unique_ptr<BaseGrid> Plot::getGrid() const noexcept {
   if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
     return std::move(std::make_unique<LinearGrid>());
+  } else if (getXScaling() == Scaling::linear &&
+             getYScaling() == Scaling::logarithmic) {
+    return std::move(std::make_unique<SemiLogYGrid>());
   }
 
   return std::move(std::make_unique<SemiLogXGrid>());
@@ -458,6 +461,9 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
     const noexcept {
   if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
     return std::move(std::make_unique<scp::LinearGraphLine>());
+  } else if (getXScaling() == Scaling::linear &&
+             getYScaling() == Scaling::logarithmic) {
+    return std::move(std::make_unique<LogYGraphLine>());
   }
 
   return std::move(std::make_unique<scp::LogXGraphLine>());

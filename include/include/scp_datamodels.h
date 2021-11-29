@@ -126,13 +126,18 @@ constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
 
     return y_lim.max - ((y_pos - graph_y) / y_scale);
   };
+
+  const auto coordinateToYLog = [&]() {
+    return powf(10, ((height - (y_pos - graph_y)) / height) *
+                        log10(y_lim.max / y_lim.min)) *
+           y_lim.min;
+  };
   switch (y_scaling) {
     case Scaling::linear:
       return coordinateToYLinear();
       break;
     case Scaling::logarithmic:
-      jassert(false, "Log scale for y axis is not implemented.");
-      return -1;
+      coordinateToYLog();
       break;
     default:
       return coordinateToYLinear();
@@ -157,9 +162,7 @@ constexpr auto getXGraphPointsLogarithmic =
 
 constexpr auto getYGraphPointsLogarithmic =
     [](const float y, const float y_scale_log, const float y_offset) -> float {
-  // not implemented.
-  jassertfalse;
-  return y;
+  return y_offset - (y_scale_log * log10(y));
 };
 
 constexpr auto getXScaleAndOffset =
@@ -194,8 +197,8 @@ constexpr auto getYScaleAndOffset =
       y_offset = height + (y_lim.min * y_scale);
       break;
     case Scaling::logarithmic:
-      // not implemented.
-      jassertfalse;
+      y_scale = height / log10(y_lim.max / y_lim.min);
+      y_offset = height + y_scale * log10(y_lim.min);
       break;
     default:
       break;

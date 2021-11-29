@@ -208,6 +208,13 @@ TEST(test_legend_2) {
   LEGEND(legends);
 }
 
+TEST(plot_semi_log_y) {
+    std::vector<float> y_test_data(1000);
+    std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+    SEMI_LOG_Y({ y_test_data });
+    GRID_ON;
+}
+
 static juce::Rectangle<int> getScreenArea() {
   return juce::Desktop::getInstance().getDisplays().getMainDisplay().userArea;
 }

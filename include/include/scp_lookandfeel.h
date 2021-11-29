@@ -8,8 +8,8 @@ template <class float_type>
 constexpr std::string convertFloatToString(const float_type value,
                                            std::size_t num_decimals,
                                            std::size_t max_string_len) {
-  if (!(std::is_same<float, float_type>::value ||
-        std::is_same<double, float_type>::value)) {
+  if constexpr (!(std::is_same<float, float_type>::value ||
+                  std::is_same<double, float_type>::value)) {
     throw std::invalid_argument("Type must be either float or double");
   }
   const auto pow_of_ten = value == 0.f ? 0 : int(floor(log10(abs(value))));
@@ -460,13 +460,18 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
     switch (scaling) {
       case Scaling::linear:
-        for (const auto i_x : graph_points_indices) {
+        for (const auto i_y : graph_points_indices) {
           graph_points[i].setY(
-              getYGraphPointsLinear(y_data[i_x], y_scale, y_offset));
+              getYGraphPointsLinear(y_data[i_y], y_scale, y_offset));
           i++;
         }
         break;
       case Scaling::logarithmic:
+        for (const auto i_y : graph_points_indices) {
+          graph_points[i].setY(
+              getYGraphPointsLogarithmic(y_data[i_y], y_scale, y_offset));
+          i++;
+        }
         break;
       default:
         break;
@@ -569,12 +574,40 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       }
     };
 
+    const auto addHorizontalTicksLogarithmic = [&]() {
+      auto num_lines_per_power = 3u;
+      if (height > 375u) {
+        num_lines_per_power = 11u;
+      } else if (height <= 375u && height > 135u) {
+        num_lines_per_power = 5u;
+      }
+      num_lines_per_power = tiny_grids ? std::size_t(num_lines_per_power * 1.5)
+                                       : num_lines_per_power;
+
+      const auto min_power = std::floor(log10(y_lim.min));
+      const auto max_power = std::ceil(log10(y_lim.max));
+
+      const auto power_diff = ceil(abs(max_power) - abs(min_power));
+
+      // Frist create the vertical lines
+      for (float curr_power = min_power; curr_power < max_power; ++curr_power) {
+        const auto curr_y_pos_base = pow(10.f, curr_power);
+
+        const auto y_diff = pow(10.f, curr_power + 1.f) /
+                            static_cast<float>(num_lines_per_power);
+        for (float line = 0; line < num_lines_per_power; ++line) {
+          const auto y_tick = curr_y_pos_base + line * y_diff;
+          y_ticks.push_back(y_tick);
+        }
+      }
+    };
+
     switch (hotizontal_scaling) {
       case Scaling::linear:
         addHorizontalTicksLinear();
         break;
       case Scaling::logarithmic:
-        jassert_return(false, "Not implmeneted yet.");
+        addHorizontalTicksLogarithmic();
         break;
       default:
         addHorizontalTicksLinear();
