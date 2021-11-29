@@ -23,7 +23,7 @@ namespace scp {
  *  \brief A Base Class component to plot 2-D lines/marker symbols.
  *
  *  This class can be used to plot 2-D lines/marker symbols. It's also possible
- * to trace the graph and zoom in/out of specific area. Other featureas: set the
+ *  to trace the graph and zoom in/out of specific area. Other featureas: set the
  *  x- and y-limits, ticks and ticklabels. Logarithmic scaling is choosen
  *  using the subclasses below.
  */

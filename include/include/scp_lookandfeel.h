@@ -355,7 +355,7 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
     const auto width = static_cast<float>(bounds.getWidth());
     const auto [x_scale, x_offset] = getXScaleAndOffset(width, x_lim, scaling);
 
-    std::size_t min_x_index{ 0u }, max_x_index{ x_data.size() - 1u };
+    std::size_t min_x_index{0u}, max_x_index{x_data.size() - 1u};
 
     if (x_data.size() == 1u) {
       goto calculate_x_label;
@@ -527,9 +527,15 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
         const auto x_diff = pow(10.f, curr_power + 1.f) /
                             static_cast<float>(num_lines_per_power);
+
+        float last_tick = std::numeric_limits<float>::min();
         for (float line = 0; line < num_lines_per_power; ++line) {
-          const auto x_tick = curr_x_pos_base + line * x_diff;
-          x_ticks.push_back(x_tick);
+          const auto x_tick =
+              floor((curr_x_pos_base + line * x_diff) / curr_x_pos_base) *
+              curr_x_pos_base;
+          if (last_tick != x_tick) {
+            x_ticks.push_back(x_tick);
+          }
         }
       }
     };
@@ -589,15 +595,20 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
       const auto power_diff = ceil(abs(max_power) - abs(min_power));
 
-      // Frist create the vertical lines
       for (float curr_power = min_power; curr_power < max_power; ++curr_power) {
         const auto curr_y_pos_base = pow(10.f, curr_power);
 
         const auto y_diff = pow(10.f, curr_power + 1.f) /
                             static_cast<float>(num_lines_per_power);
+
+        float last_tick = std::numeric_limits<float>::min();
         for (float line = 0; line < num_lines_per_power; ++line) {
-          const auto y_tick = curr_y_pos_base + line * y_diff;
-          y_ticks.push_back(y_tick);
+          const auto y_tick =
+              std::floor((curr_y_pos_base + line * y_diff) / curr_y_pos_base) *
+              curr_y_pos_base;
+          if (y_tick != last_tick) {
+            y_ticks.push_back(y_tick);
+          }
         }
       }
     };
