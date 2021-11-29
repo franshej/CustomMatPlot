@@ -22,12 +22,12 @@ namespace scp {
  *  \class Plot
  *  \brief A Base Class component to plot 2-D lines/marker symbols.
  *
- *  This class is used to plot 2-D lines/marker symbols. It's also possible to
- *  trace the graph and zoom in/out of specific area. Other featureas: set the
+ *  This class can be used to plot 2-D lines/marker symbols. It's also possible
+ * to trace the graph and zoom in/out of specific area. Other featureas: set the
  *  x- and y-limits, ticks and ticklabels. Logarithmic scaling is choosen
  *  using the subclasses below.
  */
-struct Plot : juce::Component {
+class Plot : public juce::Component {
  public:
   /** Destructor, making sure to set the lookandfeel in all subcomponenets to
    * nullptr. */
@@ -61,11 +61,12 @@ struct Plot : juce::Component {
    *  Plot y-data or y-data/x-data. Each vector in y-data represents a single
    *  graph line. E.g. If 'y_data.size() == 3', three graph lines will be
    *  plotted. If 'x_data' is empty the x-vlues will be set to linearly
-   *  increasing from 0 to the size of y-data - 1. 'custom_graph_colours' are
-   *  custom graph colours, if empty then 'ColourIdsGraph' is used.
+   *  increasing from 0 to the size of y-data - 1. If 'graph_colours' is
+   *  empty then 'ColourIdsGraph' is used.
    *
    *  @param y_data vector of vectors with the y-values.
    *  @param x_data vector of vectors with the y-values.
+   *  @param graph_colours a vector with user defined graph colours.
    *  @return void.
    */
   void plot(const std::vector<std::vector<float>>& y_data,
@@ -355,6 +356,9 @@ struct Plot : juce::Component {
   void initialize();
 
  private:
+  [[nodiscard]] std::unique_ptr<BaseGraphLine> getGraphLine() const noexcept;
+  [[nodiscard]] std::unique_ptr<BaseGrid> getGrid() const noexcept;
+
   void PlotInternal(const std::vector<std::vector<float>>& y_data,
                     const std::vector<std::vector<float>>& x_data = {},
                     ColourVector graph_colours = {});
@@ -368,9 +372,6 @@ struct Plot : juce::Component {
   void updateXLim(const float min, const float max);
 
   void updateGridAndGraphs();
-
-  [[nodiscard]] std::unique_ptr<BaseGraphLine> getGraphLine() const noexcept;
-  [[nodiscard]] std::unique_ptr<BaseGrid> getGrid() const noexcept;
 
   virtual [[nodiscard]] CONSTEXPR const Scaling getXScaling() const noexcept {
     return Scaling::linear;
@@ -399,14 +400,14 @@ struct Plot : juce::Component {
 
 /**
  *  \class SemiLogX
- *  \brief Component for plotting 2-D graph lines with logarithmic x axis and
- *  linear y axis.
+ *  \brief Component for plotting 2-D graph lines where the x-axis is scaled
+ *  logarithmic and y-axis linearly.
  */
-struct SemiLogX : Plot {
- private:
+class SemiLogX : public Plot {
   const Scaling getXScaling() const noexcept override {
     return Scaling::logarithmic;
   };
+
   const Scaling getYScaling() const noexcept override {
     return Scaling::linear;
   };
@@ -414,14 +415,14 @@ struct SemiLogX : Plot {
 
 /**
  *  \class SemiLogY
- *  \brief Component for plotting 2-D graph lines with linear x axis and
- *  logarithmic y axis.
+ *  \brief Component for plotting 2-D graph lines where the x-axis is scaled
+ *  logarithmic and y-axis linearly.
  */
-struct SemiLogY : Plot {
- private:
+class SemiLogY : public Plot {
   const Scaling getXScaling() const noexcept override {
     return Scaling::linear;
   };
+
   const Scaling getYScaling() const noexcept override {
     return Scaling::logarithmic;
   };

@@ -54,7 +54,8 @@ struct GridConfigParams {
  * without the grids. Default are grids off.
  *
  */
-template <Scaling x_scaling_T, Scaling y_scaling_T>
+template <Scaling x_scaling_T = Scaling::linear,
+          Scaling y_scaling_T = Scaling::linear>
 class Grid : public BaseGrid {
  public:
   /** @brief Set the bounds of where the grids will be drawn

@@ -12,8 +12,8 @@ namespace scp {
 /*============================================================================*/
 
 class BaseGrid;
-class Frame;
 class BaseGraphLine;
+class Frame;
 class PlotLookAndFeel;
 class PlotLabel;
 class Legend;
