@@ -367,13 +367,6 @@ void Plot::setLegend(const StringVector& graph_descriptions) {
   }
 }
 
-static std::pair<const float, const float> covertXYCordinatesToXYValues(
-    const float x, const float y, const juce::Rectangle<int> graph_bounds,
-    const scp::Scaling scaling, const Lim_f x_lim, const Lim_f y_lim) {
-  const auto dmin_max_x = x_lim.max - x_lim.min;
-  const auto dmin_max_y = y_lim.max - y_lim.min;
-}
-
 void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
     if (m_zoom.get() == event.eventComponent) {

@@ -137,7 +137,7 @@ constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
       return coordinateToYLinear();
       break;
     case Scaling::logarithmic:
-      coordinateToYLog();
+      return coordinateToYLog();
       break;
     default:
       return coordinateToYLinear();
