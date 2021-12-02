@@ -11,8 +11,7 @@ namespace scp {
 
 /*============================================================================*/
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::createLabels() {
+void Grid::createLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
     lnf->updateGridLabels(getBounds(), m_grid_lines, m_custom_x_labels,
@@ -20,8 +19,7 @@ void Grid<x_scaling_T, y_scaling_T>::createLabels() {
   }
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::updateGridInternal() {
+void Grid::updateGridInternal() {
   if (!m_config_params.x_lim || !m_config_params.y_lim) {
     DBG("Both x_lim and y_lim must be set.");
     return;
@@ -59,9 +57,8 @@ void Grid<x_scaling_T, y_scaling_T>::updateGridInternal() {
   createLabels();
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::addGridLines(
-    const std::vector<float> &ticks, const GridLine::Direction direction) {
+void Grid::addGridLines(const std::vector<float> &ticks,
+                        const GridLine::Direction direction) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
@@ -70,10 +67,12 @@ void Grid<x_scaling_T, y_scaling_T>::addGridLines(
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
         return getXScaleAndOffset(float(graph_bound.getWidth()),
-                                  Lim_f(m_config_params.x_lim), x_scaling);
+                                  Lim_f(m_config_params.x_lim),
+                                  lnf->getXScaling());
       }
       return getYScaleAndOffset(float(graph_bound.getHeight()),
-                                Lim_f(m_config_params.y_lim), y_scaling);
+                                Lim_f(m_config_params.y_lim),
+                                lnf->getYScaling());
     };
 
     const auto [scale, offset] = getScaleOffset();
@@ -85,7 +84,7 @@ void Grid<x_scaling_T, y_scaling_T>::addGridLines(
 
           grid_line.position = {
               graph_bound.getX() +
-                  (x_scaling == Scaling::linear
+                  (lnf->getXScaling() == Scaling::linear
                        ? getXGraphPointsLinear(t, scale, offset)
                        : getXGraphPointsLogarithmic(t, scale, offset)),
               graph_bound.getY()};
@@ -105,7 +104,7 @@ void Grid<x_scaling_T, y_scaling_T>::addGridLines(
           grid_line.position = {
               graph_bound.getX(),
               graph_bound.getY() +
-                  (y_scaling == Scaling::linear
+                  (lnf->getYScaling() == Scaling::linear
                        ? getYGraphPointsLinear(t, scale, offset)
                        : getYGraphPointsLogarithmic(t, scale, offset))};
 
@@ -125,8 +124,7 @@ void Grid<x_scaling_T, y_scaling_T>::addGridLines(
   }
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::paint(juce::Graphics &g) {
+void Grid::paint(juce::Graphics &g) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
     lnf->drawGridLabels(g, m_x_axis_labels, m_y_axis_labels);
@@ -137,8 +135,7 @@ void Grid<x_scaling_T, y_scaling_T>::paint(juce::Graphics &g) {
   }
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::lookAndFeelChanged() {
+void Grid::lookAndFeelChanged() {
   if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {
@@ -146,83 +143,55 @@ void Grid<x_scaling_T, y_scaling_T>::lookAndFeelChanged() {
   }
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::setXLabels(
-    const std::vector<std::string> &x_labels) {
+void Grid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::updateGrid() {
-  updateGridInternal();
-}
+void Grid::updateGrid() { updateGridInternal(); }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::resized() {
-  updateGridInternal();
-}
+void Grid::resized() { updateGridInternal(); }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::setGridBounds(
-    const juce::Rectangle<int> &grid_area) {
+void Grid::setGridBounds(const juce::Rectangle<int> &grid_area) {
   m_config_params.grid_area = grid_area;
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::setYLim(const float min, const float max) {
+void Grid::setYLim(const float min, const float max) {
   m_config_params.y_lim = {min, max};
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::setXLim(const float min, const float max) {
+void Grid::setXLim(const float min, const float max) {
   m_config_params.x_lim = {min, max};
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::setGridON(const bool grid_on,
-                                               const bool tiny_grids_on) {
+void Grid::setGridON(const bool grid_on, const bool tiny_grids_on) {
   if (grid_on) m_config_params.grid_on = grid_on;
   if (tiny_grids_on) m_config_params.tiny_grid_on = tiny_grids_on;
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::setXTicks(
-    const std::vector<float> &x_ticks) {
+void Grid::setXTicks(const std::vector<float> &x_ticks) {
   m_custom_x_ticks = x_ticks;
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::setYLabels(
-    const std::vector<std::string> &y_labels) {
+void Grid::setYLabels(const std::vector<std::string> &y_labels) {
   m_custom_y_labels = y_labels;
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::setYTicks(
-    const std::vector<float> &y_ticks) {
+void Grid::setYTicks(const std::vector<float> &y_ticks) {
   m_custom_y_ticks = y_ticks;
 }
 
-template <Scaling x_scaling_T, Scaling y_scaling_T>
-void Grid<x_scaling_T, y_scaling_T>::createAutoGridTicks(
-    std::vector<float> &x_ticks, std::vector<float> &y_ticks) {
+void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
+                               std::vector<float> &y_ticks) {
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<scp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
-      lnf->updateVerticalGridLineTicksAuto(getBounds(), x_scaling,
+      lnf->updateVerticalGridLineTicksAuto(getBounds(),
                                            m_config_params.tiny_grid_on,
                                            m_config_params.x_lim, x_ticks);
-      lnf->updateHorizontalGridLineTicksAuto(getBounds(), y_scaling,
+      lnf->updateHorizontalGridLineTicksAuto(getBounds(),
                                              m_config_params.tiny_grid_on,
                                              m_config_params.y_lim, y_ticks);
     }
   }
 }
-
-// Explicit template instantiation
-template class Grid<Scaling::linear, Scaling::linear>;
-template class Grid<Scaling::logarithmic, Scaling::linear>;
-template class Grid<Scaling::linear, Scaling::logarithmic>;
-template class Grid<Scaling::logarithmic, Scaling::logarithmic>;
-
 }  // namespace scp

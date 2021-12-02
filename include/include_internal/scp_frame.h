@@ -29,7 +29,7 @@ class Frame : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
-  LookAndFeelMethodsBase* m_lookandfeel;
+  juce::LookAndFeel* m_lookandfeel;
 };
 }  // namespace scp
 

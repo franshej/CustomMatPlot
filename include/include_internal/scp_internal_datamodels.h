@@ -57,41 +57,4 @@ class ParamVal
     return *this;
   }
 };
-
-/*============================================================================*/
-
-class BaseGraphLine : public juce::Component {
- public:
-  virtual ~BaseGraphLine() = default;
-  virtual void setColour(const juce::Colour graph_colour) = 0;
-  virtual juce::Colour getColour() const noexcept = 0;
-  virtual void setXLim(const float min, const float max) = 0;
-  virtual void setYLim(const float min, const float max) = 0;
-  virtual void setXValues(const std::vector<float>& x_values) noexcept = 0;
-  virtual void setYValues(const std::vector<float>& y_values) noexcept = 0;
-  virtual const std::vector<float>& getYValues() noexcept = 0;
-  virtual const std::vector<float>& getXValues() noexcept = 0;
-  virtual const std::vector<juce::Point<float>>& getGraphPoints() noexcept = 0;
-  virtual void setDashedPath(
-      const std::vector<float>& dashed_lengths) noexcept = 0;
-  virtual void updateYGraphPoints() = 0;
-  virtual void updateXGraphPoints() = 0;
-};
-
-class BaseGrid : public juce::Component {
-public:
-    virtual ~BaseGrid() = default;
-    virtual void setGridBounds(const juce::Rectangle<int>& grid_area) = 0;
-    virtual void setYLim(const float min, const float max) = 0;
-    virtual void setXLim(const float min, const float max) = 0;
-    virtual void setGridON(const bool grid_on, const bool tiny_grids_on) = 0;
-    virtual void setXTicks(const std::vector<float>& x_ticks) = 0;
-    virtual void setXLabels(const std::vector<std::string>& x_labels) = 0;
-    virtual void setYLabels(const std::vector<std::string>& y_labels) = 0;
-    virtual void setYTicks(const std::vector<float>& y_ticks) = 0;
-    virtual void updateGrid() = 0;
-};
-
-/*============================================================================*/
-
 }  // namespace scp

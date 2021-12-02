@@ -60,6 +60,6 @@ class PlotLabel : public juce::Component {
 
  private:
   juce::Label m_x_label, m_y_label, m_title_label;
-  LookAndFeelMethodsBase *m_lookandfeel;
+  juce::LookAndFeel *m_lookandfeel;
 };
 }  // namespace scp

@@ -9,37 +9,34 @@
 #endif
 
 namespace scp {
-/*============================================================================*/
-
-class BaseGrid;
-class BaseGraphLine;
-class Frame;
-class PlotLookAndFeel;
-class PlotLabel;
-class Legend;
-class Zoom;
 
 /*============================================================================*/
-
-typedef std::vector<std::unique_ptr<BaseGraphLine>> GraphLines;
-typedef std::vector<juce::Point<float>> GraphPoints;
-typedef std::vector<std::pair<std::string, juce::Rectangle<int>>> LabelVector;
-typedef std::vector<std::string> StringVector;
-typedef std::vector<juce::Colour> ColourVector;
-
-/*============================================================================*/
-
-/**< Enum to define the type of graph line. */
-enum class GraphType : uint32_t {
-  graph_line, /**< Graph line. */
-  grid_line   /**< GridLine used for the grids.*/
-};
 
 /**< Enum to define the scaling of an axis. */
 enum class Scaling : uint32_t {
   linear,     /**< Linear scaling of the graph line. */
   logarithmic /**< Logarithmic scaling of the graph line. */
 };
+
+/*============================================================================*/
+
+class Grid;
+class GraphLine;
+class Frame;
+class PlotLabel;
+class Legend;
+class Zoom;
+class PlotLookAndFeel;
+
+/*============================================================================*/
+
+typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
+typedef std::vector<juce::Point<float>> GraphPoints;
+typedef std::vector<std::pair<std::string, juce::Rectangle<int>>> LabelVector;
+typedef std::vector<std::string> StringVector;
+typedef std::vector<juce::Colour> ColourVector;
+
+/*============================================================================*/
 
 /** @brief A struct that defines a single gridline.
  *
@@ -68,10 +65,6 @@ struct Lim {
 };
 
 typedef Lim<float> Lim_f;
-
-/*============================================================================*/
-
-class LookAndFeelMethodsBase {};
 
 /*============================================================================*/
 

@@ -66,6 +66,12 @@ static void add_test(void (*new_fun_ptr)(juce::Component *comp,
     GET_PLOT->plot(X);      \
   }
 
+#define SEMI_LOG_XY(X, Y)   \
+  {                         \
+    ADD_PLOT(scp::SemiLogX) \
+    GET_PLOT->plot(X, Y);   \
+  }
+
 #define SEMI_LOG_Y(Y)       \
   {                         \
     ADD_PLOT(scp::SemiLogY) \
@@ -115,6 +121,7 @@ class MainComponent : public juce::Component {
     return &m_plot_holder;
   }
 
+  std::vector<std::shared_ptr<scp::PlotLookAndFeel>> lnf;
  private:
   std::map<std::string, std::unique_ptr<scp::Plot>> m_plot_holder;
   scp::Plot *m_current_plot = nullptr;

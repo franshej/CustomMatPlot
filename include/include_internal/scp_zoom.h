@@ -76,7 +76,7 @@ class Zoom : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
-  LookAndFeelMethodsBase* m_lookandfeel;
+  juce::LookAndFeel* m_lookandfeel;
 
   juce::Point<int> m_start_pos, m_end_pos;
 };

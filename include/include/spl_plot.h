@@ -23,8 +23,8 @@ namespace scp {
  *  \brief A Base Class component to plot 2-D lines/marker symbols.
  *
  *  This class can be used to plot 2-D lines/marker symbols. It's also possible
- *  to trace the graph and zoom in/out of specific area. Other featureas: set the
- *  x- and y-limits, ticks and ticklabels. Logarithmic scaling is choosen
+ *  to trace the graph and zoom in/out of specific area. Other featureas: set
+ * the x- and y-limits, ticks and ticklabels. Logarithmic scaling is choosen
  *  using the subclasses below.
  */
 class Plot : public juce::Component {
@@ -33,8 +33,9 @@ class Plot : public juce::Component {
    * nullptr. */
   ~Plot();
 
-  /** Constructor */
-  Plot();
+  /* Constructor **/
+  Plot(const Scaling x_scaling = Scaling::linear,
+       const Scaling y_scaling = Scaling::linear);
 
   /** @brief Set the X-limits
    *
@@ -171,6 +172,19 @@ class Plot : public juce::Component {
    */
   void setLegend(const std::vector<std::string>& graph_descriptions);
 
+  /** @brief  Sets the look and feel to use for this component.
+
+    The object passed in will not be deleted by the component, so it's the
+    caller's responsibility to manage it. It may be used at any time until this
+    component has been deleted.
+
+    Calling this method will also invoke the juce::Componenet::setLookAndFeel
+    and in turn sendLookAndFeelChange() method.
+
+    @see getLookAndFeel, lookAndFeelChanged
+*/
+  void setLookAndFeel(PlotLookAndFeel* look_and_feel);
+
   //==============================================================================
 
   /** @brief A set of colour IDs to use to change the colour of various aspects
@@ -211,8 +225,10 @@ class Plot : public juce::Component {
    *   The Plot class needs a LookAndFeel, that implements these methods.
    *   The default implementation can be seen in, \see scp_lookandfeelmethods.h
    */
-  class LookAndFeelMethods : public LookAndFeelMethodsBase {
+  class LookAndFeelMethods : public juce::LookAndFeel_V4 {
    public:
+    virtual ~LookAndFeelMethods() = default;
+
     /** This method draws a frame around the graph area. */
     virtual void drawFrame(juce::Graphics& g,
                            const juce::Rectangle<int> bounds) = 0;
@@ -221,7 +237,6 @@ class Plot : public juce::Component {
     virtual void drawGraphLine(juce::Graphics& g,
                                const GraphPoints& graph_points,
                                const std::vector<float>& dashed_lengths,
-                               const GraphType graph_type,
                                const juce::Colour graph_colour) = 0;
 
     /** This method draws the labels on the x and y axis. */
@@ -246,73 +261,77 @@ class Plot : public juce::Component {
 
     /** A method to find and get the colour for either a 'ColourIdsGraph'
      * enum.*/
-    virtual juce::Colour findAndGetColourFromId(
+    virtual CONSTEXPR juce::Colour findAndGetColourFromId(
         const ColourIdsGraph colour_id) const noexcept = 0;
 
     /** A method to find and get the colour for a 'ColourIds' enum. */
-    virtual juce::Colour findAndGetColourFromId(
+    virtual CONSTEXPR juce::Colour findAndGetColourFromId(
         const ColourIds colour_id) const noexcept = 0;
 
     /** Returns the 'ColourIdsGraph' for a given id.*/
-    virtual ColourIdsGraph getColourFromGraphID(
-        const std::size_t graph_id) const = 0;
+    virtual CONSTEXPR ColourIdsGraph
+    getColourFromGraphID(const std::size_t graph_id) const = 0;
 
     /** Get the graph area bounds, where the graphs and grids are to be drawn.*/
-    virtual juce::Rectangle<int> getGraphBounds(
+    virtual CONSTEXPR juce::Rectangle<int> getGraphBounds(
         const juce::Rectangle<int> bounds) const noexcept = 0;
 
     /** Returns the Font used when drawing the grid labels. */
-    virtual juce::Font getGridLabelFont() const noexcept = 0;
+    virtual CONSTEXPR juce::Font getGridLabelFont() const noexcept = 0;
 
     /** Get the legend position */
-    virtual juce::Point<int> getLegendPosition(
+    virtual CONSTEXPR juce::Point<int> getLegendPosition(
         const juce::Rectangle<int>& graph_bounds,
         const juce::Rectangle<int>& legend_bounds) const noexcept = 0;
 
     /** Get the legend bounds */
-    virtual juce::Rectangle<int> getLegendBounds(
+    virtual CONSTEXPR juce::Rectangle<int> getLegendBounds(
         [[maybe_unused]] const juce::Rectangle<int>& bounds,
         const std::vector<std::string>& label_texts) const noexcept = 0;
 
     /** Returns the Font used when drawing legends. */
-    virtual juce::Font getLegendFont() const noexcept = 0;
+    virtual CONSTEXPR juce::Font getLegendFont() const noexcept = 0;
 
     /** Get the bounds of the componenet */
-    virtual juce::Rectangle<int> getPlotBounds(
+    virtual CONSTEXPR juce::Rectangle<int> getPlotBounds(
         juce::Rectangle<int> bounds) const noexcept = 0;
 
     /** Returns the Font used when drawing the x-, y-axis and title labels. */
-    virtual juce::Font getXYTitleFont() const noexcept = 0;
+    virtual CONSTEXPR juce::Font getXYTitleFont() const noexcept = 0;
+
+    /** Get the x-scaling.*/
+    virtual CONSTEXPR Scaling getXScaling() const noexcept = 0;
+
+    /** Get the y-scaling.*/
+    virtual CONSTEXPR Scaling getYScaling() const noexcept = 0;
 
     /** Defines the default colours */
     virtual void setDefaultPlotColours() noexcept = 0;
 
     /** Updates the x-ticks with auto generated ticks. */
     virtual void updateVerticalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds, const Scaling vertical_scaling,
-        const bool tiny_grids, const Lim_f x_lim,
-        std::vector<float>& x_ticks) noexcept = 0;
+        const juce::Rectangle<int>& bounds, const bool tiny_grids,
+        const Lim_f x_lim, std::vector<float>& x_ticks) noexcept = 0;
 
     /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds, const Scaling hotizontal_scaling,
-        const bool tiny_grids, const Lim_f y_lim,
-        std::vector<float>& y_ticks) noexcept = 0;
+        const juce::Rectangle<int>& bounds, const bool tiny_grids,
+        const Lim_f y_lim, std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-cordinates of the graph points used when drawing a graph
-     * line. It also updates the graph point indices used in
+     *  line. It also updates the graph point indices used in
      * 'updateYGraphPoints' */
     virtual void updateXGraphPointsAndIndices(
-        const juce::Rectangle<int>& bounds, const Scaling scaling,
-        const Lim_f& x_lim, const std::vector<float>& x_data,
+        const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
+        const std::vector<float>& x_data,
         std::vector<std::size_t>& graph_points_indices,
         GraphPoints& graph_points) noexcept = 0;
 
     /** Updates the y-cordinates of the graph points used when drawing a graph
      * line. */
     virtual void updateYGraphPoints(
-        const juce::Rectangle<int>& bounds, const Scaling scaling,
-        const Lim_f& y_lim, const std::vector<float>& y_data,
+        const juce::Rectangle<int>& bounds, const Lim_f& y_lim,
+        const std::vector<float>& y_data,
         const std::vector<std::size_t>& graph_points_indices,
         GraphPoints& graph_points) noexcept = 0;
 
@@ -356,12 +375,15 @@ class Plot : public juce::Component {
   void initialize();
 
  private:
-  [[nodiscard]] std::unique_ptr<BaseGraphLine> getGraphLine() const noexcept;
-  [[nodiscard]] std::unique_ptr<BaseGrid> getGrid() const noexcept;
+  template <Scaling x_scaling, Scaling y_scaling>
+  juce::LookAndFeel* castUserLookAndFeel(PlotLookAndFeel* user_look_and_feel);
 
   void PlotInternal(const std::vector<std::vector<float>>& y_data,
                     const std::vector<std::vector<float>>& x_data = {},
                     ColourVector graph_colours = {});
+
+  void resetLookAndFeel();
+
   void updateYData(const std::vector<std::vector<float>>& y_data);
   void updateXData(const std::vector<std::vector<float>>& x_data);
 
@@ -373,27 +395,19 @@ class Plot : public juce::Component {
 
   void updateGridAndGraphs();
 
-  virtual [[nodiscard]] CONSTEXPR const Scaling getXScaling() const noexcept {
-    return Scaling::linear;
-  };
-
-  virtual [[nodiscard]] CONSTEXPR const Scaling getYScaling() const noexcept {
-    return Scaling::linear;
-  };
-
   bool m_x_autoscale = true, m_y_autoscale = true;
+  const Scaling m_x_scaling, m_y_scaling;
   scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
 
   GraphLines m_graph_lines;
-  std::unique_ptr<BaseGrid> m_grid;
+  std::unique_ptr<Grid> m_grid;
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;
   std::unique_ptr<Legend> m_legend;
   std::unique_ptr<Zoom> m_zoom;
 
   juce::LookAndFeel* m_lookandfeel;
-  LookAndFeelMethodsBase* m_lookandfeel_base;
-  std::unique_ptr<PlotLookAndFeel> m_lookandfeel_default;
+  std::unique_ptr<LookAndFeelMethods> m_lookandfeel_default;
 
   juce::ComponentDragger m_comp_dragger;
 };
@@ -401,31 +415,21 @@ class Plot : public juce::Component {
 /**
  *  \class SemiLogX
  *  \brief Component for plotting 2-D graph lines where the x-axis is scaled
- *  logarithmic and y-axis linearly.
+ *   logarithmic and y-axis linearly.
  */
 class SemiLogX : public Plot {
-  const Scaling getXScaling() const noexcept override {
-    return Scaling::logarithmic;
-  };
-
-  const Scaling getYScaling() const noexcept override {
-    return Scaling::linear;
-  };
+ public:
+  SemiLogX() : Plot(Scaling::logarithmic){};
 };
 
 /**
  *  \class SemiLogY
  *  \brief Component for plotting 2-D graph lines where the x-axis is scaled
- *  logarithmic and y-axis linearly.
+ *   logarithmic and y-axis linearly.
  */
 class SemiLogY : public Plot {
-  const Scaling getXScaling() const noexcept override {
-    return Scaling::linear;
-  };
-
-  const Scaling getYScaling() const noexcept override {
-    return Scaling::logarithmic;
-  };
+ public:
+  SemiLogY() : Plot(Scaling::linear, Scaling::logarithmic){};
 };
 
 }  // namespace scp

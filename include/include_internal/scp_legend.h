@@ -54,7 +54,7 @@ class Legend : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
-  LookAndFeelMethodsBase* m_lookandfeel;
+  juce::LookAndFeel* m_lookandfeel;
 
   std::vector<std::string> m_label_texts;
   const GraphLines* m_graph_lines{nullptr};

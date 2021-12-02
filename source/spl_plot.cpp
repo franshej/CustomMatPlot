@@ -29,7 +29,7 @@ findMinMaxValuesInGraphLines(
 
 static inline [[nodiscard]] std::pair<float, float>
 findMinMaxValuesInGraphLines(
-    const std::vector<std::unique_ptr<scp::BaseGraphLine>>& graph_lines,
+    const std::vector<std::unique_ptr<scp::GraphLine>>& graph_lines,
     const bool isXValue) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
@@ -48,7 +48,7 @@ findMinMaxValuesInGraphLines(
   return {min_value, max_value};
 }
 
-Plot::~Plot() {
+void Plot::resetLookAndFeel() {
   m_grid->setLookAndFeel(nullptr);
   m_plot_label->setLookAndFeel(nullptr);
   m_frame->setLookAndFeel(nullptr);
@@ -57,6 +57,13 @@ Plot::~Plot() {
   for (auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(nullptr);
   }
+}
+
+Plot::~Plot() { resetLookAndFeel(); }
+
+Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
+    : m_x_scaling(x_scaling), m_y_scaling(y_scaling) {
+  initialize();
 }
 
 void Plot::updateYLim(const float min, const float max) {
@@ -93,9 +100,11 @@ void Plot::initialize() {
   m_frame = std::make_unique<Frame>();
   m_legend = std::make_unique<Legend>();
   m_zoom = std::make_unique<Zoom>();
+  m_grid = std::make_unique<Grid>();
 
   lookAndFeelChanged();
 
+  addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
   addAndMakeVisible(m_zoom.get());
   addAndMakeVisible(m_plot_label.get());
@@ -103,6 +112,7 @@ void Plot::initialize() {
 
   m_legend->setAlwaysOnTop(true);
   m_zoom->toBehind(m_legend.get());
+  m_grid->toBack();
 }
 
 void Plot::setAutoXScale() {
@@ -136,7 +146,7 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
   if (!x_data.empty()) updateXData(x_data);
 
   if (m_lookandfeel) {
-    auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base);
+    auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
     const auto graph_area = lnf->getGraphBounds(getBounds());
     repaint(graph_area);
   }
@@ -182,7 +192,7 @@ void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
 }
 
 void Plot::resized() {
-  if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base)) {
+  if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
     const auto plot_area = lnf->getPlotBounds(getBounds());
     const auto graph_area = lnf->getGraphBounds(getBounds());
 
@@ -224,16 +234,60 @@ void Plot::parentHierarchyChanged() {
   lookAndFeelChanged();
 }
 
+template <Scaling x_scaling, Scaling y_scaling>
+juce::LookAndFeel* Plot::castUserLookAndFeel(
+    PlotLookAndFeel* user_look_and_feel) {
+  if (m_x_scaling != x_scaling || m_y_scaling != y_scaling) {
+  } else if (auto* lnf =
+                 dynamic_cast<PlotLookAndFeelDefault<x_scaling, y_scaling>*>(
+                     user_look_and_feel)) {
+    resetLookAndFeel();
+    return lnf;
+  }
+  return nullptr;
+}
+
+void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
+  juce::LookAndFeel* lnf{nullptr};
+
+  if (lnf = castUserLookAndFeel<Scaling::linear, Scaling::linear>(
+          look_and_feel)) {
+  } else if (lnf = castUserLookAndFeel<Scaling::logarithmic, Scaling::linear>(
+                 look_and_feel)) {
+  } else if (lnf = castUserLookAndFeel<Scaling::logarithmic,
+                                       Scaling::logarithmic>(look_and_feel)) {
+  } else if (lnf = castUserLookAndFeel<Scaling::linear, Scaling::logarithmic>(
+                 look_and_feel)) {
+  }
+  this->juce::Component::setLookAndFeel(lnf);
+}
+
 void Plot::lookAndFeelChanged() {
-  if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
+  if (&getLookAndFeel() == nullptr) {
+    m_lookandfeel_default.reset();
+    m_lookandfeel = nullptr;
+    resetLookAndFeel();
+  } else if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = &getLookAndFeel();
     m_lookandfeel_default.reset();
-    m_lookandfeel_base = lnf;
   } else {
     if (!m_lookandfeel_default)
-      m_lookandfeel_default = std::make_unique<scp::PlotLookAndFeel>();
+      if (m_x_scaling == Scaling::logarithmic &&
+          m_y_scaling == Scaling::logarithmic) {
+        m_lookandfeel_default = std::make_unique<scp::PlotLookAndFeelDefault<
+            Scaling::logarithmic, Scaling::logarithmic>>();
+      } else if (m_x_scaling == Scaling::logarithmic) {
+        m_lookandfeel_default =
+            std::make_unique<scp::PlotLookAndFeelDefault<Scaling::logarithmic,
+                                                         Scaling::linear>>();
+      } else if (m_y_scaling == Scaling::logarithmic) {
+        m_lookandfeel_default = std::make_unique<scp::PlotLookAndFeelDefault<
+            Scaling::linear, Scaling::logarithmic>>();
+      } else {
+        m_lookandfeel_default = std::make_unique<
+            scp::PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>>();
+      }
     m_lookandfeel = m_lookandfeel_default.get();
-    m_lookandfeel_base = m_lookandfeel_default.get();
   }
 
   if (m_grid) m_grid->setLookAndFeel(m_lookandfeel);
@@ -241,6 +295,7 @@ void Plot::lookAndFeelChanged() {
   if (m_frame) m_frame->setLookAndFeel(m_lookandfeel);
   if (m_legend) m_legend->setLookAndFeel(m_lookandfeel);
   if (m_zoom) m_zoom->setLookAndFeel(m_lookandfeel);
+  if (m_grid) m_grid->setLookAndFeel(m_lookandfeel);
   for (auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(m_lookandfeel);
   }
@@ -252,12 +307,12 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
       m_graph_lines.resize(y_data.size());
       std::size_t i = 0u;
       for (auto& graph_line : m_graph_lines) {
-        if (!graph_line && m_lookandfeel_base) {
-          auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base);
+        if (!graph_line && m_lookandfeel) {
+          auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
           const auto colour_id = lnf->getColourFromGraphID(i);
           const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
-          graph_line = getGraphLine();
+          graph_line = std::make_unique<GraphLine>();
           graph_line->setColour(graph_colour);
           graph_line->setLookAndFeel(m_lookandfeel);
 
@@ -267,14 +322,6 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
           addAndMakeVisible(graph_line.get());
           graph_line->toBehind(m_zoom.get());
           i++;
-
-          // Create the grid when the first graph line is created.
-          if (!m_grid) {
-            m_grid = getGrid();
-            m_grid->setLookAndFeel(m_lookandfeel);
-            addAndMakeVisible(m_grid.get());
-            m_grid->toBack();
-          }
         }
       }
     }
@@ -334,7 +381,7 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
 }
 
 void Plot::setLegend(const StringVector& graph_descriptions) {
-  if (m_lookandfeel_base && m_legend) {
+  if (m_lookandfeel && m_legend) {
     m_legend->setVisible(graph_descriptions.size() && m_graph_lines.size());
     m_legend->setDataSeries(&m_graph_lines);
 
@@ -355,9 +402,9 @@ void Plot::setLegend(const StringVector& graph_descriptions) {
       return graph_descriptions;
     };
 
-    const auto& graph_descriptions_ref = getDescriptionRef();
+    const auto graph_descriptions_ref = getDescriptionRef();
 
-    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base);
+    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
     const auto graph_bounds = lnf->getGraphBounds(getBounds());
     const auto bounds =
         lnf->getLegendBounds(graph_bounds, graph_descriptions_ref);
@@ -389,16 +436,16 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
     if (m_legend.get() == event.eventComponent) {
       m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
     } else if (m_zoom.get() == event.eventComponent) {
-      const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base);
+      const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
       const auto graph_bounds = lnf->getGraphBounds(getBounds());
       DBG("x, y value: [ "
           << std::to_string(getXFromXCoordinate(event.position.getX(), 0,
                                                 graph_bounds.getWidth(),
-                                                m_x_lim, getXScaling()))
+                                                m_x_lim, m_x_scaling))
           << ", "
           << std::to_string(getYFromYCoordinate(event.position.getY(), 0,
                                                 graph_bounds.getHeight(),
-                                                m_y_lim, getYScaling()))
+                                                m_y_lim, m_y_scaling))
           << " ]");
       DBG("Pos: " << event.position.toString());
       m_zoom->setEndPosition(event.getPosition());
@@ -411,22 +458,21 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
     if (m_zoom.get() == event.eventComponent &&
         !event.mods.isRightButtonDown()) {
-      const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel_base);
+      const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
       const auto graph_bounds = lnf->getGraphBounds(getBounds());
 
       const auto start_pos = m_zoom->getStartPosition();
       const auto end_pos = m_zoom->getEndPosition();
 
       const auto x_min = getXFromXCoordinate(
-          start_pos.getX(), 0, graph_bounds.getWidth(), m_x_lim, getXScaling());
+          start_pos.getX(), 0, graph_bounds.getWidth(), m_x_lim, m_x_scaling);
       const auto x_max = getXFromXCoordinate(
-          end_pos.getX(), 0, graph_bounds.getWidth(), m_x_lim, getXScaling());
+          end_pos.getX(), 0, graph_bounds.getWidth(), m_x_lim, m_x_scaling);
 
-      const auto y_min =
-          getYFromYCoordinate(start_pos.getY(), 0, graph_bounds.getHeight(),
-                              m_y_lim, getYScaling());
+      const auto y_min = getYFromYCoordinate(
+          start_pos.getY(), 0, graph_bounds.getHeight(), m_y_lim, m_y_scaling);
       const auto y_max = getYFromYCoordinate(
-          end_pos.getY(), 0, graph_bounds.getHeight(), m_y_lim, getYScaling());
+          end_pos.getY(), 0, graph_bounds.getHeight(), m_y_lim, m_y_scaling);
 
       updateXLim(std::min(x_min, x_max), std::max(x_min, x_max));
       updateYLim(std::min(y_min, y_max), std::max(y_min, y_max));
@@ -438,30 +484,4 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
     }
   }
 }
-
-[[nodiscard]] std::unique_ptr<BaseGrid> Plot::getGrid() const noexcept {
-  if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
-    return std::move(std::make_unique<LinearGrid>());
-  } else if (getXScaling() == Scaling::linear &&
-             getYScaling() == Scaling::logarithmic) {
-    return std::move(std::make_unique<SemiLogYGrid>());
-  }
-
-  return std::move(std::make_unique<SemiLogXGrid>());
-}
-
-[[nodiscard]] std::unique_ptr<scp::BaseGraphLine> Plot::getGraphLine()
-    const noexcept {
-  if (getXScaling() == Scaling::linear && getYScaling() == Scaling::linear) {
-    return std::move(std::make_unique<scp::LinearGraphLine>());
-  } else if (getXScaling() == Scaling::linear &&
-             getYScaling() == Scaling::logarithmic) {
-    return std::move(std::make_unique<LogYGraphLine>());
-  }
-
-  return std::move(std::make_unique<scp::LogXGraphLine>());
-}
-
-Plot::Plot() { initialize(); };
-
 }  // namespace scp

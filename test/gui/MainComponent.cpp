@@ -1,4 +1,7 @@
 #include "MainComponent.h"
+
+#include "scp_lookandfeel.h"
+
 #define PI2 6.28318530718
 
 extern std::shared_ptr<node> head = nullptr;
@@ -40,10 +43,29 @@ TEST(test_custom_y_labels) {
   TITLE("TITLE");
 }
 
-TEST(test_semi_plot_x_1000) {
+TEST(test_semi_log_x_1000) {
   std::vector<float> y_test_data(1000);
-  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+  std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
+
+  y_test_data[9] = 1000;
+  y_test_data[99] = 1000;
+
   SEMI_LOG_X({y_test_data});
+  GRID_ON;
+}
+
+TEST(test_semi_log_xy_1000) {
+  std::vector<float> y_test_data(1000);
+  std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
+
+  y_test_data[9] = 1000;
+  y_test_data[99] = 1000;
+
+  std::vector<float> x_test_data(1000);
+  std::iota(x_test_data.begin(), x_test_data.end(), 1.f);
+  for (auto &x : x_test_data) x = x * 1e-3;
+
+  SEMI_LOG_XY({y_test_data}, {x_test_data});
   GRID_ON;
 }
 
@@ -209,10 +231,25 @@ TEST(test_legend_2) {
 }
 
 TEST(plot_semi_log_y) {
-    std::vector<float> y_test_data(1000);
-    std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
-    SEMI_LOG_Y({ y_test_data });
-    GRID_ON;
+  std::vector<float> y_test_data(1000);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+  SEMI_LOG_Y({y_test_data});
+  GRID_ON;
+}
+
+class MyLnf : public scp::PlotLookAndFeel {
+  juce::Font getGridLabelFont() const noexcept override {
+    return juce::Font("Arial Rounded MT", 32.f, juce::Font::plain);
+  };
+};
+
+TEST(look_and_feel) {
+  std::vector<float> y_test_data(1000);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+  auto lnf = std::make_shared<MyLnf>();
+  PARENT->lnf.emplace_back(lnf);
+  SEMI_LOG_Y({y_test_data});
+  GET_PLOT->setLookAndFeel(lnf.get());
 }
 
 static juce::Rectangle<int> getScreenArea() {
@@ -281,4 +318,3 @@ void MainComponent::resized() {
     }
   }
 }
-

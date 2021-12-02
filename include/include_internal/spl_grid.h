@@ -54,9 +54,7 @@ struct GridConfigParams {
  * without the grids. Default are grids off.
  *
  */
-template <Scaling x_scaling_T = Scaling::linear,
-          Scaling y_scaling_T = Scaling::linear>
-class Grid : public BaseGrid {
+class Grid : public juce::Component {
  public:
   /** @brief Set the bounds of where the grids will be drawn
    *
@@ -66,7 +64,7 @@ class Grid : public BaseGrid {
    *  @param grid_area The area of where the grids will be drawn
    *  @return void.
    */
-  void setGridBounds(const juce::Rectangle<int>& grid_area) override;
+  void setGridBounds(const juce::Rectangle<int>& grid_area);
 
   /** @brief Set the Y-limits
    *
@@ -76,7 +74,7 @@ class Grid : public BaseGrid {
    *  @param max maximum value
    *  @return void.
    */
-  void setYLim(const float min, const float max) override;
+  void setYLim(const float min, const float max);
 
   /** @brief Set the X-limits
    *
@@ -86,7 +84,7 @@ class Grid : public BaseGrid {
    *  @param max maximum value
    *  @return void.
    */
-  void setXLim(const float min, const float max) override;
+  void setXLim(const float min, const float max);
 
   /** @brief Display grids
    *
@@ -97,7 +95,7 @@ class Grid : public BaseGrid {
    *  @param tiny_grid_on set to true to show tiny grids
    *  @return void.
    */
-  void setGridON(const bool grid_on, const bool tiny_grids_on) override;
+  void setGridON(const bool grid_on, const bool tiny_grids_on);
 
   /** @brief Override the x-ticks
    *
@@ -106,7 +104,7 @@ class Grid : public BaseGrid {
    *  @param x_labels x-labels to be shown.
    *  @return void.
    */
-  void setXTicks(const std::vector<float>& x_ticks) override;
+  void setXTicks(const std::vector<float>& x_ticks);
 
   /** @brief Override the x-labels
    *
@@ -115,7 +113,7 @@ class Grid : public BaseGrid {
    *  @param x_labels x-labels to be shown.
    *  @return void.
    */
-  void setXLabels(const std::vector<std::string>& x_labels) override;
+  void setXLabels(const std::vector<std::string>& x_labels);
 
   /** @brief Override the y-labels
    *
@@ -124,7 +122,7 @@ class Grid : public BaseGrid {
    *  @param y_labels y-labels to be shown.
    *  @return void.
    */
-  void setYLabels(const std::vector<std::string>& y_labels) override;
+  void setYLabels(const std::vector<std::string>& y_labels);
 
   /** @brief Override the y-ticks
    *
@@ -133,7 +131,7 @@ class Grid : public BaseGrid {
    *  @param y_labels y-labels to be shown.
    *  @return void.
    */
-  void setYTicks(const std::vector<float>& y_ticks) override;
+  void setYTicks(const std::vector<float>& y_ticks);
 
   /** @brief Update grids and grid labels
    *
@@ -172,39 +170,11 @@ class Grid : public BaseGrid {
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::vector<juce::Path> m_grid_path;
 
-  static constexpr auto x_scaling = x_scaling_T;
-  static constexpr auto y_scaling = y_scaling_T;
-
  protected:
-  LookAndFeelMethodsBase* m_lookandfeel;
+  juce::LookAndFeel* m_lookandfeel;
   GridConfigParams m_config_params;
 
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_labels,
       m_x_axis_labels;
 };
-
-/*============================================================================*/
-/**
- * \class SemiLogXGrid
- * \brief A class component to create X, Y grids and grid labels
- *
- *  Both the x and y axis are scaled linearly.
- */
-struct LinearGrid : Grid<Scaling::linear, Scaling::linear> {};
-
-/**
- * \class SemiLogXGrid
- * \brief A class component to create X, Y grids and grid labels
- *
- *  The x axis is scaled logarithmically and y axis linearly.
- */
-struct SemiLogXGrid : Grid<Scaling::logarithmic, Scaling::linear> {};
-
-/**
- * \class SemiLogYGrid
- * \brief A class component to create X, Y grids and grid labels
- *
- *  The x axis is scaled linearly and y axis logarithmically.
- */
-struct SemiLogYGrid : Grid<Scaling::linear, Scaling::logarithmic> {};
 }  // namespace scp

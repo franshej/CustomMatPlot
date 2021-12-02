@@ -1,13 +1,15 @@
 #pragma once
 
+#include <array>
+
 #include "spl_plot.h"
 
 /*============================================================================*/
 
 template <class float_type>
-constexpr std::string convertFloatToString(const float_type value,
-                                           std::size_t num_decimals,
-                                           std::size_t max_string_len) {
+static constexpr [[nodiscard]] const std::string convertFloatToString(
+    const float_type value, std::size_t num_decimals,
+    std::size_t max_string_len) {
   if constexpr (!(std::is_same<float, float_type>::value ||
                   std::is_same<double, float_type>::value)) {
     throw std::invalid_argument("Type must be either float or double");
@@ -41,7 +43,7 @@ constexpr std::string convertFloatToString(const float_type value,
   return text_out;
 }
 
-std::string getNextCustomLabel(
+static const [[nodiscard]] std::string getNextCustomLabel(
     std::vector<std::string>::reverse_iterator& custom_labels_it) {
   return *(custom_labels_it++);
 }
@@ -49,10 +51,16 @@ std::string getNextCustomLabel(
 /*============================================================================*/
 
 namespace scp {
-class PlotLookAndFeel : public juce::LookAndFeel_V3,
-                        public Plot::LookAndFeelMethods {
+
+class PlotLookAndFeel;
+
+template <Scaling x_scaling_t, Scaling y_scaling_t>
+class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
+  static constexpr auto x_scaling = x_scaling_t;
+  static constexpr auto y_scaling = y_scaling_t;
+
  public:
-  PlotLookAndFeel() { setDefaultPlotColours(); }
+  PlotLookAndFeelDefault() { setDefaultPlotColours(); }
 
   void setDefaultPlotColours() noexcept override {
     setColour(Plot::background_colour, juce::Colour(0xff566573));
@@ -157,7 +165,6 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
 
   void drawGraphLine(juce::Graphics& g, const GraphPoints& graph_points,
                      const std::vector<float>& dashed_lengths,
-                     const GraphType graph_type,
                      const juce::Colour graph_colour) override {
     juce::Path graph_path;
     juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
@@ -173,18 +180,8 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
         p_type.createDashedStroke(graph_path, graph_path, dashed_lengths.data(),
                                   int(dashed_lengths.size()));
       }
-      switch (graph_type) {
-        case GraphType::graph_line:
-          g.setColour(graph_colour);
-          break;
-        case GraphType::grid_line:
-          g.setColour(findColour(Plot::ColourIds::grid_colour));
-          break;
-        default:
-          g.setColour(juce::Colours::pink);
-          break;
-      }
 
+      g.setColour(graph_colour);
       g.strokePath(graph_path, p_type);
     }
   }
@@ -345,15 +342,16 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   }
 
   void updateXGraphPointsAndIndices(
-      const juce::Rectangle<int>& bounds, const Scaling scaling,
-      const Lim_f& x_lim, const std::vector<float>& x_data,
+      const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
+      const std::vector<float>& x_data,
       std::vector<std::size_t>& graph_points_indices,
       GraphPoints& graph_points) noexcept override {
     graph_points_indices.resize(x_data.size());
     graph_points.resize(x_data.size());
 
     const auto width = static_cast<float>(bounds.getWidth());
-    const auto [x_scale, x_offset] = getXScaleAndOffset(width, x_lim, scaling);
+    const auto [x_scale, x_offset] =
+        getXScaleAndOffset(width, x_lim, x_scaling);
 
     std::size_t min_x_index{0u}, max_x_index{x_data.size() - 1u};
 
@@ -397,29 +395,24 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       std::size_t graph_point_index{0u};
       const auto inverse_x_scale = 1.f / x_scale;
 
-      switch (scaling) {
-        case Scaling::linear:
-          for (auto x = x_data.begin() + min_x_index + 1;
-               x != x_data.begin() + max_x_index - 1; ++x) {
-            if (abs(*x - last_added_x) > inverse_x_scale) {
-              last_added_x = *x;
-              graph_points_indices[graph_point_index++] = current_index;
-            }
-            current_index++;
+      if constexpr (x_scaling == Scaling::linear) {
+        for (auto x = x_data.begin() + min_x_index + 1;
+             x != x_data.begin() + max_x_index - 1; ++x) {
+          if (abs(*x - last_added_x) > inverse_x_scale) {
+            last_added_x = *x;
+            graph_points_indices[graph_point_index++] = current_index;
           }
-          break;
-        case Scaling::logarithmic:
-          for (auto x = x_data.begin() + min_x_index + 1;
-               x != x_data.begin() + max_x_index - 1; ++x) {
-            if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
-              last_added_x = *x;
-              graph_points_indices[graph_point_index++] = current_index;
-            }
-            current_index++;
+          current_index++;
+        }
+      } else if constexpr (x_scaling == Scaling::logarithmic) {
+        for (auto x = x_data.begin() + min_x_index + 1;
+             x != x_data.begin() + max_x_index - 1; ++x) {
+          if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
+            last_added_x = *x;
+            graph_points_indices[graph_point_index++] = current_index;
           }
-          break;
-        default:
-          break;
+          current_index++;
+        }
       }
 
       graph_points_indices.resize(graph_point_index + 1);
@@ -430,62 +423,50 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   calculate_x_label:
 
     std::size_t i{0u};
-    switch (scaling) {
-      case Scaling::linear:
-        for (const auto i_x : graph_points_indices) {
-          graph_points[i].setX(
-              getXGraphPointsLinear(x_data[i_x], x_scale, x_offset));
-          i++;
-        }
-        break;
-      case Scaling::logarithmic:
-        for (const auto i_x : graph_points_indices) {
-          graph_points[i].setX(
-              getXGraphPointsLogarithmic(x_data[i_x], x_scale, x_offset));
-          i++;
-        }
-        break;
-      default:
-        break;
+    if constexpr (x_scaling == Scaling::linear) {
+      for (const auto i_x : graph_points_indices) {
+        graph_points[i].setX(
+            getXGraphPointsLinear(x_data[i_x], x_scale, x_offset));
+        i++;
+      }
+    } else if constexpr (x_scaling == Scaling::logarithmic) {
+      for (const auto i_x : graph_points_indices) {
+        graph_points[i].setX(
+            getXGraphPointsLogarithmic(x_data[i_x], x_scale, x_offset));
+        i++;
+      }
     }
   }
 
   void updateYGraphPoints(const juce::Rectangle<int>& bounds,
-                          const Scaling scaling, const Lim_f& y_lim,
-                          const std::vector<float>& y_data,
+                          const Lim_f& y_lim, const std::vector<float>& y_data,
                           const std::vector<std::size_t>& graph_points_indices,
                           GraphPoints& graph_points) noexcept override {
     const auto [y_scale, y_offset] =
-        getYScaleAndOffset(bounds.toFloat().getHeight(), y_lim, scaling);
+        getYScaleAndOffset(bounds.toFloat().getHeight(), y_lim, y_scaling);
 
     std::size_t i = 0u;
 
-    switch (scaling) {
-      case Scaling::linear:
-        for (const auto i_y : graph_points_indices) {
-          graph_points[i].setY(
-              getYGraphPointsLinear(y_data[i_y], y_scale, y_offset));
-          i++;
-        }
-        break;
-      case Scaling::logarithmic:
-        for (const auto i_y : graph_points_indices) {
-          graph_points[i].setY(
-              getYGraphPointsLogarithmic(y_data[i_y], y_scale, y_offset));
-          i++;
-        }
-        break;
-      default:
-        break;
+    if constexpr (y_scaling == Scaling::linear) {
+      for (const auto i_y : graph_points_indices) {
+        graph_points[i].setY(
+            getYGraphPointsLinear(y_data[i_y], y_scale, y_offset));
+        i++;
+      }
+    } else if constexpr (y_scaling == Scaling::logarithmic) {
+      for (const auto i_y : graph_points_indices) {
+        graph_points[i].setY(
+            getYGraphPointsLogarithmic(y_data[i_y], y_scale, y_offset));
+        i++;
+      }
     }
 
     graph_points.resize(i);
   }
 
   void updateVerticalGridLineTicksAuto(
-      const juce::Rectangle<int>& bounds, const Scaling vertical_scaling,
-      const bool tiny_grids, const Lim_f x_lim,
-      std::vector<float>& x_ticks) noexcept override {
+      const juce::Rectangle<int>& bounds, const bool tiny_grids,
+      const Lim_f x_lim, std::vector<float>& x_ticks) noexcept override {
     x_ticks.clear();
 
     const auto width = bounds.getWidth();
@@ -542,23 +523,16 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       }
     };
 
-    switch (vertical_scaling) {
-      case Scaling::linear:
-        addVerticalTicksLinear();
-        break;
-      case Scaling::logarithmic:
-        addVerticalTicksLogarithmic();
-        break;
-      default:
-        addVerticalTicksLinear();
-        break;
+    if constexpr (x_scaling == Scaling::linear) {
+      addVerticalTicksLinear();
+    } else if constexpr (x_scaling == Scaling::logarithmic) {
+      addVerticalTicksLogarithmic();
     }
   }
 
   void updateHorizontalGridLineTicksAuto(
-      const juce::Rectangle<int>& bounds, const Scaling hotizontal_scaling,
-      const bool tiny_grids, const Lim_f y_lim,
-      std::vector<float>& y_ticks) noexcept override {
+      const juce::Rectangle<int>& bounds, const bool tiny_grids,
+      const Lim_f y_lim, std::vector<float>& y_ticks) noexcept override {
     y_ticks.clear();
 
     const auto width = bounds.getWidth();
@@ -615,16 +589,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
       }
     };
 
-    switch (hotizontal_scaling) {
-      case Scaling::linear:
-        addHorizontalTicksLinear();
-        break;
-      case Scaling::logarithmic:
-        addHorizontalTicksLogarithmic();
-        break;
-      default:
-        addHorizontalTicksLinear();
-        break;
+    if constexpr (y_scaling == Scaling::linear) {
+      addHorizontalTicksLinear();
+    } else if constexpr (y_scaling == Scaling::logarithmic) {
+      addHorizontalTicksLogarithmic();
     }
   }
 
@@ -635,6 +603,10 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
   juce::Font getXYTitleFont() const noexcept override {
     return juce::Font(20.0f, juce::Font::plain);
   }
+
+  Scaling getXScaling() const noexcept override { return x_scaling; };
+
+  Scaling getYScaling() const noexcept override { return y_scaling; };
 
   void updateGridLabels(const juce::Rectangle<int>& bounds,
                         const std::vector<GridLine>& grid_lines,
@@ -803,5 +775,13 @@ class PlotLookAndFeel : public juce::LookAndFeel_V3,
         graph_area.getX() + graph_area.getWidth() / 2 - title_margin,
         graph_area.getY() / 2 - title_margin / 2, title_width, font_height);
   }
-};  // class PlotLookAndFeel
+};  // class PlotLookAndFeelDefault
+
+class PlotLookAndFeel
+    : public PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>,
+      public PlotLookAndFeelDefault<Scaling::logarithmic, Scaling::linear>,
+      public PlotLookAndFeelDefault<Scaling::linear, Scaling::logarithmic>,
+      public PlotLookAndFeelDefault<Scaling::logarithmic,
+                                    Scaling::logarithmic> {};
+
 };  // namespace scp
