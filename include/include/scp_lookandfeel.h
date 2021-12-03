@@ -355,10 +355,15 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
     std::size_t min_x_index{0u}, max_x_index{x_data.size() - 1u};
 
-    if (x_data.size() == 1u) {
+    // If the graph has less than 10 values we simply plot all points even if
+    // they are on top of each other.
+    if (x_data.size() < 10u) {
+      std::iota(graph_points_indices.begin(), graph_points_indices.end(), 0u);
       goto calculate_x_label;
     }
 
+    // The points that are on top of each other or outside the graph area are
+    // dicarded.
     for (const auto& x : x_data) {
       if (x >= x_lim.min) {
         if (min_x_index - 1u) {
@@ -396,7 +401,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
       const auto inverse_x_scale = 1.f / x_scale;
 
       if constexpr (x_scaling == Scaling::linear) {
-        for (auto x = x_data.begin() + min_x_index + 1;
+        for (auto x = x_data.begin() + min_x_index;
              x != x_data.begin() + max_x_index - 1; ++x) {
           if (abs(*x - last_added_x) > inverse_x_scale) {
             last_added_x = *x;
@@ -405,7 +410,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           current_index++;
         }
       } else if constexpr (x_scaling == Scaling::logarithmic) {
-        for (auto x = x_data.begin() + min_x_index + 1;
+        for (auto x = x_data.begin() + min_x_index;
              x != x_data.begin() + max_x_index - 1; ++x) {
           if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
             last_added_x = *x;
