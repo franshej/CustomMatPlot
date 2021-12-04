@@ -20,11 +20,11 @@ namespace scp {
 
 /*
  *  \class Plot
- *  \brief A Base Class component to plot 2-D lines/marker symbols.
+ *  \brief A component to plot 2-D lines/marker symbols.
  *
  *  This class can be used to plot 2-D lines/marker symbols. It's also possible
  *  to trace the graph and zoom in/out of specific area. Other featureas: set
- * the x- and y-limits, ticks and ticklabels. Logarithmic scaling is choosen
+ *  the x- and y-limits, ticks and ticklabels. Logarithmic scaling is choosen
  *  using the subclasses below.
  */
 class Plot : public juce::Component {
@@ -229,6 +229,11 @@ class Plot : public juce::Component {
    public:
     virtual ~LookAndFeelMethods() = default;
 
+    /** Add a graph area for a componenet. */
+    virtual void AddGraphBounds(
+        const juce::Component* const key,
+        const juce::Rectangle<int>& graph_area) noexcept = 0;
+
     /** This method draws a frame around the graph area. */
     virtual void drawFrame(juce::Graphics& g,
                            const juce::Rectangle<int> bounds) = 0;
@@ -272,9 +277,12 @@ class Plot : public juce::Component {
     virtual CONSTEXPR ColourIdsGraph
     getColourFromGraphID(const std::size_t graph_id) const = 0;
 
-    /** Get the graph area bounds, where the graphs and grids are to be drawn.*/
+    /** Get the graph area bounds, where the graphs and grids are to be drawn. A
+     * key can be used to retrive specific graph_area. A specific graph_area can
+     * be added using 'AddGraphBounds'*/
     virtual CONSTEXPR juce::Rectangle<int> getGraphBounds(
-        const juce::Rectangle<int> bounds) const noexcept = 0;
+        const juce::Rectangle<int> bounds,
+        const juce::Component* const key = nullptr) const noexcept = 0;
 
     /** Returns the Font used when drawing the grid labels. */
     virtual CONSTEXPR juce::Font getGridLabelFont() const noexcept = 0;
