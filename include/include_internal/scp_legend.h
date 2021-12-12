@@ -25,9 +25,6 @@ namespace scp {
  */
 class Legend : public juce::Component {
  public:
-  Legend() = default;
-  ~Legend() = default;
-
   /** @brief Set the text for the descriptive labels
    *
    *  Set the text for the descriptive labels for each plotted data series

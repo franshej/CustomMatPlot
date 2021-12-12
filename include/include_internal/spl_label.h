@@ -15,6 +15,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "scp_internal_datamodels.h"
+#include "scp_datamodels.h"
 
 namespace scp {
 /**
@@ -53,6 +54,36 @@ class PlotLabel : public juce::Component {
    *  @return void.
    */
   void setTitle(const std::string &title_label);
+
+  /** @brief Get the x-label
+   *
+   *  Get the x-label reference.
+   *
+   *  @return const juce::Label reference.
+   */
+  const juce::Label &getXLabel() const noexcept;
+
+  /** @brief Get the y-label
+   *
+   *  Get the y-label reference.
+   *
+   *  @return const juce::Label reference.
+   */
+  const juce::Label &getYLabel() const noexcept;
+
+  /** @brief Get the title-label
+   *
+   *  Get the title-label reference.
+   *
+   *  @return const juce::Label reference.
+   */
+  const juce::Label &getTitleLabel() const noexcept;
+
+  /** @brief Get info struct about if the labels are set ot not.
+   *
+   *  @return const IsLabelsSet.
+   */
+  const IsLabelsSet getIsLabelsAreSet() const noexcept;
 
   void resized() override;
   void paint(juce::Graphics &g) override;

@@ -66,6 +66,12 @@ struct Lim {
 
 typedef Lim<float> Lim_f;
 
+struct IsLabelsSet {
+  bool x_label{false};
+  bool y_label{false};
+  bool title_label{false};
+};
+
 /*============================================================================*/
 
 #define jassert_return(expression, help_text) \
@@ -139,7 +145,7 @@ constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
 }
 
 constexpr auto getXGraphPointsLinear = [](const float x, const float x_scale,
-                                          const float x_offset) -> float {
+                                          const float x_offset) -> auto {
   return (x * x_scale) - x_offset;
 };
 
@@ -160,7 +166,7 @@ constexpr auto getYGraphPointsLogarithmic =
 
 constexpr auto getXScaleAndOffset =
     [](const float width, const Lim_f& x_lim,
-       Scaling scaling) -> std::tuple<float, float> {
+       const Scaling scaling) -> std::tuple<float, float> {
   float x_scale, x_offset;
 
   switch (scaling) {
@@ -181,7 +187,7 @@ constexpr auto getXScaleAndOffset =
 
 constexpr auto getYScaleAndOffset =
     [](const float height, const Lim_f& y_lim,
-       Scaling scaling) -> std::tuple<float, float> {
+       const Scaling scaling) -> std::tuple<float, float> {
   float y_scale, y_offset;
 
   switch (scaling) {
@@ -198,6 +204,57 @@ constexpr auto getYScaleAndOffset =
   }
 
   return {y_scale, y_offset};
+};
+
+/*============================================================================*/
+
+template <class float_type>
+[[nodiscard]] const std::string convertFloatToString(
+    const float_type value, const std::size_t num_decimals,
+    const std::size_t max_string_len) {
+  if constexpr (!(std::is_same<float, float_type>::value ||
+                  std::is_same<const float, float_type>::value ||
+                  std::is_same<double, float_type>::value ||
+                  std::is_same<const double, float_type>::value)) {
+    throw std::invalid_argument("Type must be either float or double");
+  }
+  const auto pow_of_ten = value == 0.f ? 0 : int(floor(log10(abs(value))));
+  const auto is_neg = std::size_t(value < 0);
+
+  auto text_out = std::to_string(value);
+
+  const auto len_before_dec = pow_of_ten < 0
+                                  ? std::size_t(abs(float(pow_of_ten)))
+                                  : std::size_t(pow_of_ten) + 1u;
+  const auto req_len = len_before_dec + is_neg + num_decimals + 1 /* 1 = dot */;
+
+  if (max_string_len < req_len) {
+    if (pow_of_ten >= 0) {
+      const auto two_decimals =
+          text_out.substr(is_neg + std::size_t(pow_of_ten) + 1u, 3);
+      const auto first_digit = text_out.substr(0, 1u + is_neg);
+      text_out = first_digit + two_decimals + "e" + std::to_string(pow_of_ten);
+    } else {
+      auto three_decimals = text_out.substr(len_before_dec + is_neg + 1u, 4);
+      three_decimals.insert(0, ".");
+      text_out = std::to_string(-1 * is_neg) + three_decimals + "e" +
+                 std::to_string(pow_of_ten);
+    }
+  } else {
+    text_out = text_out.substr(0, len_before_dec + is_neg + 1u + num_decimals);
+  }
+
+  return text_out;
+}
+
+const auto getMaximumLabelWidth =
+    [](const auto num1, const auto num2, const juce::Font& font,
+       const std::size_t maximum_allowed_characters) -> const int {
+  const auto min_text = convertFloatToString<decltype(num1)>(
+      num1, 2u, maximum_allowed_characters);
+  const auto max_text = convertFloatToString<decltype(num2)>(
+      num2, 2u, maximum_allowed_characters);
+  return std::max(font.getStringWidth(min_text), font.getStringWidth(max_text));
 };
 
 /*============================================================================*/

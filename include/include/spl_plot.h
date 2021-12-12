@@ -185,6 +185,19 @@ class Plot : public juce::Component {
 */
   void setLookAndFeel(PlotLookAndFeel* look_and_feel);
 
+  /** @brief Get info struct about if the labels are set ot not.
+   *
+   *  @return const IsLabelsSet.
+   */
+  const IsLabelsSet getIsLabelsAreSet() const noexcept;
+
+  /** @brief Get the max width of the x and y-gird labels
+   *
+   *  @return pair<int, int> where first is the x width and second is the y
+   *  width.
+   */
+  const std::pair<int, int> getMaxGridLabelWidth() const noexcept;
+
   //==============================================================================
 
   /** @brief A set of colour IDs to use to change the colour of various aspects
@@ -229,10 +242,6 @@ class Plot : public juce::Component {
    public:
     virtual ~LookAndFeelMethods() = default;
 
-    /** Add a graph area for a componenet. */
-    virtual void AddGraphBounds(
-        const juce::Component* const key,
-        const juce::Rectangle<int>& graph_area) noexcept = 0;
 
     /** This method draws a frame around the graph area. */
     virtual void drawFrame(juce::Graphics& g,
@@ -277,15 +286,19 @@ class Plot : public juce::Component {
     virtual CONSTEXPR ColourIdsGraph
     getColourFromGraphID(const std::size_t graph_id) const = 0;
 
-    /** Get the graph area bounds, where the graphs and grids are to be drawn. A
-     * key can be used to retrive specific graph_area. A specific graph_area can
-     * be added using 'AddGraphBounds'*/
+    /** Get the graph bounds, where the graphs and grids are to be drawn. A plot
+     * component can be given to base the graph bounds on the grid anf axis
+     * labels. */
     virtual CONSTEXPR juce::Rectangle<int> getGraphBounds(
         const juce::Rectangle<int> bounds,
-        const juce::Component* const key = nullptr) const noexcept = 0;
+        const juce::Component* plot_comp = nullptr) const noexcept = 0;
 
     /** Returns the Font used when drawing the grid labels. */
     virtual CONSTEXPR juce::Font getGridLabelFont() const noexcept = 0;
+
+    /** Get Maximum allowed character for grid labels. */
+    virtual CONSTEXPR std::size_t getMaximumAllowedCharacterGridLabel()
+        const noexcept = 0;
 
     /** Get the legend position */
     virtual CONSTEXPR juce::Point<int> getLegendPosition(
@@ -299,6 +312,9 @@ class Plot : public juce::Component {
 
     /** Returns the Font used when drawing legends. */
     virtual CONSTEXPR juce::Font getLegendFont() const noexcept = 0;
+
+    /** Get margin */
+    virtual CONSTEXPR std::size_t getMargin() const noexcept = 0;
 
     /** Get the bounds of the componenet */
     virtual CONSTEXPR juce::Rectangle<int> getPlotBounds(
@@ -344,7 +360,7 @@ class Plot : public juce::Component {
         GraphPoints& graph_points) noexcept = 0;
 
     /** Updates both the vertical and horizontal grid labels. */
-    virtual void updateGridLabels(const juce::Rectangle<int>& bounds,
+    virtual void updateGridLabels(const juce::Rectangle<int>& graph_bounds,
                                   const std::vector<GridLine>& grid_lines,
                                   StringVector& x_label_ticks,
                                   StringVector& y_label_ticks,
@@ -353,6 +369,7 @@ class Plot : public juce::Component {
 
     /** Update the title, x and y axis labels. */
     virtual void updateXYTitleLabels(const juce::Rectangle<int>& bounds,
+                                     const juce::Rectangle<int>& graph_bounds,
                                      juce::Label& x_label, juce::Label& y_label,
                                      juce::Label& title_label) = 0;
 
@@ -378,11 +395,10 @@ class Plot : public juce::Component {
   /** @internal */
   void mouseUp(const juce::MouseEvent& event) override;
 
- protected:
-  /** @internal */
-  void initialize();
-
  private:
+  void resizeWithNewGraphArea();
+  void resizeChilderns();
+
   template <Scaling x_scaling, Scaling y_scaling>
   juce::LookAndFeel* castUserLookAndFeel(PlotLookAndFeel* user_look_and_feel);
 
@@ -390,7 +406,7 @@ class Plot : public juce::Component {
                     const std::vector<std::vector<float>>& x_data = {},
                     ColourVector graph_colours = {});
 
-  void resetLookAndFeel();
+  void resetLookAndFeelChildrens();
 
   void updateYData(const std::vector<std::vector<float>>& y_data);
   void updateXData(const std::vector<std::vector<float>>& x_data);
@@ -408,11 +424,11 @@ class Plot : public juce::Component {
   scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
 
   GraphLines m_graph_lines;
-  std::unique_ptr<Grid> m_grid;
-  std::unique_ptr<PlotLabel> m_plot_label;
-  std::unique_ptr<Frame> m_frame;
-  std::unique_ptr<Legend> m_legend;
-  std::unique_ptr<Zoom> m_zoom;
+  const std::unique_ptr<Grid> m_grid;
+  const std::unique_ptr<PlotLabel> m_plot_label;
+  const std::unique_ptr<Frame> m_frame;
+  const std::unique_ptr<Legend> m_legend;
+  const std::unique_ptr<Zoom> m_zoom;
 
   juce::LookAndFeel* m_lookandfeel;
   std::unique_ptr<LookAndFeelMethods> m_lookandfeel_default;

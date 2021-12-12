@@ -21,10 +21,33 @@ void PlotLabel::setTitle(const std::string &title) {
   m_title_label.setText(title, juce::NotificationType::dontSendNotification);
 }
 
+const juce::Label &PlotLabel::getXLabel() const noexcept {
+  return m_x_label;
+}
+
+const juce::Label &PlotLabel::getYLabel() const noexcept {
+  return m_y_label;
+}
+
+const juce::Label &PlotLabel::getTitleLabel() const noexcept {
+  return m_title_label;
+}
+
+const IsLabelsSet PlotLabel::getIsLabelsAreSet() const noexcept {
+  return IsLabelsSet{
+      m_x_label.getText().isNotEmpty(),
+      m_y_label.getText().isNotEmpty(),
+      m_title_label.getText().isNotEmpty(),
+  };
+}
+
 void PlotLabel::resized() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->updateXYTitleLabels(getBounds(), m_x_label, m_y_label, m_title_label);
+    const auto graph_bounds =
+        lnf->getGraphBounds(getBounds(), getParentComponent());
+    lnf->updateXYTitleLabels(getBounds(), graph_bounds, m_x_label, m_y_label,
+                             m_title_label);
   }
 }
 

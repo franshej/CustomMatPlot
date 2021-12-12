@@ -14,27 +14,22 @@ namespace scp {
 void Grid::createLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->updateGridLabels(getBounds(), m_grid_lines, m_custom_x_labels,
+    const auto graph_bounds = juce::Rectangle<int>(m_config_params.grid_area);
+    lnf->updateGridLabels(graph_bounds, m_grid_lines, m_custom_x_labels,
                           m_custom_y_labels, m_x_axis_labels, m_y_axis_labels);
   }
 }
 
 void Grid::updateGridInternal() {
   if (!m_config_params.x_lim || !m_config_params.y_lim) {
-    DBG("Both x_lim and y_lim must be set.");
+    // Both x_lim and y_lim must be set.
+    jassertfalse;
     return;
   }
 
   if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
-    DBG("width and height must be larger than zero.");
-    return;
-  }
-
-  // Temp, should be removed
-  if (m_lookandfeel) {
-    auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    m_config_params.grid_area = lnf->getGraphBounds(getBounds());
-  } else {
+    // width and height must be larger than zero.
+    jassertfalse;
     return;
   }
 
@@ -55,6 +50,13 @@ void Grid::updateGridInternal() {
   addGridLines(y_ticks, GridLine::Direction::horizontal);
 
   createLabels();
+
+  if (onNumGridsChange && m_num_last_x_labels != m_x_axis_labels.size() &&
+      m_last_num_y_labels != m_y_axis_labels.size()) {
+    m_num_last_x_labels = m_x_axis_labels.size();
+    m_last_num_y_labels = m_y_axis_labels.size();
+    onNumGridsChange(this);
+  }
 }
 
 void Grid::addGridLines(const std::vector<float> &ticks,
@@ -62,15 +64,16 @@ void Grid::addGridLines(const std::vector<float> &ticks,
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
-    const auto graph_bound = lnf->getGraphBounds(getBounds()).toFloat();
+    const auto graph_bounds =
+        juce::Rectangle<int>(m_config_params.grid_area).toFloat();
 
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
-        return getXScaleAndOffset(float(graph_bound.getWidth()),
+        return getXScaleAndOffset(graph_bounds.getWidth(),
                                   Lim_f(m_config_params.x_lim),
                                   lnf->getXScaling());
       }
-      return getYScaleAndOffset(float(graph_bound.getHeight()),
+      return getYScaleAndOffset(graph_bounds.getHeight(),
                                 Lim_f(m_config_params.y_lim),
                                 lnf->getYScaling());
     };
@@ -83,14 +86,14 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           GridLine grid_line;
 
           grid_line.position = {
-              graph_bound.getX() +
+              graph_bounds.getX() +
                   (lnf->getXScaling() == Scaling::linear
                        ? getXGraphPointsLinear(t, scale, offset)
                        : getXGraphPointsLogarithmic(t, scale, offset)),
-              graph_bound.getY()};
+              graph_bounds.getY()};
 
           grid_line.tick = t;
-          grid_line.length = float(graph_bound.getHeight());
+          grid_line.length = graph_bounds.getHeight();
           grid_line.direction = GridLine::Direction::vertical;
 
           m_grid_lines.emplace_back(grid_line);
@@ -102,15 +105,15 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           GridLine grid_line;
 
           grid_line.position = {
-              graph_bound.getX(),
-              graph_bound.getY() +
+              graph_bounds.getX(),
+              graph_bounds.getY() +
                   (lnf->getYScaling() == Scaling::linear
                        ? getYGraphPointsLinear(t, scale, offset)
                        : getYGraphPointsLogarithmic(t, scale, offset))};
 
           grid_line.tick = t;
           grid_line.direction = GridLine::Direction::horizontal;
-          grid_line.length = float(graph_bound.getWidth());
+          grid_line.length = float(graph_bounds.getWidth());
 
           m_grid_lines.emplace_back(grid_line);
         }
@@ -122,6 +125,32 @@ void Grid::addGridLines(const std::vector<float> &ticks,
         break;
     }
   }
+}
+
+const std::pair<int, int> Grid::getMaxGridLabelWidth() const noexcept {
+  if (m_lookandfeel && !m_x_axis_labels.empty() && !m_y_axis_labels.empty()) {
+    auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
+    const auto font = lnf->getGridLabelFont();
+
+    const auto widest_x_label =
+        *std::max_element(m_x_axis_labels.begin(), m_x_axis_labels.end(),
+                          [&](const auto &label1, const auto &label2) {
+                            return font.getStringWidth(label1.first) <
+                                   font.getStringWidth(label2.first);
+                          });
+
+    const auto widest_y_label =
+        *std::max_element(m_y_axis_labels.begin(), m_y_axis_labels.end(),
+                          [&](const auto &label1, const auto &label2) {
+                            return font.getStringWidth(label1.first) <
+                                   font.getStringWidth(label2.first);
+                          });
+    const auto max_width_x = font.getStringWidth(widest_x_label.first);
+    const auto max_width_y = font.getStringWidth(widest_y_label.first);
+
+    return {max_width_x, max_width_y};
+  }
+  return {0, 0};
 }
 
 void Grid::paint(juce::Graphics &g) {
@@ -149,8 +178,7 @@ void Grid::setXLabels(const std::vector<std::string> &x_labels) {
 
 void Grid::updateGrid() { updateGridInternal(); }
 
-void Grid::resized() { updateGridInternal(); }
-
+void Grid::resized() {}
 void Grid::setGridBounds(const juce::Rectangle<int> &grid_area) {
   m_config_params.grid_area = grid_area;
 }

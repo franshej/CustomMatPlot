@@ -15,7 +15,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "scp_datamodels.h"
-#include "scp_internal_datamodels.h";
+#include "scp_internal_datamodels.h"
 
 namespace scp {
 /**
@@ -142,8 +142,26 @@ class Grid : public juce::Component {
    */
   void updateGrid();
 
+  /** @brief Get the max width of the x and y-labels
+   *
+   *  @return pair<int, int> where first is the x width and second is the y
+   *  width.
+   */
+  const std::pair<int, int> getMaxGridLabelWidth() const noexcept;
+
+  /** @brief This lamda is trigged when the number of graph lines are changed.
+   *
+   *  @param Grid pointer to this.
+   *  @return void.
+   */
+  std::function<void(Grid*)> onNumGridsChange = nullptr;
+
+  //==============================================================================
+  /** @internal */
   void resized() override;
+  /** @internal */
   void paint(juce::Graphics& g) override;
+  /** @internal */
   void lookAndFeelChanged() override;
 
  private:
@@ -168,9 +186,10 @@ class Grid : public juce::Component {
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks;
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
+  std::size_t m_max_width_x, m_max_width_y;
+  std::size_t m_num_last_x_labels, m_last_num_y_labels;
   std::vector<juce::Path> m_grid_path;
 
- protected:
   juce::LookAndFeel* m_lookandfeel;
   GridConfigParams m_config_params;
 

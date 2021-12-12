@@ -6,43 +6,6 @@
 
 /*============================================================================*/
 
-template <class float_type>
-static constexpr [[nodiscard]] const std::string convertFloatToString(
-    const float_type value, std::size_t num_decimals,
-    std::size_t max_string_len) {
-  if constexpr (!(std::is_same<float, float_type>::value ||
-                  std::is_same<double, float_type>::value)) {
-    throw std::invalid_argument("Type must be either float or double");
-  }
-  const auto pow_of_ten = value == 0.f ? 0 : int(floor(log10(abs(value))));
-  const auto is_neg = std::size_t(value < 0);
-
-  auto text_out = std::to_string(value);
-
-  const auto len_before_dec = pow_of_ten < 0
-                                  ? std::size_t(abs(float(pow_of_ten)))
-                                  : std::size_t(pow_of_ten) + 1u;
-  const auto req_len = len_before_dec + is_neg + num_decimals + 1 /* 1 = dot */;
-
-  if (max_string_len < req_len) {
-    if (pow_of_ten >= 0) {
-      const auto two_decimals =
-          text_out.substr(is_neg + std::size_t(pow_of_ten) + 1u, 3);
-      const auto first_digit = text_out.substr(0, 1u + is_neg);
-      text_out = first_digit + two_decimals + "e" + std::to_string(pow_of_ten);
-    } else {
-      auto three_decimals = text_out.substr(len_before_dec + is_neg + 1u, 4);
-      three_decimals.insert(0, ".");
-      text_out = std::to_string(-1 * is_neg) + three_decimals + "e" +
-                 std::to_string(pow_of_ten);
-    }
-  } else {
-    text_out = text_out.substr(0, len_before_dec + is_neg + 1u + num_decimals);
-  }
-
-  return text_out;
-}
-
 static const [[nodiscard]] std::string getNextCustomLabel(
     std::vector<std::string>::reverse_iterator& custom_labels_it) {
   return *(custom_labels_it++);
@@ -58,9 +21,6 @@ template <Scaling x_scaling_t, Scaling y_scaling_t>
 class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   static constexpr auto m_x_scaling = x_scaling_t;
   static constexpr auto m_y_scaling = y_scaling_t;
-
-  std::map<const juce::Component* const, juce::Rectangle<int>>
-      m_graph_area_container;
 
  public:
   PlotLookAndFeelDefault() { setDefaultPlotColours(); }
@@ -87,12 +47,6 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     setColour(Plot::sixth_graph_colour, juce::Colour(0xffeB984e));
   }
 
-  void AddGraphBounds(
-      const juce::Component* const key,
-      const juce::Rectangle<int>& graph_area) noexcept override {
-    m_graph_area_container[key] = graph_area;
-  }
-
   juce::Colour findAndGetColourFromId(
       const Plot::ColourIdsGraph colour_id) const noexcept override {
     return findColour(colour_id);
@@ -103,21 +57,72 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return findColour(colour_id);
   }
 
-  juce::Rectangle<int> getPlotBounds(
+  CONSTEXPR juce::Rectangle<int> getPlotBounds(
       juce::Rectangle<int> bounds) const noexcept override {
     return juce::Rectangle<int>(0, 0, bounds.getWidth(), bounds.getHeight());
   }
 
-  juce::Rectangle<int> getGraphBounds(
-      const juce::Rectangle<int> bounds,
-      const juce::Component* const key = nullptr) const noexcept override {
-    auto it = m_graph_area_container.find(key);
-    if (it != m_graph_area_container.end()) return it->second;
-    return juce::Rectangle<int>(100, 50, bounds.getWidth() - 150,
-                                bounds.getHeight() - 125);
+  juce::Rectangle<int> getGraphBounds(const juce::Rectangle<int> bounds,
+                                      const juce::Component* const plot_comp =
+                                          nullptr) const noexcept override {
+    const auto estimated_grid_label_width = getGridLabelFont().getStringWidth(
+        std::string(getMaximumAllowedCharacterGridLabel(), 'W'));
+
+    auto graph_bounds =
+        juce::Rectangle<int>(estimated_grid_label_width, 50,
+                             bounds.getWidth() - estimated_grid_label_width * 2,
+                             bounds.getHeight() - 125);
+
+    if (const auto* plot = dynamic_cast<const Plot*>(plot_comp)) {
+      const auto is_labels_set = plot->getIsLabelsAreSet();
+      const auto [x_grid_label_width, y_grid_label_width] =
+          plot->getMaxGridLabelWidth();
+
+      auto right = 0;
+      auto left = getMargin();
+      auto top = getGridLabelFont().getHeight() / 2;
+      auto bottom = bounds.getHeight() -
+                    (getGridLabelFont().getHeight() + getMargin() * 2);
+
+      if (is_labels_set.x_label) {
+        bottom -= (getXYTitleFont().getHeight() + getMargin());
+      }
+
+      if (is_labels_set.y_label) {
+        left = getXYTitleFont().getHeight() + 2 * getMargin();
+      }
+
+      if (is_labels_set.title_label) {
+        top = getXYTitleFont().getHeight() + 2 * getMargin();
+      }
+
+      if (y_grid_label_width) {
+        left += y_grid_label_width + getMargin();
+      } else {
+        left += estimated_grid_label_width;
+      }
+
+      if (x_grid_label_width) {
+        right += bounds.getWidth() - x_grid_label_width / 2;
+      } else {
+        right += bounds.getWidth() - estimated_grid_label_width / 2;
+      }
+
+      graph_bounds.setLeft(left);
+      graph_bounds.setTop(top);
+      graph_bounds.setRight(right);
+      graph_bounds.setBottom(bottom);
+    }
+
+    return graph_bounds;
   }
 
-  juce::Point<int> getLegendPosition(
+  CONSTEXPR std::size_t getMaximumAllowedCharacterGridLabel()
+      const noexcept override {
+    return 6u;
+  };
+
+  CONSTEXPR juce::Point<int> getLegendPosition(
       const juce::Rectangle<int>& graph_bounds,
       const juce::Rectangle<int>& legend_bounds) const noexcept override {
     constexpr std::size_t margin_width = 5u;
@@ -128,10 +133,10 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
         graph_top_right.getX() - legend_bounds.getWidth() - margin_width;
     const auto y_pos = graph_top_right.getY() + margin_height;
 
-    return juce::Point<int>(x_pos, y_pos);
+    return juce::Point<int>(int(x_pos), int(y_pos));
   }
 
-  juce::Rectangle<int> getLegendBounds(
+  CONSTEXPR juce::Rectangle<int> getLegendBounds(
       [[maybe_unused]] const juce::Rectangle<int>& graph_bounds,
       const std::vector<std::string>& label_texts) const noexcept override {
     constexpr std::size_t margin_width = 5u;
@@ -156,11 +161,11 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return bounds_retval;
   }
 
-  juce::Font getLegendFont() const noexcept override {
+  CONSTEXPR juce::Font getLegendFont() const noexcept override {
     return juce::Font(14.0f, juce::Font::plain);
   }
 
-  Plot::ColourIdsGraph getColourFromGraphID(
+  CONSTEXPR Plot::ColourIdsGraph getColourFromGraphID(
       const std::size_t graph_id) const override {
     /**< Colour vector which is useful when iterating over the six graph
      * colours.*/
@@ -174,6 +179,8 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
     return GraphColours[graph_id % GraphColours.size()];
   }
+
+  CONSTEXPR std::size_t getMargin() const noexcept override { return 8u; }
 
   void drawGraphLine(juce::Graphics& g, const GraphPoints& graph_points,
                      const std::vector<float>& dashed_lengths,
@@ -223,7 +230,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
   void drawGridLine(juce::Graphics& g, const GridLine& grid_line,
                     const bool grid_on) override {
-    constexpr auto margin = 8;
+    constexpr auto margin = 8.f;
     const auto y_and_len = grid_line.length + grid_line.position.getY();
     const auto x_and_len = grid_line.length + grid_line.position.getX();
 
@@ -232,29 +239,29 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
       case GridLine::Direction::vertical:
 
         if (grid_on) {
-          g.drawVerticalLine(grid_line.position.getX(),
-                             grid_line.position.getY(), y_and_len);
+          g.drawVerticalLine(float(grid_line.position.getX()),
+                             float(grid_line.position.getY()), y_and_len);
         } else {
-          g.drawVerticalLine(grid_line.position.getX(),
-                             grid_line.position.getY(),
-                             grid_line.position.getY() + margin);
+          g.drawVerticalLine(float(grid_line.position.getX()),
+                             float(grid_line.position.getY()),
+                             float(grid_line.position.getY()) + margin);
 
-          g.drawVerticalLine(grid_line.position.getX(), y_and_len - margin,
-                             y_and_len);
+          g.drawVerticalLine(float(grid_line.position.getX()),
+                             y_and_len - margin, y_and_len);
         }
 
         break;
       case GridLine::Direction::horizontal:
 
         if (grid_on) {
-          g.drawHorizontalLine(grid_line.position.getY(),
-                               grid_line.position.getX(), x_and_len);
+          g.drawHorizontalLine(float(grid_line.position.getY()),
+                               float(grid_line.position.getX()), x_and_len);
         } else {
-          g.drawHorizontalLine(grid_line.position.getY(),
-                               grid_line.position.getX(),
-                               grid_line.position.getX() + margin);
-          g.drawHorizontalLine(grid_line.position.getY(), x_and_len - margin,
-                               x_and_len);
+          g.drawHorizontalLine(float(grid_line.position.getY()),
+                               float(grid_line.position.getX()),
+                               float(grid_line.position.getX()) + margin);
+          g.drawHorizontalLine(float(grid_line.position.getY()),
+                               x_and_len - margin, x_and_len);
         }
         break;
       default:
@@ -378,7 +385,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     // dicarded.
     for (const auto& x : x_data) {
       if (x >= x_lim.min) {
-        if (min_x_index - 1u) {
+        if (min_x_index - 2u) {
           // Two indices outside the left side to get rid of artifacts.
           min_x_index = min_x_index - 2u;
         }
@@ -594,7 +601,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
         const auto y_diff = pow(10.f, curr_power + 1.f) /
                             static_cast<float>(num_lines_per_power);
 
-        float last_tick = std::numeric_limits<float>::min();
+        constexpr float last_tick = std::numeric_limits<float>::min();
         for (float line = 0; line < num_lines_per_power; ++line) {
           const auto y_tick =
               std::floor((curr_y_pos_base + line * y_diff) / curr_y_pos_base) *
@@ -613,11 +620,11 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     }
   }
 
-  juce::Font getGridLabelFont() const noexcept override {
+  CONSTEXPR juce::Font getGridLabelFont() const noexcept override {
     return juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
   }
 
-  juce::Font getXYTitleFont() const noexcept override {
+  CONSTEXPR juce::Font getXYTitleFont() const noexcept override {
     return juce::Font(20.0f, juce::Font::plain);
   }
 
@@ -625,14 +632,13 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
   Scaling getYScaling() const noexcept override { return m_y_scaling; };
 
-  void updateGridLabels(const juce::Rectangle<int>& bounds,
+  void updateGridLabels(const juce::Rectangle<int>& graph_bound,
                         const std::vector<GridLine>& grid_lines,
                         StringVector& x_custom_label_ticks,
                         StringVector& y_custom_label_ticks,
                         LabelVector& x_axis_labels_out,
                         LabelVector& y_axis_labels_out) override {
-    const auto grid_area = getGraphBounds(bounds);
-    const auto [x, y, width, height] = getRectangleMeasures<int>(grid_area);
+    const auto [x, y, width, height] = getRectangleMeasures<int>(graph_bound);
     const auto font = getGridLabelFont();
 
     const auto num_horizonal_lines =
@@ -706,14 +712,15 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           const auto label =
               use_custom_x_labels
                   ? getNextCustomLabel(custom_x_labels_reverse_it)
-                  : convertFloatToString(tick, 2, 6);
+                  : convertFloatToString(tick, 2,
+                                         getMaximumAllowedCharacterGridLabel());
 
           const auto [label_width, label_height] =
               getLabelWidthAndHeight(font, label);
 
           const auto bound = juce::Rectangle<int>(
-              int(position.x) - label_width / 2, y + height + label_height,
-              label_width, label_height);
+              int(position.x) - label_width / 2,
+              graph_bound.getBottom() + getMargin(), label_width, label_height);
 
           checkInterectionWithLastLabelAndAdd(x_last_label_bound,
                                               x_axis_labels_out, label, bound);
@@ -722,13 +729,14 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           const auto label =
               use_custom_y_labels
                   ? getNextCustomLabel(custom_y_labels_reverse_it)
-                  : convertFloatToString(tick, 2, 6);
+                  : convertFloatToString(tick, 2,
+                                         getMaximumAllowedCharacterGridLabel());
 
           const auto [label_width, label_height] =
               getLabelWidthAndHeight(font, label);
 
           const auto bound = juce::Rectangle<int>(
-              x - label_height - label_width,
+              x - (label_width + getMargin()),
               int(position.y) - label_height / 2, label_width, label_height);
 
           checkInterectionWithLastLabelAndAdd(y_last_label_bound,
@@ -741,14 +749,14 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   }
 
   void updateXYTitleLabels(const juce::Rectangle<int>& bounds,
+                           const juce::Rectangle<int>& graph_bounds,
                            juce::Label& x_label, juce::Label& y_label,
                            juce::Label& title_label) override {
     const auto font = getXYTitleFont();
-    const auto graph_area = getGraphBounds(bounds);
 
-    constexpr auto x_margin = 50;
-    constexpr auto y_margin = 25;
-    constexpr auto title_margin = 25;
+    const auto x_margin = int(getMargin());
+    const auto y_margin = int(getMargin());
+    const auto title_margin = int(getMargin());
 
     const auto y_label_width = font.getStringWidth(x_label.getText());
     const auto x_label_width = font.getStringWidth(y_label.getText());
@@ -771,26 +779,29 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
                           findColour(Plot::title_label_colour));
 
     const juce::Rectangle<int> y_area = {
-        graph_area.getX() / 2 - y_margin,
-        graph_area.getY() + graph_area.getHeight() / 2 + y_margin,
+        y_margin, graph_bounds.getY() + graph_bounds.getHeight() / 2 + y_margin,
         y_label_width, font_height};
 
     y_label.setTransform(juce::AffineTransform::rotation(
         -juce::MathConstants<float>::halfPi, y_area.getX(), y_area.getY()));
 
     const auto y_mid_point_bottom =
-        (bounds.getHeight() - (graph_area.getY() + graph_area.getHeight())) / 2;
+        (bounds.getHeight() -
+         (graph_bounds.getY() + graph_bounds.getHeight())) /
+        2;
 
     y_label.setBounds(y_area);
 
     x_label.setBounds(
-        graph_area.getX() + graph_area.getWidth() / 2 - x_margin,
-        graph_area.getY() + graph_area.getHeight() + y_mid_point_bottom,
+        graph_bounds.getX() + graph_bounds.getWidth() / 2 - x_margin,
+        graph_bounds.getBottom() + getGridLabelFont().getHeight() +
+            2 * getMargin(),
         x_label_width, font_height);
 
     title_label.setBounds(
-        graph_area.getX() + graph_area.getWidth() / 2 - title_margin,
-        graph_area.getY() / 2 - title_margin / 2, title_width, font_height);
+        graph_bounds.getX() + graph_bounds.getWidth() / 2 - title_margin,
+        graph_bounds.getY() - (title_margin + font.getHeight()), title_width,
+        font_height);
   }
 };  // class PlotLookAndFeelDefault
 
