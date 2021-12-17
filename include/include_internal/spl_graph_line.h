@@ -137,8 +137,8 @@ class GraphLine : public juce::Component {
   std::vector<float> m_dashed_lengths;
   juce::Colour m_graph_colour;
 
-  virtual void updateYGraphPointsIntern() noexcept;
-  virtual void updateXGraphPointsIntern() noexcept;
+  void updateYGraphPointsIntern() noexcept;
+  void updateXGraphPointsIntern() noexcept;
 
  protected:
   juce::LookAndFeel* m_lookandfeel{nullptr};

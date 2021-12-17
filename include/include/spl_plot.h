@@ -23,9 +23,8 @@ namespace scp {
  *  \brief A component to plot 2-D lines/marker symbols.
  *
  *  This class can be used to plot 2-D lines/marker symbols. It's also possible
- *  to trace the graph and zoom in/out of specific area. Other featureas: set
- *  the x- and y-limits, ticks and ticklabels. Logarithmic scaling is choosen
- *  using the subclasses below.
+ *  to trace the graph and zoom in/out of specific area. Other features: set
+ *  the x- and y-limits, ticks and ticklabels.
  */
 class Plot : public juce::Component {
  public:
@@ -242,7 +241,6 @@ class Plot : public juce::Component {
    public:
     virtual ~LookAndFeelMethods() = default;
 
-
     /** This method draws a frame around the graph area. */
     virtual void drawFrame(juce::Graphics& g,
                            const juce::Rectangle<int> bounds) = 0;
@@ -267,6 +265,14 @@ class Plot : public juce::Component {
                             const std::vector<juce::Colour>& graph_line_colours,
                             const juce::Rectangle<int>& bounds) = 0;
 
+    /** Draw trace markers. */
+    virtual void drawTraceMarkers(
+        juce::Graphics& g, const std::vector<TracePoint_f>& trace_markers) = 0;
+
+    /** Draw a single trace point. */
+    virtual void drawTracePoint(juce::Graphics& g,
+                                const TracePoint_f& trace_point) = 0;
+
     /** This method draws the area the user wants to zoom in on. */
     virtual void drawZoomArea(
         juce::Graphics& g, juce::Point<int>& start_coordinates,
@@ -275,59 +281,67 @@ class Plot : public juce::Component {
 
     /** A method to find and get the colour for either a 'ColourIdsGraph'
      * enum.*/
-    virtual CONSTEXPR juce::Colour findAndGetColourFromId(
+    virtual CONSTEXPR20 juce::Colour findAndGetColourFromId(
         const ColourIdsGraph colour_id) const noexcept = 0;
 
     /** A method to find and get the colour for a 'ColourIds' enum. */
-    virtual CONSTEXPR juce::Colour findAndGetColourFromId(
+    virtual CONSTEXPR20 juce::Colour findAndGetColourFromId(
         const ColourIds colour_id) const noexcept = 0;
 
+    /** Returns the Font used for the Trace and Zoom buttons. */
+    virtual CONSTEXPR20 juce::Font getButtonFont() const noexcept = 0;
+
     /** Returns the 'ColourIdsGraph' for a given id.*/
-    virtual CONSTEXPR ColourIdsGraph
+    virtual CONSTEXPR20 ColourIdsGraph
     getColourFromGraphID(const std::size_t graph_id) const = 0;
 
     /** Get the graph bounds, where the graphs and grids are to be drawn. A plot
      * component can be given to base the graph bounds on the grid anf axis
      * labels. */
-    virtual CONSTEXPR juce::Rectangle<int> getGraphBounds(
+    virtual CONSTEXPR20 juce::Rectangle<int> getGraphBounds(
         const juce::Rectangle<int> bounds,
         const juce::Component* plot_comp = nullptr) const noexcept = 0;
 
     /** Returns the Font used when drawing the grid labels. */
-    virtual CONSTEXPR juce::Font getGridLabelFont() const noexcept = 0;
+    virtual CONSTEXPR20 juce::Font getGridLabelFont() const noexcept = 0;
 
-    /** Get Maximum allowed character for grid labels. */
-    virtual CONSTEXPR std::size_t getMaximumAllowedCharacterGridLabel()
+    /** Get Maximum allowed characters for grid labels. */
+    virtual CONSTEXPR20 std::size_t getMaximumAllowedCharacterGridLabel()
         const noexcept = 0;
 
     /** Get the legend position */
-    virtual CONSTEXPR juce::Point<int> getLegendPosition(
+    virtual CONSTEXPR20 juce::Point<int> getLegendPosition(
         const juce::Rectangle<int>& graph_bounds,
         const juce::Rectangle<int>& legend_bounds) const noexcept = 0;
 
     /** Get the legend bounds */
-    virtual CONSTEXPR juce::Rectangle<int> getLegendBounds(
+    virtual CONSTEXPR20 juce::Rectangle<int> getLegendBounds(
         [[maybe_unused]] const juce::Rectangle<int>& bounds,
         const std::vector<std::string>& label_texts) const noexcept = 0;
 
     /** Returns the Font used when drawing legends. */
-    virtual CONSTEXPR juce::Font getLegendFont() const noexcept = 0;
+    virtual CONSTEXPR20 juce::Font getLegendFont() const noexcept = 0;
 
-    /** Get margin */
-    virtual CONSTEXPR std::size_t getMargin() const noexcept = 0;
+    /** Get margin used for labels and graph bounds. */
+    virtual CONSTEXPR20 std::size_t getMargin() const noexcept = 0;
 
-    /** Get the bounds of the componenet */
-    virtual CONSTEXPR juce::Rectangle<int> getPlotBounds(
+    /** Get the bounds of the componenet (Local bounds). */
+    virtual CONSTEXPR20 juce::Rectangle<int> getPlotBounds(
         juce::Rectangle<int> bounds) const noexcept = 0;
 
+    /** Get the bounds for the trace and zoom button. */
+    virtual CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
+    getTraceAndZoomButtonBounds(
+        juce::Rectangle<int> graph_bounds) const noexcept = 0;
+
     /** Returns the Font used when drawing the x-, y-axis and title labels. */
-    virtual CONSTEXPR juce::Font getXYTitleFont() const noexcept = 0;
+    virtual CONSTEXPR20 juce::Font getXYTitleFont() const noexcept = 0;
 
     /** Get the x-scaling.*/
-    virtual CONSTEXPR Scaling getXScaling() const noexcept = 0;
+    virtual CONSTEXPR20 Scaling getXScaling() const noexcept = 0;
 
     /** Get the y-scaling.*/
-    virtual CONSTEXPR Scaling getYScaling() const noexcept = 0;
+    virtual CONSTEXPR20 Scaling getYScaling() const noexcept = 0;
 
     /** Defines the default colours */
     virtual void setDefaultPlotColours() noexcept = 0;
@@ -424,11 +438,13 @@ class Plot : public juce::Component {
   scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
 
   GraphLines m_graph_lines;
-  const std::unique_ptr<Grid> m_grid;
-  const std::unique_ptr<PlotLabel> m_plot_label;
-  const std::unique_ptr<Frame> m_frame;
-  const std::unique_ptr<Legend> m_legend;
-  const std::unique_ptr<Zoom> m_zoom;
+  std::unique_ptr<Grid> m_grid;
+  std::unique_ptr<PlotLabel> m_plot_label;
+  std::unique_ptr<Frame> m_frame;
+  std::unique_ptr<Legend> m_legend;
+  std::unique_ptr<Zoom> m_zoom;
+  std::unique_ptr<Trace> m_trace;
+  std::unique_ptr<juce::ToggleButton> m_zoom_button, m_trace_button;
 
   juce::LookAndFeel* m_lookandfeel;
   std::unique_ptr<LookAndFeelMethods> m_lookandfeel_default;

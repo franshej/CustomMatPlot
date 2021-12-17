@@ -57,9 +57,15 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return findColour(colour_id);
   }
 
-  CONSTEXPR juce::Rectangle<int> getPlotBounds(
+  CONSTEXPR20 juce::Rectangle<int> getPlotBounds(
       juce::Rectangle<int> bounds) const noexcept override {
     return juce::Rectangle<int>(0, 0, bounds.getWidth(), bounds.getHeight());
+  }
+
+  CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
+  getTraceAndZoomButtonBounds(
+      juce::Rectangle<int> graph_bounds) const noexcept override {
+    return {juce::Rectangle<int>(), juce::Rectangle<int>()};
   }
 
   juce::Rectangle<int> getGraphBounds(const juce::Rectangle<int> bounds,
@@ -117,12 +123,12 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return graph_bounds;
   }
 
-  CONSTEXPR std::size_t getMaximumAllowedCharacterGridLabel()
+  CONSTEXPR20 std::size_t getMaximumAllowedCharacterGridLabel()
       const noexcept override {
     return 6u;
   };
 
-  CONSTEXPR juce::Point<int> getLegendPosition(
+  CONSTEXPR20 juce::Point<int> getLegendPosition(
       const juce::Rectangle<int>& graph_bounds,
       const juce::Rectangle<int>& legend_bounds) const noexcept override {
     constexpr std::size_t margin_width = 5u;
@@ -136,7 +142,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return juce::Point<int>(int(x_pos), int(y_pos));
   }
 
-  CONSTEXPR juce::Rectangle<int> getLegendBounds(
+  CONSTEXPR20 juce::Rectangle<int> getLegendBounds(
       [[maybe_unused]] const juce::Rectangle<int>& graph_bounds,
       const std::vector<std::string>& label_texts) const noexcept override {
     constexpr std::size_t margin_width = 5u;
@@ -161,11 +167,15 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return bounds_retval;
   }
 
-  CONSTEXPR juce::Font getLegendFont() const noexcept override {
+  CONSTEXPR20 juce::Font getLegendFont() const noexcept override {
     return juce::Font(14.0f, juce::Font::plain);
   }
 
-  CONSTEXPR Plot::ColourIdsGraph getColourFromGraphID(
+  CONSTEXPR20 juce::Font getButtonFont() const noexcept override {
+    return juce::Font(14.0f, juce::Font::plain);
+  }
+
+  CONSTEXPR20 Plot::ColourIdsGraph getColourFromGraphID(
       const std::size_t graph_id) const override {
     /**< Colour vector which is useful when iterating over the six graph
      * colours.*/
@@ -180,7 +190,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return GraphColours[graph_id % GraphColours.size()];
   }
 
-  CONSTEXPR std::size_t getMargin() const noexcept override { return 8u; }
+  CONSTEXPR20 std::size_t getMargin() const noexcept override { return 8u; }
 
   void drawGraphLine(juce::Graphics& g, const GraphPoints& graph_points,
                      const std::vector<float>& dashed_lengths,
@@ -303,6 +313,17 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     g.setColour(findColour(Plot::frame_colour));
     g.drawRect(frame);
   }
+
+  void drawTraceMarkers(
+      juce::Graphics& g,
+      const std::vector<TracePoint_f>& trace_markers) override {
+    for (const auto& trace_point : trace_markers) {
+      drawTracePoint(g, trace_point);
+    }
+  };
+
+  void drawTracePoint(juce::Graphics& g,
+                      const TracePoint_f& trace_point) override{};
 
   void drawZoomArea(
       juce::Graphics& g, juce::Point<int>& start_coordinates,
@@ -620,17 +641,21 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     }
   }
 
-  CONSTEXPR juce::Font getGridLabelFont() const noexcept override {
+  CONSTEXPR20 juce::Font getGridLabelFont() const noexcept override {
     return juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
   }
 
-  CONSTEXPR juce::Font getXYTitleFont() const noexcept override {
+  CONSTEXPR20 juce::Font getXYTitleFont() const noexcept override {
     return juce::Font(20.0f, juce::Font::plain);
   }
 
-  Scaling getXScaling() const noexcept override { return m_x_scaling; };
+  CONSTEXPR20 Scaling getXScaling() const noexcept override {
+    return m_x_scaling;
+  };
 
-  Scaling getYScaling() const noexcept override { return m_y_scaling; };
+  CONSTEXPR20 Scaling getYScaling() const noexcept override {
+    return m_y_scaling;
+  };
 
   void updateGridLabels(const juce::Rectangle<int>& graph_bound,
                         const std::vector<GridLine>& grid_lines,

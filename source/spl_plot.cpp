@@ -3,6 +3,7 @@
 #include "scp_frame.h"
 #include "scp_legend.h"
 #include "scp_lookandfeel.h"
+#include "scp_trace.h"
 #include "scp_zoom.h"
 #include "spl_graph_line.h"
 #include "spl_grid.h"
@@ -52,12 +53,15 @@ void Plot::resetLookAndFeelChildrens() {
   m_frame->setLookAndFeel(nullptr);
   m_legend->setLookAndFeel(nullptr);
   m_zoom->setLookAndFeel(nullptr);
+  m_trace->setLookAndFeel(nullptr);
   for (auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(nullptr);
   }
 }
 
 Plot::~Plot() { resetLookAndFeelChildrens(); }
+
+enum RadioButtonIds { TraceZoomButtons = 1001 };
 
 Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
     : m_x_scaling(x_scaling),
@@ -66,7 +70,10 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_frame(std::make_unique<Frame>()),
       m_legend(std::make_unique<Legend>()),
       m_zoom(std::make_unique<Zoom>()),
-      m_grid(std::make_unique<Grid>()) {
+      m_grid(std::make_unique<Grid>()),
+      m_trace(std::make_unique<Trace>()),
+      m_zoom_button(std::make_unique<juce::ToggleButton>("Zoom")),
+      m_trace_button(std::make_unique<juce::ToggleButton>("Trace")) {
   lookAndFeelChanged();
 
   addAndMakeVisible(m_grid.get());
@@ -74,12 +81,19 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   addAndMakeVisible(m_zoom.get());
   addAndMakeVisible(m_plot_label.get());
   addAndMakeVisible(m_frame.get());
+  addAndMakeVisible(m_zoom_button.get());
+  addAndMakeVisible(m_trace_button.get());
 
   m_legend->setAlwaysOnTop(true);
   m_zoom->toBehind(m_legend.get());
   m_grid->toBack();
 
+  m_trace_button->setRadioGroupId(TraceZoomButtons);
+  m_zoom_button->setRadioGroupId(TraceZoomButtons);
+
   m_grid->onNumGridsChange = [&](scp::Grid* grid) { this->resizeChilderns(); };
+  m_zoom_button->onClick = [this] { m_trace->toBehind(m_zoom.get()); };
+  m_trace_button->onClick = [this] { m_zoom->toBehind(m_trace.get()); };
 }
 
 const IsLabelsSet Plot::getIsLabelsAreSet() const noexcept {
@@ -186,7 +200,7 @@ void Plot::makeGraphDashed(const std::vector<float>& dashed_lengths,
                            unsigned graph_index) {
   if (graph_index >= m_graph_lines.size()) {
     throw std::invalid_argument(
-        "graph_index out of range, updateYData before 'makeGraphDashed'");
+        "graph_index out of range, call 'Plot::plot' before 'makeGraphDashed'");
   }
   m_graph_lines[graph_index]->setDashedPath(dashed_lengths);
 }
@@ -207,6 +221,8 @@ void Plot::resizeChilderns() {
 
     if (m_plot_label) m_plot_label->setBounds(plot_area);
     if (m_frame) m_frame->setBounds(graph_area);
+    if (m_zoom) m_zoom->setBounds(graph_area);
+    if (m_trace) m_trace->setBounds(graph_area);
 
     for (const auto& graph_line : m_graph_lines) {
       graph_line->setBounds(graph_area);
@@ -219,10 +235,6 @@ void Plot::resizeChilderns() {
       legend_bounds.setPosition(legend_postion);
 
       m_legend->setBounds(legend_bounds);
-    }
-
-    if (m_zoom) {
-      m_zoom->setBounds(graph_area);
     }
   }
   updateGridAndGraphs();
@@ -299,6 +311,7 @@ void Plot::lookAndFeelChanged() {
   if (m_legend) m_legend->setLookAndFeel(m_lookandfeel);
   if (m_zoom) m_zoom->setLookAndFeel(m_lookandfeel);
   if (m_grid) m_grid->setLookAndFeel(m_lookandfeel);
+  if (m_trace) m_trace->setLookAndFeel(m_lookandfeel);
   for (auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(m_lookandfeel);
   }

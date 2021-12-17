@@ -1,12 +1,14 @@
 #pragma once
 
 #if __cpp_constexpr >= 201907L  // Check for a specific version of a feature
-#define CONSTEXPR \
+#define CONSTEXPR20 \
   constexpr  // This macro should be used in those cases where C++20 only allows
-             // it. Example: virtual CONSTEXPR foo() = 0;
+             // it. Example: virtual CONSTEXPR20 void foo() = 0;
 #else
-#define CONSTEXPR inline
+#define CONSTEXPR20
 #endif
+
+#include <compare>
 
 namespace scp {
 
@@ -20,11 +22,12 @@ enum class Scaling : uint32_t {
 
 /*============================================================================*/
 
-class Grid;
 class GraphLine;
+class Grid;
 class Frame;
 class PlotLabel;
 class Legend;
+class Trace;
 class Zoom;
 class PlotLookAndFeel;
 
@@ -56,16 +59,17 @@ struct GridLine {
   float length;
 };
 
-/*============================================================================*/
-
-template <class T>
+/** @brief A template struct that defines min and max. */
+template <class ValueType>
 struct Lim {
-  T min;
-  T max;
+  ValueType min;
+  ValueType max;
 };
 
+/** @brief A struct that defines min and max using float. */
 typedef Lim<float> Lim_f;
 
+/** @brief A struct that defines if a axis labels has been set or not. */
 struct IsLabelsSet {
   bool x_label{false};
   bool y_label{false};
@@ -144,8 +148,8 @@ constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
   }
 }
 
-constexpr auto getXGraphPointsLinear = [](const float x, const float x_scale,
-                                          const float x_offset) -> auto {
+constexpr auto getXGraphPointsLinear =
+    [](const float x, const float x_scale, const float x_offset) -> auto {
   return (x * x_scale) - x_offset;
 };
 
