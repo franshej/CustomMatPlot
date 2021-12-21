@@ -217,6 +217,8 @@ class Plot : public juce::Component {
     x_label_colour,      /**< Colour of the text on the x-axis. */
     y_label_colour,      /**< Colour of the label on the y-axis. */
     title_label_colour,  /**< Colour of the title label. */
+    trace_frame_colour,  /**< Colour of the trace frame. */
+    trace_label_colour,  /**< Colour of the trace label. */
     legend_label_colour, /**< Colour of the legend label(s). */
     zoom_area_colour     /**< Colour of the dashed zoom rectangle. */
   };
@@ -265,13 +267,9 @@ class Plot : public juce::Component {
                             const std::vector<juce::Colour>& graph_line_colours,
                             const juce::Rectangle<int>& bounds) = 0;
 
-    /** Draw trace markers. */
-    virtual void drawTraceMarkers(
-        juce::Graphics& g, const std::vector<TracePoint_f>& trace_markers) = 0;
-
     /** Draw a single trace point. */
-    virtual void drawTracePoint(juce::Graphics& g,
-                                const TracePoint_f& trace_point) = 0;
+    virtual void drawTracePoint(juce::Graphics& g, const scp::Label &x_label,
+                                const scp::Label &y_label) = 0;
 
     /** This method draws the area the user wants to zoom in on. */
     virtual void drawZoomArea(
@@ -328,6 +326,14 @@ class Plot : public juce::Component {
     /** Get the bounds of the componenet (Local bounds). */
     virtual CONSTEXPR20 juce::Rectangle<int> getPlotBounds(
         juce::Rectangle<int> bounds) const noexcept = 0;
+
+    /** Get x and Y trace label bounds */
+    virtual std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
+    getTraceXYLabelBounds(const std::string_view x_text,
+                          const std::string_view y_text) const noexcept = 0;
+
+    /** Returns the Font used when drawing trace points. */
+    virtual CONSTEXPR20 juce::Font getTraceFont() const noexcept = 0;
 
     /** Get the bounds for the trace and zoom button. */
     virtual CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>

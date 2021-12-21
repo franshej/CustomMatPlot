@@ -5,6 +5,7 @@
 namespace scp {
 void Zoom::setStartPosition(const juce::Point<int>& start_position) noexcept {
   m_start_pos = start_position;
+  m_is_start_pos_set = true;
 }
 
 void Zoom::setEndPosition(const juce::Point<int>& end_position) noexcept {
@@ -14,9 +15,15 @@ void Zoom::setEndPosition(const juce::Point<int>& end_position) noexcept {
 juce::Point<int> Zoom::getStartPosition() const noexcept { return m_start_pos; }
 juce::Point<int> Zoom::getEndPosition() const noexcept { return m_end_pos; }
 
+bool Zoom::isStartPosSet() const noexcept
+{
+    return m_is_start_pos_set;
+}
+
 void Zoom::reset() noexcept {
   m_start_pos = {0, 0};
   m_end_pos = {0, 0};
+  m_is_start_pos_set = false;
 }
 
 void Zoom::resized() {}

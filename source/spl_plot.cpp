@@ -91,9 +91,11 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   m_trace_button->setRadioGroupId(TraceZoomButtons);
   m_zoom_button->setRadioGroupId(TraceZoomButtons);
 
-  m_grid->onNumGridsChange = [&](scp::Grid* grid) { this->resizeChilderns(); };
-  m_zoom_button->onClick = [this] { m_trace->toBehind(m_zoom.get()); };
-  m_trace_button->onClick = [this] { m_zoom->toBehind(m_trace.get()); };
+  m_grid->onNumGridsChange = [this](scp::Grid* grid) {
+    this->resizeChilderns();
+  };
+  m_zoom_button->onClick = [this] { /** m_trace->toBehind(m_zoom.get()); */ };
+  m_trace_button->onClick = [this] { /** m_zoom->toBehind(m_trace.get()); */ };
 }
 
 const IsLabelsSet Plot::getIsLabelsAreSet() const noexcept {
@@ -222,7 +224,6 @@ void Plot::resizeChilderns() {
     if (m_plot_label) m_plot_label->setBounds(plot_area);
     if (m_frame) m_frame->setBounds(graph_area);
     if (m_zoom) m_zoom->setBounds(graph_area);
-    if (m_trace) m_trace->setBounds(graph_area);
 
     for (const auto& graph_line : m_graph_lines) {
       graph_line->setBounds(graph_area);
@@ -441,7 +442,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
 
         repaint();
       } else {
-        m_zoom->setStartPosition(event.getPosition());
+        DBG(event.getNumberOfClicks());
       }
     }
   }
@@ -452,6 +453,10 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
     if (m_legend.get() == event.eventComponent) {
       m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
     } else if (m_zoom.get() == event.eventComponent) {
+      if (!m_zoom->isStartPosSet()) {
+        m_zoom->setStartPosition(event.getPosition());
+        return;
+      }
       const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
       const auto graph_bounds = lnf->getGraphBounds(getBounds(), this);
       DBG("x, y value: [ "
@@ -472,7 +477,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
 
 void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
-    if (m_zoom.get() == event.eventComponent &&
+    if (m_zoom.get() == event.eventComponent && m_zoom->isStartPosSet() &&
         !event.mods.isRightButtonDown()) {
       const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
       const auto graph_bounds = lnf->getGraphBounds(getBounds(), this);

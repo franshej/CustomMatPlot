@@ -3,7 +3,7 @@
 #if __cpp_constexpr >= 201907L  // Check for a specific version of a feature
 #define CONSTEXPR20 \
   constexpr  // This macro should be used in those cases where C++20 only allows
-             // it. Example: virtual CONSTEXPR20 void foo() = 0;
+             // it. Example: virtual CONSTEXPR20 int foo() = 0;
 #else
 #define CONSTEXPR20
 #endif
@@ -35,7 +35,8 @@ class PlotLookAndFeel;
 
 typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
 typedef std::vector<juce::Point<float>> GraphPoints;
-typedef std::vector<std::pair<std::string, juce::Rectangle<int>>> LabelVector;
+typedef std::pair<std::string, juce::Rectangle<int>> Label;
+typedef std::vector<Label> LabelVector;
 typedef std::vector<std::string> StringVector;
 typedef std::vector<juce::Colour> ColourVector;
 

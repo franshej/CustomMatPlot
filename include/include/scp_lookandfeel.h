@@ -192,6 +192,31 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
   CONSTEXPR20 std::size_t getMargin() const noexcept override { return 8u; }
 
+  CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
+  getTraceXYLabelBounds(const std::string_view x_text,
+                        const std::string_view y_text) const noexcept override {
+    const auto margin = getMargin();
+    const auto font = getTraceFont();
+
+    const auto width_X = 2 * margin + font.getStringWidth(x_text.data());
+    const auto width_Y = 2 * margin + font.getStringWidth(y_text.data());
+    const auto height_XY = font.getHeight();
+    const auto x_coord_XY = margin;
+    const auto y_coord_X = margin;
+    const auto y_coord_Y = 2 * margin + font.getHeight();
+
+    const auto x_label_bounds =
+        juce::Rectangle<int>(x_coord_XY, y_coord_X, width_X, height_XY);
+    const auto y_label_bounds =
+        juce::Rectangle<int>(x_coord_XY, y_coord_Y, width_Y, height_XY);
+
+    return {x_label_bounds, y_label_bounds};
+  }
+
+  CONSTEXPR20 juce::Font getTraceFont() const noexcept override {
+    return juce::Font(14.0f, juce::Font::plain);
+  }
+
   void drawGraphLine(juce::Graphics& g, const GraphPoints& graph_points,
                      const std::vector<float>& dashed_lengths,
                      const juce::Colour graph_colour) override {
@@ -314,16 +339,20 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     g.drawRect(frame);
   }
 
-  void drawTraceMarkers(
-      juce::Graphics& g,
-      const std::vector<TracePoint_f>& trace_markers) override {
-    for (const auto& trace_point : trace_markers) {
-      drawTracePoint(g, trace_point);
-    }
-  };
+  void drawTracePoint(juce::Graphics& g, const scp::Label& x_label,
+                      const scp::Label& y_label) override{
+      g.setColour(findColour(Plot::trace_label_colour));
+      g.setFont(getTraceFont());
+      g.drawText(x_label.first, x_label.second, juce::Justification::left);
+      g.drawText(y_label.first, y_label.second, juce::Justification::left);
 
-  void drawTracePoint(juce::Graphics& g,
-                      const TracePoint_f& trace_point) override{};
+      const auto frame_width =
+          std::max(x_label.second.getWidth(), y_label.second.getWidth());
+      const auto frame_height = x_label.second.getHeight() + y_label.second.getHeight();
+      const auto frame_bounds = juce::Rectangle<int>(0, 0, frame_width, frame_height);
+      g.setColour(findColour(Plot::trace_frame_colour));
+      g.drawRect(frame_bounds);
+  };
 
   void drawZoomArea(
       juce::Graphics& g, juce::Point<int>& start_coordinates,
