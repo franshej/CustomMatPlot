@@ -10,6 +10,33 @@ void GraphLine::setColour(const juce::Colour graph_colour) {
   m_graph_colour = graph_colour;
 }
 
+std::pair<juce::Point<float>, juce::Point<float>>
+GraphLine::findClosestGraphPointTo(
+    const juce::Point<float>& point) const noexcept {
+  if (m_graph_points.empty()) {
+    // No graph points.
+    jassertfalse;
+  }
+
+  auto closest_point = juce::Point<float>();
+  auto closest_data_point = juce::Point<float>();
+
+  auto closest_distance = std::numeric_limits<float>::max();
+  std::size_t i = 0u;
+  for (const auto& graph_point : m_graph_points) {
+    const auto current_distance = graph_point.getDistanceSquaredFrom(point);
+    if (current_distance < closest_distance) {
+      closest_distance = current_distance;
+      closest_point = graph_point;
+      closest_data_point =
+          juce::Point<float>(m_x_data[m_graph_point_indices[i]],
+                             m_y_data[m_graph_point_indices[i]]);
+    }
+    i++;
+  }
+  return {closest_point, closest_data_point};
+}
+
 juce::Colour GraphLine::getColour() const noexcept { return m_graph_colour; }
 
 void GraphLine::setXLim(const float min, const float max) {

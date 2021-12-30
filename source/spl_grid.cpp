@@ -88,7 +88,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           grid_line.position = {
               graph_bounds.getX() +
                   (lnf->getXScaling() == Scaling::linear
-                       ? getXGraphPointsLinear(t, scale, offset)
+                       ? getXGraphValueLinear(t, scale, offset)
                        : getXGraphPointsLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
 
@@ -108,7 +108,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
               graph_bounds.getX(),
               graph_bounds.getY() +
                   (lnf->getYScaling() == Scaling::linear
-                       ? getYGraphPointsLinear(t, scale, offset)
+                       ? getYGraphValueLinear(t, scale, offset)
                        : getYGraphPointsLogarithmic(t, scale, offset))};
 
           grid_line.tick = t;

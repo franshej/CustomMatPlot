@@ -29,14 +29,8 @@ namespace scp {
  */
 class GraphLine : public juce::Component {
  public:
-  /** @brief Set the colour of graph
-   *
-   *  Set the colour of graph.
-   *
-   *  @param graph_colour the colour of the graph
-   *  @return void.
-   */
-  void setColour(const juce::Colour graph_colour);
+  std::pair<juce::Point<float>, juce::Point<float>> findClosestGraphPointTo(
+      const juce::Point<float>& point) const noexcept;
 
   /** @brief Get the colour of graph
    *
@@ -108,6 +102,15 @@ class GraphLine : public juce::Component {
    *  @return const reference of the calculated graph points.
    */
   const GraphPoints& getGraphPoints() noexcept;
+
+  /** @brief Set the colour of graph
+   *
+   *  Set the colour of graph.
+   *
+   *  @param graph_colour the colour of the graph
+   *  @return void.
+   */
+  void setColour(const juce::Colour graph_colour);
 
   /** @brief Set a dashed path
    *

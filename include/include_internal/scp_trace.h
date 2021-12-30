@@ -31,8 +31,8 @@ struct TracePoint : public BaseTracePoint, public juce::Component {
   using BaseTracePoint::operator<=>;
 
   constexpr bool operator==(
-      const juce::Point<ValueType>& other_graph_value) {
-    return m_graph_value == other_graph_value;
+      const juce::Point<ValueType>& other_graph_values) {
+    return m_graph_values == other_graph_values;
   }
 
   void setGraphValue(const juce::Point<ValueType>& graph_value);
@@ -48,7 +48,7 @@ struct TracePoint : public BaseTracePoint, public juce::Component {
   scp::Label m_x_label, m_y_label;
 
   /** The x and y values of the trace point. */
-  juce::Point<ValueType> m_graph_value;
+  juce::Point<ValueType> m_graph_values;
 
   /** @internal */
   juce::LookAndFeel* m_lookandfeel;
@@ -66,19 +66,32 @@ typedef TracePoint<float> TracePoint_f;
  */
 class Trace {
  public:
-  ~Trace() = default;
+  ~Trace();
 
   /** @brief Add or remove a trace point.
    *
-   *  Add a trace point that will be drawn. The point is
-   *  removed if it's already exists.
+   * Add a trace point that will be drawn. The point is
+   * removed if it's already exists.
    *
-   *  @param trace_point the trace point that will be drawn.
-   *  @param parent_comp the component that the trace point will be added to as
-   *         a child component.
-   *  @return void.
+   * @param trace_point the trace point that will be drawn.
+   * @return void.
    */
-  void addOrRemoveTracePoint(const juce::Point<float>& trace_point, juce::Component* parent_comp);
+  void addOrRemoveTracePoint(const juce::Point<float>& trace_point);
+
+  /** @brief Update the trace point bounds from plot attributes.
+   *
+   * @param plot_attributes common plot attributes.
+   * @return void.
+   */
+  void updateTracePointBoundsFrom(const GraphAttributesView& plot_attributes);
+
+  /** @brief Add the trace points to a parent component
+   *
+   * @param parent_comp the component that the trace point will be added to as
+   * a child component.
+   * @return void.
+   */
+  void addAndMakeVisibleTo(juce::Component* parent_comp);
 
   void setLookAndFeel(juce::LookAndFeel* lnf);
 

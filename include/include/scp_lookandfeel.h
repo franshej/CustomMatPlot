@@ -28,11 +28,11 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   void setDefaultPlotColours() noexcept override {
     setColour(Plot::background_colour, juce::Colour(0xff566573));
     setColour(Plot::frame_colour, juce::Colour(0xffcacfd2));
+    setColour(Plot::zoom_frame_colour, juce::Colour(0xff99A3A4));
 
     setColour(Plot::grid_colour, juce::Colour(0xff99A3A4));
     setColour(Plot::x_grid_label_colour, juce::Colour(0xffaab7b8));
     setColour(Plot::y_grid_label_colour, juce::Colour(0xffaab7b8));
-    setColour(Plot::zoom_area_colour, juce::Colour(0xff99A3A4));
 
     setColour(Plot::x_label_colour, juce::Colour(0xffecf0f1));
     setColour(Plot::y_label_colour, juce::Colour(0xffecf0f1));
@@ -45,6 +45,10 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     setColour(Plot::fourth_graph_colour, juce::Colour(0xff73c6b6));
     setColour(Plot::fifth_graph_colour, juce::Colour(0xfff4d03f));
     setColour(Plot::sixth_graph_colour, juce::Colour(0xffeB984e));
+
+    setColour(Plot::trace_background_colour, juce::Colour(0xff566573));
+    setColour(Plot::trace_label_colour, juce::Colour(0xffecf0f1));
+    setColour(Plot::trace_frame_colour, juce::Colour(0xffcacfd2));
   }
 
   juce::Colour findAndGetColourFromId(
@@ -213,8 +217,46 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return {x_label_bounds, y_label_bounds};
   }
 
+  CONSTEXPR20 juce::Rectangle<int> getTraceLocalBounds(
+      const juce::Rectangle<int>& x_label_bounds,
+      const juce::Rectangle<int>& y_label_bounds) const noexcept override {
+    const auto width =
+        std::max(x_label_bounds.getWidth(), y_label_bounds.getWidth());
+    const auto height = y_label_bounds.getBottom() + getMargin();
+    const auto retval = juce::Rectangle<int>(0, 0, width, height);
+    return retval;
+  }
+
   CONSTEXPR20 juce::Font getTraceFont() const noexcept override {
     return juce::Font(14.0f, juce::Font::plain);
+  }
+
+  CONSTEXPR20 juce::Point<int> getTracePointPositionFrom(
+      const GraphAttributesView& graph_attributes,
+      const juce::Point<float> graph_values) const noexcept {
+    const auto [x_scale, x_offset] =
+        getXScaleAndOffset(graph_attributes.graph_bounds.getWidth(),
+                           graph_attributes.x_lim, getXScaling());
+
+    const auto [y_scale, y_offset] =
+        getYScaleAndOffset(graph_attributes.graph_bounds.getHeight(),
+                           graph_attributes.y_lim, getYScaling());
+
+    float x;
+    float y;
+
+    if constexpr (m_x_scaling == Scaling::linear) {
+      x = getXGraphValueLinear(graph_values.getX(), x_scale, x_offset);
+    } else {
+      x = getXGraphPointsLogarithmic(graph_values.getX(), x_scale, x_offset);
+    }
+    if constexpr (m_y_scaling == Scaling::linear) {
+      y = getYGraphValueLinear(graph_values.getY(), y_scale, y_offset);
+    } else {
+      y = getYGraphPointsLogarithmic(graph_values.getY(), y_scale, y_offset);
+    }
+
+    return juce::Point<float>(x, y).toInt();
   }
 
   void drawGraphLine(juce::Graphics& g, const GraphPoints& graph_points,
@@ -348,7 +390,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
       const auto frame_width =
           std::max(x_label.second.getWidth(), y_label.second.getWidth());
-      const auto frame_height = x_label.second.getHeight() + y_label.second.getHeight();
+      const auto frame_height = x_label.second.getHeight() + y_label.second.getHeight() + getMargin()*3;
       const auto frame_bounds = juce::Rectangle<int>(0, 0, frame_width, frame_height);
       g.setColour(findColour(Plot::trace_frame_colour));
       g.drawRect(frame_bounds);
@@ -406,7 +448,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     constexpr float dashedLengh[2] = {4, 4};
     pathStrokType.createDashedStroke(path, path, dashedLengh, 2);
 
-    g.setColour(findColour(Plot::zoom_area_colour));
+    g.setColour(findColour(Plot::zoom_frame_colour));
     g.strokePath(path, pathStrokType);
   }
 
@@ -500,7 +542,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     if constexpr (m_x_scaling == Scaling::linear) {
       for (const auto i_x : graph_points_indices) {
         graph_points[i].setX(
-            getXGraphPointsLinear(x_data[i_x], x_scale, x_offset));
+            getXGraphValueLinear(x_data[i_x], x_scale, x_offset));
         i++;
       }
     } else if constexpr (m_x_scaling == Scaling::logarithmic) {
@@ -524,7 +566,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     if constexpr (m_y_scaling == Scaling::linear) {
       for (const auto i_y : graph_points_indices) {
         graph_points[i].setY(
-            getYGraphPointsLinear(y_data[i_y], y_scale, y_offset));
+            getYGraphValueLinear(y_data[i_y], y_scale, y_offset));
         i++;
       }
     } else if constexpr (m_y_scaling == Scaling::logarithmic) {

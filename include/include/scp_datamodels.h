@@ -77,6 +77,16 @@ struct IsLabelsSet {
   bool title_label{false};
 };
 
+struct GraphAttributesView {
+  GraphAttributesView(const juce::Rectangle<int>& _graph_bounds,
+                      const Lim_f& _x_lim, const Lim_f& _y_lim)
+      : graph_bounds{_graph_bounds}, x_lim{_x_lim}, y_lim{_y_lim} {};
+  GraphAttributesView(const juce::Rectangle<int>&&, const Lim_f&&,
+                      const Lim_f&&) = delete;  // prevents rvalue binding
+  const juce::Rectangle<int>& graph_bounds;
+  const Lim_f &x_lim, &y_lim;
+};
+
 /*============================================================================*/
 
 #define jassert_return(expression, help_text) \
@@ -95,17 +105,28 @@ getRectangleMeasures(juce::Rectangle<int> grid_area) noexcept {
   return std::make_tuple(x, y, width, height);
 }
 
-constexpr float getXFromXCoordinate(const float x_pos, const float graph_x,
-                                    const float width, const Lim_f x_lim,
+template <class value_type>
+constexpr auto getLocalBoundsFrom =
+    [](const auto& bounds) -> juce::Rectangle<value_type> {
+  const auto x = static_cast<value_type>(0);
+  const auto y = static_cast<value_type>(0);
+  const auto width = static_cast<value_type>(bounds.getWidth());
+  const auto height = static_cast<value_type>(bounds.getHeight());
+  return juce::Rectangle<value_type>(x, y, width, height);
+};
+
+constexpr float getXFromXCoordinate(const float x_pos,
+                                    const juce::Rectangle<float>& bounds,
+                                    const Lim_f x_lim,
                                     const Scaling x_scaling) noexcept {
   const auto coordinateToXLinear = [&]() {
-    const auto x_scale = width / (x_lim.max - x_lim.min);
-    return ((x_pos - graph_x) / x_scale) + x_lim.min;
+    const auto x_scale = bounds.getWidth() / (x_lim.max - x_lim.min);
+    return ((x_pos - bounds.getX()) / x_scale) + x_lim.min;
   };
 
   const auto coordinateToXLog = [&]() {
-    return powf(10,
-                ((x_pos - graph_x) / width) * log10(x_lim.max / x_lim.min)) *
+    return powf(10, ((x_pos - bounds.getX()) / bounds.getWidth()) *
+                        log10(x_lim.max / x_lim.min)) *
            x_lim.min;
   };
 
@@ -122,17 +143,19 @@ constexpr float getXFromXCoordinate(const float x_pos, const float graph_x,
   }
 }
 
-constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
-                                    const float height, const Lim_f y_lim,
+constexpr float getYFromYCoordinate(const float y_pos,
+                                    const juce::Rectangle<float>& bounds,
+                                    const Lim_f y_lim,
                                     const Scaling y_scaling) noexcept {
   const auto coordinateToYLinear = [&]() {
-    const auto y_scale = height / std::abs(y_lim.max - y_lim.min);
+    const auto y_scale = bounds.getHeight() / std::abs(y_lim.max - y_lim.min);
 
-    return y_lim.max - ((y_pos - graph_y) / y_scale);
+    return y_lim.max - ((y_pos - bounds.getY()) / y_scale);
   };
 
   const auto coordinateToYLog = [&]() {
-    return powf(10, ((height - (y_pos - graph_y)) / height) *
+    return powf(10, ((bounds.getHeight() - (y_pos - bounds.getY())) /
+                     bounds.getHeight()) *
                         log10(y_lim.max / y_lim.min)) *
            y_lim.min;
   };
@@ -149,12 +172,12 @@ constexpr float getYFromYCoordinate(const float y_pos, const float graph_y,
   }
 }
 
-constexpr auto getXGraphPointsLinear =
+constexpr auto getXGraphValueLinear =
     [](const float x, const float x_scale, const float x_offset) -> auto {
   return (x * x_scale) - x_offset;
 };
 
-constexpr auto getYGraphPointsLinear = [](const float y, const float y_scale,
+constexpr auto getYGraphValueLinear = [](const float y, const float y_scale,
                                           const float y_offset) -> float {
   return y_offset - (y * y_scale);
 };

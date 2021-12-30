@@ -209,18 +209,19 @@ class Plot : public juce::Component {
    *  LookAndFeel::findColour
    */
   enum ColourIds {
-    background_colour,   /**< Colour of the background. */
-    grid_colour,         /**< Colour of the grids. */
-    x_grid_label_colour, /**< Colour of the label for each x-grid line. */
-    y_grid_label_colour, /**< Colour of the label for each y-grid line. */
-    frame_colour,        /**< Colour of the frame around the graph area. */
-    x_label_colour,      /**< Colour of the text on the x-axis. */
-    y_label_colour,      /**< Colour of the label on the y-axis. */
-    title_label_colour,  /**< Colour of the title label. */
-    trace_frame_colour,  /**< Colour of the trace frame. */
-    trace_label_colour,  /**< Colour of the trace label. */
-    legend_label_colour, /**< Colour of the legend label(s). */
-    zoom_area_colour     /**< Colour of the dashed zoom rectangle. */
+    background_colour,       /**< Colour of the background. */
+    grid_colour,             /**< Colour of the grids. */
+    x_grid_label_colour,     /**< Colour of the label for each x-grid line. */
+    y_grid_label_colour,     /**< Colour of the label for each y-grid line. */
+    frame_colour,            /**< Colour of the frame around the graph area. */
+    x_label_colour,          /**< Colour of the text on the x-axis. */
+    y_label_colour,          /**< Colour of the label on the y-axis. */
+    title_label_colour,      /**< Colour of the title label. */
+    trace_frame_colour,      /**< Colour of the trace frame. */
+    trace_label_colour,      /**< Colour of the trace label. */
+    trace_background_colour, /**< Colour of the trace background colour. */
+    legend_label_colour,     /**< Colour of the legend label(s). */
+    zoom_frame_colour        /**< Colour of the dashed zoom rectangle. */
   };
 
   /** @brief A set of colour IDs to use to change the colour of each plot
@@ -327,13 +328,24 @@ class Plot : public juce::Component {
     virtual CONSTEXPR20 juce::Rectangle<int> getPlotBounds(
         juce::Rectangle<int> bounds) const noexcept = 0;
 
+    /** Get the Font used when drawing trace labels. */
+    virtual CONSTEXPR20 juce::Font getTraceFont() const noexcept = 0;
+
+    /** Get position for a single trace point.*/
+    virtual CONSTEXPR20 juce::Point<int> getTracePointPositionFrom(
+        const GraphAttributesView& graph_attributes,
+        const juce::Point<float> graph_values) const noexcept = 0;
+
+    /** Get the local bounds used when drawing the trace (the bounds around
+     * the x & y labels).*/
+    virtual CONSTEXPR20 juce::Rectangle<int> getTraceLocalBounds(
+        const juce::Rectangle<int>& x_label_bounds,
+        const juce::Rectangle<int>& y_label_bounds) const noexcept = 0;
+
     /** Get x and Y trace label bounds */
     virtual std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
     getTraceXYLabelBounds(const std::string_view x_text,
                           const std::string_view y_text) const noexcept = 0;
-
-    /** Returns the Font used when drawing trace points. */
-    virtual CONSTEXPR20 juce::Font getTraceFont() const noexcept = 0;
 
     /** Get the bounds for the trace and zoom button. */
     virtual CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
@@ -437,11 +449,13 @@ class Plot : public juce::Component {
   void updateYLim(const float min, const float max);
   void updateXLim(const float min, const float max);
 
-  void updateGridAndGraphs();
+  void updateGridGraphsTrace();
 
   bool m_x_autoscale = true, m_y_autoscale = true;
   const Scaling m_x_scaling, m_y_scaling;
   scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
+  juce::Rectangle<int> m_graph_bounds;
+  GraphAttributesView m_graph_params;
 
   GraphLines m_graph_lines;
   std::unique_ptr<Grid> m_grid;
