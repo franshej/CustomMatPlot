@@ -4,7 +4,7 @@
 
 namespace scp {
 template <class ValueType>
-void TracePoint<ValueType>::setGraphValue(
+void TraceLabel<ValueType>::setGraphValue(
     const juce::Point<ValueType>& graph_values) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
@@ -23,10 +23,10 @@ void TracePoint<ValueType>::setGraphValue(
 }
 
 template <class ValueType>
-void TracePoint<ValueType>::resized() {}
+void TraceLabel<ValueType>::resized() {}
 
 template <class ValueType>
-void TracePoint<ValueType>::paint(juce::Graphics& g) {
+void TraceLabel<ValueType>::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->drawTracePoint(g, m_x_label, m_y_label);
@@ -34,7 +34,7 @@ void TracePoint<ValueType>::paint(juce::Graphics& g) {
 }
 
 template <class ValueType>
-void TracePoint<ValueType>::lookAndFeelChanged() {
+void TraceLabel<ValueType>::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {
@@ -48,20 +48,20 @@ Trace::~Trace() {
 }
 
 void Trace::addOrRemoveTracePoint(const juce::Point<float>& trace_point) {
-  if (std::find_if(m_trace_points.begin(), m_trace_points.end(),
+  if (std::find_if(m_trace_label.begin(), m_trace_label.end(),
                    [&trace_point](const auto& tp) {
                      return (*tp) == trace_point;
-                   }) == m_trace_points.end()) {
-    auto tp = std::make_unique<TracePoint_f>();
+                   }) == m_trace_label.end()) {
+    auto tp = std::make_unique<TraceLabel_f>();
     if (m_lookandfeel) tp->setLookAndFeel(m_lookandfeel);
     tp->setGraphValue(trace_point);
-    m_trace_points.emplace_back(move(tp));
+    m_trace_label.emplace_back(move(tp));
   } else {
-    m_trace_points.erase(
+    m_trace_label.erase(
         std::remove_if(
-            m_trace_points.begin(), m_trace_points.end(),
+            m_trace_label.begin(), m_trace_label.end(),
             [&trace_point](const auto& tp) { return (*tp) == trace_point; }),
-        m_trace_points.end());
+        m_trace_label.end());
   }
   updateTracePointsLookAndFeel();
 }
@@ -70,13 +70,13 @@ void Trace::updateTracePointBoundsFrom(
     const GraphAttributesView& plot_attributes) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    for (auto& trace_point : m_trace_points) {
+    for (auto& trace_point : m_trace_label) {
       const auto x_bound = trace_point->m_x_label.second;
       const auto y_bound = trace_point->m_y_label.second;
       const auto graph_values = trace_point->m_graph_values;
 
       const auto local_trace_bounds =
-          lnf->getTraceLocalBounds(x_bound, y_bound);
+          lnf->getTraceLabelLocalBounds(x_bound, y_bound);
       auto trace_bounds = local_trace_bounds;
       const auto trace_position =
           lnf->getTracePointPositionFrom(plot_attributes, graph_values);
@@ -88,7 +88,7 @@ void Trace::updateTracePointBoundsFrom(
 }
 
 void Trace::addAndMakeVisibleTo(juce::Component* parent_comp) {
-  for (const auto& trace_point : m_trace_points) {
+  for (const auto& trace_point : m_trace_label) {
     parent_comp->addAndMakeVisible(trace_point.get());
   }
 }
@@ -99,8 +99,26 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
 }
 
 void Trace::updateTracePointsLookAndFeel() {
-  for (auto& trace_point : m_trace_points) {
+  for (auto& trace_point : m_trace_label) {
     trace_point->setLookAndFeel(m_lookandfeel);
+  }
+}
+
+template <class ValueType>
+TracePoint<ValueType>::TracePoint() : PositionView(getPosition()) {}
+
+template <class ValueType>
+void TracePoint<ValueType>::resized() {}
+
+template <class ValueType>
+void TracePoint<ValueType>::paint(juce::Graphics& g) {}
+
+template <class ValueType>
+void TracePoint<ValueType>::lookAndFeelChanged() {
+  if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
+    m_lookandfeel = lnf;
+  } else {
+    m_lookandfeel = nullptr;
   }
 }
 

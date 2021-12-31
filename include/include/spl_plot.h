@@ -336,9 +336,9 @@ class Plot : public juce::Component {
         const GraphAttributesView& graph_attributes,
         const juce::Point<float> graph_values) const noexcept = 0;
 
-    /** Get the local bounds used when drawing the trace (the bounds around
-     * the x & y labels).*/
-    virtual CONSTEXPR20 juce::Rectangle<int> getTraceLocalBounds(
+    /** Get the local bounds used when drawing the trace label (the bounds
+     * around the x & y labels).*/
+    virtual CONSTEXPR20 juce::Rectangle<int> getTraceLabelLocalBounds(
         const juce::Rectangle<int>& x_label_bounds,
         const juce::Rectangle<int>& y_label_bounds) const noexcept = 0;
 

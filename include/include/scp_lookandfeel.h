@@ -217,7 +217,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return {x_label_bounds, y_label_bounds};
   }
 
-  CONSTEXPR20 juce::Rectangle<int> getTraceLocalBounds(
+  CONSTEXPR20 juce::Rectangle<int> getTraceLabelLocalBounds(
       const juce::Rectangle<int>& x_label_bounds,
       const juce::Rectangle<int>& y_label_bounds) const noexcept override {
     const auto width =

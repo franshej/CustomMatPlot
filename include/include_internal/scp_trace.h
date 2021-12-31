@@ -17,21 +17,38 @@
 
 namespace scp {
 
-struct BaseTracePoint {
-  /** Default spaceship. */
-  constexpr auto operator<=>(const BaseTracePoint&) const = default;
+/** @brief A struct that defines a view of a position. */
+struct PositionView {
+  /** Constructors. */
+  PositionView(const juce::Point<int>& position) : position_view(position){};
+  PositionView(const juce::Point<int>&& position) = delete;
 
-  /** The x and y coordinate of the trace point. */
-  juce::Point<int> coordinate;
+  /** Default spaceship. */
+  constexpr auto operator<=>(const PositionView&) const = default;
+
+  /** The x and y position view of the trace point. */
+  const juce::Point<int>& position_view;
 };
 
 /** @brief A struct that defines a trace point. */
 template <class ValueType>
-struct TracePoint : public BaseTracePoint, public juce::Component {
-  using BaseTracePoint::operator<=>;
+struct TracePoint : public PositionView, public juce::Component {
+  TracePoint();
 
-  constexpr bool operator==(
-      const juce::Point<ValueType>& other_graph_values) {
+  using PositionView::operator<=>;
+
+  /** @internal */
+  void resized() override;
+  /** @internal */
+  void paint(juce::Graphics& g) override;
+  /** @internal */
+  void lookAndFeelChanged() override;
+};
+
+/** @brief A struct that defines a trace label. */
+template <class ValueType>
+struct TraceLabel : public juce::Component {
+  constexpr bool operator==(const juce::Point<ValueType>& other_graph_values) {
     return m_graph_values == other_graph_values;
   }
 
@@ -54,8 +71,8 @@ struct TracePoint : public BaseTracePoint, public juce::Component {
   juce::LookAndFeel* m_lookandfeel;
 };
 
-/** @brief A struct that defines a trace point using floats. */
-typedef TracePoint<float> TracePoint_f;
+/** @brief A struct that defines a tracelabel using floats. */
+typedef TraceLabel<float> TraceLabel_f;
 
 /**
  * \class Trace
@@ -99,7 +116,7 @@ class Trace {
   void updateTracePointsLookAndFeel();
 
   juce::LookAndFeel* m_lookandfeel;
-  std::vector<std::unique_ptr<TracePoint_f>> m_trace_points;
+  std::vector<std::unique_ptr<TraceLabel_f>> m_trace_label;
 };
 
 }  // namespace scp
