@@ -209,19 +209,21 @@ class Plot : public juce::Component {
    *  LookAndFeel::findColour
    */
   enum ColourIds {
-    background_colour,       /**< Colour of the background. */
-    grid_colour,             /**< Colour of the grids. */
-    x_grid_label_colour,     /**< Colour of the label for each x-grid line. */
-    y_grid_label_colour,     /**< Colour of the label for each y-grid line. */
-    frame_colour,            /**< Colour of the frame around the graph area. */
-    x_label_colour,          /**< Colour of the text on the x-axis. */
-    y_label_colour,          /**< Colour of the label on the y-axis. */
-    title_label_colour,      /**< Colour of the title label. */
-    trace_frame_colour,      /**< Colour of the trace frame. */
-    trace_label_colour,      /**< Colour of the trace label. */
-    trace_background_colour, /**< Colour of the trace background colour. */
-    legend_label_colour,     /**< Colour of the legend label(s). */
-    zoom_frame_colour        /**< Colour of the dashed zoom rectangle. */
+    background_colour,        /**< Colour of the background. */
+    grid_colour,              /**< Colour of the grids. */
+    x_grid_label_colour,      /**< Colour of the label for each x-grid line. */
+    y_grid_label_colour,      /**< Colour of the label for each y-grid line. */
+    frame_colour,             /**< Colour of the frame around the graph area. */
+    x_label_colour,           /**< Colour of the text on the x-axis. */
+    y_label_colour,           /**< Colour of the label on the y-axis. */
+    title_label_colour,       /**< Colour of the title label. */
+    trace_background_colour,  /**< Colour of the trace background colour. */
+    trace_label_frame_colour, /**< Colour of the trace label frame. */
+    trace_label_colour,       /**< Colour of the trace label. */
+    trace_point_colour,       /**< Colour of the trace point colour. */
+    trace_point_frame_colour, /**< Colour of the trace point frame colour. */
+    legend_label_colour,      /**< Colour of the legend label(s). */
+    zoom_frame_colour         /**< Colour of the dashed zoom rectangle. */
   };
 
   /** @brief A set of colour IDs to use to change the colour of each plot
@@ -269,8 +271,12 @@ class Plot : public juce::Component {
                             const juce::Rectangle<int>& bounds) = 0;
 
     /** Draw a single trace point. */
-    virtual void drawTracePoint(juce::Graphics& g, const scp::Label &x_label,
-                                const scp::Label &y_label) = 0;
+    virtual void drawTraceLabel(juce::Graphics& g, const scp::Label& x_label,
+                                const scp::Label& y_label) = 0;
+
+    /** Draw trace point. */
+    virtual void drawTracePoint(juce::Graphics& g,
+                                const juce::Rectangle<int>& bounds) = 0;
 
     /** This method draws the area the user wants to zoom in on. */
     virtual void drawZoomArea(
@@ -341,6 +347,10 @@ class Plot : public juce::Component {
     virtual CONSTEXPR20 juce::Rectangle<int> getTraceLabelLocalBounds(
         const juce::Rectangle<int>& x_label_bounds,
         const juce::Rectangle<int>& y_label_bounds) const noexcept = 0;
+
+    /** Get the local bounds used when drawing the trace point.*/
+    virtual CONSTEXPR20 juce::Rectangle<int> getTracePointLocalBounds()
+        const noexcept = 0;
 
     /** Get x and Y trace label bounds */
     virtual std::pair<juce::Rectangle<int>, juce::Rectangle<int>>

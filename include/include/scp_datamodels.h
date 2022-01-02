@@ -77,6 +77,7 @@ struct IsLabelsSet {
   bool title_label{false};
 };
 
+/** @brief A view of some common graph attributes. */
 struct GraphAttributesView {
   GraphAttributesView(const juce::Rectangle<int>& _graph_bounds,
                       const Lim_f& _x_lim, const Lim_f& _y_lim)

@@ -48,7 +48,9 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
     setColour(Plot::trace_background_colour, juce::Colour(0xff566573));
     setColour(Plot::trace_label_colour, juce::Colour(0xffecf0f1));
-    setColour(Plot::trace_frame_colour, juce::Colour(0xffcacfd2));
+    setColour(Plot::trace_label_frame_colour, juce::Colour(0xffcacfd2));
+    setColour(Plot::trace_point_colour, juce::Colour(0xffec7063));
+    setColour(Plot::trace_point_frame_colour, juce::Colour(0xff566573));
   }
 
   juce::Colour findAndGetColourFromId(
@@ -227,6 +229,11 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return retval;
   }
 
+  CONSTEXPR20 juce::Rectangle<int> getTracePointLocalBounds()
+      const noexcept override {
+    return juce::Rectangle<int>(0, 0, 10, 10);
+  }
+
   CONSTEXPR20 juce::Font getTraceFont() const noexcept override {
     return juce::Font(14.0f, juce::Font::plain);
   }
@@ -381,7 +388,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     g.drawRect(frame);
   }
 
-  void drawTracePoint(juce::Graphics& g, const scp::Label& x_label,
+  void drawTraceLabel(juce::Graphics& g, const scp::Label& x_label,
                       const scp::Label& y_label) override{
       g.setColour(findColour(Plot::trace_label_colour));
       g.setFont(getTraceFont());
@@ -392,9 +399,22 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           std::max(x_label.second.getWidth(), y_label.second.getWidth());
       const auto frame_height = x_label.second.getHeight() + y_label.second.getHeight() + getMargin()*3;
       const auto frame_bounds = juce::Rectangle<int>(0, 0, frame_width, frame_height);
-      g.setColour(findColour(Plot::trace_frame_colour));
+      g.setColour(findColour(Plot::trace_label_frame_colour));
       g.drawRect(frame_bounds);
   };
+
+  void drawTracePoint(juce::Graphics& g,
+                      const juce::Rectangle<int>& bounds) override {
+    constexpr int line_thickness = 4;
+
+    const auto x = bounds.getX() + line_thickness / 2;
+    const auto y = bounds.getY() + line_thickness / 2;
+    const auto w = bounds.getWidth() - line_thickness;
+    const auto h = bounds.getHeight() - line_thickness;
+
+    g.setColour(findColour(Plot::trace_point_colour));
+    g.drawEllipse(x, y, w, h, line_thickness);
+  }
 
   void drawZoomArea(
       juce::Graphics& g, juce::Point<int>& start_coordinates,

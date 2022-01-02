@@ -1,7 +1,7 @@
 /**
  * @file scp_trace.h
  *
- * @brief Componenet for drawing trace points.
+ * @brief Componenet for drawing tracepoints.
  *
  * @ingroup SimpleCustomPlotInternal
  *
@@ -17,25 +17,13 @@
 
 namespace scp {
 
-/** @brief A struct that defines a view of a position. */
-struct PositionView {
-  /** Constructors. */
-  PositionView(const juce::Point<int>& position) : position_view(position){};
-  PositionView(const juce::Point<int>&& position) = delete;
-
-  /** Default spaceship. */
-  constexpr auto operator<=>(const PositionView&) const = default;
-
-  /** The x and y position view of the trace point. */
-  const juce::Point<int>& position_view;
-};
-
-/** @brief A struct that defines a trace point. */
+/** @brief A struct that defines a tracepoint. */
 template <class ValueType>
-struct TracePoint : public PositionView, public juce::Component {
-  TracePoint();
-
-  using PositionView::operator<=>;
+struct TracePoint : public juce::Component {
+  /** Spaceship */
+  constexpr bool operator<=>(const TracePoint<ValueType>& rhs) {
+    return this->getPosition() <=> rhs.getPosition();
+  }
 
   /** @internal */
   void resized() override;
@@ -43,7 +31,13 @@ struct TracePoint : public PositionView, public juce::Component {
   void paint(juce::Graphics& g) override;
   /** @internal */
   void lookAndFeelChanged() override;
+
+  /** @internal */
+  juce::LookAndFeel* m_lookandfeel;
 };
+
+/** @brief A struct that defines a tracepoint using floats. */
+typedef TracePoint<float> TracePoint_f;
 
 /** @brief A struct that defines a trace label. */
 template <class ValueType>
@@ -64,7 +58,7 @@ struct TraceLabel : public juce::Component {
   /** The x and y labels. */
   scp::Label m_x_label, m_y_label;
 
-  /** The x and y values of the trace point. */
+  /** The x and y values of the tracepoint. */
   juce::Point<ValueType> m_graph_values;
 
   /** @internal */
@@ -76,7 +70,7 @@ typedef TraceLabel<float> TraceLabel_f;
 
 /**
  * \class Trace
- * \brief A class for drawing trace points
+ * \brief A class for drawing tracepoints
  *
  * The idea is to use this class to display the x, y value of a one more
  * points on a graph.
@@ -85,38 +79,52 @@ class Trace {
  public:
   ~Trace();
 
-  /** @brief Add or remove a trace point.
+  /** @brief Add or remove a tracepoint.
    *
-   * Add a trace point that will be drawn. The point is
-   * removed if it's already exists.
+   * The tracepoint is removed if it's already exists.
    *
-   * @param trace_point the trace point that will be drawn.
+   * @param trace_point_coordinate the coordinate where the point will be drawn.
    * @return void.
    */
-  void addOrRemoveTracePoint(const juce::Point<float>& trace_point);
+  void addOrRemoveTracePoint(const juce::Point<float>& trace_point_coordinate);
 
-  /** @brief Update the trace point bounds from plot attributes.
+  /** @brief Update the tracepoint bounds from graph attributes.
    *
-   * @param plot_attributes common plot attributes.
+   * @param graph_attributes common graph attributes.
    * @return void.
    */
-  void updateTracePointBoundsFrom(const GraphAttributesView& plot_attributes);
+  void updateTracePointBoundsFrom(const GraphAttributesView& graph_attributes);
 
-  /** @brief Add the trace points to a parent component
+  /** @brief Add the tracepoints to a parent component
    *
-   * @param parent_comp the component that the trace point will be added to as
+   * @param parent_comp the component that the tracepoint will be added to as
    * a child component.
    * @return void.
    */
   void addAndMakeVisibleTo(juce::Component* parent_comp);
 
+  /** @brief Set the lookandfeel for the tracepoints and tracelabels.
+   *
+   * @param lnf pointer to the lookandfeel instance.
+   * @return void.
+   */
   void setLookAndFeel(juce::LookAndFeel* lnf);
 
  private:
+  /** @internal */
+  void addSingleTracePointAndLabel(
+      const juce::Point<float>& trace_point_coordinate);
+  /** @internal */
+  void removeSingleTracePointAndLabel(
+      const juce::Point<float>& trace_point_coordinate);
+  /** @internal */
   void updateTracePointsLookAndFeel();
-
+  /** @internal */
   juce::LookAndFeel* m_lookandfeel;
-  std::vector<std::unique_ptr<TraceLabel_f>> m_trace_label;
+  /** @internal */
+  std::vector<std::unique_ptr<TraceLabel_f>> m_trace_labels;
+  /** @internal */
+  std::vector<std::unique_ptr<TracePoint_f>> m_trace_points;
 };
 
 }  // namespace scp
