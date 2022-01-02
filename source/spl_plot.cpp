@@ -477,19 +477,10 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
         m_zoom->setStartPosition(event.getPosition());
         return;
       }
-      const auto local_graph_bounds = getLocalBoundsFrom<float>(m_graph_bounds);
-
-      DBG("x, y value: [ " << std::to_string(getXFromXCoordinate(
-                                  event.position.getX(), local_graph_bounds,
-                                  m_x_lim, m_x_scaling))
-                           << ", "
-                           << std::to_string(getYFromYCoordinate(
-                                  event.position.getY(), local_graph_bounds,
-                                  m_y_lim, m_y_scaling))
-                           << " ]");
-      DBG("Pos: " << event.position.toString());
       m_zoom->setEndPosition(event.getPosition());
       m_zoom->repaint();
+    } else if (m_trace->isComponentTracePoint(event.eventComponent)) {
+        DBG("Trace!");
     }
   }
 }

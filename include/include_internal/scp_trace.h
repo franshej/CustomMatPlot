@@ -110,6 +110,14 @@ class Trace {
    */
   void setLookAndFeel(juce::LookAndFeel* lnf);
 
+
+  /** @brief Check if a juce::Component* is one of the added tracepoints.
+   *
+   * @param component a juce component
+   * @return bool true if the component is one of the tracepoints.
+   */
+  bool isComponentTracePoint(const juce::Component* component);
+
  private:
   /** @internal */
   void addSingleTracePointAndLabel(

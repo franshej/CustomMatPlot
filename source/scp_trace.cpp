@@ -102,6 +102,13 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
   updateTracePointsLookAndFeel();
 }
 
+bool Trace::isComponentTracePoint(const juce::Component* component) {
+  return std::find_if(m_trace_points.begin(), m_trace_points.end(),
+                      [component](const auto& tp) {
+                        return tp.get() == component;
+                      }) != m_trace_points.end();
+}
+
 void Trace::addSingleTracePointAndLabel(
     const juce::Point<float>& trace_point_coordinate) {
   auto trace_label = std::make_unique<TraceLabel_f>();
