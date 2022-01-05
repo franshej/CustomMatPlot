@@ -441,6 +441,9 @@ class Plot : public juce::Component {
   void resizeWithNewGraphArea();
   void resizeChilderns();
 
+  std::pair<juce::Point<float>, const GraphLine*> findNearestGraphPoint(
+      juce::Point<float> point, const GraphLine* graphline);
+
   template <Scaling x_scaling, Scaling y_scaling>
   juce::LookAndFeel* castUserLookAndFeel(PlotLookAndFeel* user_look_and_feel);
 

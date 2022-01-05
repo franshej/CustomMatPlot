@@ -240,6 +240,42 @@ void Plot::resizeChilderns() {
   updateGridGraphsTrace();
 }
 
+std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestGraphPoint(
+    juce::Point<float> point, const GraphLine* graphline) {
+  auto closest_graph_point = juce::Point<float>(
+      std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+
+  auto closest_data_point = juce::Point<float>();
+
+  const auto graph_line_exsists = std::find_if(
+      m_graph_lines.begin(), m_graph_lines.end(),
+      [&graphline](const auto& gl) {
+          return gl.get() == graphline;
+      }) != m_graph_lines.end();
+
+  const GraphLine* nearest_graph_line{graph_line_exsists ? graphline : nullptr};
+
+  if (!nearest_graph_line) {
+    for (const auto& graph_line : m_graph_lines) {
+      const auto [current_graph_point, current_data_point] =
+          graph_line->findClosestGraphPointTo(point);
+      if (point.getDistanceFrom(current_graph_point) <
+          point.getDistanceFrom(closest_graph_point)) {
+        closest_graph_point = current_graph_point;
+        closest_data_point = current_data_point;
+        nearest_graph_line = graph_line.get();
+      }
+    }
+  } else if (graph_line_exsists) {
+    const auto [_graph_point, _data_point] =
+        nearest_graph_line->findClosestGraphPointTo(point);
+    closest_graph_point = _graph_point;
+    closest_data_point = _data_point;
+  }
+
+  return {closest_data_point, nearest_graph_line};
+}
+
 void Plot::resized() { resizeChilderns(); }
 
 void Plot::paint(juce::Graphics& g) {}
@@ -312,6 +348,7 @@ void Plot::lookAndFeelChanged() {
   if (m_zoom) m_zoom->setLookAndFeel(m_lookandfeel);
   if (m_grid) m_grid->setLookAndFeel(m_lookandfeel);
   if (m_trace) m_trace->setLookAndFeel(m_lookandfeel);
+
   for (auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(m_lookandfeel);
   }
@@ -325,13 +362,14 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
       for (auto& graph_line : m_graph_lines) {
         if (!graph_line && m_lookandfeel) {
           auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+
           const auto colour_id = lnf->getColourFromGraphID(i);
           const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
           graph_line = std::make_unique<GraphLine>();
+
           graph_line->setColour(graph_colour);
           graph_line->setLookAndFeel(m_lookandfeel);
-
           graph_line->setBounds(m_graph_bounds);
 
           addAndMakeVisible(graph_line.get());
@@ -354,7 +392,9 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
     for (auto& graph_line : m_graph_lines) {
       if (graph_line->getXValues().empty()) {
         auto x_data = std::vector<float>(graph_line->getYValues().size());
+
         std::iota(x_data.begin(), x_data.end(), 1.f);
+
         graph_line->setXValues(x_data);
       }
 
@@ -398,9 +438,9 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
 void Plot::setLegend(const StringVector& graph_descriptions) {
   if (m_lookandfeel && m_legend) {
     m_legend->setVisible(graph_descriptions.size() && m_graph_lines.size());
-    m_legend->setDataSeries(&m_graph_lines);
 
-    auto getDescriptionRef = [&]() -> const StringVector& {
+    m_legend->setDataSeries(&m_graph_lines);
+    auto getDescriptionRef = [&]() -> const StringVector {
       if (graph_descriptions.size() < m_graph_lines.size()) {
         auto descriptions = StringVector(m_graph_lines.size());
         descriptions = graph_descriptions;
@@ -420,6 +460,7 @@ void Plot::setLegend(const StringVector& graph_descriptions) {
     const auto graph_descriptions_ref = getDescriptionRef();
 
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+
     const auto legend_bounds =
         lnf->getLegendBounds(m_graph_bounds, graph_descriptions_ref);
 
@@ -438,49 +479,59 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
         updateGridGraphsTrace();
 
         repaint();
-      } else if (event.getNumberOfClicks() > 1) {
-        const auto mouse_pos = event.position.toFloat();
-
-        auto closest_graph_point =
-            juce::Point<float>(std::numeric_limits<float>::max(),
-                               std::numeric_limits<float>::max());
-
-        auto closest_data_point = juce::Point<float>();
-
-        for (const auto& graph_line : m_graph_lines) {
-          const auto [current_graph_point, current_data_point] =
-              graph_line->findClosestGraphPointTo(mouse_pos);
-          if (mouse_pos.getDistanceFrom(current_graph_point) <
-              mouse_pos.getDistanceFrom(closest_graph_point)) {
-            closest_graph_point = current_graph_point;
-            closest_data_point = current_data_point;
-          }
-        }
-
-        m_trace->addOrRemoveTracePoint(closest_data_point);
-        m_trace->updateTracePointBoundsFrom(m_graph_params);
-        m_trace->addAndMakeVisibleTo(this);
+      } else if (m_legend.get() == event.eventComponent) {
+        m_comp_dragger.startDraggingComponent(event.eventComponent, event);
       }
+    }
+
+    if (event.getNumberOfClicks() > 1) {
+      const auto component_pos =
+          event.eventComponent->getBounds().getPosition();
+
+      const auto mouse_pos =
+          (event.getPosition() + component_pos - m_graph_bounds.getPosition())
+              .toFloat();
+
+      const auto [closest_data_point, nearest_graph_line] =
+          findNearestGraphPoint(mouse_pos, nullptr);
+
+      m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
+      m_trace->updateTracePointBoundsFrom(m_graph_params);
+      m_trace->addAndMakeVisibleTo(this);
     }
   }
 }
 
 void Plot::mouseDrag(const juce::MouseEvent& event) {
   if (isVisible()) {
-    if (m_legend.get() == event.eventComponent &&
-        event.getNumberOfClicks() == 1) {
+    if (m_legend.get() == event.eventComponent) {
       m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
-
     } else if (m_zoom.get() == event.eventComponent &&
-               event.getDistanceFromDragStart() > 4) {
+               event.getDistanceFromDragStart() > 4 &&
+               event.getNumberOfClicks() == 1) {
       if (!m_zoom->isStartPosSet()) {
         m_zoom->setStartPosition(event.getPosition());
-        return;
+      } else {
+        m_zoom->setEndPosition(event.getPosition());
+
+        m_zoom->repaint();
       }
-      m_zoom->setEndPosition(event.getPosition());
-      m_zoom->repaint();
-    } else if (m_trace->isComponentTracePoint(event.eventComponent)) {
-        DBG("Trace!");
+    } else if (m_trace->isComponentTracePoint(event.eventComponent) &&
+               event.getNumberOfClicks() == 1) {
+      auto bounds = event.eventComponent->getBounds();
+
+      const auto mouse_pos =
+          bounds.getPosition() - m_graph_bounds.getPosition() +
+          event.getEventRelativeTo(event.eventComponent).getPosition();
+
+      const auto* associated_graph_line =
+          m_trace->getAssociatedGraphLine(event.eventComponent);
+
+      const auto [closest_data_point, nearest_graph_line] =
+          findNearestGraphPoint(mouse_pos.toFloat(), associated_graph_line);
+
+      m_trace->setGraphPositionFor(event.eventComponent, closest_data_point,
+                                   m_graph_params);
     }
   }
 }

@@ -14,6 +14,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <scp_datamodels.h>
+#include <optional>
 
 namespace scp {
 
@@ -25,6 +26,14 @@ struct TracePoint : public juce::Component {
     return this->getPosition() <=> rhs.getPosition();
   }
 
+  /** Compare with juce point. */
+  constexpr bool operator==(const juce::Point<ValueType>& other_graph_values) {
+    return m_graph_values == other_graph_values;
+  }
+
+  /** Set the graph value. */
+  void setGraphValue(const juce::Point<ValueType>& graph_value);
+
   /** @internal */
   void resized() override;
   /** @internal */
@@ -34,6 +43,9 @@ struct TracePoint : public juce::Component {
 
   /** @internal */
   juce::LookAndFeel* m_lookandfeel;
+
+  /** The x and y values of the tracepoint. */
+  juce::Point<ValueType> m_graph_values;
 };
 
 /** @brief A struct that defines a tracepoint using floats. */
@@ -42,11 +54,8 @@ typedef TracePoint<float> TracePoint_f;
 /** @brief A struct that defines a trace label. */
 template <class ValueType>
 struct TraceLabel : public juce::Component {
-  constexpr bool operator==(const juce::Point<ValueType>& other_graph_values) {
-    return m_graph_values == other_graph_values;
-  }
-
-  void setGraphValue(const juce::Point<ValueType>& graph_value);
+  /** Set the graph labels from point. */
+  void setGraphLabelFrom(const juce::Point<ValueType>& graph_value);
 
   /** @internal */
   void resized() override;
@@ -58,15 +67,23 @@ struct TraceLabel : public juce::Component {
   /** The x and y labels. */
   scp::Label m_x_label, m_y_label;
 
-  /** The x and y values of the tracepoint. */
-  juce::Point<ValueType> m_graph_values;
-
   /** @internal */
   juce::LookAndFeel* m_lookandfeel;
 };
 
-/** @brief A struct that defines a tracelabel using floats. */
+/** @brief A typedef defines a tracelabel using floats. */
 typedef TraceLabel<float> TraceLabel_f;
+
+/** @breif A struct that defines a tracelabel and a tracepoint */
+template <class ValueType>
+struct TraceLabelPoint {
+  std::unique_ptr<TraceLabel<ValueType>> trace_label;
+  std::unique_ptr<TracePoint<ValueType>> trace_point;
+  const GraphLine* associated_graph_line{nullptr};
+};
+
+/** @breif A struct that defines a tracelabel and a tracepoint using floats. */
+typedef TraceLabelPoint<float> TraceLabelPoint_f;
 
 /**
  * \class Trace
@@ -79,14 +96,24 @@ class Trace {
  public:
   ~Trace();
 
+  /*@breif Get the associated GraphLine.
+   *
+   * @param TracePoint juce::Componenet* a TracePoint component.
+   * @return GraphLine* the associated GraphLine if found else nullptr
+   */
+  const GraphLine* getAssociatedGraphLine(const juce::Component* trace_point) const;
+
+
   /** @brief Add or remove a tracepoint.
    *
    * The tracepoint is removed if it's already exists.
    *
    * @param trace_point_coordinate the coordinate where the point will be drawn.
+   * @param graph_line pointer to a graphline.
    * @return void.
    */
-  void addOrRemoveTracePoint(const juce::Point<float>& trace_point_coordinate);
+  void addOrRemoveTracePoint(const juce::Point<float>& trace_point_coordinate,
+                             const GraphLine* graph_line);
 
   /** @brief Update the tracepoint bounds from graph attributes.
    *
@@ -110,29 +137,44 @@ class Trace {
    */
   void setLookAndFeel(juce::LookAndFeel* lnf);
 
+  /** @breif Set the position of a single tracepoint.
+   *
+   * @param graph_attributes common graph attributes.
+   * @param trace_point the tracepoint that will have the new position.
+   * @param new_position the new position for the tracepoint.
+   */
+  void setGraphPositionFor(juce::Component* trace_point,
+                           const juce::Point<float>& new_position,
+                           const GraphAttributesView& graph_attributes);
 
   /** @brief Check if a juce::Component* is one of the added tracepoints.
    *
    * @param component a juce component
    * @return bool true if the component is one of the tracepoints.
    */
-  bool isComponentTracePoint(const juce::Component* component);
+  bool isComponentTracePoint(const juce::Component* component) const;
 
  private:
   /** @internal */
   void addSingleTracePointAndLabel(
-      const juce::Point<float>& trace_point_coordinate);
+      const juce::Point<float>& trace_point_coordinate,
+      const GraphLine* graph_line);
   /** @internal */
   void removeSingleTracePointAndLabel(
       const juce::Point<float>& trace_point_coordinate);
   /** @internal */
+  void updateSingleTraceLabelTextsAndBounds(
+      TraceLabelPoint_f* trace_point_label,
+      const GraphAttributesView& graph_attributes);
+  /** @internal */
   void updateTracePointsLookAndFeel();
+  /** @internal */
+  std::vector<TraceLabelPoint_f>::const_iterator
+  findTraceLabelIteratorFromComponent(const juce::Component* trace_point) const;
   /** @internal */
   juce::LookAndFeel* m_lookandfeel;
   /** @internal */
-  std::vector<std::unique_ptr<TraceLabel_f>> m_trace_labels;
-  /** @internal */
-  std::vector<std::unique_ptr<TracePoint_f>> m_trace_points;
+  std::vector<TraceLabelPoint_f> m_trace_labelpoints;
 };
 
 }  // namespace scp

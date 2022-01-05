@@ -4,15 +4,20 @@
 
 namespace scp {
 template <class ValueType>
-void TraceLabel<ValueType>::setGraphValue(
-    const juce::Point<ValueType>& graph_values) {
+void TracePoint<ValueType>::setGraphValue(
+    const juce::Point<ValueType>& graph_value) {
+  m_graph_values = graph_value;
+}
+
+template <class ValueType>
+void TraceLabel<ValueType>::setGraphLabelFrom(
+    const juce::Point<ValueType>& graph_value) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    m_graph_values = graph_values;
     m_x_label.first =
-        "X: " + convertFloatToString<float>(m_graph_values.getX(), 2, 6);
+        "X: " + convertFloatToString<ValueType>(graph_value.getX(), 2, 6);
     m_y_label.first =
-        "Y: " + convertFloatToString<float>(m_graph_values.getY(), 2, 6);
+        "Y: " + convertFloatToString<ValueType>(graph_value.getY(), 2, 6);
 
     const auto [x_label_bounds, y_label_bounds] =
         lnf->getTraceXYLabelBounds(m_x_label.first, m_x_label.first);
@@ -47,13 +52,23 @@ Trace::~Trace() {
   updateTracePointsLookAndFeel();
 }
 
+const GraphLine* Trace::getAssociatedGraphLine(
+    const juce::Component* trace_point) const {
+  const auto it = findTraceLabelIteratorFromComponent(trace_point);
+  if (it == m_trace_labelpoints.end())
+    return nullptr;
+  else
+    return it->associated_graph_line;
+}
+
 void Trace::addOrRemoveTracePoint(
-    const juce::Point<float>& trace_point_coordinate) {
-  if (std::find_if(m_trace_labels.begin(), m_trace_labels.end(),
+    const juce::Point<float>& trace_point_coordinate,
+    const GraphLine* graph_line) {
+  if (std::find_if(m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
                    [&trace_point_coordinate](const auto& tl) {
-                     return (*tl) == trace_point_coordinate;
-                   }) == m_trace_labels.end()) {
-    addSingleTracePointAndLabel(trace_point_coordinate);
+                     return (*tl.trace_point) == trace_point_coordinate;
+                   }) == m_trace_labelpoints.end()) {
+    addSingleTracePointAndLabel(trace_point_coordinate, graph_line);
   } else {
     removeSingleTracePointAndLabel(trace_point_coordinate);
   }
@@ -61,39 +76,15 @@ void Trace::addOrRemoveTracePoint(
 
 void Trace::updateTracePointBoundsFrom(
     const GraphAttributesView& graph_attributes) {
-  if (m_lookandfeel) {
-    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-
-    auto tp_it = m_trace_points.begin();
-    for (auto& trace_label : m_trace_labels) {
-      const auto x_bound = trace_label->m_x_label.second;
-      const auto y_bound = trace_label->m_y_label.second;
-      const auto graph_values = trace_label->m_graph_values;
-
-      const auto local_trace_bounds =
-          lnf->getTraceLabelLocalBounds(x_bound, y_bound);
-      auto trace_bounds = local_trace_bounds;
-      const auto trace_position =
-          lnf->getTracePointPositionFrom(graph_attributes, graph_values) +
-          graph_attributes.graph_bounds.getPosition();
-
-      trace_bounds.setPosition(trace_position);
-      trace_label->setBounds(trace_bounds);
-
-      auto trace_point_bounds = lnf->getTracePointLocalBounds();
-      trace_point_bounds.setCentre(trace_position);
-      if (tp_it != m_trace_points.end())
-        (*tp_it++)->setBounds(trace_point_bounds);
-    }
+  for (auto& tlp : m_trace_labelpoints) {
+    updateSingleTraceLabelTextsAndBounds(&tlp, graph_attributes);
   }
 }
 
 void Trace::addAndMakeVisibleTo(juce::Component* parent_comp) {
-  for (const auto& trace_label : m_trace_labels) {
-    parent_comp->addAndMakeVisible(trace_label.get());
-  }
-  for (const auto& trace_point : m_trace_points) {
-    parent_comp->addAndMakeVisible(trace_point.get());
+  for (const auto& tlp : m_trace_labelpoints) {
+    parent_comp->addAndMakeVisible(tlp.trace_label.get());
+    parent_comp->addAndMakeVisible(tlp.trace_point.get());
   }
 }
 
@@ -102,48 +93,93 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
   updateTracePointsLookAndFeel();
 }
 
-bool Trace::isComponentTracePoint(const juce::Component* component) {
-  return std::find_if(m_trace_points.begin(), m_trace_points.end(),
-                      [component](const auto& tp) {
-                        return tp.get() == component;
-                      }) != m_trace_points.end();
+void Trace::setGraphPositionFor(juce::Component* trace_point,
+                                const juce::Point<float>& new_position,
+                                const GraphAttributesView& graph_attributes) {
+  if (auto* tp =
+          dynamic_cast<decltype(m_trace_labelpoints.data()->trace_point.get())>(
+              trace_point)) {
+    auto it = std::find_if(
+        m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
+        [&tp](const auto& tlp) { return tp == tlp.trace_point.get(); });
+    if (it == m_trace_labelpoints.end()) {
+      return;
+    }
+    it->trace_point->setGraphValue(new_position);
+    updateSingleTraceLabelTextsAndBounds(&(*it), graph_attributes);
+  }
+}
+
+bool Trace::isComponentTracePoint(const juce::Component* component) const {
+  return findTraceLabelIteratorFromComponent(component) !=
+         m_trace_labelpoints.end();
 }
 
 void Trace::addSingleTracePointAndLabel(
-    const juce::Point<float>& trace_point_coordinate) {
+    const juce::Point<float>& trace_point_coordinate,
+    const GraphLine* graph_line) {
   auto trace_label = std::make_unique<TraceLabel_f>();
   auto trace_point = std::make_unique<TracePoint_f>();
 
   if (m_lookandfeel) trace_label->setLookAndFeel(m_lookandfeel);
   if (m_lookandfeel) trace_point->setLookAndFeel(m_lookandfeel);
 
-  trace_label->setGraphValue(trace_point_coordinate);
-  m_trace_labels.emplace_back(move(trace_label));
-  m_trace_points.emplace_back(move(trace_point));
+  trace_point->setGraphValue(trace_point_coordinate);
+  m_trace_labelpoints.push_back(
+      {move(trace_label), move(trace_point), graph_line});
 }
 
 void Trace::removeSingleTracePointAndLabel(
     const juce::Point<float>& trace_point_coordinate) {
-  auto it_p = m_trace_points.begin();
-  auto it_l = m_trace_labels.begin();
-  while (it_p != m_trace_points.end() && it_l != m_trace_labels.end()) {
-    if (*(*it_l) == trace_point_coordinate) break;
-    ++it_p;
-    ++it_l;
-  }
+  m_trace_labelpoints.erase(
+      std::remove_if(m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
+                     [&trace_point_coordinate](const auto& tlp) {
+                       return *tlp.trace_point == trace_point_coordinate;
+                     }));
+}
 
-  m_trace_labels.erase(it_l);
-  m_trace_points.erase(it_p);
+void Trace::updateSingleTraceLabelTextsAndBounds(
+    TraceLabelPoint_f* tlp, const GraphAttributesView& graph_attributes) {
+  if (m_lookandfeel) {
+    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+
+    const auto graph_values = tlp->trace_point->m_graph_values;
+    tlp->trace_label->setGraphLabelFrom(graph_values);
+
+    const auto x_bound = tlp->trace_label->m_x_label.second;
+    const auto y_bound = tlp->trace_label->m_y_label.second;
+
+    const auto local_trace_bounds =
+        lnf->getTraceLabelLocalBounds(x_bound, y_bound);
+    auto trace_bounds = local_trace_bounds;
+
+    const auto trace_position =
+        lnf->getTracePointPositionFrom(graph_attributes, graph_values) +
+        graph_attributes.graph_bounds.getPosition();
+
+    trace_bounds.setPosition(trace_position);
+    tlp->trace_label->setBounds(trace_bounds);
+
+    auto trace_point_bounds = lnf->getTracePointLocalBounds();
+    trace_point_bounds.setCentre(trace_position);
+    tlp->trace_point->setBounds(trace_point_bounds);
+  }
 }
 
 void Trace::updateTracePointsLookAndFeel() {
-  for (auto& trace_label : m_trace_labels) {
-    trace_label->setLookAndFeel(m_lookandfeel);
+  for (auto& trace_label_point : m_trace_labelpoints) {
+    trace_label_point.trace_label->setLookAndFeel(m_lookandfeel);
+    trace_label_point.trace_point->setLookAndFeel(m_lookandfeel);
   }
+}
 
-  for (auto& trace_point : m_trace_points) {
-    trace_point->setLookAndFeel(m_lookandfeel);
-  }
+std::vector<TraceLabelPoint_f>::const_iterator
+Trace::findTraceLabelIteratorFromComponent(
+    const juce::Component* trace_point) const {
+  return std::find_if(m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
+                      [trace_point](const auto& tpl) {
+                        return tpl.trace_point.get() == trace_point;
+                      });
 }
 
 template <class ValueType>
