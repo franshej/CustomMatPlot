@@ -539,9 +539,11 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
           bounds.getPosition() +
           event.getEventRelativeTo(event.eventComponent).getPosition();
 
-        m_trace->setCornerPositionForLabelAssociatedWith(event.eventComponent, mouse_pos);
-
-        m_trace->updateTracePointBoundsFrom(m_graph_params);
+      if (m_trace->setCornerPositionForLabelAssociatedWith(event.eventComponent,
+                                                           mouse_pos)) {
+        m_trace->updateSingleTracePointBoundsFrom(event.eventComponent,
+                                                  m_graph_params);
+      }
     }
   }
 }

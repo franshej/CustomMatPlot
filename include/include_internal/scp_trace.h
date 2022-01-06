@@ -139,6 +139,16 @@ class Trace {
    */
   void updateTracePointBoundsFrom(const GraphAttributesView& graph_attributes);
 
+  /** @brief Update a single tracepoint bounds from graph attributes.
+   *
+   * @param trace_label_or_point either a tracepoint or tracelabel.
+   * @param graph_attributes common graph attributes.
+   * @return void.
+   */
+  void updateSingleTracePointBoundsFrom(
+      juce::Component* trace_label_or_point,
+      const GraphAttributesView& graph_attributes);
+
   /** @brief Add the tracepoints to a parent component
    *
    * @param parent_comp the component that the tracepoint will be added to as
@@ -169,10 +179,10 @@ class Trace {
    *
    * @param trace_point the associated tracepoint.
    * @param mouse_position the position of the mouse.
-   * @return void.
+   * @return true if the corner position was changed.
    */
-  void setCornerPositionForLabelAssociatedWith(juce::Component* trace_point,
-                            const juce::Point<int>& mouse_position);
+  bool setCornerPositionForLabelAssociatedWith(
+      juce::Component* trace_point, const juce::Point<int>& mouse_position);
 
   /** @brief Check if a juce::Component* is one of the added tracepoints.
    *
@@ -197,7 +207,7 @@ class Trace {
   void removeSingleTracePointAndLabel(
       const juce::Point<float>& trace_point_coordinate);
   /** @internal */
-  void updateSingleTraceLabelTextsAndBounds(
+  void updateSingleTraceLabelTextsAndBoundsInternal(
       TraceLabelPoint_f* trace_point_label,
       const GraphAttributesView& graph_attributes);
   /** @internal */

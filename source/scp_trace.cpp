@@ -77,8 +77,23 @@ void Trace::addOrRemoveTracePoint(
 void Trace::updateTracePointBoundsFrom(
     const GraphAttributesView& graph_attributes) {
   for (auto& tlp : m_trace_labelpoints) {
-    updateSingleTraceLabelTextsAndBounds(&tlp, graph_attributes);
+    updateSingleTraceLabelTextsAndBoundsInternal(&tlp, graph_attributes);
   }
+}
+
+void Trace::updateSingleTracePointBoundsFrom(
+    juce::Component* trace_label_or_point,
+    const GraphAttributesView& graph_attributes) {
+  const auto tlp_it = findTraceLabelPointIteratorFrom(trace_label_or_point);
+
+  if (tlp_it == m_trace_labelpoints.end()) {
+    return;
+  }
+
+  auto it = m_trace_labelpoints.erase(
+      tlp_it, tlp_it);  // remove const for ::const_iterator
+
+  updateSingleTraceLabelTextsAndBoundsInternal(&(*it), graph_attributes);
 }
 
 void Trace::addAndMakeVisibleTo(juce::Component* parent_comp) {
@@ -106,11 +121,11 @@ void Trace::setGraphPositionFor(juce::Component* trace_point,
       return;
     }
     it->trace_point->setGraphValue(new_position);
-    updateSingleTraceLabelTextsAndBounds(&(*it), graph_attributes);
+    updateSingleTraceLabelTextsAndBoundsInternal(&(*it), graph_attributes);
   }
 }
 
-void Trace::setCornerPositionForLabelAssociatedWith(
+bool Trace::setCornerPositionForLabelAssociatedWith(
     juce::Component* trace_point, const juce::Point<int>& mouse_position) {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
 
@@ -122,14 +137,23 @@ void Trace::setCornerPositionForLabelAssociatedWith(
   const auto is_x_pos = dxdy.getX() > 0;
   const auto is_y_pos = dxdy.getY() > 0;
 
+  auto trace_label_corner_pos = TraceLabelCornerPosition::top_left;
+
   if (is_x_pos && is_y_pos)
-    it->trace_label_corner_pos = TraceLabelCornerPosition::top_left;
+    trace_label_corner_pos = TraceLabelCornerPosition::top_left;
   else if (is_x_pos && !is_y_pos)
-    it->trace_label_corner_pos = TraceLabelCornerPosition::bottom_left;
+    trace_label_corner_pos = TraceLabelCornerPosition::bottom_left;
   else if (!is_x_pos && is_y_pos)
-    it->trace_label_corner_pos = TraceLabelCornerPosition::top_right;
+    trace_label_corner_pos = TraceLabelCornerPosition::top_right;
   else if (!is_x_pos && !is_y_pos)
-    it->trace_label_corner_pos = TraceLabelCornerPosition::bottom_right;
+    trace_label_corner_pos = TraceLabelCornerPosition::bottom_right;
+
+  if (it->trace_label_corner_pos != trace_label_corner_pos) {
+    it->trace_label_corner_pos = trace_label_corner_pos;
+    return true;
+  }
+
+  return false;
 }
 
 bool Trace::isComponentTracePoint(const juce::Component* component) const {
@@ -167,7 +191,7 @@ void Trace::removeSingleTracePointAndLabel(
                      }));
 }
 
-void Trace::updateSingleTraceLabelTextsAndBounds(
+void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
     TraceLabelPoint_f* tlp, const GraphAttributesView& graph_attributes) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
