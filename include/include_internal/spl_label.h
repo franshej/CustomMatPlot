@@ -1,7 +1,7 @@
 /**
  * @file spl_label.h
  *
- * @brief Componenets for creating x,y and title labels
+ * @brief Componenets for creating x, y and title labels
  *
  * @ingroup SimpleCustomPlotInternal
  *

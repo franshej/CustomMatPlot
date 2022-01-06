@@ -82,6 +82,11 @@ struct TraceLabel : public juce::Component {
   /** The x and y labels. */
   scp::Label m_x_label, m_y_label;
 
+  /** Defines which label corner that is located at the tracepoint center. */
+  TraceLabelCornerPosition trace_label_corner_pos{
+      TraceLabelCornerPosition::top_left};
+
+ private:
   /** @internal */
   juce::LookAndFeel* m_lookandfeel;
 };
@@ -93,10 +98,10 @@ typedef TraceLabel<float> TraceLabel_f;
 template <class ValueType>
 struct TraceLabelPoint {
   std::unique_ptr<TraceLabel<ValueType>> trace_label;
+
   std::unique_ptr<TracePoint<ValueType>> trace_point;
+
   const GraphLine* associated_graph_line{nullptr};
-  TraceLabelCornerPosition trace_label_corner_pos{
-      TraceLabelCornerPosition::top_left};
 };
 
 /** @breif A struct that defines a tracelabel and a tracepoint using floats. */
@@ -107,19 +112,27 @@ typedef TraceLabelPoint<float> TraceLabelPoint_f;
  * \brief A class for drawing tracepoints
  *
  * The idea is to use this class to display the x, y value of a one more
- * points on a graph.
+ * points on one or more graphs.
  */
 class Trace {
  public:
   ~Trace();
 
-  /*@breif Get the associated GraphLine.
+  /** @breif Get the associated GraphLine.
    *
    * @param TracePoint juce::Componenet* a TracePoint component.
    * @return GraphLine* the associated GraphLine if found else nullptr
    */
-  const GraphLine* getAssociatedGraphLine(const juce::Component* trace_point) const;
+  const GraphLine* getAssociatedGraphLine(
+      const juce::Component* trace_point) const;
 
+  /** @breif Get the graph position for a tracepoint or trace label.
+   *
+   * @param trace_point_or_label either a tracepoint or tracelabel component.
+   * @return the graph position.
+   */
+  juce::Point<float> getGraphPosition(
+      const juce::Component* trace_point_label) const;
 
   /** @brief Add or remove a tracepoint.
    *
@@ -167,11 +180,10 @@ class Trace {
   /** @breif Set the position of a single tracepoint.
    *
    * @param graph_attributes common graph attributes.
-   * @param trace_point the tracepoint that will have the new position.
    * @param new_position the new position for the tracepoint.
-   * @return void.
+   * @return true if the value was changed.
    */
-  void setGraphPositionFor(juce::Component* trace_point,
+  bool setGraphPositionFor(juce::Component* trace_point,
                            const juce::Point<float>& new_position,
                            const GraphAttributesView& graph_attributes);
 

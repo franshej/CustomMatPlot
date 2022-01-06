@@ -65,6 +65,16 @@ const GraphLine* Trace::getAssociatedGraphLine(
     return it->associated_graph_line;
 }
 
+juce::Point<float> Trace::getGraphPosition(
+    const juce::Component* trace_point_label) const {
+  const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point_label);
+
+  if (tlp_it != m_trace_labelpoints.end())
+    return tlp_it->trace_point->m_graph_values;
+
+  return juce::Point<float>();
+}
+
 void Trace::addOrRemoveTracePoint(
     const juce::Point<float>& trace_point_coordinate,
     const GraphLine* graph_line) {
@@ -112,22 +122,20 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
   updateTracePointsLookAndFeel();
 }
 
-void Trace::setGraphPositionFor(juce::Component* trace_point,
+bool Trace::setGraphPositionFor(juce::Component* trace_point,
                                 const juce::Point<float>& new_position,
                                 const GraphAttributesView& graph_attributes) {
-  if (auto* tp =
-          dynamic_cast<decltype(m_trace_labelpoints.data()->trace_point.get())>(
-              trace_point)) {
-    auto it = std::find_if(
-        m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
-        [&tp](const auto& tlp) { return tp == tlp.trace_point.get(); });
-    if (it == m_trace_labelpoints.end()) {
-      return;
-    }
-    if (it->trace_point->setGraphValue(new_position)) {
-      updateSingleTraceLabelTextsAndBoundsInternal(&(*it), graph_attributes);
-    }
+  const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
+  auto it = m_trace_labelpoints.erase(tlp_it, tlp_it);  // remove const for ::const_iterator
+
+  if (it != m_trace_labelpoints.end() &&
+      it->trace_point->setGraphValue(new_position)) {
+    updateSingleTraceLabelTextsAndBoundsInternal(&(*it), graph_attributes);
+
+    return true;
   }
+
+  return false;
 }
 
 bool Trace::setCornerPositionForLabelAssociatedWith(
@@ -153,8 +161,8 @@ bool Trace::setCornerPositionForLabelAssociatedWith(
   else if (!is_x_pos && !is_y_pos)
     trace_label_corner_pos = TraceLabelCornerPosition::bottom_right;
 
-  if (it->trace_label_corner_pos != trace_label_corner_pos) {
-    it->trace_label_corner_pos = trace_label_corner_pos;
+  if (it->trace_label->trace_label_corner_pos != trace_label_corner_pos) {
+    it->trace_label->trace_label_corner_pos = trace_label_corner_pos;
     return true;
   }
 
@@ -215,7 +223,7 @@ void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
         lnf->getTracePointPositionFrom(graph_attributes, graph_values) +
         graph_attributes.graph_bounds.getPosition();
 
-    switch (tlp->trace_label_corner_pos) {
+    switch (tlp->trace_label->trace_label_corner_pos) {
       case TraceLabelCornerPosition::top_left:
         trace_bounds.setPosition(trace_position);
         break;

@@ -530,8 +530,16 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
       const auto [closest_data_point, nearest_graph_line] =
           findNearestGraphPoint(mouse_pos.toFloat(), associated_graph_line);
 
-      m_trace->setGraphPositionFor(event.eventComponent, closest_data_point,
-                                   m_graph_params);
+      const auto prev_graph_point =
+          onTraceValueChange ? m_trace->getGraphPosition(event.eventComponent)
+                             : juce::Point<float>();
+
+      if (m_trace->setGraphPositionFor(event.eventComponent, closest_data_point,
+                                       m_graph_params)) {
+        if (onTraceValueChange) {
+          onTraceValueChange(this, prev_graph_point, closest_data_point);
+        }
+      }
     } else if (m_trace->isComponentTraceLabel(event.eventComponent)) {
       auto bounds = event.eventComponent->getBounds();
 

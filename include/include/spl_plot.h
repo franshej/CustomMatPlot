@@ -199,6 +199,19 @@ class Plot : public juce::Component {
 
   //==============================================================================
 
+  /** @brief This lamda is triggerd when a tracepoint value is changed.
+   *
+   * @param current_plot poiter to this plot.
+   * @param previous_trace_point previous tracepoint value.
+   * @param new_trace_point the new tracepoint value.
+   */
+  std::function<void(Plot* current_plot,
+                     juce::Point<float> previous_trace_point,
+                     juce::Point<float> new_trace_point)>
+      onTraceValueChange = nullptr;
+
+  //==============================================================================
+
   /** @brief A set of colour IDs to use to change the colour of various aspects
    *  of the Plot.
    *

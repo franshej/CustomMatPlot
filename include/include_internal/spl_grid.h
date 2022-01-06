@@ -18,6 +18,7 @@
 #include "scp_internal_datamodels.h"
 
 namespace scp {
+// TODO: Remove this parameters stuff.
 /**
  * A Parameter struct
  * Containing parameters for grid bounds and limits of the grids.
@@ -151,7 +152,7 @@ class Grid : public juce::Component {
 
   /** @brief This lamda is trigged when the number of graph lines are changed.
    *
-   *  @param Grid pointer to this.
+   *  @param Grid pointer to this grid.
    *  @return void.
    */
   std::function<void(Grid*)> onNumGridsChange = nullptr;
