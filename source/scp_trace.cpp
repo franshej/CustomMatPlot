@@ -54,7 +54,7 @@ Trace::~Trace() {
 
 const GraphLine* Trace::getAssociatedGraphLine(
     const juce::Component* trace_point) const {
-  const auto it = findTraceLabelIteratorFromComponent(trace_point);
+  const auto it = findTraceLabelPointIteratorFrom(trace_point);
   if (it == m_trace_labelpoints.end())
     return nullptr;
   else
@@ -110,9 +110,38 @@ void Trace::setGraphPositionFor(juce::Component* trace_point,
   }
 }
 
+void Trace::setCornerPositionForLabelAssociatedWith(
+    juce::Component* trace_point, const juce::Point<int>& mouse_position) {
+  const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
+
+  auto it = m_trace_labelpoints.erase(
+      tlp_it, tlp_it);  // remove const for ::const_iterator
+
+  const auto dxdy = mouse_position - it->trace_point->getBounds().getPosition();
+
+  const auto is_x_pos = dxdy.getX() > 0;
+  const auto is_y_pos = dxdy.getY() > 0;
+
+  if (is_x_pos && is_y_pos)
+    it->trace_label_corner_pos = TraceLabelCornerPosition::top_left;
+  else if (is_x_pos && !is_y_pos)
+    it->trace_label_corner_pos = TraceLabelCornerPosition::bottom_left;
+  else if (!is_x_pos && is_y_pos)
+    it->trace_label_corner_pos = TraceLabelCornerPosition::top_right;
+  else if (!is_x_pos && !is_y_pos)
+    it->trace_label_corner_pos = TraceLabelCornerPosition::bottom_right;
+}
+
 bool Trace::isComponentTracePoint(const juce::Component* component) const {
-  return findTraceLabelIteratorFromComponent(component) !=
-         m_trace_labelpoints.end();
+  return dynamic_cast<const TracePoint_f*>(component) &&
+         findTraceLabelPointIteratorFrom(component) !=
+             m_trace_labelpoints.end();
+}
+
+bool Trace::isComponentTraceLabel(const juce::Component* component) const {
+  return dynamic_cast<const TraceLabel_f*>(component) &&
+         findTraceLabelPointIteratorFrom(component) !=
+             m_trace_labelpoints.end();
 }
 
 void Trace::addSingleTracePointAndLabel(
@@ -157,7 +186,29 @@ void Trace::updateSingleTraceLabelTextsAndBounds(
         lnf->getTracePointPositionFrom(graph_attributes, graph_values) +
         graph_attributes.graph_bounds.getPosition();
 
-    trace_bounds.setPosition(trace_position);
+    switch (tlp->trace_label_corner_pos) {
+      case TraceLabelCornerPosition::top_left:
+        trace_bounds.setPosition(trace_position);
+        break;
+      case TraceLabelCornerPosition::top_right:
+        trace_bounds.setPosition(
+            trace_position.getX() - trace_bounds.getWidth(),
+            trace_position.getY());
+        break;
+      case TraceLabelCornerPosition::bottom_left:
+        trace_bounds.setPosition(
+            trace_position.getX(),
+            trace_position.getY() - trace_bounds.getHeight());
+        break;
+      case TraceLabelCornerPosition::bottom_right:
+        trace_bounds.setPosition(
+            trace_position.getX() - trace_bounds.getWidth(),
+            trace_position.getY() - trace_bounds.getHeight());
+        break;
+      default:
+        break;
+    }
+
     tlp->trace_label->setBounds(trace_bounds);
 
     auto trace_point_bounds = lnf->getTracePointLocalBounds();
@@ -174,11 +225,12 @@ void Trace::updateTracePointsLookAndFeel() {
 }
 
 std::vector<TraceLabelPoint_f>::const_iterator
-Trace::findTraceLabelIteratorFromComponent(
-    const juce::Component* trace_point) const {
+Trace::findTraceLabelPointIteratorFrom(
+    const juce::Component* trace_point_or_label) const {
   return std::find_if(m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
-                      [trace_point](const auto& tpl) {
-                        return tpl.trace_point.get() == trace_point;
+                      [&trace_point_or_label](const auto& tpl) {
+                        return tpl.trace_point.get() == trace_point_or_label ||
+                               tpl.trace_label.get() == trace_point_or_label;
                       });
 }
 

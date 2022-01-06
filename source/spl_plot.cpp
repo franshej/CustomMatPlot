@@ -532,6 +532,16 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
 
       m_trace->setGraphPositionFor(event.eventComponent, closest_data_point,
                                    m_graph_params);
+    } else if (m_trace->isComponentTraceLabel(event.eventComponent)) {
+      auto bounds = event.eventComponent->getBounds();
+
+      const auto mouse_pos =
+          bounds.getPosition() +
+          event.getEventRelativeTo(event.eventComponent).getPosition();
+
+        m_trace->setCornerPositionForLabelAssociatedWith(event.eventComponent, mouse_pos);
+
+        m_trace->updateTracePointBoundsFrom(m_graph_params);
     }
   }
 }

@@ -18,13 +18,28 @@
 
 namespace scp {
 
+/** @brief The label corner that is located at the tracepoint center.  */
+enum class TraceLabelCornerPosition {
+  top_left,
+  top_right,
+  bottom_left,
+  bottom_right
+};
+
 /** @brief A struct that defines a tracepoint. */
 template <class ValueType>
 struct TracePoint : public juce::Component {
+#if ((defined(_MSVC_LANG) && _MSVC_LANG > 201703L) || __cplusplus > 201703L)
   /** Spaceship */
   constexpr bool operator<=>(const TracePoint<ValueType>& rhs) {
     return this->getPosition() <=> rhs.getPosition();
   }
+#else
+  /** No spaceship  :( */
+  constexpr bool operator==(const TracePoint<ValueType>& rhs) {
+    return this->getPosition() == rhs.getPosition();
+  }
+#endif
 
   /** Compare with juce point. */
   constexpr bool operator==(const juce::Point<ValueType>& other_graph_values) {
@@ -80,6 +95,8 @@ struct TraceLabelPoint {
   std::unique_ptr<TraceLabel<ValueType>> trace_label;
   std::unique_ptr<TracePoint<ValueType>> trace_point;
   const GraphLine* associated_graph_line{nullptr};
+  TraceLabelCornerPosition trace_label_corner_pos{
+      TraceLabelCornerPosition::top_left};
 };
 
 /** @breif A struct that defines a tracelabel and a tracepoint using floats. */
@@ -142,10 +159,20 @@ class Trace {
    * @param graph_attributes common graph attributes.
    * @param trace_point the tracepoint that will have the new position.
    * @param new_position the new position for the tracepoint.
+   * @return void.
    */
   void setGraphPositionFor(juce::Component* trace_point,
                            const juce::Point<float>& new_position,
                            const GraphAttributesView& graph_attributes);
+
+  /** @breif Set the coner position of a single tracelabel.
+   *
+   * @param trace_point the associated tracepoint.
+   * @param mouse_position the position of the mouse.
+   * @return void.
+   */
+  void setCornerPositionForLabelAssociatedWith(juce::Component* trace_point,
+                            const juce::Point<int>& mouse_position);
 
   /** @brief Check if a juce::Component* is one of the added tracepoints.
    *
@@ -153,6 +180,13 @@ class Trace {
    * @return bool true if the component is one of the tracepoints.
    */
   bool isComponentTracePoint(const juce::Component* component) const;
+
+  /** @brief Check if a juce::Component* is one of the added tracelabels.
+   *
+   * @param component a juce component
+   * @return bool true if the component is one of the tracelabels.
+   */
+  bool isComponentTraceLabel(const juce::Component* component) const;
 
  private:
   /** @internal */
@@ -170,7 +204,7 @@ class Trace {
   void updateTracePointsLookAndFeel();
   /** @internal */
   std::vector<TraceLabelPoint_f>::const_iterator
-  findTraceLabelIteratorFromComponent(const juce::Component* trace_point) const;
+  findTraceLabelPointIteratorFrom(const juce::Component* trace_point) const;
   /** @internal */
   juce::LookAndFeel* m_lookandfeel;
   /** @internal */
