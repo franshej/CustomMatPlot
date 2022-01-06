@@ -46,8 +46,8 @@ struct TracePoint : public juce::Component {
     return m_graph_values == other_graph_values;
   }
 
-  /** Set the graph value. */
-  void setGraphValue(const juce::Point<ValueType>& graph_value);
+  /** Set the graph value. return true if succeded */
+  bool setGraphValue(const juce::Point<ValueType>& graph_value);
 
   /** @internal */
   void resized() override;

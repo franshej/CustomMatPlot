@@ -4,9 +4,13 @@
 
 namespace scp {
 template <class ValueType>
-void TracePoint<ValueType>::setGraphValue(
+bool TracePoint<ValueType>::setGraphValue(
     const juce::Point<ValueType>& graph_value) {
-  m_graph_values = graph_value;
+  if (m_graph_values != graph_value) {
+    m_graph_values = graph_value;
+    return true;
+  }
+  return false;
 }
 
 template <class ValueType>
@@ -120,8 +124,9 @@ void Trace::setGraphPositionFor(juce::Component* trace_point,
     if (it == m_trace_labelpoints.end()) {
       return;
     }
-    it->trace_point->setGraphValue(new_position);
-    updateSingleTraceLabelTextsAndBoundsInternal(&(*it), graph_attributes);
+    if (it->trace_point->setGraphValue(new_position)) {
+      updateSingleTraceLabelTextsAndBoundsInternal(&(*it), graph_attributes);
+    }
   }
 }
 
