@@ -44,11 +44,41 @@ void Grid::updateGridInternal(const GraphAttributesView &graph_attributes) {
 
   createLabels(graph_attributes);
 
-  if (onNumGridsChange && m_num_last_x_labels != m_x_axis_labels.size() &&
-      m_last_num_y_labels != m_y_axis_labels.size()) {
-    m_num_last_x_labels = m_x_axis_labels.size();
-    m_last_num_y_labels = m_y_axis_labels.size();
-    onNumGridsChange(this);
+  if (onGridLabelLengthChanged && m_lookandfeel) {
+    const auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
+    const auto font = lnf->getGridLabelFont();
+
+    auto longest_label_x_axis = 0;
+    for (const auto &label : m_x_axis_labels) {
+      const auto current_label_length = font.getStringWidth(label.first);
+      if (current_label_length > longest_label_x_axis) {
+        longest_label_x_axis = current_label_length;
+      }
+    }
+
+    auto longest_label_y_axis = 0;
+    for (const auto &label : m_y_axis_labels) {
+      const auto current_label_length = font.getStringWidth(label.first);
+      if (current_label_length > longest_label_y_axis) {
+        longest_label_y_axis = current_label_length;
+      }
+    }
+
+    if (longest_label_x_axis >
+            (m_longest_x_axis_label_last_cb_triggerd + lnf->getMargin()) ||
+        longest_label_y_axis >
+            (m_longest_y_axis_label_last_cb_triggerd + lnf->getMargin()) ||
+        float(longest_label_x_axis) <
+            std::abs(float(m_longest_x_axis_label_last_cb_triggerd -
+                           lnf->getMargin())) ||
+        float(longest_label_y_axis) <
+            std::abs(float(m_longest_y_axis_label_last_cb_triggerd -
+                           lnf->getMargin()))
+    ) {
+      m_longest_x_axis_label_last_cb_triggerd = longest_label_x_axis;
+      m_longest_y_axis_label_last_cb_triggerd = longest_label_y_axis;
+      onGridLabelLengthChanged(this);
+    }
   }
 }
 

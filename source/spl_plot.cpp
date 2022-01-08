@@ -92,7 +92,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   m_trace_button->setRadioGroupId(TraceZoomButtons);
   m_zoom_button->setRadioGroupId(TraceZoomButtons);
 
-  m_grid->onNumGridsChange = [this](scp::Grid* grid) {
+  m_grid->onGridLabelLengthChanged = [this](scp::Grid* grid) {
     this->resizeChilderns();
   };
   m_zoom_button->onClick = [this] { /** m_trace->toBehind(m_zoom.get()); */ };

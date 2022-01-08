@@ -151,12 +151,13 @@ class Grid : public juce::Component {
    */
   const std::pair<int, int> getMaxGridLabelWidth() const noexcept;
 
-  /** @brief This lamda is trigged when the number of graph lines are changed.
+  /** @brief This lamda is trigged when the length of a gridline exceeds the
+   *  margin.
    *
    *  @param Grid pointer to this grid.
    *  @return void.
    */
-  std::function<void(Grid*)> onNumGridsChange = nullptr;
+  std::function<void(Grid*)> onGridLabelLengthChanged = nullptr;
 
   //==============================================================================
   /** @internal */
@@ -190,6 +191,8 @@ class Grid : public juce::Component {
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::size_t m_max_width_x, m_max_width_y;
   std::size_t m_num_last_x_labels, m_last_num_y_labels;
+  std::size_t m_longest_x_axis_label_last_cb_triggerd{0};
+  std::size_t m_longest_y_axis_label_last_cb_triggerd{0};
   std::vector<juce::Path> m_grid_path;
 
   juce::LookAndFeel* m_lookandfeel;

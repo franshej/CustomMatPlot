@@ -259,7 +259,7 @@ template <class ValueType>
 [[nodiscard]] std::pair<std::string, std::string> valueToString(
     const ValueType value, const GraphAttributesView& graph_attributes,
     const bool is_x,
-    const std::size_t size_of_exponent_before_factor =
+    [[maybe_unused]] const std::size_t size_of_exponent_before_factor =
         std::numeric_limits<std::size_t>::max()) {
   static_assert(std::is_same<float, ValueType>::value ||
                     std::is_same<const float, ValueType>::value ||
@@ -273,8 +273,8 @@ template <class ValueType>
     jassertfalse;
   }
 
-  const auto max_exp = lims.max > 0 ? std::log10(abs(lims.max)) : 0;
-  const auto min_exp = lims.min > 0 ? std::log10(abs(lims.min)) : 0;
+  const auto max_exp = lims.max != 0 ? std::log10(abs(lims.max)) : 0;
+  const auto min_exp = lims.min != 0 ? std::log10(abs(lims.min)) : 0;
 
   const auto max_abs_exp = std::ceil(abs(max_exp));
   const auto min_abs_exp = std::ceil(abs(min_exp));
@@ -291,14 +291,11 @@ template <class ValueType>
       return {min_exp, min_abs_exp};
   }();
 
-  const auto should_factor_out =
-      exp_diff < ValueType(size_of_exponent_before_factor) &&
-      largest_abs_exp >= ValueType(size_of_exponent_before_factor);
-
   std::string factor_text = "";
   std::string value_text = "";
 
-  if (should_factor_out) {
+  // Not used atm.
+  if constexpr (false) {
     const auto factor = ValueType(std::pow(10.0, largest_abs_exp));
 
     lims /= factor;
@@ -310,16 +307,22 @@ template <class ValueType>
   }
 
   const auto lims_diff = lims.max - lims.min;
+  const auto lims_diff_log = std::log10(lims_diff);
 
-  auto num_digits_diff = lims_diff < 1 ? 3 : 1;
+  auto num_digits_diff =
+      lims_diff_log < 0 ? std::abs(lims_diff_log) + 2 : lims_diff_log;
 
-  num_digits_diff += std::ceil(std::abs(std::log10(lims_diff)));
-
-  const auto num_digits_before_sign =
-      num_digits_diff > largest_abs_exp ? num_digits_diff : largest_abs_exp;
+  auto num_digits_before_sign = 0;
+  if (lims_diff_log >= 0 && largest_exp >= 0) {
+    num_digits_before_sign += largest_abs_exp;
+  } else if (lims_diff_log < 0 && largest_exp > 0) {
+    num_digits_before_sign += largest_abs_exp + num_digits_diff;
+  } else if (lims_diff_log < 0 && largest_exp < 0) {
+    num_digits_before_sign += std::max(num_digits_diff, largest_abs_exp);
+  }
 
   const auto num_digits_before_exponent_sign =
-      num_digits_before_sign + int(value < 0);
+      std::ceil(num_digits_before_sign) + int(value < 0);
 
   const auto num_digits_before_checking_ending_character =
       num_digits_before_exponent_sign + 2 * int(largest_exp < 0);
@@ -328,10 +331,11 @@ template <class ValueType>
       value_text.substr(0u, num_digits_before_checking_ending_character);
 
   if (value_text_out.back() == '.') {
-      value_text_out = value_text.substr(0u, num_digits_before_checking_ending_character + 1);
+    value_text_out =
+        value_text.substr(0u, num_digits_before_checking_ending_character + 1);
   }
 
-  return { value_text_out, factor_text};
+  return {value_text_out, factor_text};
 }
 
 const auto getMaximumLabelWidth =
