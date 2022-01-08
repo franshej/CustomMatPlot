@@ -70,7 +70,8 @@ typedef TracePoint<float> TracePoint_f;
 template <class ValueType>
 struct TraceLabel : public juce::Component {
   /** Set the graph labels from point. */
-  void setGraphLabelFrom(const juce::Point<ValueType>& graph_value);
+  void setGraphLabelFrom(const juce::Point<ValueType>& graph_value,
+                         const GraphAttributesView& graph_attributes);
 
   /** @internal */
   void resized() override;
@@ -150,7 +151,7 @@ class Trace {
    * @param graph_attributes common graph attributes.
    * @return void.
    */
-  void updateTracePointBoundsFrom(const GraphAttributesView& graph_attributes);
+  void updateTracePointsBoundsFrom(const GraphAttributesView& graph_attributes);
 
   /** @brief Update a single tracepoint bounds from graph attributes.
    *

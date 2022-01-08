@@ -129,7 +129,7 @@ void Plot::updateYLim(const float min, const float max) {
 
 void Plot::updateGridGraphsTrace() {
   m_grid->updateGrid();
-  m_trace->updateTracePointBoundsFrom(m_graph_params);
+  m_trace->updateTracePointsBoundsFrom(m_graph_params);
 
   for (const auto& graph_line : m_graph_lines) {
     graph_line->updateXGraphPoints();
@@ -496,7 +496,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
           findNearestGraphPoint(mouse_pos, nullptr);
 
       m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
-      m_trace->updateTracePointBoundsFrom(m_graph_params);
+      m_trace->updateTracePointsBoundsFrom(m_graph_params);
       m_trace->addAndMakeVisibleTo(this);
     }
   }

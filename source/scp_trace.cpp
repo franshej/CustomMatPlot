@@ -15,16 +15,18 @@ bool TracePoint<ValueType>::setGraphValue(
 
 template <class ValueType>
 void TraceLabel<ValueType>::setGraphLabelFrom(
-    const juce::Point<ValueType>& graph_value) {
+    const juce::Point<ValueType>& graph_value,
+    const GraphAttributesView& graph_attribute) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+
     m_x_label.first =
-        "X: " + convertFloatToString<ValueType>(graph_value.getX(), 2, 6);
+        "X: " + valueToString(graph_value.getX(), graph_attribute, true).first;
     m_y_label.first =
-        "Y: " + convertFloatToString<ValueType>(graph_value.getY(), 2, 6);
+        "Y: " + valueToString(graph_value.getY(), graph_attribute, false).first;
 
     const auto [x_label_bounds, y_label_bounds] =
-        lnf->getTraceXYLabelBounds(m_x_label.first, m_x_label.first);
+        lnf->getTraceXYLabelBounds(m_x_label.first, m_y_label.first);
 
     m_x_label.second = x_label_bounds;
     m_y_label.second = y_label_bounds;
@@ -88,7 +90,7 @@ void Trace::addOrRemoveTracePoint(
   }
 }
 
-void Trace::updateTracePointBoundsFrom(
+void Trace::updateTracePointsBoundsFrom(
     const GraphAttributesView& graph_attributes) {
   for (auto& tlp : m_trace_labelpoints) {
     updateSingleTraceLabelTextsAndBoundsInternal(&tlp, graph_attributes);
@@ -210,7 +212,7 @@ void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
     const auto graph_values = tlp->trace_point->m_graph_values;
-    tlp->trace_label->setGraphLabelFrom(graph_values);
+    tlp->trace_label->setGraphLabelFrom(graph_values, graph_attributes);
 
     const auto x_bound = tlp->trace_label->m_x_label.second;
     const auto y_bound = tlp->trace_label->m_y_label.second;

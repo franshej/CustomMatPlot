@@ -65,6 +65,24 @@ template <class ValueType>
 struct Lim {
   ValueType min;
   ValueType max;
+
+  constexpr Lim<ValueType>& operator/=(const ValueType val) {
+    min /= val;
+    max /= val;
+
+    return *this;
+  }
+};
+
+template <class ValueType>
+constexpr Lim<ValueType> operator/(const Lim<ValueType>& rhs,
+                                   const ValueType val) {
+  Lim<ValueType> new_lim;
+
+  new_lim.min = rhs.min / val;
+  new_lim.max = rhs.max / val;
+
+  return move(new_lim);
 };
 
 /** @brief A struct that defines min and max using float. */
@@ -179,7 +197,7 @@ constexpr auto getXGraphValueLinear =
 };
 
 constexpr auto getYGraphValueLinear = [](const float y, const float y_scale,
-                                          const float y_offset) -> float {
+                                         const float y_offset) -> float {
   return y_offset - (y * y_scale);
 };
 
@@ -236,6 +254,78 @@ constexpr auto getYScaleAndOffset =
 };
 
 /*============================================================================*/
+
+template <class ValueType>
+[[nodiscard]] std::pair<std::string, std::string> valueToString(
+    const ValueType value, const GraphAttributesView& graph_attributes,
+    const bool is_x,
+    const std::size_t size_of_exponent_before_factor =
+        std::numeric_limits<std::size_t>::max()) {
+  static_assert(std::is_same<float, ValueType>::value ||
+                    std::is_same<const float, ValueType>::value ||
+                    std::is_same<double, ValueType>::value ||
+                    std::is_same<const double, ValueType>::value,
+                "Type must be either float or double");
+  auto lims = is_x ? graph_attributes.x_lim : graph_attributes.y_lim;
+
+  if (lims.min == 0.f && lims.max == 0.f) {
+    // Either min or max must be non zero.
+    jassertfalse;
+  }
+
+  const auto max_exp = lims.max > 0 ? std::log10(abs(lims.max)) : 0;
+  const auto min_exp = lims.min > 0 ? std::log10(abs(lims.min)) : 0;
+
+  const auto max_abs_exp = std::ceil(abs(max_exp));
+  const auto min_abs_exp = std::ceil(abs(min_exp));
+
+  const auto exp_diff = max_exp - min_exp;
+
+  const auto [largest_exp,
+              largest_abs_exp] = [&]() -> std::pair<ValueType, ValueType> {
+    if (max_abs_exp > min_abs_exp)
+      return {max_exp, max_abs_exp};
+    else
+      return {min_exp, min_abs_exp};
+  }();
+
+  const auto should_factor_out =
+      exp_diff < ValueType(size_of_exponent_before_factor) &&
+      largest_abs_exp >= ValueType(size_of_exponent_before_factor);
+
+  std::string factor_text = "";
+  std::string value_text = "";
+
+  if (should_factor_out) {
+    const auto factor = ValueType(std::pow(10.0, largest_abs_exp));
+
+    lims /= factor;
+
+    factor_text = "1e" + std::to_string(int(largest_exp));
+    value_text = std::to_string(value / factor);
+  } else {
+    value_text = std::to_string(value);
+  }
+
+  const auto num_digits_diff =
+      std::size_t(std::ceil(std::log10(abs(lims.max - lims.min))));
+
+  const auto num_digits_before_sign =
+      num_digits_diff > largest_abs_exp ? num_digits_diff : largest_abs_exp;
+
+  const auto num_digits_before_exponent_sign =
+      num_digits_before_sign + int(value < 0);
+
+  const auto num_digits_before_checking_ending_character =
+      num_digits_before_exponent_sign + 2 * int(largest_exp < 0);
+
+  value_text =
+      value_text.substr(0u, num_digits_before_checking_ending_character);
+
+  if (value_text.back() == '.') value_text.pop_back();
+
+  return {value_text, factor_text};
+}
 
 template <class float_type>
 [[nodiscard]] const std::string convertFloatToString(
