@@ -283,7 +283,9 @@ template <class ValueType>
 
   const auto [largest_exp,
               largest_abs_exp] = [&]() -> std::pair<ValueType, ValueType> {
-    if (max_abs_exp > min_abs_exp)
+    if (max_abs_exp < 2 && min_abs_exp < 2)
+      return {2, 2};
+    else if (max_abs_exp > min_abs_exp)
       return {max_exp, max_abs_exp};
     else
       return {min_exp, min_abs_exp};
@@ -307,8 +309,11 @@ template <class ValueType>
     value_text = std::to_string(value);
   }
 
-  const auto num_digits_diff =
-      std::size_t(std::ceil(std::log10(abs(lims.max - lims.min))));
+  const auto lims_diff = lims.max - lims.min;
+
+  auto num_digits_diff = lims_diff < 1 ? 3 : 1;
+
+  num_digits_diff += std::ceil(std::abs(std::log10(lims_diff)));
 
   const auto num_digits_before_sign =
       num_digits_diff > largest_abs_exp ? num_digits_diff : largest_abs_exp;
@@ -319,51 +324,14 @@ template <class ValueType>
   const auto num_digits_before_checking_ending_character =
       num_digits_before_exponent_sign + 2 * int(largest_exp < 0);
 
-  value_text =
+  auto value_text_out =
       value_text.substr(0u, num_digits_before_checking_ending_character);
 
-  if (value_text.back() == '.') value_text.pop_back();
-
-  return {value_text, factor_text};
-}
-
-template <class float_type>
-[[nodiscard]] const std::string convertFloatToString(
-    const float_type value, const std::size_t num_decimals,
-    const std::size_t max_string_len) {
-  if constexpr (!(std::is_same<float, float_type>::value ||
-                  std::is_same<const float, float_type>::value ||
-                  std::is_same<double, float_type>::value ||
-                  std::is_same<const double, float_type>::value)) {
-    throw std::invalid_argument("Type must be either float or double");
-  }
-  const auto pow_of_ten = value == 0.f ? 0 : int(floor(log10(abs(value))));
-  const auto is_neg = std::size_t(value < 0);
-
-  auto text_out = std::to_string(value);
-
-  const auto len_before_dec = pow_of_ten < 0
-                                  ? std::size_t(abs(float(pow_of_ten)))
-                                  : std::size_t(pow_of_ten) + 1u;
-  const auto req_len = len_before_dec + is_neg + num_decimals + 1 /* 1 = dot */;
-
-  if (max_string_len < req_len) {
-    if (pow_of_ten >= 0) {
-      const auto two_decimals =
-          text_out.substr(is_neg + std::size_t(pow_of_ten) + 1u, 3);
-      const auto first_digit = text_out.substr(0, 1u + is_neg);
-      text_out = first_digit + two_decimals + "e" + std::to_string(pow_of_ten);
-    } else {
-      auto three_decimals = text_out.substr(len_before_dec + is_neg + 1u, 4);
-      three_decimals.insert(0, ".");
-      text_out = std::to_string(-1 * is_neg) + three_decimals + "e" +
-                 std::to_string(pow_of_ten);
-    }
-  } else {
-    text_out = text_out.substr(0, len_before_dec + is_neg + 1u + num_decimals);
+  if (value_text_out.back() == '.') {
+      value_text_out = value_text.substr(0u, num_digits_before_checking_ending_character + 1);
   }
 
-  return text_out;
+  return { value_text_out, factor_text};
 }
 
 const auto getMaximumLabelWidth =

@@ -139,9 +139,10 @@ class Grid : public juce::Component {
    *  This function updates the grid if any new parameter is set. Should be
    *  called after an parameter is set to update the grid.
    *
+   *  @param graph_attributes common graph attributes.
    *  @return void.
    */
-  void updateGrid();
+  void updateGrid(const GraphAttributesView& graph_attributes);
 
   /** @brief Get the max width of the x and y-labels
    *
@@ -177,9 +178,9 @@ class Grid : public juce::Component {
   void createAutoGridTicks(std::vector<float>& x_ticks,
                            std::vector<float>& y_ticks);
 
-  void createLabels();
+  void createLabels(const GraphAttributesView& graph_attributes);
 
-  void updateGridInternal();
+  void updateGridInternal(const GraphAttributesView& graph_attributes);
 
   void addGridLines(const std::vector<float>& ticks,
                     const GridLine::Direction direction);

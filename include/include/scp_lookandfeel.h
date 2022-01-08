@@ -748,13 +748,14 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return m_y_scaling;
   };
 
-  void updateGridLabels(const juce::Rectangle<int>& graph_bound,
+  void updateGridLabels(const GraphAttributesView& graph_attributes,
                         const std::vector<GridLine>& grid_lines,
                         StringVector& x_custom_label_ticks,
                         StringVector& y_custom_label_ticks,
                         LabelVector& x_axis_labels_out,
                         LabelVector& y_axis_labels_out) override {
-    const auto [x, y, width, height] = getRectangleMeasures<int>(graph_bound);
+    const auto [x, y, width, height] =
+        getRectangleMeasures<int>(graph_attributes.graph_bounds);
     const auto font = getGridLabelFont();
 
     const auto num_horizonal_lines =
@@ -828,15 +829,15 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           const auto label =
               use_custom_x_labels
                   ? getNextCustomLabel(custom_x_labels_reverse_it)
-                  : convertFloatToString(tick, 2,
-                                         getMaximumAllowedCharacterGridLabel());
+                  : valueToString(tick, graph_attributes, true).first;
 
           const auto [label_width, label_height] =
               getLabelWidthAndHeight(font, label);
 
           const auto bound = juce::Rectangle<int>(
               int(position.x) - label_width / 2,
-              graph_bound.getBottom() + getMargin(), label_width, label_height);
+              graph_attributes.graph_bounds.getBottom() + getMargin(),
+              label_width, label_height);
 
           checkInterectionWithLastLabelAndAdd(x_last_label_bound,
                                               x_axis_labels_out, label, bound);
@@ -845,8 +846,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           const auto label =
               use_custom_y_labels
                   ? getNextCustomLabel(custom_y_labels_reverse_it)
-                  : convertFloatToString(tick, 2,
-                                         getMaximumAllowedCharacterGridLabel());
+                  : valueToString(tick, graph_attributes, false).first;
 
           const auto [label_width, label_height] =
               getLabelWidthAndHeight(font, label);

@@ -128,7 +128,7 @@ void Plot::updateYLim(const float min, const float max) {
 }
 
 void Plot::updateGridGraphsTrace() {
-  m_grid->updateGrid();
+  m_grid->updateGrid(m_graph_params);
   m_trace->updateTracePointsBoundsFrom(m_graph_params);
 
   for (const auto& graph_line : m_graph_lines) {

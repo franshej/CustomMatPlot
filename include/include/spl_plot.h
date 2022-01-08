@@ -415,7 +415,7 @@ class Plot : public juce::Component {
         GraphPoints& graph_points) noexcept = 0;
 
     /** Updates both the vertical and horizontal grid labels. */
-    virtual void updateGridLabels(const juce::Rectangle<int>& graph_bounds,
+    virtual void updateGridLabels(const GraphAttributesView& graph_attributes,
                                   const std::vector<GridLine>& grid_lines,
                                   StringVector& x_label_ticks,
                                   StringVector& y_label_ticks,

@@ -11,22 +11,15 @@ namespace scp {
 
 /*============================================================================*/
 
-void Grid::createLabels() {
+void Grid::createLabels(const GraphAttributesView &graph_attributes) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    const auto graph_bounds = juce::Rectangle<int>(m_config_params.grid_area);
-    lnf->updateGridLabels(graph_bounds, m_grid_lines, m_custom_x_labels,
+    lnf->updateGridLabels(graph_attributes, m_grid_lines, m_custom_x_labels,
                           m_custom_y_labels, m_x_axis_labels, m_y_axis_labels);
   }
 }
 
-void Grid::updateGridInternal() {
-  if (!m_config_params.x_lim || !m_config_params.y_lim) {
-    // Both x_lim and y_lim must be set.
-    jassertfalse;
-    return;
-  }
-
+void Grid::updateGridInternal(const GraphAttributesView &graph_attributes) {
   if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
     // width and height must be larger than zero.
     jassertfalse;
@@ -49,7 +42,7 @@ void Grid::updateGridInternal() {
   addGridLines(x_ticks, GridLine::Direction::vertical);
   addGridLines(y_ticks, GridLine::Direction::horizontal);
 
-  createLabels();
+  createLabels(graph_attributes);
 
   if (onNumGridsChange && m_num_last_x_labels != m_x_axis_labels.size() &&
       m_last_num_y_labels != m_y_axis_labels.size()) {
@@ -176,7 +169,9 @@ void Grid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
 }
 
-void Grid::updateGrid() { updateGridInternal(); }
+void Grid::updateGrid(const GraphAttributesView &graph_attributes) {
+  updateGridInternal(graph_attributes);
+}
 
 void Grid::resized() {}
 void Grid::setGridBounds(const juce::Rectangle<int> &grid_area) {
