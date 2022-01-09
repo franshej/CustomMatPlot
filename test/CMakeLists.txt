@@ -1,1 +1,2 @@
-add_subdirectory(gui)
+add_subdirectory(gui/non_realtime)
+add_subdirectory(gui/realtime)
