@@ -1,12 +1,11 @@
-1. Fix string to float
-2. RTPlot
-4. Plot Symbols
-5. Examples
-6. Rename to Custom Math Plot
-7. Readme
-8. First Release
-9. (Google Tests)
-10. Replace all const string& with string_view
-11. CI/CD
-12. Use constexpr math lib
-13. Set resizing timer on graph_line for smoother resizing
+1. RTPlot
+2. Plot Symbols
+3. Examples
+4. Rename to Custom Math Plot
+5. Readme
+6. First Release
+7. (Google Tests)
+8. Replace all const string& with string_view
+9. CI/CD
+10. Use constexpr math lib
+11. Set resizing timer on graph_line for smoother resizing
