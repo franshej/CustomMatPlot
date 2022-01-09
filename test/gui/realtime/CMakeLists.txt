@@ -16,4 +16,5 @@ target_compile_definitions(RTTestApp PRIVATE
 
 target_link_libraries(RTTestApp PRIVATE
     juce::juce_gui_extra
-    spl_plot)
+    spl_plot
+    test_utils)
