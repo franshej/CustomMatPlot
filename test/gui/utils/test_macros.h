@@ -1,27 +1,34 @@
 #pragma once
 
 #include <juce_gui_extra/juce_gui_extra.h>
-#include <spl_plot.h>
 
-#include "non_rt_test_handler.h"
+#include "spl_plot.h"
+#include "test_utils.h"
 
-#define TEST(f)                                                     \
+#define TEST(f, category)                                           \
   static void f(juce::Component *parent_component,                  \
                 const std::string &test_name);                      \
   struct f##_t_ {                                                   \
-    f##_t_(void) { add_test<NonRTTestHandler>(&f, #f); }            \
+    f##_t_(void) { add_test(&f, #f, #category); }    \
   };                                                                \
   static std::unique_ptr<f##_t_> f##_ = std::make_unique<f##_t_>(); \
   static void f(juce::Component *parent_component, const std::string &test_name)
 
-#define PARENT static_cast<NonRTTestHandler *>(parent_component)
+#define PARENT static_cast<TestHandler *>(parent_component)
 
 #define ADD_PLOT(TYPE)                                    \
   auto __plot_comp = std::make_unique<TYPE>();            \
   parent_component->addAndMakeVisible(__plot_comp.get()); \
-  (*(PARENT->get_plot_holder()))[test_name] = std::move(__plot_comp);
+  (*(PARENT->getPlotHolder()))[test_name].plot = std::move(__plot_comp);
 
-#define GET_PLOT PARENT->get_plot_holder()->find(test_name)->second.get()
+#define ADD_TIMER(DT_MS)                            \
+  (*(PARENT->getPlotHolder()))[test_name].timer = \
+      std::make_unique<TimerCallback>(DT_MS);
+
+#define GET_PLOT PARENT->getPlotHolder()->find(test_name)->second.plot.get()
+
+#define GET_TIMER_CB \
+  PARENT->getPlotHolder()->find(test_name)->second.timer.get()->onTimerCallback
 
 #define PLOT_Y(Y)       \
   {                     \

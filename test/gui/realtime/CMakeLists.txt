@@ -3,9 +3,7 @@ juce_add_gui_app(RTTestApp
 
 target_sources(RTTestApp PRIVATE
     rt_test_app.cpp
-    rt_tests.cpp
-    rt_test_macros.h
-    rt_test_handler.h)
+    rt_tests.cpp)
 
 target_compile_definitions(RTTestApp PRIVATE
     # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.

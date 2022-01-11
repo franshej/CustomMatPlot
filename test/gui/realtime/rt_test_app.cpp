@@ -1,4 +1,4 @@
-#include "rt_test_handler.h"
+#include "test_utils.h"
 
 //==============================================================================
 class RTTestApp  : public juce::JUCEApplication
@@ -43,7 +43,7 @@ public:
                               DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new RTTestHandler(), true);
+            setContentOwned (new TestHandler("RealTime"), true);
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);

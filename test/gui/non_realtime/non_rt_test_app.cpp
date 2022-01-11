@@ -1,4 +1,4 @@
-#include "non_rt_test_handler.h"
+#include "test_utils.h"
 
 //==============================================================================
 class NonRTTestApp  : public juce::JUCEApplication
@@ -43,7 +43,7 @@ public:
                               DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new NonRTTestHandler(), true);
+            setContentOwned (new TestHandler("NonRealTime"), true);
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
