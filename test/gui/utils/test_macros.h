@@ -9,19 +9,19 @@
   static void f(juce::Component *parent_component,                  \
                 const std::string &test_name);                      \
   struct f##_t_ {                                                   \
-    f##_t_(void) { add_test(&f, #f, #category); }    \
+    f##_t_(void) { add_test(&f, #f, #category); }                   \
   };                                                                \
   static std::unique_ptr<f##_t_> f##_ = std::make_unique<f##_t_>(); \
   static void f(juce::Component *parent_component, const std::string &test_name)
 
 #define PARENT static_cast<TestHandler *>(parent_component)
 
-#define ADD_PLOT(TYPE)                                    \
+#define ADD_PLOT_TYPE(TYPE)                               \
   auto __plot_comp = std::make_unique<TYPE>();            \
   parent_component->addAndMakeVisible(__plot_comp.get()); \
   (*(PARENT->getPlotHolder()))[test_name].plot = std::move(__plot_comp);
 
-#define ADD_TIMER(DT_MS)                            \
+#define ADD_TIMER(DT_MS)                          \
   (*(PARENT->getPlotHolder()))[test_name].timer = \
       std::make_unique<TimerCallback>(DT_MS);
 
@@ -30,35 +30,17 @@
 #define GET_TIMER_CB \
   PARENT->getPlotHolder()->find(test_name)->second.timer.get()->onTimerCallback
 
-#define PLOT_Y(Y)       \
-  {                     \
-    ADD_PLOT(scp::Plot) \
-    GET_PLOT->plot(Y);  \
-  }
+#define ADD_PLOT ADD_PLOT_TYPE(scp::Plot)
 
-#define SEMI_LOG_X(X)       \
-  {                         \
-    ADD_PLOT(scp::SemiLogX) \
-    GET_PLOT->plot(X);      \
-  }
+#define ADD_SEMI_LOG_X ADD_PLOT_TYPE(scp::SemiLogX)
 
-#define SEMI_LOG_XY(X, Y)   \
-  {                         \
-    ADD_PLOT(scp::SemiLogX) \
-    GET_PLOT->plot(X, Y);   \
-  }
+#define ADD_SEMI_LOG_Y ADD_PLOT_TYPE(scp::SemiLogY)
 
-#define SEMI_LOG_Y(Y)       \
-  {                         \
-    ADD_PLOT(scp::SemiLogY) \
-    GET_PLOT->plot(Y);      \
-  }
+#define PLOT_Y(Y) \
+  { GET_PLOT->plot(Y); }
 
-#define PLOT_XY(X, Y)     \
-  {                       \
-    ADD_PLOT(scp::Plot)   \
-    GET_PLOT->plot(Y, X); \
-  }
+#define PLOT_XY(X, Y) \
+  { GET_PLOT->plot(Y, X); }
 
 #define X_LIM(MIN, MAX) GET_PLOT->xLim(MIN, MAX);
 

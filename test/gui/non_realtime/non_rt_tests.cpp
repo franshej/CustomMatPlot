@@ -4,6 +4,8 @@
 #define PI2 6.28318530718
 
 TEST(test_xy_ticks, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
 
@@ -15,6 +17,7 @@ TEST(test_xy_ticks, NonRealTime) {
 }
 
 TEST(test_custom_x_labels, NonRealTime) {
+  ADD_PLOT;
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   const std::vector<std::string> labels = {"MMM", "Two", "Three", "Fyra",
@@ -28,6 +31,7 @@ TEST(test_custom_x_labels, NonRealTime) {
 }
 
 TEST(test_custom_y_labels, NonRealTime) {
+  ADD_PLOT;
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   const std::vector<std::string> labels = {"Ett", "Two", "Three", "Fyra",
@@ -41,17 +45,19 @@ TEST(test_custom_y_labels, NonRealTime) {
 }
 
 TEST(test_semi_log_x_1000, NonRealTime) {
+  ADD_SEMI_LOG_X;
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
 
   y_test_data[9] = 1000;
   y_test_data[99] = 1000;
 
-  SEMI_LOG_X({y_test_data});
+  PLOT_Y({y_test_data});
   GRID_ON;
 }
 
 TEST(test_semi_log_xy_1000, NonRealTime) {
+  ADD_SEMI_LOG_X;
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
 
@@ -62,32 +68,42 @@ TEST(test_semi_log_xy_1000, NonRealTime) {
   std::iota(x_test_data.begin(), x_test_data.end(), 1.f);
   for (auto &x : x_test_data) x = x * 1e-3;
 
-  SEMI_LOG_XY({y_test_data}, {x_test_data});
+  PLOT_XY({y_test_data}, {x_test_data});
   GRID_ON;
 }
 
 TEST(test_grid_on, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 0);
+
   PLOT_Y({y_test_data});
   GRID_ON;
 }
 
 TEST(test_tiny_grid_on, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 0);
+
   PLOT_Y({y_test_data});
   TINY_GRID_ON;
 }
 
 TEST(test_semi_plot_x_tiny_grid_on, NonRealTime) {
+  ADD_SEMI_LOG_X;
+
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
-  SEMI_LOG_X({y_test_data});
+  PLOT_Y({y_test_data});
   TINY_GRID_ON;
 };
 
 TEST(test_draw_flat_line, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> y_data{1, 1};
   std::vector<float> x_data{0, 9};
 
@@ -96,29 +112,41 @@ TEST(test_draw_flat_line, NonRealTime) {
 }
 
 TEST(test_linear_dashed_lines, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   const std::vector<float> dashed_lengths = {4, 8};
+
   PLOT_Y({y_test_data});
   MAKE_GRAPH_DASHED(dashed_lengths, 0);
 }
 
 TEST(test_flat_curve_10000, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> y_test_data(100000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
+
   PLOT_Y({y_test_data});
 }
 
 TEST(test_flat_curve_0p0001, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> y_test_data(100);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
   for (auto &val : y_test_data) val *= 0.00001;
+
   PLOT_Y({y_test_data});
 }
 
 TEST(test_labels, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
+
   PLOT_Y({y_test_data});
   X_LABEL("X LABEL");
   Y_LABEL("Y LABEL");
@@ -126,21 +154,29 @@ TEST(test_labels, NonRealTime) {
 }
 
 TEST(test_sinus_auto_lim, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> test_data = std::vector<float>(100);
   std::iota(test_data.begin(), test_data.end(), 0.f);
   for (auto &y : test_data) {
     y = std::sin(y * PI2 / test_data.size());
   }
+
   PLOT_Y({test_data});
 }
 
 TEST(test_ramp, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 0);
+
   PLOT_Y({y_test_data});
 }
 
 TEST(test_two_sine, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<std::vector<float>> test_data_y =
       std::vector<std::vector<float>>(2, std::vector<float>(100));
   float i = 0;
@@ -161,6 +197,8 @@ TEST(test_two_sine, NonRealTime) {
 }
 
 TEST(test_x_lim, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> test_data_y = std::vector<float>(100);
   std::iota(test_data_y.begin(), test_data_y.end(), 0.f);
   for (auto &y : test_data_y) {
@@ -175,6 +213,8 @@ TEST(test_x_lim, NonRealTime) {
 }
 
 TEST(test_y_lim, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<float> test_data_y = std::vector<float>(100);
   std::iota(test_data_y.begin(), test_data_y.end(), 0.f);
   for (auto &y : test_data_y) {
@@ -186,6 +226,8 @@ TEST(test_y_lim, NonRealTime) {
 }
 
 TEST(test_legend_6, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<std::vector<float>> test_data_y =
       std::vector<std::vector<float>>(6, std::vector<float>(100));
   std::vector<std::string> legends;
@@ -207,6 +249,8 @@ TEST(test_legend_6, NonRealTime) {
 }
 
 TEST(test_legend_2, NonRealTime) {
+  ADD_PLOT;
+
   std::vector<std::vector<float>> test_data_y =
       std::vector<std::vector<float>>(2, std::vector<float>(100));
   std::vector<std::string> legends;
@@ -228,9 +272,12 @@ TEST(test_legend_2, NonRealTime) {
 }
 
 TEST(plot_semi_log_y, NonRealTime) {
+  ADD_SEMI_LOG_Y;
+
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
-  SEMI_LOG_Y({y_test_data});
+
+  PLOT_Y({y_test_data});
   GRID_ON;
 }
 
@@ -241,10 +288,13 @@ class MyLnf : public scp::PlotLookAndFeel {
 };
 
 TEST(look_and_feel, NonRealTime) {
+  ADD_SEMI_LOG_Y;
+
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
   auto lnf = std::make_shared<MyLnf>();
+
   PARENT->lnf.emplace_back(lnf);
-  SEMI_LOG_Y({y_test_data});
+  PLOT_Y({y_test_data});
   GET_PLOT->setLookAndFeel(lnf.get());
 }
