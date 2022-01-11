@@ -9,7 +9,7 @@
   static void f(juce::Component *parent_component,                  \
                 const std::string &test_name);                      \
   struct f##_t_ {                                                   \
-    f##_t_(void) { add_test(&f, #f); }                              \
+    f##_t_(void) { add_test<RTTestHandler>(&f, #f); }               \
   };                                                                \
   static std::unique_ptr<f##_t_> f##_ = std::make_unique<f##_t_>(); \
   static void f(juce::Component *parent_component, const std::string &test_name)
@@ -19,9 +19,15 @@
 #define ADD_PLOT(TYPE)                                    \
   auto __plot_comp = std::make_unique<TYPE>();            \
   parent_component->addAndMakeVisible(__plot_comp.get()); \
-  (*(PARENT->get_plot_holder()))[test_name] = std::move(__plot_comp);
+  (*(PARENT->get_plot_holder()))[test_name].plot = std::move(__plot_comp);
 
-#define GET_PLOT PARENT->get_plot_holder()->find(test_name)->second.get()
+#define ADD_TIMER(DT_MS)                            \
+  (*(PARENT->get_plot_holder()))[test_name].timer = \
+      std::make_unique<TimerCallback>(DT_MS);
+
+#define GET_PLOT PARENT->get_plot_holder()->find(test_name)->second.plot.get()
+
+#define GET_TIMER PARENT->get_plot_holder()->find(test_name)->second.timer.get()
 
 #define PLOT_Y(Y)       \
   {                     \

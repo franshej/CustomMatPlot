@@ -8,9 +8,10 @@ class NonRTTestHandler : public juce::Component {
   NonRTTestHandler() : m_menu_label("", "Tests: ") {
     setSize(1200, 800);
 
+    // Calls all the tests added by the user.
     std::shared_ptr<node> cur;
     for (cur = NonRTTestHandler::head; cur; cur = cur->next) {
-      cur->fun_ptr(this, cur->name);
+      cur->test_item.test_function(this, cur->test_item.test_name);
     }
 
     addAndMakeVisible(m_test_menu);
@@ -33,7 +34,8 @@ class NonRTTestHandler : public juce::Component {
       }
       const auto id = m_test_menu.getSelectedId();
       if (!m_plot_holder.empty()) {
-        m_current_plot = getPlotFromID(m_plot_holder, id);
+        m_current_plot =
+            getPlotFromID<std::unique_ptr<scp::Plot>>(m_plot_holder, id).get();
         m_current_plot->setVisible(true);
       }
       resized();
@@ -74,21 +76,3 @@ class NonRTTestHandler : public juce::Component {
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NonRTTestHandler)
 };
-
-static void add_test(
-    std::function<void(juce::Component *, const std::string &)> new_fun_ptr,
-    const std::string &test_name) {
-  static std::shared_ptr<node> curr{nullptr};
-
-  if (!NonRTTestHandler::head) {
-    NonRTTestHandler::head = std::make_shared<node>();
-    NonRTTestHandler::head->fun_ptr = new_fun_ptr;
-    NonRTTestHandler::head->name = test_name;
-    curr = NonRTTestHandler::head;
-  } else {
-    curr->next = std::make_shared<node>();
-    curr->next->fun_ptr = new_fun_ptr;
-    curr->next->name = test_name;
-    curr = curr->next;
-  }
-}

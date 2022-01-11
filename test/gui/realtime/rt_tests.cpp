@@ -4,7 +4,7 @@
 
 #define PI2 6.28318530718
 
-TEST(test_xy_ticks) {
+TEST(test_xy_ticks, 10) {
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
 

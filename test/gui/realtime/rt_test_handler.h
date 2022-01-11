@@ -4,14 +4,20 @@
 
 #include "test_utils.h"
 
+struct PlotAndTimer {
+  std::unique_ptr<scp::Plot> plot;
+  std::unique_ptr<TimerCallback> timer;
+};
+
 class RTTestHandler : public juce::Component {
  public:
   RTTestHandler() : m_menu_label("", "Tests: ") {
     setSize(1200, 800);
 
+    // Calls all the test functions created by the user.
     std::shared_ptr<node> cur;
     for (cur = RTTestHandler::head; cur; cur = cur->next) {
-      cur->fun_ptr(this, cur->name);
+      cur->test_item.test_function(this, cur->test_item.test_name);
     }
 
     addAndMakeVisible(m_test_menu);
@@ -23,19 +29,20 @@ class RTTestHandler : public juce::Component {
     }
 
     for (auto &plot : m_plot_holder) {
-      plot.second->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
-                             getHeight() - getScreenArea().getHeight() / 15);
-      plot.second->setVisible(false);
+      plot.second.plot->setBounds(
+          0, getScreenArea().getHeight() / 15, getWidth(),
+          getHeight() - getScreenArea().getHeight() / 15);
+      plot.second.plot->setVisible(false);
     }
 
     m_test_menu.onChange = [this]() {
       if (m_current_plot != nullptr) {
-        m_current_plot->setVisible(false);
+        m_current_plot->plot->setVisible(false);
       }
       const auto id = m_test_menu.getSelectedId();
       if (!m_plot_holder.empty()) {
-        m_current_plot = getPlotFromID(m_plot_holder, id);
-        m_current_plot->setVisible(true);
+        m_current_plot = &getPlotFromID<PlotAndTimer>(m_plot_holder, id);
+        m_current_plot->plot->setVisible(true);
       }
       resized();
     };
@@ -53,14 +60,15 @@ class RTTestHandler : public juce::Component {
                            getScreenArea().getHeight() / 30);
 
     for (auto &plot : m_plot_holder) {
-      if (plot.second->isVisible()) {
-        plot.second->setBounds(0, getScreenArea().getHeight() / 15, getWidth(),
-                               getHeight() - getScreenArea().getHeight() / 15);
+      if (plot.second.plot->isVisible()) {
+        plot.second.plot->setBounds(
+            0, getScreenArea().getHeight() / 15, getWidth(),
+            getHeight() - getScreenArea().getHeight() / 15);
       }
     }
   };
 
-  std::map<std::string, std::unique_ptr<scp::Plot>> *get_plot_holder() {
+  std::map<std::string, PlotAndTimer> *get_plot_holder() {
     return &m_plot_holder;
   }
 
@@ -68,28 +76,10 @@ class RTTestHandler : public juce::Component {
   static inline std::shared_ptr<node> head;
 
  private:
-  std::map<std::string, std::unique_ptr<scp::Plot>> m_plot_holder;
-  scp::Plot *m_current_plot = nullptr;
+  std::map<std::string, PlotAndTimer> m_plot_holder;
+  PlotAndTimer *m_current_plot = nullptr;
   juce::ComboBox m_test_menu;
   juce::Label m_menu_label;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(RTTestHandler)
 };
-
-static void add_test(
-    std::function<void(juce::Component *, const std::string &)> new_fun_ptr,
-    const std::string &test_name) {
-  static std::shared_ptr<node> curr{nullptr};
-
-  if (!RTTestHandler::head) {
-    RTTestHandler::head = std::make_shared<node>();
-    RTTestHandler::head->fun_ptr = new_fun_ptr;
-    RTTestHandler::head->name = test_name;
-    curr = RTTestHandler::head;
-  } else {
-    curr->next = std::make_shared<node>();
-    curr->next->fun_ptr = new_fun_ptr;
-    curr->next->name = test_name;
-    curr = curr->next;
-  }
-}

@@ -9,7 +9,7 @@
   static void f(juce::Component *parent_component,                  \
                 const std::string &test_name);                      \
   struct f##_t_ {                                                   \
-    f##_t_(void) { add_test(&f, #f); }                              \
+    f##_t_(void) { add_test<NonRTTestHandler>(&f, #f); }            \
   };                                                                \
   static std::unique_ptr<f##_t_> f##_ = std::make_unique<f##_t_>(); \
   static void f(juce::Component *parent_component, const std::string &test_name)
