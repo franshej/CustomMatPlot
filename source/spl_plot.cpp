@@ -115,6 +115,8 @@ void Plot::updateXLim(const float min, const float max) {
   if (m_grid) {
     m_grid->setXLim(min, max);
   }
+
+  resizeChilderns();
 }
 
 void Plot::updateYLim(const float min, const float max) {
@@ -167,7 +169,7 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
   updateYData(y_data);
   if (!x_data.empty()) updateXData(x_data);
 
-  repaint(m_graph_bounds);
+  repaint();
 }
 
 void Plot::setXLabel(const std::string& x_label) {

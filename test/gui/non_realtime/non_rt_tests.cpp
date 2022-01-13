@@ -11,6 +11,7 @@ TEST(test_xy_ticks, NonRealTime) {
 
   std::vector<float> x_ticks = {0, 1, 7};
   std::vector<float> y_ticks = {3, 2, 9};
+
   PLOT_Y({y_test_data});
   X_TICKS(x_ticks);
   Y_TICKS(y_ticks);
@@ -18,11 +19,13 @@ TEST(test_xy_ticks, NonRealTime) {
 
 TEST(test_custom_x_labels, NonRealTime) {
   ADD_PLOT;
+
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   const std::vector<std::string> labels = {"MMM", "Two", "Three", "Fyra",
                                            "Fem", "Sex", "Sju",   "Atta",
                                            "Nio", "Tio", "Elva",  "Tolv"};
+
   PLOT_Y({y_test_data});
   X_LABELS(labels)
   X_LABEL("X LABEL");
@@ -32,11 +35,13 @@ TEST(test_custom_x_labels, NonRealTime) {
 
 TEST(test_custom_y_labels, NonRealTime) {
   ADD_PLOT;
+
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   const std::vector<std::string> labels = {"Ett", "Two", "Three", "Fyra",
                                            "Fem", "Sex", "Sju",   "Atta",
                                            "Nio", "Tio", "Elva",  "Tolv"};
+
   PLOT_Y({y_test_data});
   Y_LABELS(labels)
   X_LABEL("X LABEL");
@@ -46,6 +51,7 @@ TEST(test_custom_y_labels, NonRealTime) {
 
 TEST(test_semi_log_x_1000, NonRealTime) {
   ADD_SEMI_LOG_X;
+
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
 
@@ -58,6 +64,7 @@ TEST(test_semi_log_x_1000, NonRealTime) {
 
 TEST(test_semi_log_xy_1000, NonRealTime) {
   ADD_SEMI_LOG_X;
+
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
 
