@@ -497,7 +497,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     // dicarded.
     for (const auto& x : x_data) {
       if (x >= x_lim.min) {
-        if (min_x_index - 2u) {
+        if ((int(min_x_index) - 2) > 0) {
           // Two indices outside the left side to get rid of artifacts.
           min_x_index = min_x_index - 2u;
         }
@@ -533,7 +533,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
       if constexpr (m_x_scaling == Scaling::linear) {
         for (auto x = x_data.begin() + min_x_index;
-             x != x_data.begin() + max_x_index - 1; ++x) {
+             x != x_data.begin() + max_x_index; ++x) {
           if (abs(*x - last_added_x) > inverse_x_scale) {
             last_added_x = *x;
             graph_points_indices[graph_point_index++] = current_index;
@@ -542,7 +542,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
         }
       } else if constexpr (m_x_scaling == Scaling::logarithmic) {
         for (auto x = x_data.begin() + min_x_index;
-             x != x_data.begin() + max_x_index - 1; ++x) {
+             x != x_data.begin() + max_x_index; ++x) {
           if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
             last_added_x = *x;
             graph_points_indices[graph_point_index++] = current_index;

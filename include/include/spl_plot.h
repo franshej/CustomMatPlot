@@ -487,6 +487,7 @@ class Plot : public juce::Component {
   void updateYLim(const Lim_f& new_y_lim);
 
   void updateGridGraphsTrace();
+  void updateTracePointsForNewGraphData();
 
   bool m_x_autoscale = true, m_y_autoscale = true;
   const Scaling m_x_scaling, m_y_scaling;

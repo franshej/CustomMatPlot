@@ -12,29 +12,59 @@ void GraphLine::setColour(const juce::Colour graph_colour) {
 
 std::pair<juce::Point<float>, juce::Point<float>>
 GraphLine::findClosestGraphPointTo(
-    const juce::Point<float>& point) const noexcept {
-  if (m_graph_points.empty()) {
-    // No graph points.
-    jassertfalse;
-  }
+    const juce::Point<float>& this_graph_point,
+    bool check_only_distance_from_x) const noexcept {
+  // No graph points.
+  jassert(!m_graph_points.empty());
 
-  auto closest_point = juce::Point<float>();
+  auto closest_graph_point = juce::Point<float>();
   auto closest_data_point = juce::Point<float>();
 
   auto closest_distance = std::numeric_limits<float>::max();
   std::size_t i = 0u;
   for (const auto& graph_point : m_graph_points) {
-    const auto current_distance = graph_point.getDistanceSquaredFrom(point);
+    const auto current_distance =
+        check_only_distance_from_x
+            ? abs(graph_point.getX() - this_graph_point.getX())
+            : graph_point.getDistanceSquaredFrom(this_graph_point);
     if (current_distance < closest_distance) {
       closest_distance = current_distance;
-      closest_point = graph_point;
+      closest_graph_point = graph_point;
       closest_data_point =
           juce::Point<float>(m_x_data[m_graph_point_indices[i]],
                              m_y_data[m_graph_point_indices[i]]);
     }
     i++;
   }
-  return {closest_point, closest_data_point};
+  return {closest_graph_point, closest_data_point};
+}
+
+juce::Point<float> GraphLine::findClosestDataPointTo(
+    const juce::Point<float>& this_data_point,
+    bool check_only_distance_from_x) const noexcept {
+  // No y_data empty.
+  jassert(!m_x_data.empty());
+
+  // Uninitialized, execute 'updateXGraphPoints' atleast once.
+  jassert(m_state == State::Initialized);
+
+  auto nearest_x_dist = std::numeric_limits<float>::max();
+  std::size_t nearest_i = 0u;
+
+  for (const auto i : m_graph_point_indices) {
+    const auto x = m_x_data[i];
+    const auto current_x_dist = abs(x - this_data_point.getX());
+
+    if (current_x_dist < nearest_x_dist) {
+      nearest_x_dist = current_x_dist;
+      nearest_i = i;
+    }
+  }
+
+  const auto closest_data_point =
+      juce::Point<float>(m_x_data[nearest_i], m_y_data[nearest_i]);
+
+  return closest_data_point;
 }
 
 juce::Colour GraphLine::getColour() const noexcept { return m_graph_colour; }

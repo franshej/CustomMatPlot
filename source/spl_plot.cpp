@@ -176,6 +176,14 @@ void Plot::updateGridGraphsTrace() {
   }
 }
 
+void scp::Plot::updateTracePointsForNewGraphData() {
+  for (const auto& graph_line : m_graph_lines) {
+    m_trace->updateTracePointsAssociatedWith(graph_line.get());
+  }
+
+  m_trace->updateTracePointsBoundsFrom(m_graph_params);
+}
+
 void Plot::setAutoXScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, true);
   m_x_lim_default = {min, max};
@@ -206,11 +214,15 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
   updateYData(y_data);
   updateXData(x_data);
 
+  updateTracePointsForNewGraphData();
+
   repaint();
 }
 
 void scp::Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
   updateYData(y_data);
+
+  updateTracePointsForNewGraphData();
 
   repaint(m_graph_bounds);
 }
@@ -452,13 +464,10 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
       if (m_x_autoscale && !m_graph_lines.back()->getXValues().empty()) {
         setAutoXScale();
       }
-
-      for (const auto& graph_line : m_graph_lines) {
-        graph_line->updateXGraphPoints(m_graph_params);
-      }
     }
 
     for (const auto& graph_line : m_graph_lines) {
+      graph_line->updateXGraphPoints(m_graph_params);
       graph_line->updateYGraphPoints(m_graph_params);
     }
   }

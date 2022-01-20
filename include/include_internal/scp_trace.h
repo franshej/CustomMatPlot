@@ -14,6 +14,7 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <scp_datamodels.h>
+
 #include <optional>
 
 namespace scp {
@@ -43,11 +44,11 @@ struct TracePoint : public juce::Component {
 
   /** Compare with juce point. */
   constexpr bool operator==(const juce::Point<ValueType>& other_graph_values) {
-    return m_graph_values == other_graph_values;
+    return m_data_value == other_graph_values;
   }
 
   /** Set the graph value. return true if succeded */
-  bool setGraphValue(const juce::Point<ValueType>& graph_value);
+  bool setDataValue(const juce::Point<ValueType>& graph_value);
 
   /** @internal */
   void resized() override;
@@ -60,7 +61,7 @@ struct TracePoint : public juce::Component {
   juce::LookAndFeel* m_lookandfeel;
 
   /** The x and y values of the tracepoint. */
-  juce::Point<ValueType> m_graph_values;
+  juce::Point<ValueType> m_data_value;
 };
 
 /** @brief A struct that defines a tracepoint using floats. */
@@ -210,6 +211,17 @@ class Trace {
    * @return bool true if the component is one of the tracelabels.
    */
   bool isComponentTraceLabel(const juce::Component* component) const;
+
+  /** @breif Update tracepoints on a graph_line changed y-data
+   *
+   * If a graph_line has changed y-data you can use this function to update the
+   * tracepoints associated with it.
+   *
+   * @param graph_line the tracepoint associated with this graph_line will be
+   * updated.
+   * @return void.
+   */
+  void updateTracePointsAssociatedWith(const GraphLine* graph_line);
 
  private:
   /** @internal */

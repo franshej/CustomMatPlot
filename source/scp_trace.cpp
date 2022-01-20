@@ -1,13 +1,14 @@
 #include "scp_trace.h"
 
 #include "spl_plot.h"
+#include "spl_graph_line.h"
 
 namespace scp {
 template <class ValueType>
-bool TracePoint<ValueType>::setGraphValue(
+bool TracePoint<ValueType>::setDataValue(
     const juce::Point<ValueType>& graph_value) {
-  if (m_graph_values != graph_value) {
-    m_graph_values = graph_value;
+  if (m_data_value != graph_value) {
+    m_data_value = graph_value;
     return true;
   }
   return false;
@@ -72,7 +73,7 @@ juce::Point<float> Trace::getGraphPosition(
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point_label);
 
   if (tlp_it != m_trace_labelpoints.end())
-    return tlp_it->trace_point->m_graph_values;
+    return tlp_it->trace_point->m_data_value;
 
   return juce::Point<float>();
 }
@@ -131,7 +132,7 @@ bool Trace::setGraphPositionFor(juce::Component* trace_point,
   auto it = m_trace_labelpoints.erase(tlp_it, tlp_it);  // remove const for ::const_iterator
 
   if (it != m_trace_labelpoints.end() &&
-      it->trace_point->setGraphValue(new_position)) {
+      it->trace_point->setDataValue(new_position)) {
     updateSingleTraceLabelTextsAndBoundsInternal(&(*it), graph_attributes);
 
     return true;
@@ -183,6 +184,19 @@ bool Trace::isComponentTraceLabel(const juce::Component* component) const {
              m_trace_labelpoints.end();
 }
 
+void Trace::updateTracePointsAssociatedWith(const GraphLine* graph_line) {
+  for (auto& tlp : m_trace_labelpoints) {
+    if (tlp.associated_graph_line == graph_line) {
+      const auto data_value = tlp.trace_point->m_data_value;
+
+      const auto nearest_data_value =
+          graph_line->findClosestDataPointTo(data_value, true);
+
+      tlp.trace_point->setDataValue(nearest_data_value);
+    }
+  }
+}
+
 void Trace::addSingleTracePointAndLabel(
     const juce::Point<float>& trace_point_coordinate,
     const GraphLine* graph_line) {
@@ -192,7 +206,7 @@ void Trace::addSingleTracePointAndLabel(
   if (m_lookandfeel) trace_label->setLookAndFeel(m_lookandfeel);
   if (m_lookandfeel) trace_point->setLookAndFeel(m_lookandfeel);
 
-  trace_point->setGraphValue(trace_point_coordinate);
+  trace_point->setDataValue(trace_point_coordinate);
   m_trace_labelpoints.push_back(
       {move(trace_label), move(trace_point), graph_line});
 }
@@ -211,8 +225,8 @@ void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
-    const auto graph_values = tlp->trace_point->m_graph_values;
-    tlp->trace_label->setGraphLabelFrom(graph_values, graph_attributes);
+    const auto data_value = tlp->trace_point->m_data_value;
+    tlp->trace_label->setGraphLabelFrom(data_value, graph_attributes);
 
     const auto x_bound = tlp->trace_label->m_x_label.second;
     const auto y_bound = tlp->trace_label->m_y_label.second;
@@ -222,7 +236,7 @@ void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
     auto trace_bounds = local_trace_bounds;
 
     const auto trace_position =
-        lnf->getTracePointPositionFrom(graph_attributes, graph_values) +
+        lnf->getTracePointPositionFrom(graph_attributes, data_value) +
         graph_attributes.graph_bounds.getPosition();
 
     switch (tlp->trace_label->trace_label_corner_pos) {

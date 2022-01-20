@@ -29,8 +29,27 @@ namespace scp {
  */
 class GraphLine : public juce::Component {
  public:
+  /**@breif Find closest point on graph from graph point.
+   *
+   * @param this_graph_point the point on the graph.
+   * @param check_only_distance_from_x check the absolut distance if false else
+   * only the x distance.
+   * @return {closest point on graph, closest data point value}
+   */
   std::pair<juce::Point<float>, juce::Point<float>> findClosestGraphPointTo(
-      const juce::Point<float>& point) const noexcept;
+      const juce::Point<float>& this_graph_point,
+      bool check_only_distance_from_x = false) const noexcept;
+
+  /**@breif Find closest data point to this data point.
+   *
+   * @param this_data_point the data point.
+   * @param check_only_distance_from_x check the absolut distance if false else
+   * only the x distance.
+   * @return closest data point value to this_data_point.
+   */
+  juce::Point<float> findClosestDataPointTo(
+      const juce::Point<float>& this_data_point,
+      bool check_only_distance_from_x = false) const noexcept;
 
   /** @brief Get the colour of graph
    *
