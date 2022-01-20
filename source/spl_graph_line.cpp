@@ -39,37 +39,34 @@ GraphLine::findClosestGraphPointTo(
 
 juce::Colour GraphLine::getColour() const noexcept { return m_graph_colour; }
 
-void GraphLine::setXLim(const float min, const float max) {
-  Lim_f x_lim;
-
-  if (min > max)
+void GraphLine::setXLim(const Lim_f& new_x_lim) {
+  if (new_x_lim.min > new_x_lim.max)
     throw std::invalid_argument("Min value must be lower than max value.");
 
-  if (abs(max - min) > std::numeric_limits<float>::epsilon()) {
-    x_lim.min = min;
-    x_lim.max = max;
-  } else {
-    throw std::invalid_argument(
-        "The min and max value of x_values must not be the same.");
+  if ((abs(new_x_lim.max - new_x_lim.min) <
+       std::numeric_limits<float>::epsilon()))
+    UNLIKELY {
+      m_x_lim.min = new_x_lim.min - 1;
+      m_x_lim.max = new_x_lim.max + 1;
+    }
+  else {
+    m_x_lim = new_x_lim;
   }
-  m_x_lim = x_lim;
 }
 
-void GraphLine::setYLim(const float min, const float max) {
-  Lim_f y_lim;
+void GraphLine::setYLim(const Lim_f& new_y_lim) {
+  if (new_y_lim.min > new_y_lim.max)
+    throw std::invalid_argument("Min value must be lower than max value.");
 
-  if (min > max)
-    throw std::invalid_argument(
-        "setYLim min value must be lower than max value.");
-
-  if (abs(max - min) < std::numeric_limits<float>::epsilon()) {
-    y_lim.min = 0;
-    y_lim.max = std::numeric_limits<float>::max();
-  } else {
-    y_lim.min = min;
-    y_lim.max = max;
+  if (abs(new_y_lim.max - new_y_lim.min) <
+      std::numeric_limits<float>::epsilon())
+    UNLIKELY {
+      m_y_lim.min = new_y_lim.min - 1;
+      m_y_lim.max = new_y_lim.max + 1;
+    }
+  else {
+    m_y_lim = new_y_lim;
   }
-  m_y_lim = y_lim;
 }
 
 void GraphLine::resized() { m_state = State::Uninitialized; };

@@ -66,7 +66,7 @@ TEST(test_semi_log_xy_1000, NonRealTime) {
   ADD_SEMI_LOG_X;
 
   std::vector<float> y_test_data(1000);
-  std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
 
   y_test_data[9] = 1000;
   y_test_data[99] = 1000;
@@ -114,7 +114,7 @@ TEST(test_draw_flat_line, NonRealTime) {
   std::vector<float> y_data{1, 1};
   std::vector<float> x_data{0, 9};
 
-  PLOT_XY({x_data}, {y_data});
+  PLOT_XY({y_data}, {x_data});
   Y_LIM(0, 2);
 }
 

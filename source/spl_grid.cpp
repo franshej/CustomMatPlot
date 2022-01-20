@@ -39,8 +39,8 @@ void Grid::updateGridInternal(const GraphAttributesView &graph_attributes) {
   m_grid_lines.clear();
   m_grid_lines.reserve(x_ticks.size() + y_ticks.size());
 
-  addGridLines(x_ticks, GridLine::Direction::vertical);
-  addGridLines(y_ticks, GridLine::Direction::horizontal);
+  addGridLines(x_ticks, GridLine::Direction::vertical, graph_attributes);
+  addGridLines(y_ticks, GridLine::Direction::horizontal, graph_attributes);
 
   createLabels(graph_attributes);
 
@@ -65,25 +65,26 @@ void Grid::updateGridInternal(const GraphAttributesView &graph_attributes) {
     }
 
     if (longest_label_x_axis >
-            (m_longest_x_axis_label_last_cb_triggerd + lnf->getMargin()) ||
+            (m_longest_x_axis_label_length_last_cb_triggerd + lnf->getMargin()) ||
         longest_label_y_axis >
-            (m_longest_y_axis_label_last_cb_triggerd + lnf->getMargin()) ||
+            (m_longest_y_axis_label_length_last_cb_triggerd + lnf->getMargin()) ||
         float(longest_label_x_axis) <
-            std::abs(float(m_longest_x_axis_label_last_cb_triggerd -
+            std::abs(float(m_longest_x_axis_label_length_last_cb_triggerd -
                            lnf->getMargin())) ||
         float(longest_label_y_axis) <
-            std::abs(float(m_longest_y_axis_label_last_cb_triggerd -
+            std::abs(float(m_longest_y_axis_label_length_last_cb_triggerd -
                            lnf->getMargin()))
     ) {
-      m_longest_x_axis_label_last_cb_triggerd = longest_label_x_axis;
-      m_longest_y_axis_label_last_cb_triggerd = longest_label_y_axis;
+      m_longest_x_axis_label_length_last_cb_triggerd = longest_label_x_axis;
+      m_longest_y_axis_label_length_last_cb_triggerd = longest_label_y_axis;
       onGridLabelLengthChanged(this);
     }
   }
 }
 
 void Grid::addGridLines(const std::vector<float> &ticks,
-                        const GridLine::Direction direction) {
+                        const GridLine::Direction direction,
+                        const GraphAttributesView &graph_attributes) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
@@ -204,21 +205,22 @@ void Grid::updateGrid(const GraphAttributesView &graph_attributes) {
 }
 
 void Grid::resized() {}
+
 void Grid::setGridBounds(const juce::Rectangle<int> &grid_area) {
   m_config_params.grid_area = grid_area;
 }
 
-void Grid::setYLim(const float min, const float max) {
-  m_config_params.y_lim = {min, max};
+void Grid::setYLim(const Lim_f &new_y_lim) {
+  m_config_params.y_lim = new_y_lim;
 }
 
-void Grid::setXLim(const float min, const float max) {
-  m_config_params.x_lim = {min, max};
+void Grid::setXLim(const Lim_f &new_x_lim) {
+  m_config_params.x_lim = new_x_lim;
 }
 
 void Grid::setGridON(const bool grid_on, const bool tiny_grids_on) {
-  if (grid_on) m_config_params.grid_on = grid_on;
-  if (tiny_grids_on) m_config_params.tiny_grid_on = tiny_grids_on;
+  m_config_params.grid_on = grid_on;
+  m_config_params.tiny_grid_on = tiny_grids_on;
 }
 
 void Grid::setXTicks(const std::vector<float> &x_ticks) {

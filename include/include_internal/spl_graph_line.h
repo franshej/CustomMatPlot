@@ -45,21 +45,19 @@ class GraphLine : public juce::Component {
    *
    *  Set the limits of x-axis.
    *
-   *  @param min minimum value
-   *  @param max maximum value
+   *  @param new_x_lim the new x-limits.
    *  @return void.
    */
-  void setXLim(const float min, const float max);
+  void setXLim(const Lim_f &new_x_lim);
 
   /** @brief Set the y-limits
    *
    *  Set the limits of y-axis.
    *
-   *  @param min minimum value
-   *  @param max maximum value
+   *  @param new_y_lim the new y-limits.
    *  @return void.
    */
-  void setYLim(const float min, const float max);
+  void setYLim(const Lim_f& new_y_lim);
 
   /** @brief Set the y-values for the graph-line
    *
@@ -145,7 +143,7 @@ class GraphLine : public juce::Component {
 
  protected:
   juce::LookAndFeel* m_lookandfeel{nullptr};
-  scp::ParamVal<scp::Lim_f> m_x_lim, m_y_lim;
+  scp::Lim_f m_x_lim, m_y_lim;
 
   std::vector<float> m_x_data, m_y_data;
   GraphPoints m_graph_points;

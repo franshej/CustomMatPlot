@@ -39,7 +39,7 @@
 #define PLOT_Y(Y) \
   { GET_PLOT->plot(Y); }
 
-#define PLOT_XY(X, Y) \
+#define PLOT_XY(Y, X) \
   { GET_PLOT->plot(Y, X); }
 
 #define X_LIM(MIN, MAX) GET_PLOT->xLim(MIN, MAX);

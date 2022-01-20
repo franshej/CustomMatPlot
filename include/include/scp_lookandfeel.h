@@ -126,7 +126,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
       graph_bounds.setBottom(bottom);
     }
 
-    return graph_bounds;
+    return std::move(graph_bounds);
   }
 
   CONSTEXPR20 std::size_t getMaximumAllowedCharacterGridLabel()

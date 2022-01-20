@@ -1,5 +1,7 @@
 #pragma once
 
+#define IS_CXX_20 (_MSVC_LANG > 201703L || __cplusplus > 201703L)
+
 #if __cpp_constexpr >= 201907L  // Check for a specific version of a feature
 #define CONSTEXPR20 \
   constexpr  // This macro should be used in those cases where C++20 only allows
@@ -8,7 +10,17 @@
 #define CONSTEXPR20
 #endif
 
+#if IS_CXX_20
 #include <compare>
+#endif
+
+#ifdef __has_cpp_attribute
+#if (__has_cpp_attribute(unlikely) || IS_CXX_20)
+#define UNLIKELY [[unlikely]]
+#else
+#define UNLIKELY
+#endif
+#endif
 
 namespace scp {
 
@@ -71,6 +83,27 @@ struct Lim {
     max /= val;
 
     return *this;
+  }
+
+#if IS_CXX_20
+  auto operator<=>(const Lim<ValueType>&) const noexcept = default;
+#else
+  /** No spaceship  :( */
+  bool operator==(const Lim<ValueType>& rhs) const noexcept {
+    return min == rhs.min && max == rhs.max;
+  }
+#endif
+
+  constexpr explicit operator bool() const noexcept {
+    constexpr auto zero = static_cast<ValueType>(0);
+
+    return max != zero || min != zero;
+  }
+
+  constexpr bool isMinOrMaxZero() const noexcept {
+    constexpr auto zero = static_cast<ValueType>(0);
+
+    return max == zero || min == zero;
   }
 };
 
@@ -267,11 +300,6 @@ template <class ValueType>
                     std::is_same<const double, ValueType>::value,
                 "Type must be either float or double");
   auto lims = is_x ? graph_attributes.x_lim : graph_attributes.y_lim;
-
-  if (lims.min == 0.f && lims.max == 0.f) {
-    // Either min or max must be non zero.
-    jassertfalse;
-  }
 
   const auto max_exp = lims.max != 0 ? std::log10(abs(lims.max)) : 0;
   const auto min_exp = lims.min != 0 ? std::log10(abs(lims.min)) : 0;

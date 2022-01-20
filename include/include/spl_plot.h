@@ -65,7 +65,7 @@ class Plot : public juce::Component {
    *  empty then 'ColourIdsGraph' is used.
    *
    *  @param y_data vector of vectors with the y-values.
-   *  @param x_data vector of vectors with the y-values.
+   *  @param x_data vector of vectors with the x-values.
    *  @param graph_colours a vector with user defined graph colours.
    *  @return void.
    */
@@ -472,8 +472,8 @@ class Plot : public juce::Component {
   void setAutoXScale();
   void setAutoYScale();
 
-  void updateYLim(const float min, const float max);
-  void updateXLim(const float min, const float max);
+  void updateXLim(const Lim_f& new_x_lim);
+  void updateYLim(const Lim_f& new_y_lim);
 
   void updateGridGraphsTrace();
 

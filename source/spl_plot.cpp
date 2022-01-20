@@ -74,6 +74,8 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_trace(std::make_unique<Trace>()),
       m_zoom_button(std::make_unique<juce::ToggleButton>("Zoom")),
       m_trace_button(std::make_unique<juce::ToggleButton>("Trace")),
+      m_x_lim({0, 0}),
+      m_y_lim({0, 0}),
       m_graph_params(m_graph_bounds, m_x_lim, m_y_lim) {
   lookAndFeelChanged();
 
@@ -95,6 +97,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   m_grid->onGridLabelLengthChanged = [this](scp::Grid* grid) {
     this->resizeChilderns();
   };
+
   m_zoom_button->onClick = [this] { /** m_trace->toBehind(m_zoom.get()); */ };
   m_trace_button->onClick = [this] { /** m_zoom->toBehind(m_trace.get()); */ };
 }
@@ -107,58 +110,86 @@ const std::pair<int, int> Plot::getMaxGridLabelWidth() const noexcept {
   return m_grid->getMaxGridLabelWidth();
 }
 
-void Plot::updateXLim(const float min, const float max) {
-  m_x_lim = {min, max};
-  for (auto& graph_line : m_graph_lines) {
-    graph_line->setXLim(min, max);
-  }
-  if (m_grid) {
-    m_grid->setXLim(min, max);
-  }
+void Plot::updateXLim(const Lim_f& new_x_lim) {
+  if (m_x_scaling == Scaling::logarithmic && new_x_lim.isMinOrMaxZero())
+    UNLIKELY {
+      throw std::invalid_argument(
+          "The min/max x-value is zero or 'xLim' has been called with a zero "
+          "value. 10log(0) = -inf");
+    }
 
-  resizeChilderns();
+  if (new_x_lim && new_x_lim != m_x_lim) {
+    for (auto& graph_line : m_graph_lines) {
+      graph_line->setXLim(new_x_lim);
+    }
+    if (m_grid) {
+      m_grid->setXLim(new_x_lim);
+    }
+
+    m_x_lim = new_x_lim;
+
+    if (m_y_lim) {
+      updateGridGraphsTrace();
+    }
+  }
 }
 
-void Plot::updateYLim(const float min, const float max) {
-  m_y_lim = {min, max};
-  for (auto& graph_line : m_graph_lines) {
-    graph_line->setYLim(min, max);
-  }
-  if (m_grid) {
-    m_grid->setYLim(min, max);
+void Plot::updateYLim(const Lim_f& new_y_lim) {
+  if (m_y_scaling == Scaling::logarithmic && new_y_lim.isMinOrMaxZero())
+    UNLIKELY {
+      throw std::invalid_argument(
+          "The min/max y-value is zero or 'yLim' has been called with a zero "
+          "value. 10log(0) = -inf");
+    }
+
+  if (new_y_lim && m_y_lim != new_y_lim) {
+    m_y_lim = new_y_lim;
+
+    for (auto& graph_line : m_graph_lines) {
+      graph_line->setYLim(new_y_lim);
+    }
+    if (m_grid) {
+      m_grid->setYLim(new_y_lim);
+    }
+
+    if (m_x_lim) {
+      updateGridGraphsTrace();
+    }
   }
 }
 
 void Plot::updateGridGraphsTrace() {
-  m_grid->updateGrid(m_graph_params);
-  m_trace->updateTracePointsBoundsFrom(m_graph_params);
+  if (!m_graph_bounds.isEmpty()) {
+    m_grid->updateGrid(m_graph_params);
+    m_trace->updateTracePointsBoundsFrom(m_graph_params);
 
-  for (const auto& graph_line : m_graph_lines) {
-    graph_line->updateXGraphPoints();
-    graph_line->updateYGraphPoints();
+    for (const auto& graph_line : m_graph_lines) {
+      graph_line->updateXGraphPoints();
+      graph_line->updateYGraphPoints();
+    }
   }
 }
 
 void Plot::setAutoXScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, true);
   m_x_lim_default = {min, max};
-  updateXLim(min, max);
+  updateXLim({min, max});
 }
 
 void Plot::setAutoYScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, false);
   m_y_lim_default = {min, max};
-  updateYLim(min, max);
+  updateYLim({min, max});
 }
 
 void Plot::xLim(const float min, const float max) {
-  updateXLim(min, max);
+  updateXLim({min, max});
   m_x_lim_default = {min, max};
   m_x_autoscale = false;
 }
 
 void Plot::yLim(const float min, const float max) {
-  updateYLim(min, max);
+  updateYLim({min, max});
   m_y_lim_default = {min, max};
   m_y_autoscale = false;
 }
@@ -167,7 +198,7 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
                 const std::vector<std::vector<float>>& x_data,
                 ColourVector custom_graph_colours) {
   updateYData(y_data);
-  if (!x_data.empty()) updateXData(x_data);
+  updateXData(x_data);
 
   repaint();
 }
@@ -215,31 +246,35 @@ void Plot::resizeChilderns() {
   if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
     const auto plot_area = lnf->getPlotBounds(getBounds());
     const auto graph_bounds = lnf->getGraphBounds(getBounds(), this);
-    m_graph_bounds = graph_bounds;
 
-    if (m_grid) {
-      m_grid->setGridBounds(graph_bounds);
-      m_grid->setBounds(plot_area);
-    }
+    if (!graph_bounds.isEmpty() && m_graph_bounds != graph_bounds) {
+      m_graph_bounds = graph_bounds;
 
-    if (m_plot_label) m_plot_label->setBounds(plot_area);
-    if (m_frame) m_frame->setBounds(graph_bounds);
-    if (m_zoom) m_zoom->setBounds(graph_bounds);
+      if (m_grid) {
+        m_grid->setGridBounds(graph_bounds);
+        m_grid->setBounds(plot_area);
+      }
 
-    for (const auto& graph_line : m_graph_lines) {
-      graph_line->setBounds(graph_bounds);
-    }
+      if (m_plot_label) m_plot_label->setBounds(plot_area);
+      if (m_frame) m_frame->setBounds(graph_bounds);
+      if (m_zoom) m_zoom->setBounds(graph_bounds);
 
-    if (m_legend) {
-      auto legend_bounds = m_legend->getBounds();
-      const auto legend_postion =
-          lnf->getLegendPosition(graph_bounds, legend_bounds);
-      legend_bounds.setPosition(legend_postion);
+      for (const auto& graph_line : m_graph_lines) {
+        graph_line->setBounds(graph_bounds);
+      }
 
-      m_legend->setBounds(legend_bounds);
+      if (m_legend) {
+        auto legend_bounds = m_legend->getBounds();
+        const auto legend_postion =
+            lnf->getLegendPosition(graph_bounds, legend_bounds);
+        legend_bounds.setPosition(legend_postion);
+
+        m_legend->setBounds(legend_bounds);
+      }
+
+      updateGridGraphsTrace();
     }
   }
-  updateGridGraphsTrace();
 }
 
 std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestGraphPoint(
@@ -249,11 +284,11 @@ std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestGraphPoint(
 
   auto closest_data_point = juce::Point<float>();
 
-  const auto graph_line_exsists = std::find_if(
-      m_graph_lines.begin(), m_graph_lines.end(),
-      [&graphline](const auto& gl) {
-          return gl.get() == graphline;
-      }) != m_graph_lines.end();
+  const auto graph_line_exsists =
+      std::find_if(m_graph_lines.begin(), m_graph_lines.end(),
+                   [&graphline](const auto& gl) {
+                     return gl.get() == graphline;
+                   }) != m_graph_lines.end();
 
   const GraphLine* nearest_graph_line{graph_line_exsists ? graphline : nullptr};
 
@@ -311,8 +346,11 @@ void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
   } else if (lnf = castUserLookAndFeel<Scaling::linear, Scaling::logarithmic>(
                  look_and_feel)) {
   }
+
   resetLookAndFeelChildrens();
+
   this->juce::Component::setLookAndFeel(lnf);
+
 }
 
 void Plot::lookAndFeelChanged() {
@@ -475,8 +513,8 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
     if (m_zoom.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
-        updateXLim(m_x_lim_default.min, m_x_lim_default.max);
-        updateYLim(m_y_lim_default.min, m_y_lim_default.max);
+        updateXLim(m_x_lim_default);
+        updateYLim(m_y_lim_default);
 
         updateGridGraphsTrace();
 
@@ -577,8 +615,8 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
       const auto y_max = getYFromYCoordinate(
           float(end_pos.getY()), local_graph_bounds, m_y_lim, m_y_scaling);
 
-      updateXLim(std::min(x_min, x_max), std::max(x_min, x_max));
-      updateYLim(std::min(y_min, y_max), std::max(y_min, y_max));
+      updateXLim({std::min(x_min, x_max), std::max(x_min, x_max)});
+      updateYLim({std::min(y_min, y_max), std::max(y_min, y_max)});
 
       updateGridGraphsTrace();
       m_zoom->reset();

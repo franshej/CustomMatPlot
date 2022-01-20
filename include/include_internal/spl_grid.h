@@ -28,22 +28,22 @@ struct GridConfigParams {
    * X and Y limitation of the grid.
    * First grid is drawn at lim.min and the last grid is drawn at lim.max
    */
-  scp::ParamVal<scp::Lim_f> x_lim, y_lim;
+  scp::Lim_f x_lim, y_lim;
 
   /**
    * The bounds of where the grids will be drawn.
    */
-  scp::ParamVal<juce::Rectangle<int>> grid_area;
+  juce::Rectangle<int> grid_area;
 
   /**
    * Set to true if grid should be visable.
    */
-  scp::ParamVal<bool> grid_on;
+  bool grid_on;
 
   /**
    * Set to true if tiny grids should be used.
    */
-  scp::ParamVal<bool> tiny_grid_on;
+  bool tiny_grid_on;
 };
 
 /**
@@ -67,25 +67,23 @@ class Grid : public juce::Component {
    */
   void setGridBounds(const juce::Rectangle<int>& grid_area);
 
-  /** @brief Set the Y-limits
-   *
-   *  Set the limits of Y-axis.
-   *
-   *  @param min minimum value
-   *  @param max maximum value
-   *  @return void.
-   */
-  void setYLim(const float min, const float max);
-
   /** @brief Set the X-limits
    *
    *  Set the limits of X-axis.
    *
-   *  @param min minimum value
-   *  @param max maximum value
+   *  @param new_x_lim new limits.
    *  @return void.
    */
-  void setXLim(const float min, const float max);
+  void setXLim(const Lim_f& new_x_lim);
+
+  /** @brief Set the Y-limits
+   *
+   *  Set the limits of Y-axis.
+   *
+   *  @param new_y_lim new limits.
+   *  @return void.
+   */
+  void setYLim(const Lim_f& new_y_lim);
 
   /** @brief Display grids
    *
@@ -184,15 +182,16 @@ class Grid : public juce::Component {
   void updateGridInternal(const GraphAttributesView& graph_attributes);
 
   void addGridLines(const std::vector<float>& ticks,
-                    const GridLine::Direction direction);
+                    const GridLine::Direction direction,
+                    const GraphAttributesView& graph_attributes);
 
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks;
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::size_t m_max_width_x, m_max_width_y;
   std::size_t m_num_last_x_labels, m_last_num_y_labels;
-  std::size_t m_longest_x_axis_label_last_cb_triggerd{0};
-  std::size_t m_longest_y_axis_label_last_cb_triggerd{0};
+  std::size_t m_longest_x_axis_label_length_last_cb_triggerd{0};
+  std::size_t m_longest_y_axis_label_length_last_cb_triggerd{0};
   std::vector<juce::Path> m_grid_path;
 
   juce::LookAndFeel* m_lookandfeel;
