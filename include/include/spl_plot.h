@@ -61,7 +61,7 @@ class Plot : public juce::Component {
    *  Plot y-data or y-data/x-data. Each vector in y-data represents a single
    *  graph line. E.g. If 'y_data.size() == 3', three graph lines will be
    *  plotted. If 'x_data' is empty the x-vlues will be set to linearly
-   *  increasing from 0 to the size of y-data - 1. If 'graph_colours' is
+   *  increasing from 1 to the size of y-data. If 'graph_colours' is
    *  empty then 'ColourIdsGraph' is used.
    *
    *  @param y_data vector of vectors with the y-values.
@@ -72,6 +72,17 @@ class Plot : public juce::Component {
   void plot(const std::vector<std::vector<float>>& y_data,
             const std::vector<std::vector<float>>& x_data = {},
             ColourVector graph_colours = {});
+
+  /** @brief Realtime plot.
+   *
+   * This plot function will only update the y-data in the graphs and only
+   * repaint the graph_area, therefore requires less CPU than the 'plot'
+   * function. x-data can be set through the 'plot' function before being
+   * executed.
+   *
+   * @param y_data vector of vectors with the y-values.
+   */
+  void realTimePlot(const std::vector<std::vector<float>>& y_data);
 
   /** @brief Set the text for label on the X-axis
    *

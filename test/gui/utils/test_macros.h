@@ -42,6 +42,9 @@
 #define PLOT_XY(Y, X) \
   { GET_PLOT->plot(Y, X); }
 
+#define REALTIMEPLOT(Y) \
+  { GET_PLOT->realTimePlot(Y); }
+
 #define X_LIM(MIN, MAX) GET_PLOT->xLim(MIN, MAX);
 
 #define Y_LIM(MIN, MAX) GET_PLOT->yLim(MIN, MAX);

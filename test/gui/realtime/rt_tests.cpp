@@ -19,50 +19,21 @@ TEST(random_y_values, RealTime) {
   };
 }
 
-#include <algorithm>
-#include <iostream>
-#include <iterator>
-#include <sstream>
-#include <string>
-#include <vector>
+TEST(real_time_plot_function, RealTime) {
+  ADD_PLOT;
+  ADD_TIMER(100);
+  parent_component->getBounds();
 
-std::vector<std::string> sentenceToVector(const std::string& sentence) {
-  if (sentence.size() > 80)
-    throw std::invalid_argument("Sentence is more than 80 characters.");
+  X_LIM(1.f, 10.f);
+  Y_LIM(0.f, 1.f);
 
-  if (!sentence.size()) throw std::invalid_argument("Sentence is empty.");
+  GET_TIMER_CB = [=](const int dt_ms) {
+    static std::vector<float> y_test_data(10);
 
-  std::istringstream iss(sentence);
-
-  return {std::istream_iterator<std::string>{iss},
-          std::istream_iterator<std::string>{}};
-};
-
-bool doesSentenceHasNoRepeat(const std::string& sentence) noexcept {
-  auto words = sentenceToVector(sentence);
-  std::sort(words.begin(), words.end());
-
-  return std::adjacent_find(words.begin(), words.end()) != words.end();
-};
-
-int main() {
-  try {
-    std::string test_sentence = "";
-
-    while (true) {
-      std::cout << "Enter line to check for repeat: ";
-      std::getline(std::cin, test_sentence);
-
-      if (test_sentence == "quit")
-        break;
-      else if (doesSentenceHasNoRepeat(test_sentence))
-        std::cout << "yes" << std::endl;
-      else
-        std::cout << "no" << std::endl;
+    for (auto& y : y_test_data) {
+      y = (float)rand() / RAND_MAX;
     }
-  } catch (const std::invalid_argument& error) {
-    std::cout << error.what() << std::endl;
-  }
 
-  return 0;
+    REALTIMEPLOT({y_test_data});
+  };
 }

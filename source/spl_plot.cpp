@@ -209,6 +209,12 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
   repaint();
 }
 
+void scp::Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
+  updateYData(y_data);
+
+  repaint(m_graph_bounds);
+}
+
 void Plot::setXLabel(const std::string& x_label) {
   m_plot_label->setXLabel(x_label);
 }
@@ -446,6 +452,14 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
       if (m_x_autoscale && !m_graph_lines.back()->getXValues().empty()) {
         setAutoXScale();
       }
+
+      for (const auto& graph_line : m_graph_lines) {
+        graph_line->updateXGraphPoints(m_graph_params);
+      }
+    }
+
+    for (const auto& graph_line : m_graph_lines) {
+      graph_line->updateYGraphPoints(m_graph_params);
     }
   }
 }
@@ -474,8 +488,13 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
       graph->setXValues(x_data[i]);
       i++;
     }
+
     if (m_x_autoscale) {
       setAutoXScale();
+    }
+
+    for (const auto& graph_line : m_graph_lines) {
+      graph_line->updateXGraphPoints(m_graph_params);
     }
   }
 }
