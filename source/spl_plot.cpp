@@ -111,6 +111,16 @@ const std::pair<int, int> Plot::getMaxGridLabelWidth() const noexcept {
 }
 
 void Plot::updateXLim(const Lim_f& new_x_lim) {
+  if (new_x_lim.min > new_x_lim.max) UNLIKELY
+  throw std::invalid_argument("Min value must be lower than max value.");
+
+  if ((abs(new_x_lim.max - new_x_lim.min) <
+       std::numeric_limits<float>::epsilon()))
+    UNLIKELY {
+      m_x_lim.min = new_x_lim.min - 1;
+      m_x_lim.max = new_x_lim.max + 1;
+    }
+
   if (m_x_scaling == Scaling::logarithmic && new_x_lim.isMinOrMaxZero())
     UNLIKELY {
       throw std::invalid_argument(
@@ -119,9 +129,6 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
     }
 
   if (new_x_lim && new_x_lim != m_x_lim) {
-    for (auto& graph_line : m_graph_lines) {
-      graph_line->setXLim(new_x_lim);
-    }
     if (m_grid) {
       m_grid->setXLim(new_x_lim);
     }
@@ -135,6 +142,16 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
 }
 
 void Plot::updateYLim(const Lim_f& new_y_lim) {
+  if (new_y_lim.min > new_y_lim.max) UNLIKELY
+  throw std::invalid_argument("Min value must be lower than max value.");
+
+  if (abs(new_y_lim.max - new_y_lim.min) <
+      std::numeric_limits<float>::epsilon())
+    UNLIKELY {
+      m_y_lim.min = new_y_lim.min - 1;
+      m_y_lim.max = new_y_lim.max + 1;
+    }
+
   if (m_y_scaling == Scaling::logarithmic && new_y_lim.isMinOrMaxZero())
     UNLIKELY {
       throw std::invalid_argument(
@@ -145,9 +162,6 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
   if (new_y_lim && m_y_lim != new_y_lim) {
     m_y_lim = new_y_lim;
 
-    for (auto& graph_line : m_graph_lines) {
-      graph_line->setYLim(new_y_lim);
-    }
     if (m_grid) {
       m_grid->setYLim(new_y_lim);
     }
@@ -164,8 +178,8 @@ void Plot::updateGridGraphsTrace() {
     m_trace->updateTracePointsBoundsFrom(m_graph_params);
 
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateXGraphPoints();
-      graph_line->updateYGraphPoints();
+      graph_line->updateXGraphPoints(m_graph_params);
+      graph_line->updateYGraphPoints(m_graph_params);
     }
   }
 }

@@ -41,24 +41,6 @@ class GraphLine : public juce::Component {
    */
   juce::Colour getColour() const noexcept;
 
-  /** @brief Set the x-limits
-   *
-   *  Set the limits of x-axis.
-   *
-   *  @param new_x_lim the new x-limits.
-   *  @return void.
-   */
-  void setXLim(const Lim_f &new_x_lim);
-
-  /** @brief Set the y-limits
-   *
-   *  Set the limits of y-axis.
-   *
-   *  @param new_y_lim the new y-limits.
-   *  @return void.
-   */
-  void setYLim(const Lim_f& new_y_lim);
-
   /** @brief Set the y-values for the graph-line
    *
    *  Set the y-values.
@@ -121,12 +103,33 @@ class GraphLine : public juce::Component {
    */
   void setDashedPath(const std::vector<float>& dashed_lengths) noexcept;
 
-  void resized() override;
-  void paint(juce::Graphics& g) override;
-  void lookAndFeelChanged() override;
+  /** @brief Update the x-value in the graph points.
+   *
+   *  This function updates the graph points if any new parameter is set. Should
+   *  be called after an parameter changed to update the graph.
+   *
+   *  @param graph_attributes common graph attributes.
+   *  @return void.
+   */
+  void updateXGraphPoints(const GraphAttributesView& graph_attribute);
 
-  void updateYGraphPoints();
-  void updateXGraphPoints();
+  /** @brief Update the y-value in the graph points.
+   *
+   *  This function updates the graph points if any new parameter is set. Should
+   *  be called after an parameter changed to update the graph.
+   *
+   *  @param graph_attributes common graph attributes.
+   *  @return void.
+   */
+  void updateYGraphPoints(const GraphAttributesView& graph_attribute);
+
+  //==============================================================================
+  /** @internal */
+  void resized() override;
+  /** @internal */
+  void paint(juce::Graphics& g) override;
+  /** @internal */
+  void lookAndFeelChanged() override;
 
  private:
   /** @brief An enum to describe the state of the graph.  */
@@ -138,12 +141,11 @@ class GraphLine : public juce::Component {
   std::vector<float> m_dashed_lengths;
   juce::Colour m_graph_colour;
 
-  void updateYGraphPointsIntern() noexcept;
-  void updateXGraphPointsIntern() noexcept;
+  void updateYGraphPointsIntern(const GraphAttributesView& graph_attribute) noexcept;
+  void updateXGraphPointsIntern(const GraphAttributesView& graph_attribute) noexcept;
 
  protected:
   juce::LookAndFeel* m_lookandfeel{nullptr};
-  scp::Lim_f m_x_lim, m_y_lim;
 
   std::vector<float> m_x_data, m_y_data;
   GraphPoints m_graph_points;

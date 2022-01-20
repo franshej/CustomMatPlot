@@ -39,36 +39,6 @@ GraphLine::findClosestGraphPointTo(
 
 juce::Colour GraphLine::getColour() const noexcept { return m_graph_colour; }
 
-void GraphLine::setXLim(const Lim_f& new_x_lim) {
-  if (new_x_lim.min > new_x_lim.max)
-    throw std::invalid_argument("Min value must be lower than max value.");
-
-  if ((abs(new_x_lim.max - new_x_lim.min) <
-       std::numeric_limits<float>::epsilon()))
-    UNLIKELY {
-      m_x_lim.min = new_x_lim.min - 1;
-      m_x_lim.max = new_x_lim.max + 1;
-    }
-  else {
-    m_x_lim = new_x_lim;
-  }
-}
-
-void GraphLine::setYLim(const Lim_f& new_y_lim) {
-  if (new_y_lim.min > new_y_lim.max)
-    throw std::invalid_argument("Min value must be lower than max value.");
-
-  if (abs(new_y_lim.max - new_y_lim.min) <
-      std::numeric_limits<float>::epsilon())
-    UNLIKELY {
-      m_y_lim.min = new_y_lim.min - 1;
-      m_y_lim.max = new_y_lim.max + 1;
-    }
-  else {
-    m_y_lim = new_y_lim;
-  }
-}
-
 void GraphLine::resized() { m_state = State::Uninitialized; };
 
 void GraphLine::paint(juce::Graphics& g) {
@@ -113,62 +83,51 @@ const GraphPoints& GraphLine::getGraphPoints() noexcept {
   return m_graph_points;
 }
 
-void GraphLine::updateXGraphPoints() {
-  if (!m_x_lim) {
-    // x_lim must be set to calculate the xdata.
-    jassertfalse;
-    return;
-  }
+void GraphLine::updateXGraphPoints(const GraphAttributesView& graph_attribute) {
+  // x_lim must be set to calculate the xdata.
+  jassert(graph_attribute.x_lim);
 
-  if (m_x_data.empty()) {
-    // x_data empty.
-    jassertfalse;
-    return;
-  }
+  // x_data empty.
+  jassert(!m_x_data.empty());
 
   if (m_x_data.size() != m_graph_points.size()) {
     m_graph_points.resize(m_x_data.size());
   }
 
-  updateXGraphPointsIntern();
+  updateXGraphPointsIntern(graph_attribute);
 
   m_state = State::Initialized;
 }
 
-void GraphLine::updateYGraphPoints() {
-  if (!m_y_lim) {
-    // y_lim must be set to calculate the ydata.
-    jassertfalse;
-  }
+void GraphLine::updateYGraphPoints(const GraphAttributesView& graph_attribute) {
+  // x_lim must be set to calculate the xdata.
+  jassert(graph_attribute.y_lim);
 
-  if (m_y_data.empty()) {
-    // y_data empty.
-    jassertfalse;
-    return;
-  }
+  // y_data empty.
+  jassert(!m_y_data.empty());
 
-  if (m_state == State::Uninitialized) {
-    // Uninitialized, execute 'updateXGraphPoints' atleast once.
-    jassertfalse;
-    return;
-  }
+  // Uninitialized, execute 'updateXGraphPoints' atleast once.
+  jassert(m_state == State::Initialized);
 
-  updateYGraphPointsIntern();
+  updateYGraphPointsIntern(graph_attribute);
 }
 
-void GraphLine::updateXGraphPointsIntern() noexcept {
+void GraphLine::updateXGraphPointsIntern(
+    const GraphAttributesView& graph_attribute) noexcept {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateXGraphPointsAndIndices(getBounds(), m_x_lim, m_x_data,
+    lnf->updateXGraphPointsAndIndices(graph_attribute.graph_bounds,
+                                      graph_attribute.x_lim, m_x_data,
                                       m_graph_point_indices, m_graph_points);
   }
 }
 
-void GraphLine::updateYGraphPointsIntern() noexcept {
+void GraphLine::updateYGraphPointsIntern(
+    const GraphAttributesView& graph_attribute) noexcept {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateYGraphPoints(getBounds(), m_y_lim, m_y_data,
-                            m_graph_point_indices, m_graph_points);
+    lnf->updateYGraphPoints(graph_attribute.graph_bounds, graph_attribute.y_lim,
+                            m_y_data, m_graph_point_indices, m_graph_points);
   }
 }
 
