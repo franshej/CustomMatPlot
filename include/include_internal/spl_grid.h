@@ -25,12 +25,6 @@ namespace scp {
  */
 struct GridConfigParams {
   /**
-   * X and Y limitation of the grid.
-   * First grid is drawn at lim.min and the last grid is drawn at lim.max
-   */
-  scp::Lim_f x_lim, y_lim;
-
-  /**
    * The bounds of where the grids will be drawn.
    */
   juce::Rectangle<int> grid_area;
@@ -66,24 +60,6 @@ class Grid : public juce::Component {
    *  @return void.
    */
   void setGridBounds(const juce::Rectangle<int>& grid_area);
-
-  /** @brief Set the X-limits
-   *
-   *  Set the limits of X-axis.
-   *
-   *  @param new_x_lim new limits.
-   *  @return void.
-   */
-  void setXLim(const Lim_f& new_x_lim);
-
-  /** @brief Set the Y-limits
-   *
-   *  Set the limits of Y-axis.
-   *
-   *  @param new_y_lim new limits.
-   *  @return void.
-   */
-  void setYLim(const Lim_f& new_y_lim);
 
   /** @brief Display grids
    *
@@ -172,10 +148,12 @@ class Grid : public juce::Component {
    *
    *  @param x_ticks x-ticks to be populated.
    *  @param y_ticks y-ticks to be populated.
+   *  @param graph_attributes common graph attributes.
    *  @return void.
    */
   void createAutoGridTicks(std::vector<float>& x_ticks,
-                           std::vector<float>& y_ticks);
+                           std::vector<float>& y_ticks,
+                           const GraphAttributesView& graph_attributes);
 
   void createLabels(const GraphAttributesView& graph_attributes);
 

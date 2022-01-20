@@ -129,10 +129,6 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
     }
 
   if (new_x_lim && new_x_lim != m_x_lim) {
-    if (m_grid) {
-      m_grid->setXLim(new_x_lim);
-    }
-
     m_x_lim = new_x_lim;
 
     if (m_y_lim) {
@@ -161,10 +157,6 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
 
   if (new_y_lim && m_y_lim != new_y_lim) {
     m_y_lim = new_y_lim;
-
-    if (m_grid) {
-      m_grid->setYLim(new_y_lim);
-    }
 
     if (m_x_lim) {
       updateGridGraphsTrace();
@@ -364,7 +356,6 @@ void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
   resetLookAndFeelChildrens();
 
   this->juce::Component::setLookAndFeel(lnf);
-
 }
 
 void Plot::lookAndFeelChanged() {

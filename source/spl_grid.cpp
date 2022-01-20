@@ -29,7 +29,7 @@ void Grid::updateGridInternal(const GraphAttributesView &graph_attributes) {
   std::vector<float> x_auto_ticks, y_auto_ticks;
 
   if (m_custom_x_ticks.empty() || m_custom_y_ticks.empty())
-    createAutoGridTicks(x_auto_ticks, y_auto_ticks);
+    createAutoGridTicks(x_auto_ticks, y_auto_ticks, graph_attributes);
 
   const auto &x_ticks =
       m_custom_x_ticks.empty() ? x_auto_ticks : m_custom_x_ticks;
@@ -64,17 +64,16 @@ void Grid::updateGridInternal(const GraphAttributesView &graph_attributes) {
       }
     }
 
-    if (longest_label_x_axis >
-            (m_longest_x_axis_label_length_last_cb_triggerd + lnf->getMargin()) ||
-        longest_label_y_axis >
-            (m_longest_y_axis_label_length_last_cb_triggerd + lnf->getMargin()) ||
+    if (longest_label_x_axis > (m_longest_x_axis_label_length_last_cb_triggerd +
+                                lnf->getMargin()) ||
+        longest_label_y_axis > (m_longest_y_axis_label_length_last_cb_triggerd +
+                                lnf->getMargin()) ||
         float(longest_label_x_axis) <
             std::abs(float(m_longest_x_axis_label_length_last_cb_triggerd -
                            lnf->getMargin())) ||
         float(longest_label_y_axis) <
             std::abs(float(m_longest_y_axis_label_length_last_cb_triggerd -
-                           lnf->getMargin()))
-    ) {
+                           lnf->getMargin()))) {
       m_longest_x_axis_label_length_last_cb_triggerd = longest_label_x_axis;
       m_longest_y_axis_label_length_last_cb_triggerd = longest_label_y_axis;
       onGridLabelLengthChanged(this);
@@ -94,12 +93,10 @@ void Grid::addGridLines(const std::vector<float> &ticks,
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
         return getXScaleAndOffset(graph_bounds.getWidth(),
-                                  Lim_f(m_config_params.x_lim),
-                                  lnf->getXScaling());
+                                  graph_attributes.x_lim, lnf->getXScaling());
       }
       return getYScaleAndOffset(graph_bounds.getHeight(),
-                                Lim_f(m_config_params.y_lim),
-                                lnf->getYScaling());
+                                graph_attributes.y_lim, lnf->getYScaling());
     };
 
     const auto [scale, offset] = getScaleOffset();
@@ -210,14 +207,6 @@ void Grid::setGridBounds(const juce::Rectangle<int> &grid_area) {
   m_config_params.grid_area = grid_area;
 }
 
-void Grid::setYLim(const Lim_f &new_y_lim) {
-  m_config_params.y_lim = new_y_lim;
-}
-
-void Grid::setXLim(const Lim_f &new_x_lim) {
-  m_config_params.x_lim = new_x_lim;
-}
-
 void Grid::setGridON(const bool grid_on, const bool tiny_grids_on) {
   m_config_params.grid_on = grid_on;
   m_config_params.tiny_grid_on = tiny_grids_on;
@@ -236,16 +225,17 @@ void Grid::setYTicks(const std::vector<float> &y_ticks) {
 }
 
 void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
-                               std::vector<float> &y_ticks) {
+                               std::vector<float> &y_ticks,
+                               const GraphAttributesView &graph_attributes) {
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<scp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
       lnf->updateVerticalGridLineTicksAuto(getBounds(),
                                            m_config_params.tiny_grid_on,
-                                           m_config_params.x_lim, x_ticks);
+                                           graph_attributes.x_lim, x_ticks);
       lnf->updateHorizontalGridLineTicksAuto(getBounds(),
                                              m_config_params.tiny_grid_on,
-                                             m_config_params.y_lim, y_ticks);
+                                             graph_attributes.y_lim, y_ticks);
     }
   }
 }
