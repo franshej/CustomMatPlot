@@ -32,4 +32,3 @@ class Frame : public juce::Component {
   juce::LookAndFeel* m_lookandfeel;
 };
 }  // namespace scp
-

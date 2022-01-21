@@ -239,15 +239,15 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   }
 
   CONSTEXPR20 juce::Point<int> getTracePointPositionFrom(
-      const GraphAttributesView& graph_attributes,
+      const CommonPlotParameterView& common_plot_params,
       const juce::Point<float> graph_values) const noexcept {
     const auto [x_scale, x_offset] =
-        getXScaleAndOffset(graph_attributes.graph_bounds.getWidth(),
-                           graph_attributes.x_lim, getXScaling());
+        getXScaleAndOffset(common_plot_params.graph_bounds.getWidth(),
+                           common_plot_params.x_lim, getXScaling());
 
     const auto [y_scale, y_offset] =
-        getYScaleAndOffset(graph_attributes.graph_bounds.getHeight(),
-                           graph_attributes.y_lim, getYScaling());
+        getYScaleAndOffset(common_plot_params.graph_bounds.getHeight(),
+                           common_plot_params.y_lim, getYScaling());
 
     float x;
     float y;
@@ -285,6 +285,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
       }
 
       g.setColour(graph_colour);
+
       g.strokePath(graph_path, p_type);
     }
   }
@@ -292,6 +293,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   void drawGridLabels(juce::Graphics& g, const LabelVector& x_axis_labels,
                       const LabelVector& y_axis_labels) override {
     g.setColour(findColour(Plot::x_grid_label_colour));
+
     g.setFont(getGridLabelFont());
     for (const auto& x_axis_text : x_axis_labels) {
       g.drawText(x_axis_text.first, x_axis_text.second,
@@ -389,18 +391,20 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   }
 
   void drawTraceLabel(juce::Graphics& g, const scp::Label& x_label,
-                      const scp::Label& y_label) override{
-      g.setColour(findColour(Plot::trace_label_colour));
-      g.setFont(getTraceFont());
-      g.drawText(x_label.first, x_label.second, juce::Justification::left);
-      g.drawText(y_label.first, y_label.second, juce::Justification::left);
+                      const scp::Label& y_label) override {
+    g.setColour(findColour(Plot::trace_label_colour));
+    g.setFont(getTraceFont());
+    g.drawText(x_label.first, x_label.second, juce::Justification::left);
+    g.drawText(y_label.first, y_label.second, juce::Justification::left);
 
-      const auto frame_width =
-          std::max(x_label.second.getWidth(), y_label.second.getWidth());
-      const auto frame_height = x_label.second.getHeight() + y_label.second.getHeight() + getMargin()*3;
-      const auto frame_bounds = juce::Rectangle<int>(0, 0, frame_width, frame_height);
-      g.setColour(findColour(Plot::trace_label_frame_colour));
-      g.drawRect(frame_bounds);
+    const auto frame_width =
+        std::max(x_label.second.getWidth(), y_label.second.getWidth());
+    const auto frame_height = x_label.second.getHeight() +
+                              y_label.second.getHeight() + getMargin() * 3;
+    const auto frame_bounds =
+        juce::Rectangle<int>(0, 0, frame_width, frame_height);
+    g.setColour(findColour(Plot::trace_label_frame_colour));
+    g.drawRect(frame_bounds);
   };
 
   void drawTracePoint(juce::Graphics& g,
@@ -748,14 +752,14 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return m_y_scaling;
   };
 
-  void updateGridLabels(const GraphAttributesView& graph_attributes,
+  void updateGridLabels(const CommonPlotParameterView& common_plot_params,
                         const std::vector<GridLine>& grid_lines,
                         StringVector& x_custom_label_ticks,
                         StringVector& y_custom_label_ticks,
                         LabelVector& x_axis_labels_out,
                         LabelVector& y_axis_labels_out) override {
     const auto [x, y, width, height] =
-        getRectangleMeasures<int>(graph_attributes.graph_bounds);
+        getRectangleMeasures<int>(common_plot_params.graph_bounds);
     const auto font = getGridLabelFont();
 
     const auto num_horizonal_lines =
@@ -829,14 +833,14 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           const auto label =
               use_custom_x_labels
                   ? getNextCustomLabel(custom_x_labels_reverse_it)
-                  : valueToString(tick, graph_attributes, true).first;
+                  : valueToString(tick, common_plot_params, true).first;
 
           const auto [label_width, label_height] =
               getLabelWidthAndHeight(font, label);
 
           const auto bound = juce::Rectangle<int>(
               int(position.x) - label_width / 2,
-              graph_attributes.graph_bounds.getBottom() + getMargin(),
+              common_plot_params.graph_bounds.getBottom() + getMargin(),
               label_width, label_height);
 
           checkInterectionWithLastLabelAndAdd(x_last_label_bound,
@@ -846,7 +850,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           const auto label =
               use_custom_y_labels
                   ? getNextCustomLabel(custom_y_labels_reverse_it)
-                  : valueToString(tick, graph_attributes, false).first;
+                  : valueToString(tick, common_plot_params, false).first;
 
           const auto [label_width, label_height] =
               getLabelWidthAndHeight(font, label);

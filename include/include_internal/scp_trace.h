@@ -72,7 +72,7 @@ template <class ValueType>
 struct TraceLabel : public juce::Component {
   /** Set the graph labels from point. */
   void setGraphLabelFrom(const juce::Point<ValueType>& graph_value,
-                         const GraphAttributesView& graph_attributes);
+                         const CommonPlotParameterView& common_plot_params);
 
   /** @internal */
   void resized() override;
@@ -149,20 +149,21 @@ class Trace {
 
   /** @brief Update the tracepoint bounds from graph attributes.
    *
-   * @param graph_attributes common graph attributes.
+   * @param common_plot_params common plot parameters.
    * @return void.
    */
-  void updateTracePointsBoundsFrom(const GraphAttributesView& graph_attributes);
+  void updateTracePointsBoundsFrom(
+      const CommonPlotParameterView& common_plot_params);
 
   /** @brief Update a single tracepoint bounds from graph attributes.
    *
    * @param trace_label_or_point either a tracepoint or tracelabel.
-   * @param graph_attributes common graph attributes.
+   * @param common_plot_params common plot parameters.
    * @return void.
    */
   void updateSingleTracePointBoundsFrom(
       juce::Component* trace_label_or_point,
-      const GraphAttributesView& graph_attributes);
+      const CommonPlotParameterView& common_plot_params);
 
   /** @brief Add the tracepoints to a parent component
    *
@@ -179,15 +180,16 @@ class Trace {
    */
   void setLookAndFeel(juce::LookAndFeel* lnf);
 
-  /** @breif Set the position of a single tracepoint.
+  /** @breif Set the data value for a tracepoint.
    *
-   * @param graph_attributes common graph attributes.
+   * @param tracepoint the tracepoint which data value will be set.
+   * @param common_plot_params common plot parameters.
    * @param new_position the new position for the tracepoint.
    * @return true if the value was changed.
    */
-  bool setGraphPositionFor(juce::Component* trace_point,
-                           const juce::Point<float>& new_position,
-                           const GraphAttributesView& graph_attributes);
+  bool setDataValueFor(juce::Component* trace_point,
+                       const juce::Point<float>& new_position,
+                       const CommonPlotParameterView& common_plot_params);
 
   /** @breif Set the coner position of a single tracelabel.
    *
@@ -234,7 +236,7 @@ class Trace {
   /** @internal */
   void updateSingleTraceLabelTextsAndBoundsInternal(
       TraceLabelPoint_f* trace_point_label,
-      const GraphAttributesView& graph_attributes);
+      const CommonPlotParameterView& common_plot_params);
   /** @internal */
   void updateTracePointsLookAndFeel();
   /** @internal */

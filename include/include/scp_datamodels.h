@@ -10,7 +10,7 @@
 #define CONSTEXPR20
 #endif
 
-#if IS_CXX_20
+#if (__cpp_impl_three_way_comparison >= 201907L || IS_CXX_20)
 #include <compare>
 #endif
 
@@ -128,13 +128,13 @@ struct IsLabelsSet {
   bool title_label{false};
 };
 
-/** @brief A view of some common graph attributes. */
-struct GraphAttributesView {
-  GraphAttributesView(const juce::Rectangle<int>& _graph_bounds,
-                      const Lim_f& _x_lim, const Lim_f& _y_lim)
+/** @brief A view of some common plot parameters. */
+struct CommonPlotParameterView {
+  CommonPlotParameterView(const juce::Rectangle<int>& _graph_bounds,
+                          const Lim_f& _x_lim, const Lim_f& _y_lim)
       : graph_bounds{_graph_bounds}, x_lim{_x_lim}, y_lim{_y_lim} {};
-  GraphAttributesView(const juce::Rectangle<int>&&, const Lim_f&&,
-                      const Lim_f&&) = delete;  // prevents rvalue binding
+  CommonPlotParameterView(const juce::Rectangle<int>&&, const Lim_f&&,
+                          const Lim_f&&) = delete;  // prevents rvalue binding
   const juce::Rectangle<int>& graph_bounds;
   const Lim_f &x_lim, &y_lim;
 };
@@ -290,7 +290,7 @@ constexpr auto getYScaleAndOffset =
 
 template <class ValueType>
 [[nodiscard]] std::pair<std::string, std::string> valueToString(
-    const ValueType value, const GraphAttributesView& graph_attributes,
+    const ValueType value, const CommonPlotParameterView& common_plot_params,
     const bool is_x,
     [[maybe_unused]] const std::size_t size_of_exponent_before_factor =
         std::numeric_limits<std::size_t>::max()) {
@@ -299,7 +299,7 @@ template <class ValueType>
                     std::is_same<double, ValueType>::value ||
                     std::is_same<const double, ValueType>::value,
                 "Type must be either float or double");
-  auto lims = is_x ? graph_attributes.x_lim : graph_attributes.y_lim;
+  auto lims = is_x ? common_plot_params.x_lim : common_plot_params.y_lim;
 
   const auto max_exp = lims.max != 0 ? std::log10(abs(lims.max)) : 0;
   const auto min_exp = lims.min != 0 ? std::log10(abs(lims.min)) : 0;

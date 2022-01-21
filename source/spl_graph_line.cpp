@@ -113,9 +113,9 @@ const GraphPoints& GraphLine::getGraphPoints() noexcept {
   return m_graph_points;
 }
 
-void GraphLine::updateXGraphPoints(const GraphAttributesView& graph_attribute) {
+void GraphLine::updateXGraphPoints(const CommonPlotParameterView& common_plot_params) {
   // x_lim must be set to calculate the xdata.
-  jassert(graph_attribute.x_lim);
+  jassert(common_plot_params.x_lim);
 
   // x_data empty.
   jassert(!m_x_data.empty());
@@ -124,14 +124,14 @@ void GraphLine::updateXGraphPoints(const GraphAttributesView& graph_attribute) {
     m_graph_points.resize(m_x_data.size());
   }
 
-  updateXGraphPointsIntern(graph_attribute);
+  updateXGraphPointsIntern(common_plot_params);
 
   m_state = State::Initialized;
 }
 
-void GraphLine::updateYGraphPoints(const GraphAttributesView& graph_attribute) {
+void GraphLine::updateYGraphPoints(const CommonPlotParameterView& common_plot_params) {
   // x_lim must be set to calculate the xdata.
-  jassert(graph_attribute.y_lim);
+  jassert(common_plot_params.y_lim);
 
   // y_data empty.
   jassert(!m_y_data.empty());
@@ -139,24 +139,24 @@ void GraphLine::updateYGraphPoints(const GraphAttributesView& graph_attribute) {
   // Uninitialized, execute 'updateXGraphPoints' atleast once.
   jassert(m_state == State::Initialized);
 
-  updateYGraphPointsIntern(graph_attribute);
+  updateYGraphPointsIntern(common_plot_params);
 }
 
 void GraphLine::updateXGraphPointsIntern(
-    const GraphAttributesView& graph_attribute) noexcept {
+    const CommonPlotParameterView& common_plot_params) noexcept {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateXGraphPointsAndIndices(graph_attribute.graph_bounds,
-                                      graph_attribute.x_lim, m_x_data,
+    lnf->updateXGraphPointsAndIndices(common_plot_params.graph_bounds,
+                                      common_plot_params.x_lim, m_x_data,
                                       m_graph_point_indices, m_graph_points);
   }
 }
 
 void GraphLine::updateYGraphPointsIntern(
-    const GraphAttributesView& graph_attribute) noexcept {
+    const CommonPlotParameterView& common_plot_params) noexcept {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateYGraphPoints(graph_attribute.graph_bounds, graph_attribute.y_lim,
+    lnf->updateYGraphPoints(common_plot_params.graph_bounds, common_plot_params.y_lim,
                             m_y_data, m_graph_point_indices, m_graph_points);
   }
 }

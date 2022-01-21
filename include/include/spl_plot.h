@@ -210,6 +210,12 @@ class Plot : public juce::Component {
 
   //==============================================================================
 
+  struct GraphAttribute {
+
+  };
+
+  //==============================================================================
+
   /** @brief This lamda is triggerd when a tracepoint value is changed.
    *
    * @param current_plot poiter to this plot.
@@ -363,7 +369,7 @@ class Plot : public juce::Component {
 
     /** Get position for a single trace point.*/
     virtual CONSTEXPR20 juce::Point<int> getTracePointPositionFrom(
-        const GraphAttributesView& graph_attributes,
+        const CommonPlotParameterView& common_plot_params,
         const juce::Point<float> graph_values) const noexcept = 0;
 
     /** Get the local bounds used when drawing the trace label (the bounds
@@ -426,7 +432,7 @@ class Plot : public juce::Component {
         GraphPoints& graph_points) noexcept = 0;
 
     /** Updates both the vertical and horizontal grid labels. */
-    virtual void updateGridLabels(const GraphAttributesView& graph_attributes,
+    virtual void updateGridLabels(const CommonPlotParameterView& common_plot_params,
                                   const std::vector<GridLine>& grid_lines,
                                   StringVector& x_label_ticks,
                                   StringVector& y_label_ticks,
@@ -493,7 +499,7 @@ class Plot : public juce::Component {
   const Scaling m_x_scaling, m_y_scaling;
   scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
   juce::Rectangle<int> m_graph_bounds;
-  GraphAttributesView m_graph_params;
+  CommonPlotParameterView m_graph_params;
 
   GraphLines m_graph_lines;
   std::unique_ptr<Grid> m_grid;

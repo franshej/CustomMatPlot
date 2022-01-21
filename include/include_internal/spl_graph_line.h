@@ -127,20 +127,20 @@ class GraphLine : public juce::Component {
    *  This function updates the graph points if any new parameter is set. Should
    *  be called after an parameter changed to update the graph.
    *
-   *  @param graph_attributes common graph attributes.
+   *  @param common_plot_params common plot parameters.
    *  @return void.
    */
-  void updateXGraphPoints(const GraphAttributesView& graph_attribute);
+  void updateXGraphPoints(const CommonPlotParameterView& common_plot_params);
 
   /** @brief Update the y-value in the graph points.
    *
    *  This function updates the graph points if any new parameter is set. Should
    *  be called after an parameter changed to update the graph.
    *
-   *  @param graph_attributes common graph attributes.
+   *  @param common_plot_params common plot parameters.
    *  @return void.
    */
-  void updateYGraphPoints(const GraphAttributesView& graph_attribute);
+  void updateYGraphPoints(const CommonPlotParameterView& common_plot_params);
 
   //==============================================================================
   /** @internal */
@@ -160,8 +160,10 @@ class GraphLine : public juce::Component {
   std::vector<float> m_dashed_lengths;
   juce::Colour m_graph_colour;
 
-  void updateYGraphPointsIntern(const GraphAttributesView& graph_attribute) noexcept;
-  void updateXGraphPointsIntern(const GraphAttributesView& graph_attribute) noexcept;
+  void updateYGraphPointsIntern(
+      const CommonPlotParameterView& common_plot_params) noexcept;
+  void updateXGraphPointsIntern(
+      const CommonPlotParameterView& common_plot_params) noexcept;
 
  protected:
   juce::LookAndFeel* m_lookandfeel{nullptr};

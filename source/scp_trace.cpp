@@ -17,14 +17,14 @@ bool TracePoint<ValueType>::setDataValue(
 template <class ValueType>
 void TraceLabel<ValueType>::setGraphLabelFrom(
     const juce::Point<ValueType>& graph_value,
-    const GraphAttributesView& graph_attribute) {
+    const CommonPlotParameterView& common_plot_params) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
     m_x_label.first =
-        "X: " + valueToString(graph_value.getX(), graph_attribute, true).first;
+        "X: " + valueToString(graph_value.getX(), common_plot_params, true).first;
     m_y_label.first =
-        "Y: " + valueToString(graph_value.getY(), graph_attribute, false).first;
+        "Y: " + valueToString(graph_value.getY(), common_plot_params, false).first;
 
     const auto [x_label_bounds, y_label_bounds] =
         lnf->getTraceXYLabelBounds(m_x_label.first, m_y_label.first);
@@ -92,15 +92,15 @@ void Trace::addOrRemoveTracePoint(
 }
 
 void Trace::updateTracePointsBoundsFrom(
-    const GraphAttributesView& graph_attributes) {
+    const CommonPlotParameterView& common_plot_params) {
   for (auto& tlp : m_trace_labelpoints) {
-    updateSingleTraceLabelTextsAndBoundsInternal(&tlp, graph_attributes);
+    updateSingleTraceLabelTextsAndBoundsInternal(&tlp, common_plot_params);
   }
 }
 
 void Trace::updateSingleTracePointBoundsFrom(
     juce::Component* trace_label_or_point,
-    const GraphAttributesView& graph_attributes) {
+    const CommonPlotParameterView& common_plot_params) {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_label_or_point);
 
   if (tlp_it == m_trace_labelpoints.end()) {
@@ -110,7 +110,7 @@ void Trace::updateSingleTracePointBoundsFrom(
   auto it = m_trace_labelpoints.erase(
       tlp_it, tlp_it);  // remove const for ::const_iterator
 
-  updateSingleTraceLabelTextsAndBoundsInternal(&(*it), graph_attributes);
+  updateSingleTraceLabelTextsAndBoundsInternal(&(*it), common_plot_params);
 }
 
 void Trace::addAndMakeVisibleTo(juce::Component* parent_comp) {
@@ -127,13 +127,13 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
 
 bool Trace::setGraphPositionFor(juce::Component* trace_point,
                                 const juce::Point<float>& new_position,
-                                const GraphAttributesView& graph_attributes) {
+                                const CommonPlotParameterView& common_plot_params) {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
   auto it = m_trace_labelpoints.erase(tlp_it, tlp_it);  // remove const for ::const_iterator
 
   if (it != m_trace_labelpoints.end() &&
       it->trace_point->setDataValue(new_position)) {
-    updateSingleTraceLabelTextsAndBoundsInternal(&(*it), graph_attributes);
+    updateSingleTraceLabelTextsAndBoundsInternal(&(*it), common_plot_params);
 
     return true;
   }
@@ -221,12 +221,12 @@ void Trace::removeSingleTracePointAndLabel(
 }
 
 void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
-    TraceLabelPoint_f* tlp, const GraphAttributesView& graph_attributes) {
+    TraceLabelPoint_f* tlp, const CommonPlotParameterView& common_plot_params) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
     const auto data_value = tlp->trace_point->m_data_value;
-    tlp->trace_label->setGraphLabelFrom(data_value, graph_attributes);
+    tlp->trace_label->setGraphLabelFrom(data_value, common_plot_params);
 
     const auto x_bound = tlp->trace_label->m_x_label.second;
     const auto y_bound = tlp->trace_label->m_y_label.second;
@@ -236,8 +236,8 @@ void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
     auto trace_bounds = local_trace_bounds;
 
     const auto trace_position =
-        lnf->getTracePointPositionFrom(graph_attributes, data_value) +
-        graph_attributes.graph_bounds.getPosition();
+        lnf->getTracePointPositionFrom(common_plot_params, data_value) +
+        common_plot_params.graph_bounds.getPosition();
 
     switch (tlp->trace_label->trace_label_corner_pos) {
       case TraceLabelCornerPosition::top_left:
