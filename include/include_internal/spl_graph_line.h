@@ -51,18 +51,23 @@ class GraphLine : public juce::Component {
       const juce::Point<float>& this_data_point,
       bool check_only_distance_from_x = false) const noexcept;
 
-  /** @brief Get the colour of graph
-   *
-   *  Get the colour of graph.
+  /** @brief Get the colour of the graph.
    *
    *  @param graph_colour the colour of the graph
    *  @return void.
    */
   juce::Colour getColour() const noexcept;
 
-  /** @brief Set the y-values for the graph-line
+  /** @brief Set the graph attributes.
    *
-   *  Set the y-values.
+   *  @see GraphAttribute.
+   *
+   *  @param graph_attributes the graph_attributes.
+   *  @return void.
+   */
+  void setGraphAttribute(const GraphAttribute& graph_attribute);
+
+  /** @brief Set the y-values for the graph-line
    *
    *  @param y_values vector of y-values.
    *  @return void.
@@ -70,8 +75,6 @@ class GraphLine : public juce::Component {
   void setYValues(const std::vector<float>& y_values) noexcept;
 
   /** @brief Set the x-values for the graph-line
-   *
-   *  Set the x-values.
    *
    *  @param x_values vector of x-values.
    *  @return void.
@@ -157,19 +160,17 @@ class GraphLine : public juce::Component {
     Initialized,
   } m_state{State::Uninitialized};
 
-  std::vector<float> m_dashed_lengths;
-  juce::Colour m_graph_colour;
-
   void updateYGraphPointsIntern(
       const CommonPlotParameterView& common_plot_params) noexcept;
   void updateXGraphPointsIntern(
       const CommonPlotParameterView& common_plot_params) noexcept;
 
- protected:
   juce::LookAndFeel* m_lookandfeel{nullptr};
 
   std::vector<float> m_x_data, m_y_data;
   GraphPoints m_graph_points;
   std::vector<std::size_t> m_graph_point_indices;
+
+  GraphAttribute m_graph_attributes;
 };
 }  // namespace scp

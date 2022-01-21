@@ -7,7 +7,7 @@
 namespace scp {
 
 void GraphLine::setColour(const juce::Colour graph_colour) {
-  m_graph_colour = graph_colour;
+    m_graph_attributes.graph_colour = graph_colour;
 }
 
 std::pair<juce::Point<float>, juce::Point<float>>
@@ -67,14 +67,20 @@ juce::Point<float> GraphLine::findClosestDataPointTo(
   return closest_data_point;
 }
 
-juce::Colour GraphLine::getColour() const noexcept { return m_graph_colour; }
+juce::Colour GraphLine::getColour() const noexcept {
+  return m_graph_attributes.graph_colour.value();
+}
 
 void GraphLine::resized() { m_state = State::Uninitialized; };
 
 void GraphLine::paint(juce::Graphics& g) {
+  const GraphLineDataView graph_line_data(m_y_data, m_x_data, m_graph_points,
+                                          m_graph_point_indices,
+                                          m_graph_attributes);
+
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->drawGraphLine(g, m_graph_points, m_dashed_lengths, m_graph_colour);
+    lnf->drawGraphLine(g, graph_line_data);
   }
 }
 
@@ -84,6 +90,20 @@ void GraphLine::lookAndFeelChanged() {
   } else {
     m_lookandfeel = nullptr;
   }
+}
+
+void GraphLine::setGraphAttribute(const GraphAttribute& graph_attribute) {
+  if (graph_attribute.dashed_lengths)
+    m_graph_attributes.dashed_lengths = graph_attribute.dashed_lengths;
+  if (graph_attribute.graph_colour)
+    m_graph_attributes.graph_colour = graph_attribute.graph_colour;
+  if (graph_attribute.graph_line_visible)
+    m_graph_attributes.graph_line_visible = graph_attribute.graph_line_visible;
+  if (graph_attribute.graph_width_pixels)
+    m_graph_attributes.graph_width_pixels = graph_attribute.graph_width_pixels;
+  if (graph_attribute.on_graph_point_paint)
+    m_graph_attributes.on_graph_point_paint =
+        graph_attribute.on_graph_point_paint;
 }
 
 void GraphLine::setYValues(const std::vector<float>& y_data) noexcept {
@@ -102,7 +122,7 @@ void GraphLine::setXValues(const std::vector<float>& x_data) noexcept {
 
 void GraphLine::setDashedPath(
     const std::vector<float>& dashed_lengths) noexcept {
-  m_dashed_lengths = dashed_lengths;
+  m_graph_attributes.dashed_lengths = dashed_lengths;
 }
 
 const std::vector<float>& GraphLine::getYValues() noexcept { return m_y_data; }

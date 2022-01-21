@@ -125,7 +125,7 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
   updateTracePointsLookAndFeel();
 }
 
-bool Trace::setGraphPositionFor(juce::Component* trace_point,
+bool Trace::setDataValueFor(juce::Component* trace_point,
                                 const juce::Point<float>& new_position,
                                 const CommonPlotParameterView& common_plot_params) {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);

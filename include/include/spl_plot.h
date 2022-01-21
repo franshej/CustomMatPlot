@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <juce_gui_basics/juce_gui_basics.h>
+#include "juce_gui_basics/juce_gui_basics.h"
 
 #include "scp_datamodels.h"
 
@@ -61,17 +61,21 @@ class Plot : public juce::Component {
    *  Plot y-data or y-data/x-data. Each vector in y-data represents a single
    *  graph line. E.g. If 'y_data.size() == 3', three graph lines will be
    *  plotted. If 'x_data' is empty the x-vlues will be set to linearly
-   *  increasing from 1 to the size of y-data. If 'graph_colours' is
-   *  empty then 'ColourIdsGraph' is used.
+   *  increasing from 1 to the size of y-data.
+   *
+   *  The list of graph_attributes are applied per graph. E.g.
+   *  graph_attribute_list[0] is applied to graph[0]. If 'graph_colours' is
+   *  not set then 'ColourIdsGraph' is used for the lookandfeel.
    *
    *  @param y_data vector of vectors with the y-values.
    *  @param x_data vector of vectors with the x-values.
-   *  @param graph_colours a vector with user defined graph colours.
+   *  @param graph_attribute_list a list of graph attributes @see
+   *  GraphAttribute.
    *  @return void.
    */
   void plot(const std::vector<std::vector<float>>& y_data,
             const std::vector<std::vector<float>>& x_data = {},
-            ColourVector graph_colours = {});
+            const GraphAttributeList& graph_attribute_list = {});
 
   /** @brief Realtime plot.
    *
@@ -210,12 +214,6 @@ class Plot : public juce::Component {
 
   //==============================================================================
 
-  struct GraphAttribute {
-
-  };
-
-  //==============================================================================
-
   /** @brief This lamda is triggerd when a tracepoint value is changed.
    *
    * @param current_plot poiter to this plot.
@@ -282,9 +280,7 @@ class Plot : public juce::Component {
 
     /** This method draws a single graph line. */
     virtual void drawGraphLine(juce::Graphics& g,
-                               const GraphPoints& graph_points,
-                               const std::vector<float>& dashed_lengths,
-                               const juce::Colour graph_colour) = 0;
+                               const GraphLineDataView graph_line_data) = 0;
 
     /** This method draws the labels on the x and y axis. */
     virtual void drawGridLabels(juce::Graphics& g,
@@ -432,12 +428,11 @@ class Plot : public juce::Component {
         GraphPoints& graph_points) noexcept = 0;
 
     /** Updates both the vertical and horizontal grid labels. */
-    virtual void updateGridLabels(const CommonPlotParameterView& common_plot_params,
-                                  const std::vector<GridLine>& grid_lines,
-                                  StringVector& x_label_ticks,
-                                  StringVector& y_label_ticks,
-                                  LabelVector& x_axis_labels,
-                                  LabelVector& y_axis_labels) = 0;
+    virtual void updateGridLabels(
+        const CommonPlotParameterView& common_plot_params,
+        const std::vector<GridLine>& grid_lines, StringVector& x_label_ticks,
+        StringVector& y_label_ticks, LabelVector& x_axis_labels,
+        LabelVector& y_axis_labels) = 0;
 
     /** Update the title, x and y axis labels. */
     virtual void updateXYTitleLabels(const juce::Rectangle<int>& bounds,
@@ -483,7 +478,8 @@ class Plot : public juce::Component {
 
   void resetLookAndFeelChildrens();
 
-  void updateYData(const std::vector<std::vector<float>>& y_data);
+  void updateYData(const std::vector<std::vector<float>>& y_data,
+                   const GraphAttributeList& graph_attribute_list);
   void updateXData(const std::vector<std::vector<float>>& x_data);
 
   void setAutoXScale();

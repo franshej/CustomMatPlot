@@ -210,8 +210,8 @@ void Plot::yLim(const float min, const float max) {
 
 void Plot::plot(const std::vector<std::vector<float>>& y_data,
                 const std::vector<std::vector<float>>& x_data,
-                ColourVector custom_graph_colours) {
-  updateYData(y_data);
+                const GraphAttributeList& graph_attributes) {
+  updateYData(y_data, graph_attributes);
   updateXData(x_data);
 
   updateTracePointsForNewGraphData();
@@ -220,7 +220,7 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
 }
 
 void scp::Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
-  updateYData(y_data);
+  updateYData(y_data, {});
 
   updateTracePointsForNewGraphData();
 
@@ -417,7 +417,8 @@ void Plot::lookAndFeelChanged() {
   }
 }
 
-void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
+void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
+                       const GraphAttributeList& graph_attribute_list) {
   if (!y_data.empty()) {
     if (y_data.size() != m_graph_lines.size()) {
       m_graph_lines.resize(y_data.size());
@@ -439,6 +440,17 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data) {
           graph_line->toBehind(m_zoom.get());
           i++;
         }
+      }
+    }
+
+    if (!graph_attribute_list.empty()) {
+      auto it_gal = graph_attribute_list.begin();
+      for (const auto& graph_line : m_graph_lines) {
+        if (it_gal != graph_attribute_list.end()) {
+          graph_line->setGraphAttribute(*it_gal);
+        }
+
+        ++it_gal;
       }
     }
 
@@ -607,7 +619,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
           onTraceValueChange ? m_trace->getGraphPosition(event.eventComponent)
                              : juce::Point<float>();
 
-      if (m_trace->setGraphPositionFor(event.eventComponent, closest_data_point,
+      if (m_trace->setDataValueFor(event.eventComponent, closest_data_point,
                                        m_graph_params)) {
         if (onTraceValueChange) {
           onTraceValueChange(this, prev_graph_point, closest_data_point);

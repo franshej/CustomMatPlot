@@ -22,6 +22,8 @@
 #endif
 #endif
 
+#include <optional>
+
 namespace scp {
 
 /*============================================================================*/
@@ -30,6 +32,29 @@ namespace scp {
 enum class Scaling : uint32_t {
   linear,     /**< Linear scaling of the graph line. */
   logarithmic /**< Logarithmic scaling of the graph line. */
+};
+
+/*============================================================================*/
+
+/** Attributes of a single graph. */
+struct GraphAttribute {
+  /** Colour of the graph_line. */
+  std::optional<juce::Colour> graph_colour;
+
+  /** Dashed lengths of the graph_line. To make the graph_line dashed. */
+  std::optional<std::vector<float>> dashed_lengths;
+
+  /** The pixel width of the graph_line. */
+  std::optional<int> graph_width_pixels;
+
+  /** Set to false to hide graph_line. */
+  std::optional<bool> graph_line_visible;
+
+  /** Callback function which is triggerd for every plotted graph_point. E.g.
+   * Can be used to do custom plot markers for each graph_point.*/
+  std::function<void(juce::Graphics& g, juce::Point<float> data_point,
+                     juce::Point<float> graph_point)>
+      on_graph_point_paint{nullptr};
 };
 
 /*============================================================================*/
@@ -51,6 +76,7 @@ typedef std::pair<std::string, juce::Rectangle<int>> Label;
 typedef std::vector<Label> LabelVector;
 typedef std::vector<std::string> StringVector;
 typedef std::vector<juce::Colour> ColourVector;
+typedef std::vector<GraphAttribute> GraphAttributeList;
 
 /*============================================================================*/
 
@@ -137,6 +163,27 @@ struct CommonPlotParameterView {
                           const Lim_f&&) = delete;  // prevents rvalue binding
   const juce::Rectangle<int>& graph_bounds;
   const Lim_f &x_lim, &y_lim;
+};
+
+/** @brief A view of the data required to draw a graph_line++ */
+struct GraphLineDataView {
+  GraphLineDataView(const std::vector<float>& x, const std::vector<float>& y,
+                    const GraphPoints& gp, const std::vector<std::size_t>& i,
+                    const GraphAttribute& ga)
+      : x_data{x},
+        y_data{y},
+        graph_points{gp},
+        graph_point_indices{i},
+        graph_attribute{ga} {};
+  GraphLineDataView(const std::vector<float>&&, const std::vector<float>&&,
+                    const GraphPoints&&,
+                    const std::vector<std::size_t>&&) =
+      delete;  // prevents rvalue binding
+
+  const std::vector<float>&x_data, &y_data;
+  const GraphPoints& graph_points;
+  const std::vector<std::size_t>& graph_point_indices;
+  const GraphAttribute& graph_attribute;
 };
 
 /*============================================================================*/

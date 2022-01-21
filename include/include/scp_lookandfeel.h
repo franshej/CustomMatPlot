@@ -266,12 +266,15 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return juce::Point<float>(x, y).toInt();
   }
 
-  void drawGraphLine(juce::Graphics& g, const GraphPoints& graph_points,
-                     const std::vector<float>& dashed_lengths,
-                     const juce::Colour graph_colour) override {
+  void drawGraphLine(juce::Graphics& g,
+                     const GraphLineDataView graph_line_data) override {
     juce::Path graph_path;
     juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
                                 juce::PathStrokeType::EndCapStyle::rounded);
+
+    const auto& graph_points = graph_line_data.graph_points;
+    const auto& dashed_lengths = graph_line_data.graph_attribute.dashed_lengths;
+    const auto& graph_colour = graph_line_data.graph_attribute.graph_colour.value();
 
     if (graph_points.size() > 1) {
       graph_path.startNewSubPath(graph_points[0]);
@@ -279,9 +282,10 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           graph_points.begin() + 1, graph_points.end(),
           [&](const juce::Point<float>& point) { graph_path.lineTo(point); });
 
-      if (!dashed_lengths.empty()) {
-        p_type.createDashedStroke(graph_path, graph_path, dashed_lengths.data(),
-                                  int(dashed_lengths.size()));
+      if (dashed_lengths) {
+        p_type.createDashedStroke(graph_path, graph_path,
+                                  dashed_lengths.value().data(),
+                                  int(dashed_lengths.value().size()));
       }
 
       g.setColour(graph_colour);

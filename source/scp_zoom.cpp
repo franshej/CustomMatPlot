@@ -13,6 +13,7 @@ void Zoom::setEndPosition(const juce::Point<int>& end_position) noexcept {
 }
 
 juce::Point<int> Zoom::getStartPosition() const noexcept { return m_start_pos; }
+
 juce::Point<int> Zoom::getEndPosition() const noexcept { return m_end_pos; }
 
 bool Zoom::isStartPosSet() const noexcept

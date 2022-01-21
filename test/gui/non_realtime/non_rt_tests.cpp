@@ -305,3 +305,26 @@ TEST(look_and_feel, NonRealTime) {
   PLOT_Y({y_test_data});
   GET_PLOT->setLookAndFeel(lnf.get());
 }
+
+TEST(set_custom_colour, NonRealTime) {
+  ADD_PLOT;
+
+  std::vector<std::vector<float>> test_data_y =
+      std::vector<std::vector<float>>(6, std::vector<float>(100));
+  std::vector<std::string> legends;
+
+  float i = 0;
+  for (auto &y_vec : test_data_y) {
+    std::iota(y_vec.begin(), y_vec.end(), 0);
+    for (auto &y : y_vec) {
+      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+    }
+    i++;
+  }
+
+  scp::GraphAttributeList ga(6);
+  ga[3].graph_colour = juce::Colours::pink;
+
+  PLOT_XY_ATTRI(test_data_y, {}, ga);
+  LEGEND(legends);
+}
