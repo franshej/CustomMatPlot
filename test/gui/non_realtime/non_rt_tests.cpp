@@ -343,3 +343,16 @@ TEST(opacity, NonRealTime) {
   PLOT_XY_ATTRI({y_test_data}, {}, ga);
   GRID_ON;
 }
+
+TEST(path_stroke_path, NonRealTime) {
+  ADD_PLOT;
+
+  std::vector<float> y_test_data(1000);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+
+  scp::GraphAttributeList ga(1);
+  ga[0].path_stroke_type = juce::PathStrokeType(10);
+
+  PLOT_XY_ATTRI({y_test_data}, {}, ga);
+  GRID_ON;
+}

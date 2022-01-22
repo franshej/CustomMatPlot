@@ -269,8 +269,12 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   void drawGraphLine(juce::Graphics& g,
                      const GraphLineDataView graph_line_data) override {
     juce::Path graph_path;
-    juce::PathStrokeType p_type(1.0f, juce::PathStrokeType::JointStyle::mitered,
-                                juce::PathStrokeType::EndCapStyle::rounded);
+    juce::PathStrokeType p_type =
+        graph_line_data.graph_attribute.path_stroke_type
+            ? graph_line_data.graph_attribute.path_stroke_type.value()
+            : juce::PathStrokeType(1.0f,
+                                   juce::PathStrokeType::JointStyle::mitered,
+                                   juce::PathStrokeType::EndCapStyle::rounded);
 
     const auto& graph_points = graph_line_data.graph_points;
     const auto& dashed_lengths = graph_line_data.graph_attribute.dashed_lengths;

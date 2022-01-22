@@ -41,6 +41,9 @@ struct GraphAttribute {
   /** Colour of the graph_line. */
   std::optional<juce::Colour> graph_colour;
 
+  /** Custom path stroke @see juce::PathStrokeType */
+  std::optional<juce::PathStrokeType> path_stroke_type;
+
   /** Use dash_lengths to draw dashed graph_line. E.g. dashed_lengths = {2,
    * 2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 3 pixels, skip
    * 6 pixels, and then repeat. */
