@@ -114,17 +114,6 @@ class GraphLine : public juce::Component {
    */
   void setColour(const juce::Colour graph_colour);
 
-  /** @brief Set a dashed path
-   *
-   *  Use custom dash-lengths to draw a dashed line. e.g. dashed_lengths = {2,
-   *  2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 3 pixels, skip
-   *  6 pixels, and then repeat.
-   *
-   *  @param dashed_lengths
-   *  @return void.
-   */
-  void setDashedPath(const std::vector<float>& dashed_lengths) noexcept;
-
   /** @brief Update the x-value in the graph points.
    *
    *  This function updates the graph points if any new parameter is set. Should

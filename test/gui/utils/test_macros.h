@@ -56,9 +56,6 @@
 
 #define TINY_GRID_ON GET_PLOT->gridON(true, true);
 
-#define MAKE_GRAPH_DASHED(D_LENGTHS, GRAPH_INDEX) \
-  GET_PLOT->makeGraphDashed(D_LENGTHS, GRAPH_INDEX);
-
 #define X_LABEL(TEXT) GET_PLOT->setXLabel(TEXT);
 
 #define Y_LABEL(TEXT) GET_PLOT->setYLabel(TEXT);

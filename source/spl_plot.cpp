@@ -253,15 +253,6 @@ void Plot::setYLabel(const std::string& y_label) {
 
 void Plot::setTitle(const std::string& title) { m_plot_label->setTitle(title); }
 
-void Plot::makeGraphDashed(const std::vector<float>& dashed_lengths,
-                           unsigned graph_index) {
-  if (graph_index >= m_graph_lines.size()) {
-    throw std::invalid_argument(
-        "graph_index out of range, call 'Plot::plot' before 'makeGraphDashed'");
-  }
-  m_graph_lines[graph_index]->setDashedPath(dashed_lengths);
-}
-
 void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
   m_grid->setGridON(grid_on, tiny_grid_on);
 }

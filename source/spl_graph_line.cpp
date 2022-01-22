@@ -120,11 +120,6 @@ void GraphLine::setXValues(const std::vector<float>& x_data) noexcept {
   m_graph_point_indices.resize(x_data.size());
 }
 
-void GraphLine::setDashedPath(
-    const std::vector<float>& dashed_lengths) noexcept {
-  m_graph_attributes.dashed_lengths = dashed_lengths;
-}
-
 const std::vector<float>& GraphLine::getYValues() noexcept { return m_y_data; }
 
 const std::vector<float>& GraphLine::getXValues() noexcept { return m_x_data; }

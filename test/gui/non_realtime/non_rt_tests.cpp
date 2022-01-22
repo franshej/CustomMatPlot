@@ -125,8 +125,10 @@ TEST(test_linear_dashed_lines, NonRealTime) {
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   const std::vector<float> dashed_lengths = {4, 8};
 
-  PLOT_Y({y_test_data});
-  MAKE_GRAPH_DASHED(dashed_lengths, 0);
+  scp::GraphAttribute ga;
+  ga.dashed_lengths = dashed_lengths;
+
+  PLOT_XY_ATTRI({y_test_data}, {}, {ga});
 }
 
 TEST(test_flat_curve_10000, NonRealTime) {

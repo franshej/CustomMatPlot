@@ -153,18 +153,6 @@ class Plot : public juce::Component {
    */
   void setYTicks(const std::vector<float>& y_ticks);
 
-  /** @brief Make a graph dashed
-   *
-   *  Use custom dash-lengths to draw a dashed line. e.g. dashed_lengths = {2,
-   *  2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 3 pixels, skip
-   *  6 pixels, and then repeat.
-   *
-   *  @param dashed_lengths
-   *  @param y_ticks y-postions of ticks
-   *  @return void.
-   */
-  void makeGraphDashed(const std::vector<float>& dashed_lengths,
-                       unsigned graph_index);
   /** @brief Turn on grids
    *
    *  Turn on grids and tiny grids.
