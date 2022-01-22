@@ -17,7 +17,7 @@ bool TracePoint<ValueType>::setDataValue(
 template <class ValueType>
 void TraceLabel<ValueType>::setGraphLabelFrom(
     const juce::Point<ValueType>& graph_value,
-    const CommonPlotParameterView& common_plot_params) {
+    const CommonPlotParameterView common_plot_params) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
@@ -92,7 +92,7 @@ void Trace::addOrRemoveTracePoint(
 }
 
 void Trace::updateTracePointsBoundsFrom(
-    const CommonPlotParameterView& common_plot_params) {
+    const CommonPlotParameterView common_plot_params) {
   for (auto& tlp : m_trace_labelpoints) {
     updateSingleTraceLabelTextsAndBoundsInternal(&tlp, common_plot_params);
   }
@@ -100,7 +100,7 @@ void Trace::updateTracePointsBoundsFrom(
 
 void Trace::updateSingleTracePointBoundsFrom(
     juce::Component* trace_label_or_point,
-    const CommonPlotParameterView& common_plot_params) {
+    const CommonPlotParameterView common_plot_params) {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_label_or_point);
 
   if (tlp_it == m_trace_labelpoints.end()) {
@@ -127,7 +127,7 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
 
 bool Trace::setDataValueFor(juce::Component* trace_point,
                                 const juce::Point<float>& new_position,
-                                const CommonPlotParameterView& common_plot_params) {
+                                const CommonPlotParameterView common_plot_params) {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
   auto it = m_trace_labelpoints.erase(tlp_it, tlp_it);  // remove const for ::const_iterator
 
@@ -221,7 +221,7 @@ void Trace::removeSingleTracePointAndLabel(
 }
 
 void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
-    TraceLabelPoint_f* tlp, const CommonPlotParameterView& common_plot_params) {
+    TraceLabelPoint_f* tlp, const CommonPlotParameterView common_plot_params) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 

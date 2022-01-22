@@ -72,7 +72,7 @@ template <class ValueType>
 struct TraceLabel : public juce::Component {
   /** Set the graph labels from point. */
   void setGraphLabelFrom(const juce::Point<ValueType>& graph_value,
-                         const CommonPlotParameterView& common_plot_params);
+                         const CommonPlotParameterView common_plot_params);
 
   /** @internal */
   void resized() override;
@@ -153,7 +153,7 @@ class Trace {
    * @return void.
    */
   void updateTracePointsBoundsFrom(
-      const CommonPlotParameterView& common_plot_params);
+      const CommonPlotParameterView common_plot_params);
 
   /** @brief Update a single tracepoint bounds from graph attributes.
    *
@@ -163,7 +163,7 @@ class Trace {
    */
   void updateSingleTracePointBoundsFrom(
       juce::Component* trace_label_or_point,
-      const CommonPlotParameterView& common_plot_params);
+      const CommonPlotParameterView common_plot_params);
 
   /** @brief Add the tracepoints to a parent component
    *
@@ -189,7 +189,7 @@ class Trace {
    */
   bool setDataValueFor(juce::Component* trace_point,
                        const juce::Point<float>& new_position,
-                       const CommonPlotParameterView& common_plot_params);
+                       const CommonPlotParameterView common_plot_params);
 
   /** @breif Set the coner position of a single tracelabel.
    *
@@ -236,7 +236,7 @@ class Trace {
   /** @internal */
   void updateSingleTraceLabelTextsAndBoundsInternal(
       TraceLabelPoint_f* trace_point_label,
-      const CommonPlotParameterView& common_plot_params);
+      const CommonPlotParameterView common_plot_params);
   /** @internal */
   void updateTracePointsLookAndFeel();
   /** @internal */

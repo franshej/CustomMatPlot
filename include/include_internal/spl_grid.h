@@ -116,7 +116,7 @@ class Grid : public juce::Component {
    *  @param common_plot_params common graph attributes.
    *  @return void.
    */
-  void updateGrid(const CommonPlotParameterView& common_plot_params);
+  void updateGrid(const CommonPlotParameterView common_plot_params);
 
   /** @brief Get the max width of the x and y-labels
    *
@@ -153,15 +153,15 @@ class Grid : public juce::Component {
    */
   void createAutoGridTicks(std::vector<float>& x_ticks,
                            std::vector<float>& y_ticks,
-                           const CommonPlotParameterView& common_plot_params);
+                           const CommonPlotParameterView common_plot_params);
 
-  void createLabels(const CommonPlotParameterView& common_plot_params);
+  void createLabels(const CommonPlotParameterView common_plot_params);
 
-  void updateGridInternal(const CommonPlotParameterView& common_plot_params);
+  void updateGridInternal(const CommonPlotParameterView common_plot_params);
 
   void addGridLines(const std::vector<float>& ticks,
                     const GridLine::Direction direction,
-                    const CommonPlotParameterView& common_plot_params);
+                    const CommonPlotParameterView common_plot_params);
 
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks;

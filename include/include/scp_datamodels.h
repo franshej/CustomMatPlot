@@ -337,7 +337,7 @@ constexpr auto getYScaleAndOffset =
 
 template <class ValueType>
 [[nodiscard]] std::pair<std::string, std::string> valueToString(
-    const ValueType value, const CommonPlotParameterView& common_plot_params,
+    const ValueType value, const CommonPlotParameterView common_plot_params,
     const bool is_x,
     [[maybe_unused]] const std::size_t size_of_exponent_before_factor =
         std::numeric_limits<std::size_t>::max()) {

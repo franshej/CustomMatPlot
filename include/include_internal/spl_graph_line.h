@@ -133,7 +133,7 @@ class GraphLine : public juce::Component {
    *  @param common_plot_params common plot parameters.
    *  @return void.
    */
-  void updateXGraphPoints(const CommonPlotParameterView& common_plot_params);
+  void updateXGraphPoints(const CommonPlotParameterView common_plot_params);
 
   /** @brief Update the y-value in the graph points.
    *
@@ -143,7 +143,7 @@ class GraphLine : public juce::Component {
    *  @param common_plot_params common plot parameters.
    *  @return void.
    */
-  void updateYGraphPoints(const CommonPlotParameterView& common_plot_params);
+  void updateYGraphPoints(const CommonPlotParameterView common_plot_params);
 
   //==============================================================================
   /** @internal */
@@ -161,9 +161,9 @@ class GraphLine : public juce::Component {
   } m_state{State::Uninitialized};
 
   void updateYGraphPointsIntern(
-      const CommonPlotParameterView& common_plot_params) noexcept;
+      const CommonPlotParameterView common_plot_params) noexcept;
   void updateXGraphPointsIntern(
-      const CommonPlotParameterView& common_plot_params) noexcept;
+      const CommonPlotParameterView common_plot_params) noexcept;
 
   juce::LookAndFeel* m_lookandfeel{nullptr};
 

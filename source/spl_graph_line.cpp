@@ -133,7 +133,7 @@ const GraphPoints& GraphLine::getGraphPoints() noexcept {
   return m_graph_points;
 }
 
-void GraphLine::updateXGraphPoints(const CommonPlotParameterView& common_plot_params) {
+void GraphLine::updateXGraphPoints(const CommonPlotParameterView common_plot_params) {
   // x_lim must be set to calculate the xdata.
   jassert(common_plot_params.x_lim);
 
@@ -149,7 +149,7 @@ void GraphLine::updateXGraphPoints(const CommonPlotParameterView& common_plot_pa
   m_state = State::Initialized;
 }
 
-void GraphLine::updateYGraphPoints(const CommonPlotParameterView& common_plot_params) {
+void GraphLine::updateYGraphPoints(const CommonPlotParameterView common_plot_params) {
   // x_lim must be set to calculate the xdata.
   jassert(common_plot_params.y_lim);
 
@@ -163,7 +163,7 @@ void GraphLine::updateYGraphPoints(const CommonPlotParameterView& common_plot_pa
 }
 
 void GraphLine::updateXGraphPointsIntern(
-    const CommonPlotParameterView& common_plot_params) noexcept {
+    const CommonPlotParameterView common_plot_params) noexcept {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->updateXGraphPointsAndIndices(common_plot_params.graph_bounds,
@@ -173,7 +173,7 @@ void GraphLine::updateXGraphPointsIntern(
 }
 
 void GraphLine::updateYGraphPointsIntern(
-    const CommonPlotParameterView& common_plot_params) noexcept {
+    const CommonPlotParameterView common_plot_params) noexcept {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->updateYGraphPoints(common_plot_params.graph_bounds, common_plot_params.y_lim,

@@ -365,7 +365,7 @@ class Plot : public juce::Component {
 
     /** Get position for a single trace point.*/
     virtual CONSTEXPR20 juce::Point<int> getTracePointPositionFrom(
-        const CommonPlotParameterView& common_plot_params,
+        const CommonPlotParameterView common_plot_params,
         const juce::Point<float> graph_values) const noexcept = 0;
 
     /** Get the local bounds used when drawing the trace label (the bounds
@@ -429,7 +429,7 @@ class Plot : public juce::Component {
 
     /** Updates both the vertical and horizontal grid labels. */
     virtual void updateGridLabels(
-        const CommonPlotParameterView& common_plot_params,
+        const CommonPlotParameterView common_plot_params,
         const std::vector<GridLine>& grid_lines, StringVector& x_label_ticks,
         StringVector& y_label_ticks, LabelVector& x_axis_labels,
         LabelVector& y_axis_labels) = 0;

@@ -11,7 +11,7 @@ namespace scp {
 
 /*============================================================================*/
 
-void Grid::createLabels(const CommonPlotParameterView &common_plot_params) {
+void Grid::createLabels(const CommonPlotParameterView common_plot_params) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
     lnf->updateGridLabels(common_plot_params, m_grid_lines, m_custom_x_labels,
@@ -19,7 +19,7 @@ void Grid::createLabels(const CommonPlotParameterView &common_plot_params) {
   }
 }
 
-void Grid::updateGridInternal(const CommonPlotParameterView &common_plot_params) {
+void Grid::updateGridInternal(const CommonPlotParameterView common_plot_params) {
   if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
     // width and height must be larger than zero.
     jassertfalse;
@@ -83,7 +83,7 @@ void Grid::updateGridInternal(const CommonPlotParameterView &common_plot_params)
 
 void Grid::addGridLines(const std::vector<float> &ticks,
                         const GridLine::Direction direction,
-                        const CommonPlotParameterView &common_plot_params) {
+                        const CommonPlotParameterView common_plot_params) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
@@ -197,7 +197,7 @@ void Grid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
 }
 
-void Grid::updateGrid(const CommonPlotParameterView &common_plot_params) {
+void Grid::updateGrid(const CommonPlotParameterView common_plot_params) {
   updateGridInternal(common_plot_params);
 }
 
@@ -226,7 +226,7 @@ void Grid::setYTicks(const std::vector<float> &y_ticks) {
 
 void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
                                std::vector<float> &y_ticks,
-                               const CommonPlotParameterView &common_plot_params) {
+                               const CommonPlotParameterView common_plot_params) {
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<scp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {

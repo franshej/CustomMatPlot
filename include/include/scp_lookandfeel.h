@@ -239,7 +239,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   }
 
   CONSTEXPR20 juce::Point<int> getTracePointPositionFrom(
-      const CommonPlotParameterView& common_plot_params,
+      const CommonPlotParameterView common_plot_params,
       const juce::Point<float> graph_values) const noexcept {
     const auto [x_scale, x_offset] =
         getXScaleAndOffset(common_plot_params.graph_bounds.getWidth(),
@@ -756,7 +756,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     return m_y_scaling;
   };
 
-  void updateGridLabels(const CommonPlotParameterView& common_plot_params,
+  void updateGridLabels(const CommonPlotParameterView common_plot_params,
                         const std::vector<GridLine>& grid_lines,
                         StringVector& x_custom_label_ticks,
                         StringVector& y_custom_label_ticks,
