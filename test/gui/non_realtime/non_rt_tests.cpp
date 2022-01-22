@@ -330,3 +330,16 @@ TEST(set_custom_colour, NonRealTime) {
   PLOT_XY_ATTRI(test_data_y, {}, ga);
   LEGEND(legends);
 }
+
+TEST(opacity, NonRealTime) {
+  ADD_SEMI_LOG_Y;
+
+  std::vector<float> y_test_data(1000);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+
+  scp::GraphAttributeList ga(1);
+  ga[0].graph_line_opacity = 0.5f;
+
+  PLOT_XY_ATTRI({y_test_data}, {}, ga);
+  GRID_ON;
+}

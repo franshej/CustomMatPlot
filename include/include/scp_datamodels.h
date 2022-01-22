@@ -49,8 +49,9 @@ struct GraphAttribute {
   /** The pixel width of the graph_line. */
   std::optional<int> graph_width_pixels;
 
-  /** Set to false to hide graph_line. */
-  std::optional<bool> graph_line_visible;
+  /** Set the opacity of the graph_line. Value must be between 0 (transparent)
+   * and 1.0 (opaque). */
+  std::optional<float> graph_line_opacity;
 
   /** Callback function which is triggerd for every plotted graph_point. E.g.
    * Can be used to do custom plot markers for each graph_point.*/

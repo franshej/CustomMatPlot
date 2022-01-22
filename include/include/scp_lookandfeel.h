@@ -274,7 +274,12 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
     const auto& graph_points = graph_line_data.graph_points;
     const auto& dashed_lengths = graph_line_data.graph_attribute.dashed_lengths;
-    const auto& graph_colour = graph_line_data.graph_attribute.graph_colour.value();
+    auto graph_colour = graph_line_data.graph_attribute.graph_colour.value();
+
+    if (graph_line_data.graph_attribute.graph_line_opacity) {
+      graph_colour = graph_colour.withAlpha(
+          graph_line_data.graph_attribute.graph_line_opacity.value());
+    }
 
     if (graph_points.size() > 1) {
       graph_path.startNewSubPath(graph_points[0]);

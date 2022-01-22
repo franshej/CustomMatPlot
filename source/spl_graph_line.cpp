@@ -97,8 +97,8 @@ void GraphLine::setGraphAttribute(const GraphAttribute& graph_attribute) {
     m_graph_attributes.dashed_lengths = graph_attribute.dashed_lengths;
   if (graph_attribute.graph_colour)
     m_graph_attributes.graph_colour = graph_attribute.graph_colour;
-  if (graph_attribute.graph_line_visible)
-    m_graph_attributes.graph_line_visible = graph_attribute.graph_line_visible;
+  if (graph_attribute.graph_line_opacity)
+    m_graph_attributes.graph_line_opacity = graph_attribute.graph_line_opacity;
   if (graph_attribute.graph_width_pixels)
     m_graph_attributes.graph_width_pixels = graph_attribute.graph_width_pixels;
   if (graph_attribute.on_graph_point_paint)
