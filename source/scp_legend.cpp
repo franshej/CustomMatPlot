@@ -3,17 +3,17 @@
 
 #include "spl_plot.h"
 
-void scp::Legend::setLegend(const std::vector<std::string>& label_texts) {
+void cmp::Legend::setLegend(const std::vector<std::string>& label_texts) {
   m_label_texts = label_texts;
 }
 
-void scp::Legend::setDataSeries(const GraphLines* data_series) {
+void cmp::Legend::setDataSeries(const GraphLines* data_series) {
   m_graph_lines = data_series;
 }
 
-void scp::Legend::resized() {}
+void cmp::Legend::resized() {}
 
-void scp::Legend::paint(juce::Graphics& g) {
+void cmp::Legend::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
     auto* lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
@@ -30,7 +30,7 @@ void scp::Legend::paint(juce::Graphics& g) {
   }
 }
 
-void scp::Legend::lookAndFeelChanged() {
+void cmp::Legend::lookAndFeelChanged() {
   if (auto* lnf =
           dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;

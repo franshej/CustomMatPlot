@@ -17,7 +17,7 @@
 #include "scp_datamodels.h"
 #include "scp_internal_datamodels.h"
 
-namespace scp {
+namespace cmp {
 // TODO: Remove this parameters stuff.
 /**
  * A Parameter struct
@@ -178,4 +178,4 @@ class Grid : public juce::Component {
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_labels,
       m_x_axis_labels;
 };
-}  // namespace scp
+}  // namespace cmp

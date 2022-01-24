@@ -26,7 +26,7 @@
 
 #include "juce_gui_basics/juce_gui_basics.h"
 
-namespace scp {
+namespace cmp {
 
 /*============================================================================*/
 
@@ -129,7 +129,7 @@ struct GraphAttribute {
   std::optional<float> graph_line_opacity;
 
   /** The type of marker drawn on each graph point. */
-  std::optional<scp::Marker> marker;
+  std::optional<cmp::Marker> marker;
 
   /** Callback function which is triggerd for every plotted graph_point. E.g.
    * Can be used to do custom plot markers for each graph_point.*/
@@ -506,4 +506,4 @@ const auto getMaximumLabelWidth =
 
 /*============================================================================*/
 
-}  // namespace scp
+}  // namespace cmp

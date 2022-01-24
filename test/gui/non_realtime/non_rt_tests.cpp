@@ -125,7 +125,7 @@ TEST(test_linear_dashed_lines, NonRealTime) {
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   const std::vector<float> dashed_lengths = {4, 8};
 
-  scp::GraphAttribute ga;
+  cmp::GraphAttribute ga;
   ga.dashed_lengths = dashed_lengths;
 
   PLOT_XY_ATTRI({y_test_data}, {}, {ga});
@@ -290,7 +290,7 @@ TEST(plot_semi_log_y, NonRealTime) {
   GRID_ON;
 }
 
-class MyLnf : public scp::PlotLookAndFeel {
+class MyLnf : public cmp::PlotLookAndFeel {
   juce::Font getGridLabelFont() const noexcept override {
     return juce::Font("Arial Rounded MT", 32.f, juce::Font::plain);
   };
@@ -324,7 +324,7 @@ TEST(set_custom_colour, NonRealTime) {
     i++;
   }
 
-  scp::GraphAttributeList ga(6);
+  cmp::GraphAttributeList ga(6);
   ga[3].graph_colour = juce::Colours::pink;
 
   PLOT_XY_ATTRI(test_data_y, {}, ga);
@@ -337,7 +337,7 @@ TEST(opacity, NonRealTime) {
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
 
-  scp::GraphAttributeList ga(1);
+  cmp::GraphAttributeList ga(1);
   ga[0].graph_line_opacity = 0.5f;
 
   PLOT_XY_ATTRI({y_test_data}, {}, ga);
@@ -350,7 +350,7 @@ TEST(path_stroke_path, NonRealTime) {
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
 
-  scp::GraphAttributeList ga(1);
+  cmp::GraphAttributeList ga(1);
   ga[0].path_stroke_type = juce::PathStrokeType(10);
 
   PLOT_XY_ATTRI({y_test_data}, {}, ga);
@@ -372,21 +372,21 @@ TEST(markers, NonRealTime) {
     }
     ++i;
   }
-  scp::GraphAttributeList ga(test_data_y.size());
-  ga[0].marker= scp::Marker::Type::Circle;
+  cmp::GraphAttributeList ga(test_data_y.size());
+  ga[0].marker= cmp::Marker::Type::Circle;
 
-  ga[1].marker = scp::Marker::Type::Square;
+  ga[1].marker = cmp::Marker::Type::Square;
   ga[1].marker.value().FaceColour = juce::Colours::lightpink;
 
-  ga[2].marker = scp::Marker::Type::Pentagram;
+  ga[2].marker = cmp::Marker::Type::Pentagram;
 
-  ga[3].marker = scp::Marker::Type::UpTriangle;
+  ga[3].marker = cmp::Marker::Type::UpTriangle;
 
-  ga[4].marker = scp::Marker::Type::RightTriangle;
+  ga[4].marker = cmp::Marker::Type::RightTriangle;
 
-  ga[5].marker = scp::Marker::Type::DownTriangle;
+  ga[5].marker = cmp::Marker::Type::DownTriangle;
 
-  ga[6].marker = scp::Marker::Type::LeftTriangle;
+  ga[6].marker = cmp::Marker::Type::LeftTriangle;
 
   PLOT_XY_ATTRI({test_data_y}, {}, ga);
   GRID_ON;

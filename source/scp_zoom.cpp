@@ -2,7 +2,7 @@
 
 #include "spl_plot.h"
 
-namespace scp {
+namespace cmp {
 void Zoom::setStartPosition(const juce::Point<int>& start_position) noexcept {
   m_start_pos = start_position;
   m_is_start_pos_set = true;
@@ -45,4 +45,4 @@ void Zoom::lookAndFeelChanged() {
     m_lookandfeel = nullptr;
   }
 }
-}  // namespace scp
+}  // namespace cmp

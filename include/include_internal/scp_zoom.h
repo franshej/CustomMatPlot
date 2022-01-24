@@ -16,7 +16,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <scp_datamodels.h>
 
-namespace scp {
+namespace cmp {
 /**
  * \class Zoom
  * \brief A class for drawing the zoom area.
@@ -90,4 +90,4 @@ class Zoom : public juce::Component {
   juce::Point<int> m_start_pos, m_end_pos;
   bool m_is_start_pos_set{false};
 };
-}  // namespace scp
+}  // namespace cmp

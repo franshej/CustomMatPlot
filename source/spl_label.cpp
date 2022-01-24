@@ -2,7 +2,7 @@
 
 #include "spl_plot.h"
 
-namespace scp {
+namespace cmp {
 PlotLabel::PlotLabel() {
   addAndMakeVisible(m_x_label);
   addAndMakeVisible(m_y_label);
@@ -59,4 +59,4 @@ void PlotLabel::lookAndFeelChanged() {
     m_lookandfeel = nullptr;
   }
 }
-}  // namespace scp
+}  // namespace cmp

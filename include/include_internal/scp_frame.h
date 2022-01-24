@@ -1,5 +1,5 @@
 /**
- * @file scp_frame.h
+ * @file cmp_frame.h
  *
  * @brief Componenet for creating a frame
  *
@@ -15,7 +15,7 @@
 
 #include "scp_datamodels.h"
 
-namespace scp {
+namespace cmp {
 /**
  * \class Frame
  * \brief A class for creating a frame
@@ -31,4 +31,4 @@ class Frame : public juce::Component {
  private:
   juce::LookAndFeel* m_lookandfeel;
 };
-}  // namespace scp
+}  // namespace cmp

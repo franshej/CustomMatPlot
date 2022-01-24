@@ -1,5 +1,5 @@
 /**
- * @file scp_graph_line.h
+ * @file cmp_graph_line.h
  *
  * @brief Componenets for drawing graph lines.
  *
@@ -17,12 +17,12 @@
 #include "scp_datamodels.h"
 #include "scp_internal_datamodels.h"
 
-namespace scp {
+namespace cmp {
 //==============================================================================
 /**
  *  \class GraphLine
  *  \brief A templated class component to draw 2-D lines/marker symbols. This is
- *  a subcomponenet to scp::Plot.
+ *  a subcomponenet to cmp::Plot.
  *
  *  Never use this directley, always use one of the derived classes to choose
  *  the scaling.
@@ -162,4 +162,4 @@ class GraphLine : public juce::Component {
 
   GraphAttribute m_graph_attributes;
 };
-}  // namespace scp
+}  // namespace cmp

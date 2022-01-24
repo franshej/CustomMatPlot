@@ -1,4 +1,4 @@
-#include "scp_lookandfeel.h"
+#include "cmp_lookandfeel.h"
 #include "test_macros.h"
 
 #define PI2 6.28318530718

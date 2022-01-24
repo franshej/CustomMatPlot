@@ -13,7 +13,7 @@ static const [[nodiscard]] std::string getNextCustomLabel(
 
 /*============================================================================*/
 
-namespace scp {
+namespace cmp {
 
 class PlotLookAndFeel;
 
@@ -439,8 +439,8 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     g.drawRect(frame);
   }
 
-  void drawTraceLabel(juce::Graphics& g, const scp::Label& x_label,
-                      const scp::Label& y_label) override {
+  void drawTraceLabel(juce::Graphics& g, const cmp::Label& x_label,
+                      const cmp::Label& y_label) override {
     g.setColour(findColour(Plot::trace_label_colour));
     g.setFont(getTraceFont());
     g.drawText(x_label.first, x_label.second, juce::Justification::left);
@@ -981,4 +981,4 @@ class PlotLookAndFeel
       public PlotLookAndFeelDefault<Scaling::logarithmic,
                                     Scaling::logarithmic> {};
 
-};  // namespace scp
+};  // namespace cmp

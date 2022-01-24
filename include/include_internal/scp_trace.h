@@ -1,5 +1,5 @@
 /**
- * @file scp_trace.h
+ * @file cmp_trace.h
  *
  * @brief Componenet for drawing tracepoints.
  *
@@ -17,7 +17,7 @@
 
 #include <optional>
 
-namespace scp {
+namespace cmp {
 
 /** @brief The label corner that is located at the tracepoint center.  */
 enum class TraceLabelCornerPosition {
@@ -82,7 +82,7 @@ struct TraceLabel : public juce::Component {
   void lookAndFeelChanged() override;
 
   /** The x and y labels. */
-  scp::Label m_x_label, m_y_label;
+  cmp::Label m_x_label, m_y_label;
 
   /** Defines which label corner that is located at the tracepoint center. */
   TraceLabelCornerPosition trace_label_corner_pos{
@@ -248,4 +248,4 @@ class Trace {
   std::vector<TraceLabelPoint_f> m_trace_labelpoints;
 };
 
-}  // namespace scp
+}  // namespace cmp

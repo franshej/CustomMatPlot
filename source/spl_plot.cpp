@@ -9,7 +9,7 @@
 #include "spl_grid.h"
 #include "spl_label.h"
 
-namespace scp {
+namespace cmp {
 
 static [[nodiscard]] std::pair<float, float> findMinMaxValuesInGraphLines(
     const std::vector<std::vector<float>>& data) noexcept {
@@ -28,7 +28,7 @@ static [[nodiscard]] std::pair<float, float> findMinMaxValuesInGraphLines(
 }
 
 static [[nodiscard]] std::pair<float, float> findMinMaxValuesInGraphLines(
-    const std::vector<std::unique_ptr<scp::GraphLine>>& graph_lines,
+    const std::vector<std::unique_ptr<cmp::GraphLine>>& graph_lines,
     const bool isXValue) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
@@ -94,7 +94,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   m_trace_button->setRadioGroupId(TraceZoomButtons);
   m_zoom_button->setRadioGroupId(TraceZoomButtons);
 
-  m_grid->onGridLabelLengthChanged = [this](scp::Grid* grid) {
+  m_grid->onGridLabelLengthChanged = [this](cmp::Grid* grid) {
     this->resizeChilderns();
   };
 
@@ -176,7 +176,7 @@ void Plot::updateGridGraphsTrace() {
   }
 }
 
-void scp::Plot::updateTracePointsForNewGraphData() {
+void cmp::Plot::updateTracePointsForNewGraphData() {
   for (const auto& graph_line : m_graph_lines) {
     m_trace->updateTracePointsAssociatedWith(graph_line.get());
   }
@@ -219,7 +219,7 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
   repaint();
 }
 
-void scp::Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
+void cmp::Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
   updateYData(y_data, {});
 
   updateTracePointsForNewGraphData();
@@ -379,18 +379,18 @@ void Plot::lookAndFeelChanged() {
     if (!m_lookandfeel_default)
       if (m_x_scaling == Scaling::logarithmic &&
           m_y_scaling == Scaling::logarithmic) {
-        m_lookandfeel_default = std::make_unique<scp::PlotLookAndFeelDefault<
+        m_lookandfeel_default = std::make_unique<cmp::PlotLookAndFeelDefault<
             Scaling::logarithmic, Scaling::logarithmic>>();
       } else if (m_x_scaling == Scaling::logarithmic) {
         m_lookandfeel_default =
-            std::make_unique<scp::PlotLookAndFeelDefault<Scaling::logarithmic,
+            std::make_unique<cmp::PlotLookAndFeelDefault<Scaling::logarithmic,
                                                          Scaling::linear>>();
       } else if (m_y_scaling == Scaling::logarithmic) {
-        m_lookandfeel_default = std::make_unique<scp::PlotLookAndFeelDefault<
+        m_lookandfeel_default = std::make_unique<cmp::PlotLookAndFeelDefault<
             Scaling::linear, Scaling::logarithmic>>();
       } else {
         m_lookandfeel_default = std::make_unique<
-            scp::PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>>();
+            cmp::PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>>();
       }
     m_lookandfeel = m_lookandfeel_default.get();
   }
@@ -661,4 +661,4 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
     }
   }
 }
-}  // namespace scp
+}  // namespace cmp

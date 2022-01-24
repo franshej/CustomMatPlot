@@ -49,7 +49,7 @@ struct node {
 };
 
 struct PlotAndTimer {
-  std::unique_ptr<scp::Plot> plot;
+  std::unique_ptr<cmp::Plot> plot;
   std::unique_ptr<TimerCallback> timer;
 };
 
@@ -117,7 +117,7 @@ class TestHandler : public juce::Component {
     return &m_plot_holder;
   }
 
-  std::vector<std::shared_ptr<scp::PlotLookAndFeel>> lnf;
+  std::vector<std::shared_ptr<cmp::PlotLookAndFeel>> lnf;
   static inline std::map<std::string, std::shared_ptr<node>> head;
 
  private:

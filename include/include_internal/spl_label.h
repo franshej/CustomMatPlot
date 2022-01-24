@@ -17,7 +17,7 @@
 #include "scp_datamodels.h"
 #include "scp_internal_datamodels.h"
 
-namespace scp {
+namespace cmp {
 /**
  * \class Plot
  * \brief A class for creating x, y and title labels
@@ -93,4 +93,4 @@ class PlotLabel : public juce::Component {
   juce::Label m_x_label, m_y_label, m_title_label;
   juce::LookAndFeel *m_lookandfeel;
 };
-}  // namespace scp
+}  // namespace cmp

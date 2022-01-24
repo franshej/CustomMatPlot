@@ -4,7 +4,7 @@
 
 #include "spl_plot.h"
 
-namespace scp {
+namespace cmp {
 
 void GraphLine::setColour(const juce::Colour graph_colour) {
     m_graph_attributes.graph_colour = graph_colour;
@@ -183,4 +183,4 @@ void GraphLine::updateYGraphPointsIntern(
   }
 }
 
-}  // namespace scp
+}  // namespace cmp

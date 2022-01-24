@@ -30,11 +30,11 @@
 #define GET_TIMER_CB \
   PARENT->getPlotHolder()->find(test_name)->second.timer.get()->onTimerCallback
 
-#define ADD_PLOT ADD_PLOT_TYPE(scp::Plot)
+#define ADD_PLOT ADD_PLOT_TYPE(cmp::Plot)
 
-#define ADD_SEMI_LOG_X ADD_PLOT_TYPE(scp::SemiLogX)
+#define ADD_SEMI_LOG_X ADD_PLOT_TYPE(cmp::SemiLogX)
 
-#define ADD_SEMI_LOG_Y ADD_PLOT_TYPE(scp::SemiLogY)
+#define ADD_SEMI_LOG_Y ADD_PLOT_TYPE(cmp::SemiLogY)
 
 #define PLOT_Y(Y) \
   { GET_PLOT->plot(Y); }

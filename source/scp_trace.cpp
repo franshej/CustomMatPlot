@@ -3,7 +3,7 @@
 #include "spl_plot.h"
 #include "spl_graph_line.h"
 
-namespace scp {
+namespace cmp {
 template <class ValueType>
 bool TracePoint<ValueType>::setDataValue(
     const juce::Point<ValueType>& graph_value) {
@@ -307,4 +307,4 @@ void TracePoint<ValueType>::lookAndFeelChanged() {
   }
 }
 
-}  // namespace scp
+}  // namespace cmp

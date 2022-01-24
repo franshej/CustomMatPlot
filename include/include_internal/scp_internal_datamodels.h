@@ -1,6 +1,6 @@
 #pragma once
 
-namespace scp {
+namespace cmp {
 /*============================================================================*/
 
 class LookAndFeelMethodsBase;
@@ -57,4 +57,4 @@ class ParamVal
     return *this;
   }
 };
-}  // namespace scp
+}  // namespace cmp

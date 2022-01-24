@@ -7,7 +7,7 @@
 #include "spl_graph_line.h"
 #include "spl_plot.h"
 
-namespace scp {
+namespace cmp {
 
 /*============================================================================*/
 
@@ -229,7 +229,7 @@ void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
                                const CommonPlotParameterView common_plot_params) {
   if (m_lookandfeel) {
     if (auto *lnf =
-            static_cast<scp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
+            static_cast<cmp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
       lnf->updateVerticalGridLineTicksAuto(getBounds(),
                                            m_config_params.tiny_grid_on,
                                            common_plot_params.x_lim, x_ticks);
@@ -239,4 +239,4 @@ void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
     }
   }
 }
-}  // namespace scp
+}  // namespace cmp

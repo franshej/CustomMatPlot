@@ -2,7 +2,7 @@
 
 #include "spl_plot.h"
 
-namespace scp {
+namespace cmp {
 void Frame::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
     auto* lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
@@ -20,4 +20,4 @@ void Frame::lookAndFeelChanged() {
 
 void Frame::resized() {}
 
-}  // namespace scp
+}  // namespace cmp

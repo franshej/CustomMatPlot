@@ -15,7 +15,7 @@
 
 #include "scp_datamodels.h"
 
-namespace scp {
+namespace cmp {
 /**
  * \class Frame
  * \brief A class for creating legend
@@ -56,4 +56,4 @@ class Legend : public juce::Component {
   std::vector<std::string> m_label_texts;
   const GraphLines* m_graph_lines{nullptr};
 };
-}  // namespace scp
+}  // namespace cmp

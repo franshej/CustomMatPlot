@@ -1,5 +1,5 @@
 /**
- * @file scp_plot.h
+ * @file cmp_plot.h
  *
  * @brief Componenets for plotting 2-D lines/marker symbols
  *
@@ -14,7 +14,7 @@
 
 #include "scp_datamodels.h"
 
-namespace scp {
+namespace cmp {
 
 /*
  *  \class Plot
@@ -254,7 +254,7 @@ class Plot : public juce::Component {
   /**
    *   These methods define a interface for the LookAndFeel class of juce.
    *   The Plot class needs a LookAndFeel, that implements these methods.
-   *   The default implementation can be seen in, \see scp_lookandfeelmethods.h
+   *   The default implementation can be seen in, \see cmp_lookandfeelmethods.h
    */
   class LookAndFeelMethods : public juce::LookAndFeel_V4 {
    public:
@@ -287,8 +287,8 @@ class Plot : public juce::Component {
                             const juce::Rectangle<int>& bounds) = 0;
 
     /** Draw a single trace point. */
-    virtual void drawTraceLabel(juce::Graphics& g, const scp::Label& x_label,
-                                const scp::Label& y_label) = 0;
+    virtual void drawTraceLabel(juce::Graphics& g, const cmp::Label& x_label,
+                                const cmp::Label& y_label) = 0;
 
     /** Draw trace point. */
     virtual void drawTracePoint(juce::Graphics& g,
@@ -478,7 +478,7 @@ class Plot : public juce::Component {
 
   bool m_x_autoscale = true, m_y_autoscale = true;
   const Scaling m_x_scaling, m_y_scaling;
-  scp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
+  cmp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
   juce::Rectangle<int> m_graph_bounds;
   CommonPlotParameterView m_graph_params;
 
@@ -517,4 +517,4 @@ class SemiLogY : public Plot {
   SemiLogY() : Plot(Scaling::linear, Scaling::logarithmic){};
 };
 
-}  // namespace scp
+}  // namespace cmp
