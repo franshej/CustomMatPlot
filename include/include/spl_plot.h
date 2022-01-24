@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include "juce_gui_basics/juce_gui_basics.h"
-
 #include "scp_datamodels.h"
 
 namespace scp {
@@ -262,6 +260,10 @@ class Plot : public juce::Component {
    public:
     virtual ~LookAndFeelMethods() = default;
 
+    /** Draw background. */
+    virtual void drawBackground(juce::Graphics& g,
+        juce::Rectangle<int>& bounds) = 0;
+
     /** This method draws a frame around the graph area. */
     virtual void drawFrame(juce::Graphics& g,
                            const juce::Rectangle<int> bounds) = 0;
@@ -344,6 +346,9 @@ class Plot : public juce::Component {
     /** Get margin used for labels and graph bounds. */
     virtual CONSTEXPR20 std::size_t getMargin() const noexcept = 0;
 
+    /** Get pixel length of marker symbol. */
+    virtual CONSTEXPR20 std::size_t getMarkerLength() const noexcept = 0;
+
     /** Get the bounds of the componenet (Local bounds). */
     virtual CONSTEXPR20 juce::Rectangle<int> getPlotBounds(
         juce::Rectangle<int> bounds) const noexcept = 0;
@@ -369,7 +374,7 @@ class Plot : public juce::Component {
     /** Get x and Y trace label bounds */
     virtual std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
     getTraceXYLabelBounds(const std::string_view x_text,
-                          const std::string_view y_text) const noexcept = 0;
+                          const std::string_view y_text) const = 0;
 
     /** Get the bounds for the trace and zoom button. */
     virtual CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
@@ -428,10 +433,6 @@ class Plot : public juce::Component {
                                      juce::Label& x_label, juce::Label& y_label,
                                      juce::Label& title_label) = 0;
 
-    /*
-        virtual void drawBackground(juce::Graphics &g,
-                                juce::Rectangle<int> &bounds) = 0;
-                                    */
   };
 
   //==============================================================================
@@ -459,10 +460,6 @@ class Plot : public juce::Component {
 
   template <Scaling x_scaling, Scaling y_scaling>
   juce::LookAndFeel* castUserLookAndFeel(PlotLookAndFeel* user_look_and_feel);
-
-  void PlotInternal(const std::vector<std::vector<float>>& y_data,
-                    const std::vector<std::vector<float>>& x_data = {},
-                    ColourVector graph_colours = {});
 
   void resetLookAndFeelChildrens();
 

@@ -102,15 +102,15 @@ void GraphLine::setGraphAttribute(const GraphAttribute& graph_attribute) {
   if (graph_attribute.graph_line_opacity)
     m_graph_attributes.graph_line_opacity = graph_attribute.graph_line_opacity;
 
-  if (graph_attribute.graph_width_pixels)
-    m_graph_attributes.graph_width_pixels = graph_attribute.graph_width_pixels;
-
   if (graph_attribute.on_graph_point_paint)
     m_graph_attributes.on_graph_point_paint =
         graph_attribute.on_graph_point_paint;
 
   if (graph_attribute.path_stroke_type)
     m_graph_attributes.path_stroke_type = graph_attribute.path_stroke_type;
+
+  if (graph_attribute.marker)
+    m_graph_attributes.marker = graph_attribute.marker;
 }
 
 void GraphLine::setYValues(const std::vector<float>& y_data) noexcept {

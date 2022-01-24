@@ -1,4 +1,3 @@
-2. Plot Symbols
 3. Examples
 4. Rename to Custom Math Plot
 5. Readme

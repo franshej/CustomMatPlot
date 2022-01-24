@@ -356,3 +356,38 @@ TEST(path_stroke_path, NonRealTime) {
   PLOT_XY_ATTRI({y_test_data}, {}, ga);
   GRID_ON;
 }
+
+TEST(markers, NonRealTime) {
+  ADD_PLOT;
+
+  std::vector<std::vector<float>> test_data_y =
+      std::vector<std::vector<float>>(7, std::vector<float>(10));
+  std::vector<std::string> legends;
+
+  float i = 0;
+  for (auto &y_vec : test_data_y) {
+    std::iota(y_vec.begin(), y_vec.end(), 0);
+    for (auto &y : y_vec) {
+      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+    }
+    ++i;
+  }
+  scp::GraphAttributeList ga(test_data_y.size());
+  ga[0].marker= scp::Marker::Type::Circle;
+
+  ga[1].marker = scp::Marker::Type::Square;
+  ga[1].marker.value().FaceColour = juce::Colours::lightpink;
+
+  ga[2].marker = scp::Marker::Type::Pentagram;
+
+  ga[3].marker = scp::Marker::Type::UpTriangle;
+
+  ga[4].marker = scp::Marker::Type::RightTriangle;
+
+  ga[5].marker = scp::Marker::Type::DownTriangle;
+
+  ga[6].marker = scp::Marker::Type::LeftTriangle;
+
+  PLOT_XY_ATTRI({test_data_y}, {}, ga);
+  GRID_ON;
+}

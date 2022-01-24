@@ -24,6 +24,8 @@
 
 #include <optional>
 
+#include "juce_gui_basics/juce_gui_basics.h"
+
 namespace scp {
 
 /*============================================================================*/
@@ -35,6 +37,79 @@ enum class Scaling : uint32_t {
 };
 
 /*============================================================================*/
+
+struct Marker {
+  /** Type of marker. */
+  enum class Type {
+    Circle,
+    Pentagram,
+    Square,
+    UpTriangle,
+    RightTriangle,
+    DownTriangle,
+    LeftTriangle
+  } type;
+
+  /** Contructor marker type only. */
+  Marker(const Marker::Type t) : type{t} {};
+
+  /**  Marker outline color. */
+  std::optional<juce::Colour> EdgeColour;
+
+  /** Marker interior color. */
+  std::optional<juce::Colour> FaceColour;
+
+  /** PathStrokeType used when drawing the edge line of the marker. */
+  juce::PathStrokeType edge_stroke_type{
+      1.0f, juce::PathStrokeType::JointStyle::mitered,
+      juce::PathStrokeType::EndCapStyle::rounded};
+
+  static juce::Path getMarkerPathFrom(Marker marker, const float length) {
+    juce::Path path;
+
+    auto addUpTriangleTo = [length](auto &path) {
+      path.addTriangle({0.0f, -length / 2.0f}, {-length / 2.0f, length / 2.0f},
+                       {length / 2.0f, length / 2.0f});
+    };
+
+    switch (marker.type) {
+      case Marker::Type::Circle:
+        path.addEllipse({-length / 2.0f, -length / 2.0f, length, length});
+        break;
+      case Marker::Type::Pentagram:
+        path.addStar({0, 0}, 5, length / 4.0f, length / 2.0f);
+        break;
+      case Marker::Type::Square:
+        path.addRectangle(-length / 2.0f, -length / 2.0f, length, length);
+        break;
+      case Marker::Type::UpTriangle:
+        addUpTriangleTo(path);
+        break;
+      case Marker::Type::RightTriangle:
+        addUpTriangleTo(path);
+
+        path.applyTransform(juce::AffineTransform::rotation(
+            juce::MathConstants<float>::pi / 2.0f, 0.0f, 0.0f));
+        break;
+      case Marker::Type::DownTriangle:
+        addUpTriangleTo(path);
+
+        path.applyTransform(juce::AffineTransform::rotation(
+            juce::MathConstants<float>::pi, 0.0f, 0.0f));
+        break;
+      case Marker::Type::LeftTriangle:
+        addUpTriangleTo(path);
+
+        path.applyTransform(juce::AffineTransform::rotation(
+            juce::MathConstants<float>::pi * 3.0f / 2.0f, 0.0f, 0.0f));
+        break;
+      default:
+        break;
+    }
+
+    return std::move(path);
+  }
+};
 
 /** Attributes of a single graph. */
 struct GraphAttribute {
@@ -49,12 +124,12 @@ struct GraphAttribute {
    * 6 pixels, and then repeat. */
   std::optional<std::vector<float>> dashed_lengths;
 
-  /** The pixel width of the graph_line. */
-  std::optional<int> graph_width_pixels;
-
   /** Set the opacity of the graph_line. Value must be between 0 (transparent)
    * and 1.0 (opaque). */
   std::optional<float> graph_line_opacity;
+
+  /** The type of marker drawn on each graph point. */
+  std::optional<scp::Marker> marker;
 
   /** Callback function which is triggerd for every plotted graph_point. E.g.
    * Can be used to do custom plot markers for each graph_point.*/

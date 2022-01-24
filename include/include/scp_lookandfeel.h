@@ -53,6 +53,9 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     setColour(Plot::trace_point_frame_colour, juce::Colour(0xff566573));
   }
 
+  void drawBackground(juce::Graphics& g,
+                      juce::Rectangle<int>& bounds) override{};
+
   juce::Colour findAndGetColourFromId(
       const Plot::ColourIdsGraph colour_id) const noexcept override {
     return findColour(colour_id);
@@ -198,9 +201,13 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
   CONSTEXPR20 std::size_t getMargin() const noexcept override { return 8u; }
 
-  CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
-  getTraceXYLabelBounds(const std::string_view x_text,
-                        const std::string_view y_text) const noexcept override {
+  CONSTEXPR20 std::size_t getMarkerLength() const noexcept override {
+    return 20u;
+  }
+
+  std::pair<juce::Rectangle<int>, juce::Rectangle<int>> getTraceXYLabelBounds(
+      const std::string_view x_text,
+      const std::string_view y_text) const override {
     const auto margin = getMargin();
     const auto font = getTraceFont();
 
@@ -269,7 +276,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   void drawGraphLine(juce::Graphics& g,
                      const GraphLineDataView graph_line_data) override {
     juce::Path graph_path;
-    juce::PathStrokeType p_type =
+    const juce::PathStrokeType stroke_type =
         graph_line_data.graph_attribute.path_stroke_type
             ? graph_line_data.graph_attribute.path_stroke_type.value()
             : juce::PathStrokeType(1.0f,
@@ -278,6 +285,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
     const auto& graph_points = graph_line_data.graph_points;
     const auto& dashed_lengths = graph_line_data.graph_attribute.dashed_lengths;
+    const auto& marker = graph_line_data.graph_attribute.marker;
     auto graph_colour = graph_line_data.graph_attribute.graph_colour.value();
 
     if (graph_line_data.graph_attribute.graph_line_opacity) {
@@ -292,14 +300,42 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
           [&](const juce::Point<float>& point) { graph_path.lineTo(point); });
 
       if (dashed_lengths) {
-        p_type.createDashedStroke(graph_path, graph_path,
-                                  dashed_lengths.value().data(),
-                                  int(dashed_lengths.value().size()));
+        stroke_type.createDashedStroke(graph_path, graph_path,
+                                       dashed_lengths.value().data(),
+                                       int(dashed_lengths.value().size()));
       }
 
       g.setColour(graph_colour);
 
-      g.strokePath(graph_path, p_type);
+      g.strokePath(graph_path, stroke_type);
+
+      if (marker) {
+        const auto marker_length = float(getMarkerLength());
+
+        const auto marker_path =
+            Marker::getMarkerPathFrom(marker.value(), marker_length);
+
+        for (const auto& point : graph_points) {
+          auto path = marker_path;
+
+          path.applyTransform(
+              juce::AffineTransform::translation(point.getX(), point.getY()));
+
+          if (marker.value().FaceColour) {
+            g.setColour(marker.value().FaceColour.value());
+
+            g.fillPath(path);
+          }
+
+          if (marker.value().EdgeColour) {
+            g.setColour(marker.value().EdgeColour.value());
+          } else {
+            g.setColour(graph_colour);
+          }
+
+          g.strokePath(path, marker.value().edge_stroke_type);
+        }
+      }
     }
   }
 
