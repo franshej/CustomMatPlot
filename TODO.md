@@ -1,5 +1,6 @@
+12. Fix valToString bug
+13. Turn lnf impl from header to cpp.
 3. Examples
-4. Rename to Custom Math Plot
 5. Readme
 6. First Release
 7. (Google Tests)
