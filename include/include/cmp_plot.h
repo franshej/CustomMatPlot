@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "scp_datamodels.h"
+#include "cmp_datamodels.h"
 
 namespace cmp {
 

@@ -1,6 +1,6 @@
-#include "scp_frame.h"
+#include "cmp_frame.h"
 
-#include "spl_plot.h"
+#include "cmp_plot.h"
 
 namespace cmp {
 void Frame::paint(juce::Graphics& g) {

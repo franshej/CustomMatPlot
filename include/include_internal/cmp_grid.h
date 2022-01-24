@@ -1,5 +1,5 @@
 /**
- * @file spl_grid.h
+ * @file cmp_grid.h
  *
  * @brief Componenets for creating grids and grid labels
  *
@@ -14,8 +14,8 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "scp_datamodels.h"
-#include "scp_internal_datamodels.h"
+#include "cmp_datamodels.h"
+#include "cmp_internal_datamodels.h"
 
 namespace cmp {
 // TODO: Remove this parameters stuff.

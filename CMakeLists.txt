@@ -4,29 +4,29 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-project(spl_plot VERSION 0.0.1)
+project(cmp_plot VERSION 0.0.1)
 
-set(SOURCE source/spl_plot.cpp
-           source/spl_graph_line.cpp
-           source/spl_grid.cpp
-           source/spl_label.cpp
-           source/scp_frame.cpp
-           source/scp_legend.cpp
-           source/scp_trace.cpp
-           source/scp_zoom.cpp)
+set(SOURCE source/cmp_plot.cpp
+           source/cmp_graph_line.cpp
+           source/cmp_grid.cpp
+           source/cmp_label.cpp
+           source/cmp_frame.cpp
+           source/cmp_legend.cpp
+           source/cmp_trace.cpp
+           source/cmp_zoom.cpp)
 
-set(INTERNAL_HEADERS include/include_internal/spl_graph_line.h
- 	                 include/include_internal/spl_grid.h
-                     include/include_internal/spl_label.h
-                     include/include_internal/scp_internal_datamodels.h
-                     include/include_internal/scp_frame.h
-                     include/include_internal/scp_legend.h
-                     include/include_internal/scp_trace.h
-                     include/include_internal/scp_zoom.h)
+set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
+ 	                 include/include_internal/cmp_grid.h
+                     include/include_internal/cmp_label.h
+                     include/include_internal/cmp_internal_datamodels.h
+                     include/include_internal/cmp_frame.h
+                     include/include_internal/cmp_legend.h
+                     include/include_internal/cmp_trace.h
+                     include/include_internal/cmp_zoom.h)
 
-set(PUBLIC_HEADERS include/include/spl_plot.h
-                   include/include/scp_lookandfeel.h
-                   include/include/scp_datamodels.h)
+set(PUBLIC_HEADERS include/include/cmp_plot.h
+                   include/include/cmp_lookandfeel.h
+                   include/include/cmp_datamodels.h)
 
 add_library(${PROJECT_NAME}
             STATIC
@@ -37,7 +37,7 @@ add_library(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PUBLIC "include/include"
                                            PRIVATE "include/include_internal")
 
-target_link_libraries(spl_plot
+target_link_libraries(${PROJECT_NAME} 
                       juce::juce_gui_basics)
 
 

@@ -1,11 +1,11 @@
-#include "spl_grid.h"
+#include "cmp_grid.h"
 
 #include <stdexcept>
 #include <tuple>
 
-#include "scp_internal_datamodels.h"
-#include "spl_graph_line.h"
-#include "spl_plot.h"
+#include "cmp_internal_datamodels.h"
+#include "cmp_graph_line.h"
+#include "cmp_plot.h"
 
 namespace cmp {
 

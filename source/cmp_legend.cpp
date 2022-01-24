@@ -1,7 +1,7 @@
-#include "scp_legend.h"
-#include "spl_graph_line.h"
+#include "cmp_legend.h"
+#include "cmp_graph_line.h"
 
-#include "spl_plot.h"
+#include "cmp_plot.h"
 
 void cmp::Legend::setLegend(const std::vector<std::string>& label_texts) {
   m_label_texts = label_texts;

@@ -2,7 +2,7 @@
 
 #include <juce_gui_extra/juce_gui_extra.h>
 
-#include "spl_plot.h"
+#include "cmp_plot.h"
 #include "test_utils.h"
 
 #define TEST(f, category)                                           \

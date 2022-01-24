@@ -1,5 +1,5 @@
 /**
- * @file spl_label.h
+ * @file cmp_label.h
  *
  * @brief Componenets for creating x, y and title labels
  *
@@ -14,8 +14,8 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include "scp_datamodels.h"
-#include "scp_internal_datamodels.h"
+#include "cmp_datamodels.h"
+#include "cmp_internal_datamodels.h"
 
 namespace cmp {
 /**

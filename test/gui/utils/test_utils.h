@@ -1,7 +1,7 @@
 #pragma once
 
 #include <juce_gui_extra/juce_gui_extra.h>
-#include <spl_plot.h>
+#include <cmp_plot.h>
 
 template <class ContainerType>
 static ContainerType& getPlotFromID(

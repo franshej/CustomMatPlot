@@ -1,5 +1,5 @@
 /**
- * @file scp_zoom.h
+ * @file cmp_zoom.h
  *
  * @brief Componenet for drawing the zoom area and store the zoom start and end
  * postion.
@@ -14,7 +14,7 @@
 #pragma once
 
 #include <juce_gui_basics/juce_gui_basics.h>
-#include <scp_datamodels.h>
+#include <cmp_datamodels.h>
 
 namespace cmp {
 /**

@@ -1,13 +1,13 @@
 #include <stdexcept>
 
-#include "scp_frame.h"
-#include "scp_legend.h"
-#include "scp_lookandfeel.h"
-#include "scp_trace.h"
-#include "scp_zoom.h"
-#include "spl_graph_line.h"
-#include "spl_grid.h"
-#include "spl_label.h"
+#include "cmp_frame.h"
+#include "cmp_legend.h"
+#include "cmp_lookandfeel.h"
+#include "cmp_trace.h"
+#include "cmp_zoom.h"
+#include "cmp_graph_line.h"
+#include "cmp_grid.h"
+#include "cmp_label.h"
 
 namespace cmp {
 

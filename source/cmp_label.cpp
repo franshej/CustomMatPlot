@@ -1,6 +1,6 @@
-#include "spl_label.h"
+#include "cmp_label.h"
 
-#include "spl_plot.h"
+#include "cmp_plot.h"
 
 namespace cmp {
 PlotLabel::PlotLabel() {

@@ -1,7 +1,7 @@
-#include "scp_trace.h"
+#include "cmp_trace.h"
 
-#include "spl_plot.h"
-#include "spl_graph_line.h"
+#include "cmp_plot.h"
+#include "cmp_graph_line.h"
 
 namespace cmp {
 template <class ValueType>

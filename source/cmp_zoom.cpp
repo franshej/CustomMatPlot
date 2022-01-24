@@ -1,6 +1,6 @@
-#include "scp_zoom.h"
+#include "cmp_zoom.h"
 
-#include "spl_plot.h"
+#include "cmp_plot.h"
 
 namespace cmp {
 void Zoom::setStartPosition(const juce::Point<int>& start_position) noexcept {

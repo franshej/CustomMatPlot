@@ -1,8 +1,8 @@
-#include "spl_graph_line.h"
+#include "cmp_graph_line.h"
 
 #include <stdexcept>
 
-#include "spl_plot.h"
+#include "cmp_plot.h"
 
 namespace cmp {
 
