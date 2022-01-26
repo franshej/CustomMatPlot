@@ -113,6 +113,10 @@ void Grid::addGridLines(const std::vector<float> &ticks,
                        : getXGraphPointsLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
 
+          if (!graph_bounds.contains(grid_line.position)) {
+            continue;
+          }
+
           grid_line.tick = t;
           grid_line.length = graph_bounds.getHeight();
           grid_line.direction = GridLine::Direction::vertical;
@@ -132,9 +136,13 @@ void Grid::addGridLines(const std::vector<float> &ticks,
                        ? getYGraphValueLinear(t, scale, offset)
                        : getYGraphPointsLogarithmic(t, scale, offset))};
 
+          if (!graph_bounds.contains(grid_line.position)) {
+              continue;
+          }
+
           grid_line.tick = t;
           grid_line.direction = GridLine::Direction::horizontal;
-          grid_line.length = float(graph_bounds.getWidth());
+          grid_line.length = graph_bounds.getWidth();
 
           m_grid_lines.emplace_back(grid_line);
         }
