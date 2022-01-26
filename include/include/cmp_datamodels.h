@@ -470,7 +470,11 @@ template <class ValueType>
 
   auto num_digits_before_sign = 0;
   if (lims_diff_log >= 0 && largest_exp >= 0) {
-    num_digits_before_sign += largest_abs_exp;
+    if (int(std::ceil(std::log10(value))) == int(largest_abs_exp)) {
+      num_digits_before_sign += largest_abs_exp + 1;
+    } else {
+      num_digits_before_sign += largest_abs_exp;
+    }
   } else if (lims_diff_log < 0 && largest_exp > 0) {
     num_digits_before_sign += largest_abs_exp + num_digits_diff;
   } else if (lims_diff_log < 0 && largest_exp < 0) {
