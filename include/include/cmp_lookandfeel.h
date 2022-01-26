@@ -550,9 +550,15 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
     // dicarded.
     for (const auto& x : x_data) {
       if (x >= x_lim.min) {
-        if ((int(min_x_index) - 2) > 0) {
-          // Two indices outside the left side to get rid of artifacts.
-          min_x_index = min_x_index - 2u;
+        auto start_i_outside = 2u;
+        while (true) {
+          if ((int(min_x_index) - start_i_outside) >= 0) {
+            // start_i_outside indices outside the left side to get rid of
+            // artifacts.
+            min_x_index = min_x_index - start_i_outside;
+            break;
+          }
+          --start_i_outside;
         }
         break;
       }
@@ -561,9 +567,14 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
     for (auto x = x_data.rbegin(); x != x_data.rend(); ++x) {
       if (*x <= x_lim.max || max_x_index == 0u) {
-        if (max_x_index < x_data.size() - 2u) {
-          // Two indices outside the right side to get rid of artifacts.
-          max_x_index = max_x_index + 2;
+        auto start_i_outside = 2u;
+        while (true) {
+          if (max_x_index < x_data.size() - start_i_outside) {
+            // Two indices outside the right side to get rid of artifacts.
+            max_x_index = max_x_index + start_i_outside;
+            break;
+          }
+          --start_i_outside;
         }
         break;
       }
