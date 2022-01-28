@@ -13,7 +13,8 @@ set(SOURCE source/cmp_plot.cpp
            source/cmp_frame.cpp
            source/cmp_legend.cpp
            source/cmp_trace.cpp
-           source/cmp_zoom.cpp)
+           source/cmp_zoom.cpp
+           source/cmp_lookandfeel.cpp)
 
 set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
  	                 include/include_internal/cmp_grid.h
