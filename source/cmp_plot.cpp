@@ -1,13 +1,13 @@
 #include <stdexcept>
 
 #include "cmp_frame.h"
+#include "cmp_graph_line.h"
+#include "cmp_grid.h"
+#include "cmp_label.h"
 #include "cmp_legend.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_trace.h"
 #include "cmp_zoom.h"
-#include "cmp_graph_line.h"
-#include "cmp_grid.h"
-#include "cmp_label.h"
 
 namespace cmp {
 
@@ -464,13 +464,16 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
         graph_line->setXValues(x_data);
       }
 
-      if (m_x_autoscale && !m_graph_lines.back()->getXValues().empty()) {
+      if (m_x_autoscale) {
         setAutoXScale();
+      }
+
+      for (const auto& graph_line : m_graph_lines) {
+        graph_line->updateXGraphPoints(m_graph_params);
       }
     }
 
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateXGraphPoints(m_graph_params);
       graph_line->updateYGraphPoints(m_graph_params);
     }
   }
@@ -611,7 +614,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
                              : juce::Point<float>();
 
       if (m_trace->setDataValueFor(event.eventComponent, closest_data_point,
-                                       m_graph_params)) {
+                                   m_graph_params)) {
         if (onTraceValueChange) {
           onTraceValueChange(this, prev_graph_point, closest_data_point);
         }

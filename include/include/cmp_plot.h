@@ -79,8 +79,7 @@ class Plot : public juce::Component {
    *
    * This plot function will only update the y-data in the graphs and only
    * repaint the graph_area, therefore requires less CPU than the 'plot'
-   * function. x-data can be set through the 'plot' function before being
-   * executed.
+   * function. x-data can be set through the 'plot' function.
    *
    * @param y_data vector of vectors with the y-values.
    */
