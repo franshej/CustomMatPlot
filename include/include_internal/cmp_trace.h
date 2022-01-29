@@ -96,7 +96,7 @@ struct TraceLabel : public juce::Component {
 /** @brief A typedef defines a tracelabel using floats. */
 typedef TraceLabel<float> TraceLabel_f;
 
-/** @breif A struct that defines a tracelabel and a tracepoint */
+/** @brief A struct that defines a tracelabel and a tracepoint */
 template <class ValueType>
 struct TraceLabelPoint {
   std::unique_ptr<TraceLabel<ValueType>> trace_label;
@@ -106,7 +106,7 @@ struct TraceLabelPoint {
   const GraphLine* associated_graph_line{nullptr};
 };
 
-/** @breif A struct that defines a tracelabel and a tracepoint using floats. */
+/** @brief A struct that defines a tracelabel and a tracepoint using floats. */
 typedef TraceLabelPoint<float> TraceLabelPoint_f;
 
 /**
@@ -120,7 +120,7 @@ class Trace {
  public:
   ~Trace();
 
-  /** @breif Get the associated GraphLine.
+  /** @brief Get the associated GraphLine.
    *
    * @param TracePoint juce::Componenet* a TracePoint component.
    * @return GraphLine* the associated GraphLine if found else nullptr
@@ -128,7 +128,7 @@ class Trace {
   const GraphLine* getAssociatedGraphLine(
       const juce::Component* trace_point) const;
 
-  /** @breif Get the graph position for a tracepoint or trace label.
+  /** @brief Get the graph position for a tracepoint or trace label.
    *
    * @param trace_point_or_label either a tracepoint or tracelabel component.
    * @return the graph position.
@@ -180,7 +180,7 @@ class Trace {
    */
   void setLookAndFeel(juce::LookAndFeel* lnf);
 
-  /** @breif Set the data value for a tracepoint.
+  /** @brief Set the data value for a tracepoint.
    *
    * @param tracepoint the tracepoint which data value will be set.
    * @param common_plot_params common plot parameters.
@@ -191,7 +191,7 @@ class Trace {
                        const juce::Point<float>& new_position,
                        const CommonPlotParameterView common_plot_params);
 
-  /** @breif Set the coner position of a single tracelabel.
+  /** @brief Set the coner position of a single tracelabel.
    *
    * @param trace_point the associated tracepoint.
    * @param mouse_position the position of the mouse.
@@ -214,7 +214,7 @@ class Trace {
    */
   bool isComponentTraceLabel(const juce::Component* component) const;
 
-  /** @breif Update tracepoints on a graph_line changed y-data
+  /** @brief Update tracepoints on a graph_line changed y-data
    *
    * If a graph_line has changed y-data you can use this function to update the
    * tracepoints associated with it.

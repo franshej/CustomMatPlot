@@ -85,6 +85,34 @@ class Plot : public juce::Component {
    */
   void realTimePlot(const std::vector<std::vector<float>>& y_data);
 
+  /* @brief Plot the area between two data lines.
+   *
+   * Fill the area between two graph lines. Each area is described by the values
+   * in upper_y_data[n] / upper_x_data[n] and lower_y_data[n] / lower_y_data[n],
+   * where n is the graph area index.
+   *
+   * The upper and lower graph area bounds are drawn as graph_lines, same
+   * graph_lines drawn using the 'plot' function. Use the graph_attribute_list
+   * to change the appearance of these graph_line.
+   *
+   * The colour of the graph_area is defined by 'GraphAttribute::graph_colour'
+   * in the 'graph_attribute_list' parameter. graph_attribute_list[n] is
+   * associated with the graph 'ColourIdsGraph' is used if graph_attribute_list
+   * is empty.
+   *
+   * @param upper_y_data upper y coordinate bounds.
+   * @param lower_y_data lower y coordinate bounds.
+   * @param upper_x_data upper x coordinate bounds.
+   * @param lower_x_data lower x coordinate bounds.
+   * @param graph_attribute_list a list of graph attributes @see
+   *  GraphAttribute.
+   **/
+  void plotSpread(const std::vector<std::vector<float>>& upper_y_data,
+                  const std::vector<std::vector<float>>& lower_y_data,
+                  const std::vector<std::vector<float>>& upper_x_data = {},
+                  const std::vector<std::vector<float>>& lower_x_data = {},
+                  const GraphAttributeList& graph_attribute_list = {}){};
+
   /** @brief Set the text for label on the X-axis
    *
    *  Set the text for label on the X-axis.
@@ -261,7 +289,7 @@ class Plot : public juce::Component {
 
     /** Draw background. */
     virtual void drawBackground(juce::Graphics& g,
-        juce::Rectangle<int>& bounds) = 0;
+                                juce::Rectangle<int>& bounds) = 0;
 
     /** This method draws a frame around the graph area. */
     virtual void drawFrame(juce::Graphics& g,
@@ -431,7 +459,6 @@ class Plot : public juce::Component {
                                      const juce::Rectangle<int>& graph_bounds,
                                      juce::Label& x_label, juce::Label& y_label,
                                      juce::Label& title_label) = 0;
-
   };
 
   //==============================================================================
@@ -488,7 +515,6 @@ class Plot : public juce::Component {
   std::unique_ptr<Legend> m_legend;
   std::unique_ptr<Zoom> m_zoom;
   std::unique_ptr<Trace> m_trace;
-  std::unique_ptr<juce::ToggleButton> m_zoom_button, m_trace_button;
 
   juce::LookAndFeel* m_lookandfeel;
   std::unique_ptr<LookAndFeelMethods> m_lookandfeel_default;

@@ -13,7 +13,7 @@ void GraphLine::setColour(const juce::Colour graph_colour) {
 std::pair<juce::Point<float>, juce::Point<float>>
 GraphLine::findClosestGraphPointTo(
     const juce::Point<float>& this_graph_point,
-    bool check_only_distance_from_x) const noexcept {
+    bool check_only_distance_from_x) const  {
   // No graph points.
   jassert(!m_graph_points.empty());
 
@@ -41,7 +41,7 @@ GraphLine::findClosestGraphPointTo(
 
 juce::Point<float> GraphLine::findClosestDataPointTo(
     const juce::Point<float>& this_data_point,
-    bool check_only_distance_from_x) const noexcept {
+    bool check_only_distance_from_x) const  {
   // No y_data empty.
   jassert(!m_x_data.empty());
 
@@ -113,25 +113,25 @@ void GraphLine::setGraphAttribute(const GraphAttribute& graph_attribute) {
     m_graph_attributes.marker = graph_attribute.marker;
 }
 
-void GraphLine::setYValues(const std::vector<float>& y_data) noexcept {
+void GraphLine::setYValues(const std::vector<float>& y_data) {
   if (m_y_data.size() != y_data.size()) m_y_data.resize(y_data.size());
   std::copy(y_data.begin(), y_data.end(), m_y_data.begin());
 
   m_graph_point_indices.resize(y_data.size());
 }
 
-void GraphLine::setXValues(const std::vector<float>& x_data) noexcept {
+void GraphLine::setXValues(const std::vector<float>& x_data) {
   if (m_x_data.size() != x_data.size()) m_x_data.resize(x_data.size());
   std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
 
   m_graph_point_indices.resize(x_data.size());
 }
 
-const std::vector<float>& GraphLine::getYValues() noexcept { return m_y_data; }
+const std::vector<float>& GraphLine::getYValues() const noexcept { return m_y_data; }
 
-const std::vector<float>& GraphLine::getXValues() noexcept { return m_x_data; }
+const std::vector<float>& GraphLine::getXValues() const noexcept { return m_x_data; }
 
-const GraphPoints& GraphLine::getGraphPoints() noexcept {
+const GraphPoints& GraphLine::getGraphPoints() const noexcept {
   return m_graph_points;
 }
 
@@ -180,6 +180,18 @@ void GraphLine::updateYGraphPointsIntern(
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->updateYGraphPoints(common_plot_params.graph_bounds, common_plot_params.y_lim,
                             m_y_data, m_graph_point_indices, m_graph_points);
+  }
+}
+
+void GraphSpread::resized() {}
+
+void GraphSpread::paint(juce::Graphics& g) {}
+
+void GraphSpread::lookAndFeelChanged() {
+  if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
+    m_lookandfeel = lnf;
+  } else {
+    m_lookandfeel = nullptr;
   }
 }
 

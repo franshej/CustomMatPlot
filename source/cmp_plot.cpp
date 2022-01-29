@@ -72,8 +72,6 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_zoom(std::make_unique<Zoom>()),
       m_grid(std::make_unique<Grid>()),
       m_trace(std::make_unique<Trace>()),
-      m_zoom_button(std::make_unique<juce::ToggleButton>("Zoom")),
-      m_trace_button(std::make_unique<juce::ToggleButton>("Trace")),
       m_x_lim({0, 0}),
       m_y_lim({0, 0}),
       m_graph_params(m_graph_bounds, m_x_lim, m_y_lim) {
@@ -84,22 +82,14 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   addAndMakeVisible(m_zoom.get());
   addAndMakeVisible(m_plot_label.get());
   addAndMakeVisible(m_frame.get());
-  addAndMakeVisible(m_zoom_button.get());
-  addAndMakeVisible(m_trace_button.get());
 
   m_legend->setAlwaysOnTop(true);
   m_zoom->toBehind(m_legend.get());
   m_grid->toBack();
 
-  m_trace_button->setRadioGroupId(TraceZoomButtons);
-  m_zoom_button->setRadioGroupId(TraceZoomButtons);
-
   m_grid->onGridLabelLengthChanged = [this](cmp::Grid* grid) {
     this->resizeChilderns();
   };
-
-  m_zoom_button->onClick = [this] { /** m_trace->toBehind(m_zoom.get()); */ };
-  m_trace_button->onClick = [this] { /** m_zoom->toBehind(m_trace.get()); */ };
 }
 
 const IsLabelsSet Plot::getIsLabelsAreSet() const noexcept {
@@ -319,10 +309,10 @@ std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestGraphPoint(
       }
     }
   } else if (graph_line_exsists) {
-    const auto [_graph_point, _data_point] =
+    const auto [graph_point, data_point] =
         nearest_graph_line->findClosestGraphPointTo(point);
-    closest_graph_point = _graph_point;
-    closest_data_point = _data_point;
+    closest_graph_point = graph_point;
+    closest_data_point = data_point;
   }
 
   return {closest_data_point, nearest_graph_line};
@@ -371,6 +361,7 @@ void Plot::lookAndFeelChanged() {
   if (&getLookAndFeel() == nullptr) {
     m_lookandfeel_default.reset();
     m_lookandfeel = nullptr;
+
     resetLookAndFeelChildrens();
   } else if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = &getLookAndFeel();

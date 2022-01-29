@@ -18,18 +18,15 @@
 #include "cmp_internal_datamodels.h"
 
 namespace cmp {
-//==============================================================================
+
 /**
  *  \class GraphLine
- *  \brief A templated class component to draw 2-D lines/marker symbols. This is
+ *  \brief A class component to draw 2-D lines/marker symbols. This is
  *  a subcomponenet to cmp::Plot.
- *
- *  Never use this directley, always use one of the derived classes to choose
- *  the scaling.
  */
 class GraphLine : public juce::Component {
  public:
-  /**@breif Find closest point on graph from graph point.
+  /**@brief Find closest point on graph from graph point.
    *
    * @param this_graph_point the point on the graph.
    * @param check_only_distance_from_x check the absolut distance if false else
@@ -38,9 +35,9 @@ class GraphLine : public juce::Component {
    */
   std::pair<juce::Point<float>, juce::Point<float>> findClosestGraphPointTo(
       const juce::Point<float>& this_graph_point,
-      bool check_only_distance_from_x = false) const noexcept;
+      bool check_only_distance_from_x = false) const;
 
-  /**@breif Find closest data point to this data point.
+  /**@brief Find closest data point to this data point.
    *
    * @param this_data_point the data point.
    * @param check_only_distance_from_x check the absolut distance if false else
@@ -49,7 +46,7 @@ class GraphLine : public juce::Component {
    */
   juce::Point<float> findClosestDataPointTo(
       const juce::Point<float>& this_data_point,
-      bool check_only_distance_from_x = false) const noexcept;
+      bool check_only_distance_from_x = false) const;
 
   /** @brief Get the colour of the graph.
    *
@@ -72,14 +69,14 @@ class GraphLine : public juce::Component {
    *  @param y_values vector of y-values.
    *  @return void.
    */
-  void setYValues(const std::vector<float>& y_values) noexcept;
+  void setYValues(const std::vector<float>& y_values);
 
   /** @brief Set the x-values for the graph-line
    *
    *  @param x_values vector of x-values.
    *  @return void.
    */
-  void setXValues(const std::vector<float>& x_values) noexcept;
+  void setXValues(const std::vector<float>& x_values);
 
   /** @brief Get y-values
    *
@@ -87,7 +84,7 @@ class GraphLine : public juce::Component {
    *
    *  @return a const reference of the y-values.
    */
-  const std::vector<float>& getYValues() noexcept;
+  const std::vector<float>& getYValues() const noexcept;
 
   /** @brief Get x-values
    *
@@ -95,7 +92,7 @@ class GraphLine : public juce::Component {
    *
    *  @return a const reference of the x-values.
    */
-  const std::vector<float>& getXValues() noexcept;
+  const std::vector<float>& getXValues() const noexcept;
 
   /** @brief Get the graph points
    *
@@ -103,7 +100,7 @@ class GraphLine : public juce::Component {
    *
    *  @return const reference of the calculated graph points.
    */
-  const GraphPoints& getGraphPoints() noexcept;
+  const GraphPoints& getGraphPoints() const noexcept;
 
   /** @brief Set the colour of graph
    *
@@ -135,6 +132,7 @@ class GraphLine : public juce::Component {
   void updateYGraphPoints(const CommonPlotParameterView common_plot_params);
 
   //==============================================================================
+
   /** @internal */
   void resized() override;
   /** @internal */
@@ -162,4 +160,32 @@ class GraphLine : public juce::Component {
 
   GraphAttribute m_graph_attributes;
 };
+
+/**
+ *  \class GraphSpread
+ *  \brief a class to fill the area between two graph lines.
+ */
+class GraphSpread : juce::Component {
+ public:
+  /**@brief Set the upper and lower bounds of the graph spread to be drawn.
+   *
+   * @param upper_bound graph_line that decribes the upper boundary.
+   * @param lower_bound graph_line that decribes the lower boundary.
+   */
+  GraphSpread(const GraphLine* upper_bound, const GraphLine* lower_bound)
+      : m_upper_bound{upper_bound}, m_lower_bound{lower_bound} {}
+
+ private:
+  /** @internal */
+  void resized() override;
+  /** @internal */
+  void paint(juce::Graphics& g) override;
+  /** @internal */
+  void lookAndFeelChanged() override;
+
+  const GraphLine *m_upper_bound, *m_lower_bound;
+
+  juce::LookAndFeel* m_lookandfeel{nullptr};
+};
+
 }  // namespace cmp
