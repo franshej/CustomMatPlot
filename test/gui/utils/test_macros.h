@@ -48,6 +48,12 @@
 #define REALTIMEPLOT(Y) \
   { GET_PLOT->realTimePlot(Y); }
 
+#define FILL_BETWEEN(INDICES) \
+  { GET_PLOT->fillBetween(INDICES); }
+
+#define FILL_BETWEEN_C(INDICES, COLOUR) \
+  { GET_PLOT->fillBetween(INDICES, COLOUR); }
+
 #define X_LIM(MIN, MAX) GET_PLOT->xLim(MIN, MAX);
 
 #define Y_LIM(MIN, MAX) GET_PLOT->yLim(MIN, MAX);

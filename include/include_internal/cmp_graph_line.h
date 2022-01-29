@@ -162,30 +162,33 @@ class GraphLine : public juce::Component {
 };
 
 /**
- *  \class GraphSpread
+ *  \struct GraphSpread
  *  \brief a class to fill the area between two graph lines.
  */
-class GraphSpread : juce::Component {
- public:
+struct GraphSpread : public juce::Component {
   /**@brief Set the upper and lower bounds of the graph spread to be drawn.
    *
    * @param upper_bound graph_line that decribes the upper boundary.
    * @param lower_bound graph_line that decribes the lower boundary.
    */
-  GraphSpread(const GraphLine* upper_bound, const GraphLine* lower_bound)
-      : m_upper_bound{upper_bound}, m_lower_bound{lower_bound} {}
+  GraphSpread(const GraphLine* upper_bound, const GraphLine* lower_bound,
+              const juce::Colour spread_colour)
+      : m_upper_bound{upper_bound},
+        m_lower_bound{lower_bound},
+        m_spread_colour{spread_colour} {}
+
+  const GraphLine *m_upper_bound, *m_lower_bound;
+  juce::Colour m_spread_colour;
 
  private:
+  juce::LookAndFeel* m_lookandfeel{nullptr};
+
   /** @internal */
   void resized() override;
   /** @internal */
   void paint(juce::Graphics& g) override;
   /** @internal */
   void lookAndFeelChanged() override;
-
-  const GraphLine *m_upper_bound, *m_lower_bound;
-
-  juce::LookAndFeel* m_lookandfeel{nullptr};
 };
 
 }  // namespace cmp

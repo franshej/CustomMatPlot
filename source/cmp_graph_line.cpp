@@ -185,7 +185,12 @@ void GraphLine::updateYGraphPointsIntern(
 
 void GraphSpread::resized() {}
 
-void GraphSpread::paint(juce::Graphics& g) {}
+void GraphSpread::paint(juce::Graphics& g) {
+  if (m_lookandfeel) {
+    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+    lnf->drawSpread(g, m_lower_bound, m_upper_bound, m_spread_colour);
+  }
+}
 
 void GraphSpread::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {

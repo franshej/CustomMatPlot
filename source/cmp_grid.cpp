@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <tuple>
 
-#include "cmp_internal_datamodels.h"
 #include "cmp_graph_line.h"
+#include "cmp_internal_datamodels.h"
 #include "cmp_plot.h"
 
 namespace cmp {
@@ -19,7 +19,8 @@ void Grid::createLabels(const CommonPlotParameterView common_plot_params) {
   }
 }
 
-void Grid::updateGridInternal(const CommonPlotParameterView common_plot_params) {
+void Grid::updateGridInternal(
+    const CommonPlotParameterView common_plot_params) {
   if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
     // width and height must be larger than zero.
     jassertfalse;
@@ -101,6 +102,20 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
     const auto [scale, offset] = getScaleOffset();
 
+    const auto safe_margin =
+        [](const juce::Rectangle<float> &bounds,
+           const float scale_factor) -> juce::Rectangle<float> {
+      const auto w_f = bounds.getWidth() * scale_factor;
+      const auto h_f = bounds.getHeight() * scale_factor;
+
+      const auto x = bounds.getX() - w_f * 0.5f;
+      const auto y = bounds.getY() - h_f * 0.5f;
+      const auto w = bounds.getWidth() + w_f;
+      const auto h = bounds.getHeight() + h_f;
+
+      return {x, y, w, h};
+    }(graph_bounds, 0.1f);
+
     switch (direction) {
       case GridLine::Direction::vertical:
         for (const auto t : ticks) {
@@ -113,7 +128,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
                        : getXGraphPointsLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
 
-          if (!graph_bounds.contains(grid_line.position)) {
+          if (!safe_margin.contains(grid_line.position)) {
             continue;
           }
 
@@ -136,8 +151,8 @@ void Grid::addGridLines(const std::vector<float> &ticks,
                        ? getYGraphValueLinear(t, scale, offset)
                        : getYGraphPointsLogarithmic(t, scale, offset))};
 
-          if (!graph_bounds.contains(grid_line.position)) {
-              continue;
+          if (!safe_margin.contains(grid_line.position)) {
+            continue;
           }
 
           grid_line.tick = t;
@@ -232,9 +247,9 @@ void Grid::setYTicks(const std::vector<float> &y_ticks) {
   m_custom_y_ticks = y_ticks;
 }
 
-void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
-                               std::vector<float> &y_ticks,
-                               const CommonPlotParameterView common_plot_params) {
+void Grid::createAutoGridTicks(
+    std::vector<float> &x_ticks, std::vector<float> &y_ticks,
+    const CommonPlotParameterView common_plot_params) {
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<cmp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {

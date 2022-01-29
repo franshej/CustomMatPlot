@@ -91,6 +91,10 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
                   const std::vector<juce::Colour>& graph_line_colours,
                   const juce::Rectangle<int>& bounds) override;
 
+  void drawSpread(juce::Graphics& g, const GraphLine* first_graph,
+                  const GraphLine* second_graph,
+                  const juce::Colour& spread_colour) override;
+
   void drawTraceLabel(juce::Graphics& g, const cmp::Label& x_label,
                       const cmp::Label& y_label) override;
 

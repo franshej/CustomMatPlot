@@ -85,7 +85,7 @@ class Plot : public juce::Component {
    */
   void realTimePlot(const std::vector<std::vector<float>>& y_data);
 
-  /* @brief Fill the area between two data lines.
+  /** @brief Fill the area between two data lines.
    *
    * 1. Use 'plot' or 'realTimePlot' to draw the graph lines.
    * 2. Use this function to indicate between which graph lines the area is
@@ -97,9 +97,9 @@ class Plot : public juce::Component {
    * @param graph_spread_indices the indices between which graph lines the are
    *        is filled.
    * @param fill_area_colours the colours of the areas.
-   **/
-  void plotSpread(const std::vector<GraphSpreadIndex>& graph_spread_indices,
-                  const std::vector<juce::Colour>& fill_area_colours = {}){};
+   */
+  void fillBetween(const std::vector<GraphSpreadIndex>& graph_spread_indices,
+                   const std::vector<juce::Colour>& fill_area_colours = {});
 
   /** @brief Set the text for label on the X-axis
    *
@@ -301,6 +301,11 @@ class Plot : public juce::Component {
                             const std::vector<juce::Colour>& graph_line_colours,
                             const juce::Rectangle<int>& bounds) = 0;
 
+    /** Fill area between two graph lines. */
+    virtual void drawSpread(juce::Graphics& g, const GraphLine* first_graph,
+                            const GraphLine* second_graph,
+                            const juce::Colour& spread_colour) = 0;
+
     /** Draw a single trace point. */
     virtual void drawTraceLabel(juce::Graphics& g, const cmp::Label& x_label,
                                 const cmp::Label& y_label) = 0;
@@ -497,6 +502,7 @@ class Plot : public juce::Component {
   CommonPlotParameterView m_graph_params;
 
   GraphLines m_graph_lines;
+  GraphSpreadList m_graph_spread_list;
   std::unique_ptr<Grid> m_grid;
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;

@@ -148,6 +148,7 @@ class Legend;
 class Trace;
 class Zoom;
 class PlotLookAndFeel;
+struct GraphSpread;
 
 /*============================================================================*/
 
@@ -158,6 +159,7 @@ typedef std::vector<Label> LabelVector;
 typedef std::vector<std::string> StringVector;
 typedef std::vector<juce::Colour> ColourVector;
 typedef std::vector<GraphAttribute> GraphAttributeList;
+typedef std::vector<std::unique_ptr<GraphSpread>> GraphSpreadList;
 
 /*============================================================================*/
 

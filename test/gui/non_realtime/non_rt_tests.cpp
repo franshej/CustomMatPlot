@@ -391,3 +391,25 @@ TEST(markers, NonRealTime) {
   PLOT_XY_ATTRI({test_data_y}, {}, ga);
   GRID_ON;
 }
+
+TEST(spread, NonRealTime) {
+  ADD_PLOT;
+
+  std::vector<std::vector<float>> test_data_y =
+      std::vector<std::vector<float>>(4, std::vector<float>(10));
+  std::vector<std::string> legends;
+
+  float i = 0;
+  for (auto &y_vec : test_data_y) {
+    std::iota(y_vec.begin(), y_vec.end(), 0);
+    for (auto &y : y_vec) {
+      y = i * std::sin(y * PI2 / y_vec.size());
+    }
+    i += 10;
+  }
+
+  const std::vector<cmp::GraphSpreadIndex> spread_indices = {{0, 1}, {2, 3}};
+
+  PLOT_Y(test_data_y);
+  FILL_BETWEEN(spread_indices);
+}

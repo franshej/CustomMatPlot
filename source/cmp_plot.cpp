@@ -37,13 +37,16 @@ static [[nodiscard]] std::pair<float, float> findMinMaxValuesInGraphLines(
     const auto& single_data_vector =
         isXValue ? graph->getXValues() : graph->getYValues();
 
-    const auto& current_max =
-        *std::max_element(single_data_vector.begin(), single_data_vector.end());
-    max_value = current_max > max_value ? current_max : max_value;
-    const auto& current_min =
-        *std::min_element(single_data_vector.begin(), single_data_vector.end());
-    min_value = current_min < min_value ? current_min : min_value;
+    if (!single_data_vector.empty()) {
+      const auto& current_max = *std::max_element(single_data_vector.begin(),
+                                                  single_data_vector.end());
+      max_value = current_max > max_value ? current_max : max_value;
+      const auto& current_min = *std::min_element(single_data_vector.begin(),
+                                                  single_data_vector.end());
+      min_value = current_min < min_value ? current_min : min_value;
+    }
   }
+
   return {min_value, max_value};
 }
 
@@ -54,8 +57,13 @@ void Plot::resetLookAndFeelChildrens() {
   m_legend->setLookAndFeel(nullptr);
   m_zoom->setLookAndFeel(nullptr);
   m_trace->setLookAndFeel(nullptr);
-  for (auto& graph_line : m_graph_lines) {
+
+  for (const auto& graph_line : m_graph_lines) {
     graph_line->setLookAndFeel(nullptr);
+  }
+
+  for (const auto& spread : m_graph_spread_list) {
+    spread->setLookAndFeel(nullptr);
   }
 }
 
@@ -209,12 +217,54 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
   repaint();
 }
 
-void cmp::Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
+void Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
   updateYData(y_data, {});
 
   updateTracePointsForNewGraphData();
 
   repaint(m_graph_bounds);
+}
+
+void Plot::fillBetween(
+    const std::vector<GraphSpreadIndex>& graph_spread_indices,
+    const std::vector<juce::Colour>& fill_area_colours) {
+  m_graph_spread_list.resize(graph_spread_indices.size());
+  auto graph_spread_it = m_graph_spread_list.begin();
+
+  for (const auto& spread : graph_spread_indices) {
+    if (std::max(spread.first_graph, spread.second_graph) >=
+        m_graph_lines.size()) {
+      throw std::range_error("Spread index out of range.");
+    }
+    const auto first_graph = m_graph_lines[spread.first_graph].get();
+    const auto second_graph = m_graph_lines[spread.second_graph].get();
+
+    auto it_colour = fill_area_colours.begin();
+
+    const auto colour = it_colour != fill_area_colours.end()
+                            ? *it_colour++
+                            : first_graph->getColour();
+
+    auto& graph_spread = *graph_spread_it++;
+
+    if (!graph_spread) {
+      graph_spread =
+          std::make_unique<GraphSpread>(first_graph, second_graph, colour);
+
+      graph_spread->setBounds(m_graph_bounds);
+
+      graph_spread->setLookAndFeel(m_lookandfeel);
+
+      addAndMakeVisible(graph_spread.get());
+
+      graph_spread->toBehind(m_zoom.get());
+    } else {
+      graph_spread->m_lower_bound = first_graph;
+      graph_spread->m_upper_bound = second_graph;
+      graph_spread->m_spread_colour = colour;
+      graph_spread->setBounds(m_graph_bounds);
+    }
+  }
 }
 
 void Plot::setXLabel(const std::string& x_label) {
@@ -266,6 +316,10 @@ void Plot::resizeChilderns() {
 
       for (const auto& graph_line : m_graph_lines) {
         graph_line->setBounds(graph_bounds);
+      }
+
+      for (const auto& spread : m_graph_spread_list) {
+        spread->setBounds(graph_bounds);
       }
 
       if (m_legend) {
@@ -459,9 +513,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
         setAutoXScale();
       }
 
-      for (const auto& graph_line : m_graph_lines) {
-        graph_line->updateXGraphPoints(m_graph_params);
-      }
+      graph_line->updateXGraphPoints(m_graph_params);
     }
 
     for (const auto& graph_line : m_graph_lines) {

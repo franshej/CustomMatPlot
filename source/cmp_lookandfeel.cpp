@@ -1,5 +1,6 @@
 
 #include "cmp_lookandfeel.h"
+#include "cmp_graph_line.h"
 
 /*============================================================================*/
 
@@ -108,7 +109,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
     }
 
     if (is_labels_set.y_label) {
-      left = getXYTitleFont().getHeight() + 2 * getMargin();
+      left = std::size_t(getXYTitleFont().getHeight()) + 2 * getMargin();
     }
 
     if (is_labels_set.title_label) {
@@ -476,6 +477,31 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
+void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawSpread(
+    juce::Graphics& g, const GraphLine* first_graph,
+    const GraphLine* second_graph, const juce::Colour& spread_colour) {
+  juce::Path path;
+
+  if (!first_graph->getGraphPoints().empty()) {
+    const auto& first_graph_points = first_graph->getGraphPoints();
+    const auto& second_graph_points = second_graph->getGraphPoints();
+
+    path.startNewSubPath(first_graph_points[0]);
+
+    std::for_each(first_graph_points.begin() + 1, first_graph_points.end(),
+                  [&](const auto point) { path.lineTo(point); });
+
+    std::for_each(second_graph_points.rbegin(), second_graph_points.rend(),
+                  [&](const auto point) { path.lineTo(point); });
+
+    path.closeSubPath();
+
+    g.setColour(spread_colour);
+    g.fillPath(path);
+  }
+}
+
+template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTraceLabel(
     juce::Graphics& g, const cmp::Label& x_label, const cmp::Label& y_label) {
   g.setColour(findColour(Plot::trace_label_colour));
@@ -503,8 +529,10 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTracePoint(
   const auto w = bounds.getWidth() - line_thickness;
   const auto h = bounds.getHeight() - line_thickness;
 
-  g.setColour(findColour(Plot::trace_point_colour));
-  g.drawEllipse(x, y, w, h, line_thickness);
+  if (!bounds.isEmpty()) {
+    g.setColour(findColour(Plot::trace_point_colour));
+    g.drawEllipse(x, y, w, h, line_thickness);
+  }
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
