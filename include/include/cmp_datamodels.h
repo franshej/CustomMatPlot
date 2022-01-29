@@ -161,6 +161,13 @@ typedef std::vector<GraphAttribute> GraphAttributeList;
 
 /*============================================================================*/
 
+/** @brief A struct that defines between which two graph_lines the area is
+ * filled. */
+struct GraphSpreadIndex {
+  std::size_t first_graph;
+  std::size_t second_graph;
+};
+
 /** @brief A struct that defines a single gridline.
  *
  * The struct defines either a vertical or horizontal gridline.

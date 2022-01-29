@@ -85,33 +85,21 @@ class Plot : public juce::Component {
    */
   void realTimePlot(const std::vector<std::vector<float>>& y_data);
 
-  /* @brief Plot the area between two data lines.
+  /* @brief Fill the area between two data lines.
    *
-   * Fill the area between two graph lines. Each area is described by the values
-   * in upper_y_data[n] / upper_x_data[n] and lower_y_data[n] / lower_y_data[n],
-   * where n is the graph area index.
+   * 1. Use 'plot' or 'realTimePlot' to draw the graph lines.
+   * 2. Use this function to indicate between which graph lines the area is
+   *    filled.
    *
-   * The upper and lower graph area bounds are drawn as graph_lines, same
-   * graph_lines drawn using the 'plot' function. Use the graph_attribute_list
-   * to change the appearance of these graph_line.
+   * The colour of the graph areas is defined by 'fill_area_colours'.
+   * 'ColourIdsGraph' is used if 'fill_area_colours' is empty.
    *
-   * The colour of the graph_area is defined by 'GraphAttribute::graph_colour'
-   * in the 'graph_attribute_list' parameter. graph_attribute_list[n] is
-   * associated with the graph 'ColourIdsGraph' is used if graph_attribute_list
-   * is empty.
-   *
-   * @param upper_y_data upper y coordinate bounds.
-   * @param lower_y_data lower y coordinate bounds.
-   * @param upper_x_data upper x coordinate bounds.
-   * @param lower_x_data lower x coordinate bounds.
-   * @param graph_attribute_list a list of graph attributes @see
-   *  GraphAttribute.
+   * @param graph_spread_indices the indices between which graph lines the are
+   *        is filled.
+   * @param fill_area_colours the colours of the areas.
    **/
-  void plotSpread(const std::vector<std::vector<float>>& upper_y_data,
-                  const std::vector<std::vector<float>>& lower_y_data,
-                  const std::vector<std::vector<float>>& upper_x_data = {},
-                  const std::vector<std::vector<float>>& lower_x_data = {},
-                  const GraphAttributeList& graph_attribute_list = {}){};
+  void plotSpread(const std::vector<GraphSpreadIndex>& graph_spread_indices,
+                  const std::vector<juce::Colour>& fill_area_colours = {}){};
 
   /** @brief Set the text for label on the X-axis
    *
