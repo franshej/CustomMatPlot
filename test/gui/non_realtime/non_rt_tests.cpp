@@ -397,7 +397,6 @@ TEST(spread, NonRealTime) {
 
   std::vector<std::vector<float>> test_data_y =
       std::vector<std::vector<float>>(4, std::vector<float>(10));
-  std::vector<std::string> legends;
 
   float i = 0;
   for (auto &y_vec : test_data_y) {

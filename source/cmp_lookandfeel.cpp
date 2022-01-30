@@ -1,5 +1,6 @@
 
 #include "cmp_lookandfeel.h"
+
 #include "cmp_graph_line.h"
 
 /*============================================================================*/
@@ -691,18 +692,18 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
 
 calculate_x_label:
 
+  graph_points.resize(graph_points_indices.size());
+
   std::size_t i{0u};
   if constexpr (m_x_scaling == Scaling::linear) {
     for (const auto i_x : graph_points_indices) {
-      graph_points[i].setX(
+      graph_points[i++].setX(
           getXGraphValueLinear(x_data[i_x], x_scale, x_offset));
-      i++;
     }
   } else if constexpr (m_x_scaling == Scaling::logarithmic) {
     for (const auto i_x : graph_points_indices) {
-      graph_points[i].setX(
+      graph_points[i++].setX(
           getXGraphPointsLogarithmic(x_data[i_x], x_scale, x_offset));
-      i++;
     }
   }
 }
@@ -715,6 +716,12 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
     GraphPoints& graph_points) noexcept {
   const auto [y_scale, y_offset] =
       getYScaleAndOffset(bounds.toFloat().getHeight(), y_lim, m_y_scaling);
+
+  if (graph_points_indices.size() != graph_points.size()) {
+    int a = 5;
+
+    return;
+  }
 
   std::size_t i = 0u;
 
@@ -731,8 +738,6 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
       i++;
     }
   }
-
-  graph_points.resize(i);
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>

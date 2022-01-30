@@ -191,4 +191,8 @@ struct GraphSpread : public juce::Component {
   void lookAndFeelChanged() override;
 };
 
+namespace {
+std::recursive_mutex m_mutex;
+}
+
 }  // namespace cmp

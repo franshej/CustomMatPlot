@@ -1,5 +1,6 @@
 #include "cmp_graph_line.h"
 
+#include <mutex>
 #include <stdexcept>
 
 #include "cmp_plot.h"
@@ -7,13 +8,12 @@
 namespace cmp {
 
 void GraphLine::setColour(const juce::Colour graph_colour) {
-    m_graph_attributes.graph_colour = graph_colour;
+  m_graph_attributes.graph_colour = graph_colour;
 }
 
 std::pair<juce::Point<float>, juce::Point<float>>
-GraphLine::findClosestGraphPointTo(
-    const juce::Point<float>& this_graph_point,
-    bool check_only_distance_from_x) const  {
+GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
+                                   bool check_only_distance_from_x) const {
   // No graph points.
   jassert(!m_graph_points.empty());
 
@@ -41,7 +41,7 @@ GraphLine::findClosestGraphPointTo(
 
 juce::Point<float> GraphLine::findClosestDataPointTo(
     const juce::Point<float>& this_data_point,
-    bool check_only_distance_from_x) const  {
+    bool check_only_distance_from_x) const {
   // No y_data empty.
   jassert(!m_x_data.empty());
 
@@ -79,6 +79,8 @@ void GraphLine::paint(juce::Graphics& g) {
                                           m_graph_attributes);
 
   if (m_lookandfeel) {
+    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->drawGraphLine(g, graph_line_data);
   }
@@ -116,42 +118,40 @@ void GraphLine::setGraphAttribute(const GraphAttribute& graph_attribute) {
 void GraphLine::setYValues(const std::vector<float>& y_data) {
   if (m_y_data.size() != y_data.size()) m_y_data.resize(y_data.size());
   std::copy(y_data.begin(), y_data.end(), m_y_data.begin());
-
-  m_graph_point_indices.resize(y_data.size());
 }
 
 void GraphLine::setXValues(const std::vector<float>& x_data) {
   if (m_x_data.size() != x_data.size()) m_x_data.resize(x_data.size());
   std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
-
-  m_graph_point_indices.resize(x_data.size());
 }
 
-const std::vector<float>& GraphLine::getYValues() const noexcept { return m_y_data; }
+const std::vector<float>& GraphLine::getYValues() const noexcept {
+  return m_y_data;
+}
 
-const std::vector<float>& GraphLine::getXValues() const noexcept { return m_x_data; }
+const std::vector<float>& GraphLine::getXValues() const noexcept {
+  return m_x_data;
+}
 
 const GraphPoints& GraphLine::getGraphPoints() const noexcept {
   return m_graph_points;
 }
 
-void GraphLine::updateXGraphPoints(const CommonPlotParameterView common_plot_params) {
+void GraphLine::updateXGraphPoints(
+    const CommonPlotParameterView common_plot_params) {
   // x_lim must be set to calculate the xdata.
   jassert(common_plot_params.x_lim);
 
   // x_data empty.
   jassert(!m_x_data.empty());
 
-  if (m_x_data.size() != m_graph_points.size()) {
-    m_graph_points.resize(m_x_data.size());
-  }
-
   updateXGraphPointsIntern(common_plot_params);
 
   m_state = State::Initialized;
 }
 
-void GraphLine::updateYGraphPoints(const CommonPlotParameterView common_plot_params) {
+void GraphLine::updateYGraphPoints(
+    const CommonPlotParameterView common_plot_params) {
   // x_lim must be set to calculate the xdata.
   jassert(common_plot_params.y_lim);
 
@@ -167,6 +167,8 @@ void GraphLine::updateYGraphPoints(const CommonPlotParameterView common_plot_par
 void GraphLine::updateXGraphPointsIntern(
     const CommonPlotParameterView common_plot_params) noexcept {
   if (m_lookandfeel) {
+    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->updateXGraphPointsAndIndices(common_plot_params.graph_bounds,
                                       common_plot_params.x_lim, m_x_data,
@@ -177,9 +179,12 @@ void GraphLine::updateXGraphPointsIntern(
 void GraphLine::updateYGraphPointsIntern(
     const CommonPlotParameterView common_plot_params) noexcept {
   if (m_lookandfeel) {
+    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateYGraphPoints(common_plot_params.graph_bounds, common_plot_params.y_lim,
-                            m_y_data, m_graph_point_indices, m_graph_points);
+    lnf->updateYGraphPoints(common_plot_params.graph_bounds,
+                            common_plot_params.y_lim, m_y_data,
+                            m_graph_point_indices, m_graph_points);
   }
 }
 
@@ -187,6 +192,8 @@ void GraphSpread::resized() {}
 
 void GraphSpread::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
+    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->drawSpread(g, m_lower_bound, m_upper_bound, m_spread_colour);
   }

@@ -5,8 +5,7 @@
 
 TEST(random_y_values, RealTime) {
   ADD_PLOT;
-  ADD_TIMER(1000);
-  parent_component->getBounds();
+  ADD_TIMER(10000000);
 
   GET_TIMER_CB = [=](const int dt_ms) {
     static std::vector<float> y_test_data(10);
@@ -21,8 +20,7 @@ TEST(random_y_values, RealTime) {
 
 TEST(real_time_plot_function, RealTime) {
   ADD_PLOT;
-  ADD_TIMER(100);
-  parent_component->getBounds();
+  ADD_TIMER(1000);
 
   X_LIM(1.f, 10.f);
   Y_LIM(0.f, 1.f);
@@ -35,5 +33,38 @@ TEST(real_time_plot_function, RealTime) {
     }
 
     REALTIMEPLOT({y_test_data});
+  };
+}
+
+TEST(spread, RealTime) {
+  ADD_PLOT;
+  ADD_TIMER(100);
+
+  std::vector<std::vector<float>> init_test_data_y =
+      std::vector<std::vector<float>>(2, std::vector<float>(100));
+
+  PLOT_Y(init_test_data_y);
+
+  const std::vector<cmp::GraphSpreadIndex> spread_indices = {{0, 1}};
+  FILL_BETWEEN(spread_indices);
+
+  GET_TIMER_CB = [=](const int dt_ms) {
+    static std::vector<std::vector<float>> test_data_y =
+        std::vector<std::vector<float>>(2, std::vector<float>(100));
+    static auto t = 0.0f;
+
+    float i = 0;
+    for (auto& y_vec : test_data_y) {
+      std::iota(y_vec.begin(), y_vec.end(), t);
+
+      for (auto& y : y_vec) {
+        y = i * std::sin(y * PI2 / float(y_vec.size()));
+      }
+
+      i += 10;
+      t += 1.0f;
+    }
+
+    REALTIMEPLOT(test_data_y);
   };
 }
