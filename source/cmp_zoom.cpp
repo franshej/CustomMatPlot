@@ -30,7 +30,7 @@ void Zoom::reset() noexcept {
 void Zoom::resized() {}
 
 void Zoom::paint(juce::Graphics& g) {
-  if (m_lookandfeel) {
+  if (m_lookandfeel && !m_end_pos.isOrigin()) {
     auto* lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->drawZoomArea(g, m_start_pos, m_end_pos,
                       {{0, 0}, {getWidth(), getHeight()}});
