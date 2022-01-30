@@ -456,28 +456,42 @@ void Plot::lookAndFeelChanged() {
 void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
                        const GraphAttributeList& graph_attribute_list) {
   if (!y_data.empty()) {
-    if (y_data.size() != m_graph_lines.size()) {
-      m_graph_lines.resize(y_data.size());
-      std::size_t i = 0u;
-      for (auto& graph_line : m_graph_lines) {
-        if (!graph_line && m_lookandfeel) {
-          auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+    bool trigger_xy_auto_scale_update = false;
 
-          const auto colour_id = lnf->getColourFromGraphID(i);
-          const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
+    if (y_data.size() != m_graph_lines.size()) UNLIKELY {
+        trigger_xy_auto_scale_update = true;
 
-          graph_line = std::make_unique<GraphLine>();
+        m_graph_lines.resize(y_data.size());
+        std::size_t i = 0u;
+        for (auto& graph_line : m_graph_lines) {
+          if (!graph_line && m_lookandfeel) {
+            auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
 
-          graph_line->setColour(graph_colour);
-          graph_line->setLookAndFeel(m_lookandfeel);
-          graph_line->setBounds(m_graph_bounds);
+            const auto colour_id = lnf->getColourFromGraphID(i);
+            const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
-          addAndMakeVisible(graph_line.get());
-          graph_line->toBehind(m_zoom.get());
-          i++;
+            graph_line = std::make_unique<GraphLine>();
+
+            graph_line->setColour(graph_colour);
+            graph_line->setLookAndFeel(m_lookandfeel);
+            graph_line->setBounds(m_graph_bounds);
+
+            addAndMakeVisible(graph_line.get());
+            graph_line->toBehind(m_zoom.get());
+            i++;
+          }
         }
       }
+
+    std::size_t i = 0u;
+    for (const auto& graph_line : m_graph_lines) {
+      graph_line->setYValues(y_data[i]);
+      i++;
     }
+
+    if (m_y_autoscale && trigger_xy_auto_scale_update) UNLIKELY {
+        setAutoYScale();
+      }
 
     if (!graph_attribute_list.empty()) {
       auto it_gal = graph_attribute_list.begin();
@@ -490,38 +504,25 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
       }
     }
 
-    std::size_t i = 0u;
-    for (const auto& graph_line : m_graph_lines) {
-      graph_line->setYValues(y_data[i]);
-      i++;
-    }
+    if (trigger_xy_auto_scale_update) UNLIKELY {
+        for (auto& graph_line : m_graph_lines) {
+          if (graph_line->getXValues().empty()) {
+            auto x_data = std::vector<float>(graph_line->getYValues().size());
 
-    if (m_y_autoscale) {
-      setAutoYScale();
-    }
+            std::iota(x_data.begin(), x_data.end(), 1.f);
 
-    bool trigger_x_auto_scale_update = false;
-    for (auto& graph_line : m_graph_lines) {
-      if (graph_line->getXValues().empty()) {
-        trigger_x_auto_scale_update = true;
+            graph_line->setXValues(x_data);
+          }
+        }
 
-        auto x_data = std::vector<float>(graph_line->getYValues().size());
+        if (m_x_autoscale) {
+          setAutoXScale();
+        }
 
-        std::iota(x_data.begin(), x_data.end(), 1.f);
-
-        graph_line->setXValues(x_data);
+        for (auto& graph_line : m_graph_lines) {
+          graph_line->updateXGraphPoints(m_graph_params);
+        }
       }
-    }
-
-    if (trigger_x_auto_scale_update) {
-      if (m_x_autoscale) {
-        setAutoXScale();
-      }
-
-      for (auto& graph_line : m_graph_lines) {
-        graph_line->updateXGraphPoints(m_graph_params);
-      }
-    }
 
     for (const auto& graph_line : m_graph_lines) {
       graph_line->updateYGraphPoints(m_graph_params);

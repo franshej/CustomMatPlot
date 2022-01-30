@@ -5,7 +5,7 @@
 
 TEST(random_y_values, RealTime) {
   ADD_PLOT;
-  ADD_TIMER(10000000);
+  ADD_TIMER(1000);
 
   GET_TIMER_CB = [=](const int dt_ms) {
     static std::vector<float> y_test_data(10);
@@ -38,17 +38,9 @@ TEST(real_time_plot_function, RealTime) {
 
 TEST(spread, RealTime) {
   ADD_PLOT;
-  ADD_TIMER(100);
+  ADD_TIMER(10);
 
-  std::vector<std::vector<float>> init_test_data_y =
-      std::vector<std::vector<float>>(2, std::vector<float>(100));
-
-  PLOT_Y(init_test_data_y);
-
-  const std::vector<cmp::GraphSpreadIndex> spread_indices = {{0, 1}};
-  FILL_BETWEEN(spread_indices);
-
-  GET_TIMER_CB = [=](const int dt_ms) {
+  auto getYData = []() {
     static std::vector<std::vector<float>> test_data_y =
         std::vector<std::vector<float>>(2, std::vector<float>(100));
     static auto t = 0.0f;
@@ -65,6 +57,13 @@ TEST(spread, RealTime) {
       t += 1.0f;
     }
 
-    REALTIMEPLOT(test_data_y);
+    return test_data_y;
   };
+
+  REALTIMEPLOT(getYData());
+
+  const std::vector<cmp::GraphSpreadIndex> spread_indices = {{0, 1}};
+  FILL_BETWEEN(spread_indices);
+
+  GET_TIMER_CB = [=](const int dt_ms) { REALTIMEPLOT(getYData()); };
 }

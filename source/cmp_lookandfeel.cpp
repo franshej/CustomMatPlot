@@ -717,12 +717,6 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
   const auto [y_scale, y_offset] =
       getYScaleAndOffset(bounds.toFloat().getHeight(), y_lim, m_y_scaling);
 
-  if (graph_points_indices.size() != graph_points.size()) {
-    int a = 5;
-
-    return;
-  }
-
   std::size_t i = 0u;
 
   if constexpr (m_y_scaling == Scaling::linear) {
