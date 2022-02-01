@@ -44,3 +44,4 @@ target_link_libraries(${PROJECT_NAME}
 
 add_subdirectory(externals)
 add_subdirectory(test)
+add_subdirectory(examples)
