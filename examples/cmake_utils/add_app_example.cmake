@@ -1,5 +1,8 @@
 function(add_app_example EXAMPLE_NAME)
-    configure_file(${CMAKE_SOURCE_DIR}/examples/cmake_utils/app_template.cpp.in
+
+set(CMAKE_UTILS_PATH ${CMAKE_SOURCE_DIR}/examples/cmake_utils/)
+
+configure_file(${CMAKE_UTILS_PATH}/app_template.cpp.in
                      ${EXAMPLE_NAME}_app.cpp @ONLY)
 
 juce_add_gui_app(${EXAMPLE_NAME}_app

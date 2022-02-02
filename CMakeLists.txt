@@ -16,6 +16,10 @@ set(SOURCE source/cmp_plot.cpp
            source/cmp_zoom.cpp
            source/cmp_lookandfeel.cpp)
 
+#if(${CMAKE_CXX_STANDARD} GREATER_EQUAL 20)
+#   set(${SOURCE} include/include/cmp_plot.ixx)
+#endif()
+
 set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
  	                 include/include_internal/cmp_grid.h
                      include/include_internal/cmp_label.h
