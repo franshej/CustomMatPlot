@@ -3,7 +3,7 @@
 
 #define PI2 6.28318530718
 
-TEST(random_y_values, RealTime) {
+TEST(random_y_values, real_time) {
   ADD_PLOT;
   ADD_TIMER(1000);
 
@@ -18,7 +18,7 @@ TEST(random_y_values, RealTime) {
   };
 }
 
-TEST(real_time_plot_function, RealTime) {
+TEST(real_time_plot_function, real_time) {
   ADD_PLOT;
   ADD_TIMER(1000);
 
@@ -36,7 +36,7 @@ TEST(real_time_plot_function, RealTime) {
   };
 }
 
-TEST(spread, RealTime) {
+TEST(spread, real_time) {
   ADD_PLOT;
   ADD_TIMER(10);
 

@@ -3,7 +3,7 @@
 
 #define PI2 6.28318530718
 
-TEST(test_xy_ticks, NonRealTime) {
+TEST(test_xy_ticks, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10);
@@ -17,7 +17,7 @@ TEST(test_xy_ticks, NonRealTime) {
   Y_TICKS(y_ticks);
 }
 
-TEST(test_custom_x_labels, NonRealTime) {
+TEST(test_custom_x_labels, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10000);
@@ -33,7 +33,7 @@ TEST(test_custom_x_labels, NonRealTime) {
   TITLE("TITLE");
 }
 
-TEST(test_custom_y_labels, NonRealTime) {
+TEST(test_custom_y_labels, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10000);
@@ -49,7 +49,7 @@ TEST(test_custom_y_labels, NonRealTime) {
   TITLE("TITLE");
 }
 
-TEST(test_semi_log_x_1000, NonRealTime) {
+TEST(test_semi_log_x_1000, non_real_time) {
   ADD_SEMI_LOG_X;
 
   std::vector<float> y_test_data(1000);
@@ -62,7 +62,7 @@ TEST(test_semi_log_x_1000, NonRealTime) {
   GRID_ON;
 }
 
-TEST(test_semi_log_xy_1000, NonRealTime) {
+TEST(test_semi_log_xy_1000, non_real_time) {
   ADD_SEMI_LOG_X;
 
   std::vector<float> y_test_data(1000);
@@ -79,7 +79,7 @@ TEST(test_semi_log_xy_1000, NonRealTime) {
   GRID_ON;
 }
 
-TEST(test_grid_on, NonRealTime) {
+TEST(test_grid_on, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10);
@@ -89,7 +89,7 @@ TEST(test_grid_on, NonRealTime) {
   GRID_ON;
 }
 
-TEST(test_tiny_grid_on, NonRealTime) {
+TEST(test_tiny_grid_on, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10);
@@ -99,7 +99,7 @@ TEST(test_tiny_grid_on, NonRealTime) {
   TINY_GRID_ON;
 }
 
-TEST(test_semi_plot_x_tiny_grid_on, NonRealTime) {
+TEST(test_semi_plot_x_tiny_grid_on, non_real_time) {
   ADD_SEMI_LOG_X;
 
   std::vector<float> y_test_data(1000);
@@ -108,7 +108,7 @@ TEST(test_semi_plot_x_tiny_grid_on, NonRealTime) {
   TINY_GRID_ON;
 };
 
-TEST(test_draw_flat_line, NonRealTime) {
+TEST(test_draw_flat_line, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_data{1, 1};
@@ -118,7 +118,7 @@ TEST(test_draw_flat_line, NonRealTime) {
   Y_LIM(0, 2);
 }
 
-TEST(test_linear_dashed_lines, NonRealTime) {
+TEST(test_linear_dashed_lines, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10000);
@@ -131,7 +131,7 @@ TEST(test_linear_dashed_lines, NonRealTime) {
   PLOT_XY_ATTRI({y_test_data}, {}, {ga});
 }
 
-TEST(test_flat_curve_10000, NonRealTime) {
+TEST(test_flat_curve_10000, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(100000);
@@ -140,7 +140,7 @@ TEST(test_flat_curve_10000, NonRealTime) {
   PLOT_Y({y_test_data});
 }
 
-TEST(test_flat_curve_0p0001, NonRealTime) {
+TEST(test_flat_curve_0p0001, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(100);
@@ -150,7 +150,7 @@ TEST(test_flat_curve_0p0001, NonRealTime) {
   PLOT_Y({y_test_data});
 }
 
-TEST(test_labels, NonRealTime) {
+TEST(test_labels, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10000);
@@ -162,7 +162,7 @@ TEST(test_labels, NonRealTime) {
   TITLE("TITLE");
 }
 
-TEST(test_sinus_auto_lim, NonRealTime) {
+TEST(test_sinus_auto_lim, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> test_data = std::vector<float>(100);
@@ -174,7 +174,7 @@ TEST(test_sinus_auto_lim, NonRealTime) {
   PLOT_Y({test_data});
 }
 
-TEST(test_ramp, NonRealTime) {
+TEST(test_ramp, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10);
@@ -183,7 +183,7 @@ TEST(test_ramp, NonRealTime) {
   PLOT_Y({y_test_data});
 }
 
-TEST(test_two_sine, NonRealTime) {
+TEST(test_two_sine, non_real_time) {
   ADD_PLOT;
 
   std::vector<std::vector<float>> test_data_y =
@@ -205,7 +205,7 @@ TEST(test_two_sine, NonRealTime) {
   PLOT_XY(test_data_x, test_data_y);
 }
 
-TEST(test_x_lim, NonRealTime) {
+TEST(test_x_lim, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> test_data_y = std::vector<float>(100);
@@ -221,7 +221,7 @@ TEST(test_x_lim, NonRealTime) {
   X_LIM(0, 50);
 }
 
-TEST(test_y_lim, NonRealTime) {
+TEST(test_y_lim, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> test_data_y = std::vector<float>(100);
@@ -234,7 +234,7 @@ TEST(test_y_lim, NonRealTime) {
   Y_LIM(0, 1);
 }
 
-TEST(test_legend_6, NonRealTime) {
+TEST(test_legend_6, non_real_time) {
   ADD_PLOT;
 
   std::vector<std::vector<float>> test_data_y =
@@ -257,7 +257,7 @@ TEST(test_legend_6, NonRealTime) {
   LEGEND(legends);
 }
 
-TEST(test_legend_2, NonRealTime) {
+TEST(test_legend_2, non_real_time) {
   ADD_PLOT;
 
   std::vector<std::vector<float>> test_data_y =
@@ -280,7 +280,7 @@ TEST(test_legend_2, NonRealTime) {
   LEGEND(legends);
 }
 
-TEST(plot_semi_log_y, NonRealTime) {
+TEST(plot_semi_log_y, non_real_time) {
   ADD_SEMI_LOG_Y;
 
   std::vector<float> y_test_data(1000);
@@ -296,7 +296,7 @@ class MyLnf : public cmp::PlotLookAndFeel {
   };
 };
 
-TEST(look_and_feel, NonRealTime) {
+TEST(look_and_feel, non_real_time) {
   ADD_SEMI_LOG_Y;
 
   std::vector<float> y_test_data(1000);
@@ -308,7 +308,7 @@ TEST(look_and_feel, NonRealTime) {
   GET_PLOT->setLookAndFeel(lnf.get());
 }
 
-TEST(set_custom_colour, NonRealTime) {
+TEST(set_custom_colour, non_real_time) {
   ADD_PLOT;
 
   std::vector<std::vector<float>> test_data_y =
@@ -331,7 +331,7 @@ TEST(set_custom_colour, NonRealTime) {
   LEGEND(legends);
 }
 
-TEST(opacity, NonRealTime) {
+TEST(opacity, non_real_time) {
   ADD_SEMI_LOG_Y;
 
   std::vector<float> y_test_data(1000);
@@ -344,7 +344,7 @@ TEST(opacity, NonRealTime) {
   GRID_ON;
 }
 
-TEST(path_stroke_path, NonRealTime) {
+TEST(path_stroke_path, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(1000);
@@ -357,7 +357,7 @@ TEST(path_stroke_path, NonRealTime) {
   GRID_ON;
 }
 
-TEST(markers, NonRealTime) {
+TEST(markers, non_real_time) {
   ADD_PLOT;
 
   std::vector<std::vector<float>> test_data_y =
@@ -392,7 +392,7 @@ TEST(markers, NonRealTime) {
   GRID_ON;
 }
 
-TEST(spread, NonRealTime) {
+TEST(spread, non_real_time) {
   ADD_PLOT;
 
   std::vector<std::vector<float>> test_data_y =

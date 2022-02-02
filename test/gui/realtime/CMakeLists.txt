@@ -1,18 +1,17 @@
-juce_add_gui_app(RTTestApp
+juce_add_gui_app(real_time_test_app
     PRODUCT_NAME "Non real-time test app.")
 
-target_sources(RTTestApp PRIVATE
+target_sources(real_time_test_app PRIVATE
     rt_test_app.cpp
     rt_tests.cpp)
 
-target_compile_definitions(RTTestApp PRIVATE
-    # JUCE_WEB_BROWSER and JUCE_USE_CURL would be on by default, but you might not need them.
-    JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_gui_app` call
-    JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
-    JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:RTTestApp,JUCE_PROJECT_NAME>"
-    JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:RTTestApp,JUCE_VERSION>")
+target_compile_definitions(real_time_test_app PRIVATE
+    JUCE_WEB_BROWSER=0
+    JUCE_USE_CURL=0
+    JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:real_time_test_app,JUCE_PROJECT_NAME>"
+    JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:real_time_test_app,JUCE_VERSION>")
 
-target_link_libraries(RTTestApp PRIVATE
+target_link_libraries(real_time_test_app PRIVATE
     juce::juce_gui_extra
     cmp_plot
     test_utils)

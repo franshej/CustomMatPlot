@@ -43,7 +43,7 @@ public:
                               DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new TestHandler("RealTime"), true);
+            setContentOwned (new TestHandler("real_time"), true);
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
