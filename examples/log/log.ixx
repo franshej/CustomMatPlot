@@ -3,15 +3,15 @@ module;
 #include <cmp_plot.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
-export module simple;
+export module log;
 
 namespace examples {
-export class simple : public juce::Component {
+export class log : public juce::Component {
   // Declare plot object.
   cmp::Plot m_plot;
 
  public:
-  simple() : m_plot{cmp::Plot()} {
+  log() : m_plot{cmp::Plot()} {
     setSize(1200, 800);
 
     // Add the plot object as a child component.

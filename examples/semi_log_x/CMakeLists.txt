@@ -1,0 +1,1 @@
+add_app_example(semi_log_x)
