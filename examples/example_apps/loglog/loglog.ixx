@@ -3,7 +3,7 @@ module;
 #include <cmp_plot.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
-export module log;
+export module loglog;
 
 namespace examples {
 export class log : public juce::Component {
@@ -11,7 +11,7 @@ export class log : public juce::Component {
   cmp::Plot m_plot;
 
  public:
-  log() : m_plot{cmp::Plot()} {
+  loglog() : m_plot{cmp::Plot()} {
     setSize(1200, 800);
 
     // Add the plot object as a child component.

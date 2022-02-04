@@ -1,6 +1,8 @@
 include(cmake_utils/add_app_example.cmake)
 
-add_subdirectory(simple)
-add_subdirectory(log)
-add_subdirectory(semi_log_x)
-add_subdirectory(semi_log_y)
+add_subdirectory(example_utils)
+
+add_subdirectory(example_apps/simple)
+add_subdirectory(example_apps/loglog)
+add_subdirectory(example_apps/semi_log_x)
+add_subdirectory(example_apps/semi_log_y)
