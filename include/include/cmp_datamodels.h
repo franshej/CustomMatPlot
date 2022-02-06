@@ -1,21 +1,27 @@
 #pragma once
 
-#define IS_CXX_20 (_MSVC_LANG > 201703L || __cplusplus > 201703L)
-
-#if __cpp_constexpr >= 201907L  // Check for a specific version of a feature
+#ifdef __cpp_constexpr
+#if __cpp_constexpr >= 201907L
 #define CONSTEXPR20 \
   constexpr  // This macro should be used in those cases where C++20 only allows
              // it. Example: virtual CONSTEXPR20 int foo() = 0;
 #else
 #define CONSTEXPR20
 #endif
+#endif
 
-#if (__cpp_impl_three_way_comparison >= 201907L || IS_CXX_20)
+#ifdef __cpp_impl_three_way_comparison
+#if (__cpp_impl_three_way_comparison >= 201907L)
 #include <compare>
+
+#define THREE_WAY_COMP true
+#else
+#define THREE_WAY_COMP false
+#endif
 #endif
 
 #ifdef __has_cpp_attribute
-#if (__has_cpp_attribute(unlikely) || IS_CXX_20)
+#if (__has_cpp_attribute(unlikely))
 #define UNLIKELY [[unlikely]]
 #else
 #define UNLIKELY
@@ -201,7 +207,7 @@ struct Lim {
     return *this;
   }
 
-#if IS_CXX_20
+#if THREE_WAY_COMP
   auto operator<=>(const Lim<ValueType>&) const noexcept = default;
 #else
   /** No spaceship  :( */
