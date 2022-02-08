@@ -517,9 +517,9 @@ class Plot : public juce::Component {
 };
 
 /**
- *  \class SemiLogX
- *  \brief Component for plotting 2-D graph lines where the x-axis is scaled
- *   logarithmic and y-axis linearly.
+ * \class SemiLogX
+ * \brief Component for plotting 2-D graph lines where the x-axis is scaled
+ *  logarithmic and y-axis linearly.
  */
 class SemiLogX : public Plot {
  public:
@@ -527,13 +527,23 @@ class SemiLogX : public Plot {
 };
 
 /**
- *  \class SemiLogY
- *  \brief Component for plotting 2-D graph lines where the x-axis is scaled
- *   logarithmic and y-axis linearly.
+ * \class SemiLogY
+ * \brief Component for plotting 2-D graph lines where the x-axis is scaled
+ *  logarithmic and y-axis linearly.
  */
 class SemiLogY : public Plot {
  public:
   SemiLogY() : Plot(Scaling::linear, Scaling::logarithmic){};
+};
+
+/**
+ * \class LogLog
+ * \brief Component for plotting 2-D graph lines where both the x- and y-axis
+ *  are scaled logarithmic.
+ */
+class LogLog : public Plot {
+ public:
+  LogLog() : Plot(Scaling::logarithmic, Scaling::logarithmic){};
 };
 
 }  // namespace cmp
