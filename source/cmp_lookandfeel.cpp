@@ -393,10 +393,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawFrame(
     juce::Graphics& g, const juce::Rectangle<int> bounds) {
   g.setColour(findColour(Plot::frame_colour));
 
-  const juce::Rectangle<int> frame = {
-      0, 0,
-      bounds.getWidth(),
-      bounds.getHeight()};
+  const juce::Rectangle<int> frame = {0, 0, bounds.getWidth(),
+                                      bounds.getHeight()};
 
   g.drawRect(frame);
 }
@@ -742,6 +740,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     updateVerticalGridLineTicksAuto(const juce::Rectangle<int>& bounds,
                                     const bool tiny_grids, const Lim_f x_lim,
                                     std::vector<float>& x_ticks) noexcept {
+  static std::vector<float> previous_ticks;
+
   x_ticks.clear();
 
   const auto width = bounds.getWidth();
@@ -774,13 +774,61 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     num_lines_per_power = tiny_grids ? std::size_t(num_lines_per_power * 1.5)
                                      : num_lines_per_power;
 
-    const auto min_power = std::floor(log10(x_lim.min));
-    const auto max_power = std::ceil(log10(x_lim.max));
+    const auto min_power = log10(x_lim.min);
+    const auto max_power = log10(x_lim.max);
 
-    const auto power_diff = ceil(abs(max_power) - abs(min_power));
+    const auto min_power_floor = std::floor(min_power);
+    const auto max_power_ceil = std::ceil(max_power);
 
-    // Frist create the vertical lines
-    for (float curr_power = min_power; curr_power < max_power; ++curr_power) {
+    if (std::abs(max_power - min_power) < 1.0f && !previous_ticks.empty()) {
+      const auto min_max_diff = x_lim.max - x_lim.min;
+
+      auto start_value = 0.0f;
+      {
+        auto it = previous_ticks.begin();
+        for (; it != previous_ticks.end(); ++it) {
+          if (*it > x_lim.min) {
+            if (it != previous_ticks.begin() &&
+                (it - 1) != previous_ticks.end()) {
+              start_value = *(it - 1);
+            } else {
+              start_value = *it;
+            }
+            break;
+          }
+        }
+      }
+
+      auto end_value = 0.0f;
+
+      {
+        auto it = previous_ticks.rbegin();
+        for (; it != previous_ticks.rend(); ++it) {
+          if (*it < x_lim.max) {
+            if (it != previous_ticks.rbegin() &&
+                (it - 1) != previous_ticks.rend()) {
+              end_value = *(it - 1);
+            } else {
+              end_value = *it;
+            }
+            break;
+          }
+        }
+      }
+
+      constexpr auto num_vertical_lines = 10.0f;
+
+      auto x_diff = (end_value - start_value) / num_vertical_lines;
+      for (std::size_t i = 0; i != num_vertical_lines + 1u; ++i) {
+        const auto x_pos = std::ceil(x_lim.min + float(i) * x_diff);
+        x_ticks.push_back(x_pos);
+      }
+
+      return;
+    }
+
+    for (float curr_power = min_power_floor; curr_power < max_power_ceil;
+         ++curr_power) {
       const auto curr_x_pos_base = pow(10.f, curr_power);
 
       const auto x_diff =
@@ -804,6 +852,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
   } else if constexpr (m_x_scaling == Scaling::logarithmic) {
     addVerticalTicksLogarithmic();
   }
+
+  previous_ticks = x_ticks;
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
@@ -845,8 +895,6 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
 
     const auto min_power = std::floor(log10(y_lim.min));
     const auto max_power = std::ceil(log10(y_lim.max));
-
-    const auto power_diff = ceil(abs(max_power) - abs(min_power));
 
     for (float curr_power = min_power; curr_power < max_power; ++curr_power) {
       const auto curr_y_pos_base = pow(10.0f, curr_power);

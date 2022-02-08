@@ -77,6 +77,7 @@ void Grid::updateGridInternal(
                            lnf->getMargin()))) {
       m_longest_x_axis_label_length_last_cb_triggerd = longest_label_x_axis;
       m_longest_y_axis_label_length_last_cb_triggerd = longest_label_y_axis;
+
       onGridLabelLengthChanged(this);
     }
   }
@@ -194,6 +195,7 @@ const std::pair<int, int> Grid::getMaxGridLabelWidth() const noexcept {
 
     return {max_width_x, max_width_y};
   }
+
   return {0, 0};
 }
 
