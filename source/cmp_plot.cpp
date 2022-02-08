@@ -311,7 +311,15 @@ void Plot::resizeChilderns() {
       }
 
       if (m_plot_label) m_plot_label->setBounds(plot_area);
-      if (m_frame) m_frame->setBounds(graph_bounds);
+
+      constexpr auto margin_for_1px_outside = 1;
+      const juce::Rectangle<int> frame_bound = {
+          graph_bounds.getX(), graph_bounds.getY(),
+          graph_bounds.getWidth() + margin_for_1px_outside,
+          graph_bounds.getHeight() + margin_for_1px_outside};
+
+      if (m_frame) m_frame->setBounds(frame_bound);
+
       if (m_zoom) m_zoom->setBounds(graph_bounds);
 
       for (const auto& graph_line : m_graph_lines) {

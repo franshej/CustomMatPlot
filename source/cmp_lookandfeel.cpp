@@ -393,8 +393,11 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawFrame(
     juce::Graphics& g, const juce::Rectangle<int> bounds) {
   g.setColour(findColour(Plot::frame_colour));
 
-  const juce::Rectangle<int> frame = {0, 0, bounds.getWidth(),
-                                      bounds.getHeight()};
+  const juce::Rectangle<int> frame = {
+      0, 0,
+      bounds.getWidth(),
+      bounds.getHeight()};
+
   g.drawRect(frame);
 }
 
@@ -756,7 +759,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
 
     auto x_diff = (x_lim.max - x_lim.min) / float(num_vertical_lines);
     for (std::size_t i = 0; i != num_vertical_lines + 1u; ++i) {
-      const auto x_pos = x_lim.min + float(i) * x_diff;
+      const auto x_pos = std::ceil(x_lim.min + float(i) * x_diff);
       x_ticks.push_back(x_pos);
     }
   };
@@ -790,6 +793,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
             curr_x_pos_base;
         if (last_tick != x_tick) {
           x_ticks.push_back(x_tick);
+          last_tick = x_tick;
         }
       }
     }
@@ -845,18 +849,20 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     const auto power_diff = ceil(abs(max_power) - abs(min_power));
 
     for (float curr_power = min_power; curr_power < max_power; ++curr_power) {
-      const auto curr_y_pos_base = pow(10.f, curr_power);
+      const auto curr_y_pos_base = pow(10.0f, curr_power);
 
-      const auto y_diff =
-          pow(10.f, curr_power + 1.f) / static_cast<float>(num_lines_per_power);
+      const auto y_diff = pow(10.f, curr_power + 1.0f) /
+                          static_cast<float>(num_lines_per_power);
 
-      constexpr float last_tick = std::numeric_limits<float>::min();
+      float last_added_tick = std::numeric_limits<float>::min();
       for (float line = 0; line < num_lines_per_power; ++line) {
         const auto y_tick =
-            std::floor((curr_y_pos_base + line * y_diff) / curr_y_pos_base) *
+            std::roundf((curr_y_pos_base + line * y_diff) / curr_y_pos_base) *
             curr_y_pos_base;
-        if (y_tick != last_tick) {
+        if (y_tick != last_added_tick) {
           y_ticks.push_back(y_tick);
+
+          last_added_tick = y_tick;
         }
       }
     }

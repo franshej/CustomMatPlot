@@ -1,6 +1,7 @@
 module;
 
 #include <cmp_plot.h>
+#include <example_utils.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
 export module semi_log_y;
@@ -8,17 +9,18 @@ export module semi_log_y;
 namespace examples {
 export class semi_log_y : public juce::Component {
   // Declare plot object.
-  cmp::Plot m_plot;
+  cmp::SemiLogY m_plot;
 
  public:
-  semi_log_y() : m_plot{cmp::Plot()} {
+  semi_log_y() : m_plot{cmp::SemiLogY()} {
     setSize(1200, 800);
 
     // Add the plot object as a child component.
     addAndMakeVisible(m_plot);
 
     // Plot some values.
-    m_plot.plot({{1, 3, 7, 9, 13}});
+    m_plot.plot({generateRandomVector<float>(1024, 0.001f, 100.0f),
+                 {0.001f, 1'000'00.0f}});
   };
 
   void resized() override {
@@ -26,4 +28,4 @@ export class semi_log_y : public juce::Component {
     m_plot.setBounds(getBounds());
   };
 };
-}
+}  // namespace examples

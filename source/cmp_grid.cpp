@@ -102,19 +102,18 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
     const auto [scale, offset] = getScaleOffset();
 
+    constexpr auto safe_marging_offset_px = 1.0f;
+
     const auto safe_margin =
         [](const juce::Rectangle<float> &bounds,
            const float scale_factor) -> juce::Rectangle<float> {
-      const auto w_f = bounds.getWidth() * scale_factor;
-      const auto h_f = bounds.getHeight() * scale_factor;
-
-      const auto x = bounds.getX() - w_f * 0.5f;
-      const auto y = bounds.getY() - h_f * 0.5f;
-      const auto w = bounds.getWidth() + w_f;
-      const auto h = bounds.getHeight() + h_f;
+      const auto x = bounds.getX();
+      const auto y = bounds.getY();
+      const auto w = bounds.getWidth() + safe_marging_offset_px;
+      const auto h = bounds.getHeight() + safe_marging_offset_px;
 
       return {x, y, w, h};
-    }(graph_bounds, 0.1f);
+    }(graph_bounds, safe_marging_offset_px);
 
     switch (direction) {
       case GridLine::Direction::vertical:
@@ -146,10 +145,10 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
           grid_line.position = {
               graph_bounds.getX(),
-              graph_bounds.getY() +
-                  (lnf->getYScaling() == Scaling::linear
-                       ? getYGraphValueLinear(t, scale, offset)
-                       : getYGraphPointsLogarithmic(t, scale, offset))};
+              std::ceil(graph_bounds.getY() +
+                        (lnf->getYScaling() == Scaling::linear
+                             ? getYGraphValueLinear(t, scale, offset)
+                             : getYGraphPointsLogarithmic(t, scale, offset)))};
 
           if (!safe_margin.contains(grid_line.position)) {
             continue;
@@ -189,6 +188,7 @@ const std::pair<int, int> Grid::getMaxGridLabelWidth() const noexcept {
                             return font.getStringWidth(label1.first) <
                                    font.getStringWidth(label2.first);
                           });
+
     const auto max_width_x = font.getStringWidth(widest_x_label.first);
     const auto max_width_y = font.getStringWidth(widest_y_label.first);
 
