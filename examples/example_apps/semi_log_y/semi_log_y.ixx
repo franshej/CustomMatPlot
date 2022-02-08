@@ -18,9 +18,12 @@ export class semi_log_y : public juce::Component {
     // Add the plot object as a child component.
     addAndMakeVisible(m_plot);
 
+    const auto values = {
+        cmp::generateUniformRandomVector<float>(1024, 1.0f, 10'000.0f),
+        cmp::generateUniformRandomVector<float>(1024, 0.001f, 0.1f)};
+
     // Plot some values.
-    m_plot.plot({generateRandomVector<float>(1024, 0.001f, 100.0f),
-                 {0.001f, 1'000'00.0f}});
+    m_plot.plot(values);
   };
 
   void resized() override {

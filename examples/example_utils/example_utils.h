@@ -1,13 +1,15 @@
 #include <random>
 #include <vector>
 
+namespace cmp {
+
 /* Get an vector of float random values. **/
 template <class ValueType>
-std::vector<ValueType> generateRandomVector(const std::size_t length,
-                                            const ValueType min,
-                                            const ValueType max) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
+std::vector<ValueType> generateUniformRandomVector(const std::size_t length,
+                                                   const ValueType min,
+                                                   const ValueType max) {
+  static std::random_device rd;
+  static std::mt19937 gen(rd());
   std::uniform_real_distribution<ValueType> dist(min, max);
 
   std::vector<ValueType> retval(length);
@@ -15,3 +17,5 @@ std::vector<ValueType> generateRandomVector(const std::size_t length,
                 [&] { return dist(gen); });
   return retval;
 };
+
+}  // namespace cmp
