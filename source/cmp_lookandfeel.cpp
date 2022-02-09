@@ -735,6 +735,20 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
   }
 }
 
+static std::vector<float> getLinearTicks(
+    const std::size_t num_ticks, const Lim_f lim,
+    const std::vector<float> previous_ticks) {
+  std::vector<float> ticks(num_ticks);
+
+  auto x_diff = (lim.max - lim.min) / float(num_ticks - 1u);
+  for (std::size_t i = 0; i != num_ticks; ++i) {
+    const auto x_pos = lim.min + float(i) * x_diff;
+    ticks[i] = x_pos;
+  }
+
+  return ticks;
+};
+
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     updateVerticalGridLineTicksAuto(const juce::Rectangle<int>& bounds,
@@ -757,11 +771,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     num_vertical_lines =
         tiny_grids ? std::size_t(num_vertical_lines * 1.5) : num_vertical_lines;
 
-    auto x_diff = (x_lim.max - x_lim.min) / float(num_vertical_lines);
-    for (std::size_t i = 0; i != num_vertical_lines + 1u; ++i) {
-      const auto x_pos = std::ceil(x_lim.min + float(i) * x_diff);
-      x_ticks.push_back(x_pos);
-    }
+    x_ticks = getLinearTicks(num_vertical_lines, x_lim, previous_ticks);
   };
 
   const auto addVerticalTicksLogarithmic = [&]() {
@@ -800,7 +810,6 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
       }
 
       auto end_value = 0.0f;
-
       {
         auto it = previous_ticks.rbegin();
         for (; it != previous_ticks.rend(); ++it) {
@@ -861,6 +870,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     updateHorizontalGridLineTicksAuto(const juce::Rectangle<int>& bounds,
                                       const bool tiny_grids, const Lim_f y_lim,
                                       std::vector<float>& y_ticks) noexcept {
+  static std::vector<float> previous_ticks;
+
   y_ticks.clear();
 
   const auto width = bounds.getWidth();
@@ -876,15 +887,11 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     num_horizontal_lines = tiny_grids ? std::size_t(num_horizontal_lines * 1.5)
                                       : num_horizontal_lines;
 
-    auto y_diff = (y_lim.max - y_lim.min) / float(num_horizontal_lines);
-    for (std::size_t i = 0u; i != num_horizontal_lines + 1u; ++i) {
-      const auto y_pos = y_lim.min + float(i) * y_diff;
-      y_ticks.push_back(y_pos);
-    }
+    y_ticks = getLinearTicks(num_horizontal_lines, y_lim, previous_ticks);
   };
 
-  const auto addHorizontalTicksLogarithmic = [&]() {
-    auto num_lines_per_power = 3u;
+const auto addHorizontalTicksLogarithmic = [&]() {
+  auto num_lines_per_power = 3u;
     if (height > 375u) {
       num_lines_per_power = 11u;
     } else if (height <= 375u && height > 135u) {
