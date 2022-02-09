@@ -735,15 +735,100 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
   }
 }
 
-static std::vector<float> getLinearTicks(
+template <class ValueType>
+static constexpr void iota_delta(auto first, auto last, ValueType start_val,
+                                 ValueType delta) {
+  while (first != last) {
+    *first++ = start_val;
+    start_val += delta;
+  }
+}
+
+static constexpr std::vector<float> getLinearTicks(
     const std::size_t num_ticks, const Lim_f lim,
     const std::vector<float> previous_ticks) {
   std::vector<float> ticks(num_ticks);
 
-  auto x_diff = (lim.max - lim.min) / float(num_ticks - 1u);
-  for (std::size_t i = 0; i != num_ticks; ++i) {
-    const auto x_pos = lim.min + float(i) * x_diff;
-    ticks[i] = x_pos;
+  const auto x_diff = (lim.max - lim.min) / float(num_ticks - 1u);
+  iota_delta(ticks.begin(), ticks.end(), lim.min, x_diff);
+
+  return ticks;
+};
+
+static constexpr std::pair<float, float> getFirstEndFromPreviousTicks(
+    const std::vector<float>& previous_ticks, const Lim_f lim) {
+  auto start_value = 0.0f;
+  {
+    auto it = previous_ticks.begin();
+    for (; it != previous_ticks.end(); ++it) {
+      if (*it > lim.min) {
+        if (it != previous_ticks.begin() && (it - 1) != previous_ticks.end()) {
+          start_value = *(it - 1);
+        } else {
+          start_value = *it;
+        }
+        break;
+      }
+    }
+  }
+
+  auto end_value = 0.0f;
+  {
+    auto it = previous_ticks.rbegin();
+    for (; it != previous_ticks.rend(); ++it) {
+      if (*it < lim.max) {
+        if (it != previous_ticks.rbegin() &&
+            (it - 1) != previous_ticks.rend()) {
+          end_value = *(it - 1);
+        } else {
+          end_value = *it;
+        }
+        break;
+      }
+    }
+  }
+
+  return {start_value, end_value};
+}
+
+static std::vector<float> getLogarithmicTicks(
+    const std::size_t num_ticks_per_power, const Lim_f lim,
+    const std::vector<float>& previous_ticks) {
+  if (!lim) return {};
+
+  const auto min_power = log10(lim.min);
+  const auto max_power = log10(lim.max);
+
+  const auto min_power_floor = std::floor(min_power);
+  const auto max_power_ceil = std::ceil(max_power);
+
+  std::vector<float> ticks;
+
+  if (std::abs(max_power - min_power) < 1.0f && !previous_ticks.empty()) {
+    ticks.resize(num_ticks_per_power);
+
+    const auto [start_value, end_value] =
+        getFirstEndFromPreviousTicks(previous_ticks, lim);
+
+    auto delta = (end_value - start_value) / num_ticks_per_power;
+    iota_delta(ticks.begin(), ticks.end(), lim.min, delta);
+
+    return ticks;
+  }
+
+  for (float curr_power = min_power_floor; curr_power < max_power_ceil;
+       ++curr_power) {
+    const auto curr_pos_base = pow(10.f, curr_power);
+
+    const auto delta =
+        pow(10.f, curr_power + 1.f) / static_cast<float>(num_ticks_per_power);
+
+    for (float i = 0; i < num_ticks_per_power; ++i) {
+      const auto tick =
+          floor((curr_pos_base + i * delta) / curr_pos_base) * curr_pos_base;
+
+      ticks.push_back(tick);
+    }
   }
 
   return ticks;
@@ -768,6 +853,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     } else if (width <= 435u && width > 175u) {
       num_vertical_lines = 5u;
     }
+
     num_vertical_lines =
         tiny_grids ? std::size_t(num_vertical_lines * 1.5) : num_vertical_lines;
 
@@ -775,85 +861,16 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
   };
 
   const auto addVerticalTicksLogarithmic = [&]() {
-    auto num_lines_per_power = 3u;
+    auto num_ticks_per_power = 3u;
     if (width > 435u) {
-      num_lines_per_power = 10u;
+      num_ticks_per_power = 10u;
     } else if (width <= 435u && width > 175u) {
-      num_lines_per_power = 5u;
+      num_ticks_per_power = 5u;
     }
-    num_lines_per_power = tiny_grids ? std::size_t(num_lines_per_power * 1.5)
-                                     : num_lines_per_power;
+    num_ticks_per_power = tiny_grids ? std::size_t(num_ticks_per_power * 1.5)
+                                     : num_ticks_per_power;
 
-    const auto min_power = log10(x_lim.min);
-    const auto max_power = log10(x_lim.max);
-
-    const auto min_power_floor = std::floor(min_power);
-    const auto max_power_ceil = std::ceil(max_power);
-
-    if (std::abs(max_power - min_power) < 1.0f && !previous_ticks.empty()) {
-      const auto min_max_diff = x_lim.max - x_lim.min;
-
-      auto start_value = 0.0f;
-      {
-        auto it = previous_ticks.begin();
-        for (; it != previous_ticks.end(); ++it) {
-          if (*it > x_lim.min) {
-            if (it != previous_ticks.begin() &&
-                (it - 1) != previous_ticks.end()) {
-              start_value = *(it - 1);
-            } else {
-              start_value = *it;
-            }
-            break;
-          }
-        }
-      }
-
-      auto end_value = 0.0f;
-      {
-        auto it = previous_ticks.rbegin();
-        for (; it != previous_ticks.rend(); ++it) {
-          if (*it < x_lim.max) {
-            if (it != previous_ticks.rbegin() &&
-                (it - 1) != previous_ticks.rend()) {
-              end_value = *(it - 1);
-            } else {
-              end_value = *it;
-            }
-            break;
-          }
-        }
-      }
-
-      constexpr auto num_vertical_lines = 10.0f;
-
-      auto x_diff = (end_value - start_value) / num_vertical_lines;
-      for (std::size_t i = 0; i != num_vertical_lines + 1u; ++i) {
-        const auto x_pos = std::ceil(x_lim.min + float(i) * x_diff);
-        x_ticks.push_back(x_pos);
-      }
-
-      return;
-    }
-
-    for (float curr_power = min_power_floor; curr_power < max_power_ceil;
-         ++curr_power) {
-      const auto curr_x_pos_base = pow(10.f, curr_power);
-
-      const auto x_diff =
-          pow(10.f, curr_power + 1.f) / static_cast<float>(num_lines_per_power);
-
-      float last_tick = std::numeric_limits<float>::min();
-      for (float line = 0; line < num_lines_per_power; ++line) {
-        const auto x_tick =
-            floor((curr_x_pos_base + line * x_diff) / curr_x_pos_base) *
-            curr_x_pos_base;
-        if (last_tick != x_tick) {
-          x_ticks.push_back(x_tick);
-          last_tick = x_tick;
-        }
-      }
-    }
+    x_ticks = getLogarithmicTicks(num_ticks_per_power, x_lim, previous_ticks);
   };
 
   if constexpr (m_x_scaling == Scaling::linear) {
@@ -890,37 +907,17 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     y_ticks = getLinearTicks(num_horizontal_lines, y_lim, previous_ticks);
   };
 
-const auto addHorizontalTicksLogarithmic = [&]() {
-  auto num_lines_per_power = 3u;
+  const auto addHorizontalTicksLogarithmic = [&]() {
+    auto num_ticks_per_power = 3u;
     if (height > 375u) {
-      num_lines_per_power = 11u;
+      num_ticks_per_power = 11u;
     } else if (height <= 375u && height > 135u) {
-      num_lines_per_power = 5u;
+      num_ticks_per_power = 5u;
     }
-    num_lines_per_power = tiny_grids ? std::size_t(num_lines_per_power * 1.5)
-                                     : num_lines_per_power;
+    num_ticks_per_power = tiny_grids ? std::size_t(num_ticks_per_power * 1.5)
+                                     : num_ticks_per_power;
 
-    const auto min_power = std::floor(log10(y_lim.min));
-    const auto max_power = std::ceil(log10(y_lim.max));
-
-    for (float curr_power = min_power; curr_power < max_power; ++curr_power) {
-      const auto curr_y_pos_base = pow(10.0f, curr_power);
-
-      const auto y_diff = pow(10.f, curr_power + 1.0f) /
-                          static_cast<float>(num_lines_per_power);
-
-      float last_added_tick = std::numeric_limits<float>::min();
-      for (float line = 0; line < num_lines_per_power; ++line) {
-        const auto y_tick =
-            std::roundf((curr_y_pos_base + line * y_diff) / curr_y_pos_base) *
-            curr_y_pos_base;
-        if (y_tick != last_added_tick) {
-          y_ticks.push_back(y_tick);
-
-          last_added_tick = y_tick;
-        }
-      }
-    }
+    y_ticks = getLogarithmicTicks(num_ticks_per_power, y_lim, previous_ticks);
   };
 
   if constexpr (m_y_scaling == Scaling::linear) {
@@ -928,6 +925,8 @@ const auto addHorizontalTicksLogarithmic = [&]() {
   } else if constexpr (m_y_scaling == Scaling::logarithmic) {
     addHorizontalTicksLogarithmic();
   }
+
+  previous_ticks = y_ticks;
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
