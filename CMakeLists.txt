@@ -16,10 +16,6 @@ set(SOURCE source/cmp_plot.cpp
            source/cmp_zoom.cpp
            source/cmp_lookandfeel.cpp)
 
-#if(${CMAKE_CXX_STANDARD} GREATER_EQUAL 20)
-#   set(${SOURCE} include/include/cmp_plot.ixx)
-#endif()
-
 set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
  	                 include/include_internal/cmp_grid.h
                      include/include_internal/cmp_label.h
@@ -47,5 +43,14 @@ target_link_libraries(${PROJECT_NAME}
 
 
 add_subdirectory(externals)
-add_subdirectory(test)
-add_subdirectory(examples)
+
+set(CMP_BUILD_TESTS OFF CACHE BOOL "Build tests?")
+set(CMP_BUILD_EXAMPLES OFF CACHE BOOL "Build examples? requires a compiler supporting c++20.")
+
+if(CMP_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
+if(CMP_BUILD_TEST)
+    add_subdirectory(test)
+endif()
