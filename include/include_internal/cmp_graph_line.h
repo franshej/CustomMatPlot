@@ -141,12 +141,6 @@ class GraphLine : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
-  /** @brief An enum to describe the state of the graph.  */
-  enum class State {
-    Uninitialized,
-    Initialized,
-  } m_state{State::Uninitialized};
-
   void updateYGraphPointsIntern(
       const CommonPlotParameterView common_plot_params) noexcept;
   void updateXGraphPointsIntern(

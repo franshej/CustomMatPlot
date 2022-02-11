@@ -45,9 +45,6 @@ juce::Point<float> GraphLine::findClosestDataPointTo(
   // No y_data empty.
   jassert(!m_x_data.empty());
 
-  // Uninitialized, execute 'updateXGraphPoints' atleast once.
-  jassert(m_state == State::Initialized);
-
   auto nearest_x_dist = std::numeric_limits<float>::max();
   std::size_t nearest_i = 0u;
 
@@ -71,7 +68,7 @@ juce::Colour GraphLine::getColour() const noexcept {
   return m_graph_attributes.graph_colour.value();
 }
 
-void GraphLine::resized() { m_state = State::Uninitialized; };
+void GraphLine::resized(){};
 
 void GraphLine::paint(juce::Graphics& g) {
   const GraphLineDataView graph_line_data(m_y_data, m_x_data, m_graph_points,
@@ -146,8 +143,6 @@ void GraphLine::updateXGraphPoints(
   jassert(!m_x_data.empty());
 
   updateXGraphPointsIntern(common_plot_params);
-
-  m_state = State::Initialized;
 }
 
 void GraphLine::updateYGraphPoints(
@@ -157,9 +152,6 @@ void GraphLine::updateYGraphPoints(
 
   // y_data empty.
   jassert(!m_y_data.empty());
-
-  // Uninitialized, execute 'updateXGraphPoints' atleast once.
-  jassert(m_state == State::Initialized);
 
   updateYGraphPointsIntern(common_plot_params);
 }

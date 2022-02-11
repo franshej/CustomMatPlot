@@ -51,6 +51,6 @@ if(CMP_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-if(CMP_BUILD_TEST)
+if(CMP_BUILD_TESTS)
     add_subdirectory(test)
 endif()

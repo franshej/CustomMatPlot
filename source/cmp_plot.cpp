@@ -218,6 +218,9 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
 }
 
 void Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
+  // You must call 'plot' atleast ones before you call this function.
+  jassert(!m_graph_lines[0]->getXValues().empty());
+
   updateYData(y_data, {});
 
   updateTracePointsForNewGraphData();
@@ -464,11 +467,7 @@ void Plot::lookAndFeelChanged() {
 void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
                        const GraphAttributeList& graph_attribute_list) {
   if (!y_data.empty()) {
-    bool trigger_xy_auto_scale_update = false;
-
     if (y_data.size() != m_graph_lines.size()) UNLIKELY {
-        trigger_xy_auto_scale_update = true;
-
         m_graph_lines.resize(y_data.size());
         std::size_t i = 0u;
         for (auto& graph_line : m_graph_lines) {
@@ -497,7 +496,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
       i++;
     }
 
-    if (m_y_autoscale && trigger_xy_auto_scale_update) UNLIKELY {
+    if (m_y_autoscale) UNLIKELY {
         setAutoYScale();
       }
 
@@ -512,26 +511,6 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
       }
     }
 
-    if (trigger_xy_auto_scale_update) UNLIKELY {
-        for (auto& graph_line : m_graph_lines) {
-          if (graph_line->getXValues().empty()) {
-            auto x_data = std::vector<float>(graph_line->getYValues().size());
-
-            std::iota(x_data.begin(), x_data.end(), 1.f);
-
-            graph_line->setXValues(x_data);
-          }
-        }
-
-        if (m_x_autoscale) {
-          setAutoXScale();
-        }
-
-        for (auto& graph_line : m_graph_lines) {
-          graph_line->updateXGraphPoints(m_graph_params);
-        }
-      }
-
     for (const auto& graph_line : m_graph_lines) {
       graph_line->updateYGraphPoints(m_graph_params);
     }
@@ -539,52 +518,55 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
 }
 
 void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
-  if (!x_data.empty()) {
-    if (x_data.size() != m_graph_lines.size()) {
-      throw std::invalid_argument(
-          "Numbers of x_data vectors must be the same amount as y_data "
-          "vectors. Make sure to set y_values first.");
-    }
+  std::vector<std::vector<float>> x_data_gen;
+  const auto* data = &x_data;
 
-    bool trigger_y_data_update = false;
+  if (x_data.size() != m_graph_lines.size()) {
+    x_data_gen.resize(m_graph_lines.size());
 
-    std::size_t i = 0u;
-    for (const auto& graph : m_graph_lines) {
-      const auto y_graph_length = graph->getYValues().size();
-      const auto x_graph_length = x_data[i].size();
-      std::vector<float> x_data_auto;
+    data = &x_data_gen;
+  }
 
-      const auto* current_x_data = &x_data[i];
+  bool trigger_y_data_update = false;
 
-      if (x_graph_length == std::size_t(0u)) {
+  std::size_t i = 0u;
+  for (const auto& graph : m_graph_lines) {
+    const auto y_graph_length = graph->getYValues().size();
+    const auto x_graph_length = (*data)[i].size();
+    std::vector<float> x_data_auto;
+
+    const auto* current_x_data = &(*data)[i];
+
+    if (x_graph_length == std::size_t(0u)) UNLIKELY {
         x_data_auto.resize(y_graph_length);
 
         std::iota(x_data_auto.begin(), x_data_auto.end(), 1.0f);
 
         current_x_data = &x_data_auto;
+
         trigger_y_data_update = true;
-      } else if (y_graph_length != x_graph_length) {
-        throw std::invalid_argument(
-            "Invalid vector length.\nLength of y vector at index " +
-            std::to_string(i) + " is " + std::to_string(y_graph_length) +
-            "\nLength of x vector at index " + std::to_string(i) + " is " +
-            std::to_string(y_graph_length));
       }
-
-      graph->setXValues(*current_x_data);
-      i++;
+    else if (y_graph_length != x_graph_length) {
+      throw std::invalid_argument(
+          "Invalid vector length.\nLength of y vector at index " +
+          std::to_string(i) + " is " + std::to_string(y_graph_length) +
+          "\nLength of x vector at index " + std::to_string(i) + " is " +
+          std::to_string(y_graph_length));
     }
 
-    if (m_x_autoscale) {
-      setAutoXScale();
-    }
+    graph->setXValues(*current_x_data);
+    i++;
+  }
 
-    for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateXGraphPoints(m_graph_params);
-      if (trigger_y_data_update) UNLIKELY {
-          graph_line->updateYGraphPoints(m_graph_params);
-        }
-    }
+  if (m_x_autoscale) {
+    setAutoXScale();
+  }
+
+  for (const auto& graph_line : m_graph_lines) {
+    graph_line->updateXGraphPoints(m_graph_params);
+    if (trigger_y_data_update) UNLIKELY {
+        graph_line->updateYGraphPoints(m_graph_params);
+      }
   }
 }
 

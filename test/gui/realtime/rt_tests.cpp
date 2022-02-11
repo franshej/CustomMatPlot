@@ -25,6 +25,7 @@ TEST(real_time_plot_function, real_time) {
   X_LIM(1.f, 10.f);
   Y_LIM(0.f, 1.f);
 
+  PLOT_Y({std::vector<float>(10)});
   GET_TIMER_CB = [=](const int dt_ms) {
     static std::vector<float> y_test_data(10);
 
@@ -60,7 +61,7 @@ TEST(spread, real_time) {
     return test_data_y;
   };
 
-  REALTIMEPLOT(getYData());
+  PLOT_Y(getYData());
 
   const std::vector<cmp::GraphSpreadIndex> spread_indices = {{0, 1}};
   FILL_BETWEEN(spread_indices);
