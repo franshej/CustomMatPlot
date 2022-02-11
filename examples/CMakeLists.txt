@@ -2,6 +2,7 @@ include(cmake_utils/add_app_example.cmake)
 
 add_subdirectory(example_utils)
 
+add_subdirectory(example_apps/lim)
 add_subdirectory(example_apps/fill)
 add_subdirectory(example_apps/custom_colour)
 add_subdirectory(example_apps/custom_graph_attributes)
