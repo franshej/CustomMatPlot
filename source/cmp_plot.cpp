@@ -546,12 +546,24 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
           "vectors. Make sure to set y_values first.");
     }
 
+    bool trigger_y_data_update = false;
+
     std::size_t i = 0u;
     for (const auto& graph : m_graph_lines) {
       const auto y_graph_length = graph->getYValues().size();
       const auto x_graph_length = x_data[i].size();
+      std::vector<float> x_data_auto;
 
-      if (y_graph_length != x_graph_length) {
+      const auto* current_x_data = &x_data[i];
+
+      if (x_graph_length == std::size_t(0u)) {
+        x_data_auto.resize(y_graph_length);
+
+        std::iota(x_data_auto.begin(), x_data_auto.end(), 1.0f);
+
+        current_x_data = &x_data_auto;
+        trigger_y_data_update = true;
+      } else if (y_graph_length != x_graph_length) {
         throw std::invalid_argument(
             "Invalid vector length.\nLength of y vector at index " +
             std::to_string(i) + " is " + std::to_string(y_graph_length) +
@@ -559,7 +571,7 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
             std::to_string(y_graph_length));
       }
 
-      graph->setXValues(x_data[i]);
+      graph->setXValues(*current_x_data);
       i++;
     }
 
@@ -569,6 +581,9 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
 
     for (const auto& graph_line : m_graph_lines) {
       graph_line->updateXGraphPoints(m_graph_params);
+      if (trigger_y_data_update) UNLIKELY {
+          graph_line->updateYGraphPoints(m_graph_params);
+        }
     }
   }
 }

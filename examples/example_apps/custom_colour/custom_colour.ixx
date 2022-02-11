@@ -19,13 +19,14 @@ export class custom_colour : public juce::Component {
     addAndMakeVisible(m_plot);
 
     // Create some data to visulize.
-    auto y_data = {cmp::generateUniformRandomVector((1 << 10), 10.0f, 100.0f),
-                   cmp::generateSineWaveVector((1 << 11), -3.0f, 14.0f, 3.0f)};
+    auto y_data = {cmp::generateUniformRandomVector((1 << 11), 10.0f, 100.0f),
+                   cmp::generateSineWaveVector((1 << 11), -3.0f, 14.0f, 3.0f),
+                   cmp::generateSineWaveVector((1 << 11), -5.0f, 2.0f, 6.0f)};
 
     // Setting new colours on graph one and two.
     auto graph_attributes = cmp::GraphAttributeList(y_data.size());
     graph_attributes[0].graph_colour = juce::Colours::pink;
-    graph_attributes[1].graph_colour = juce::Colours::azure;
+    graph_attributes[1].graph_colour = juce::Colours::blueviolet;
 
     // Plot some values.
     m_plot.plot(y_data, {}, graph_attributes);

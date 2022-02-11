@@ -3,6 +3,7 @@ include(cmake_utils/add_app_example.cmake)
 add_subdirectory(example_utils)
 
 add_subdirectory(example_apps/custom_colour)
+add_subdirectory(example_apps/custom_graph_attributes)
 add_subdirectory(example_apps/simple)
 add_subdirectory(example_apps/loglog)
 add_subdirectory(example_apps/semi_log_x)

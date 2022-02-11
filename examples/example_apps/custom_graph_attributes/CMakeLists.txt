@@ -1,0 +1,1 @@
+add_app_example(custom_graph_attributes)
