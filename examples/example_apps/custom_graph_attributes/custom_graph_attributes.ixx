@@ -21,7 +21,7 @@ export class custom_graph_attributes : public juce::Component {
     const auto length = (1 << 11);
     constexpr auto length_1st_graph = 10;
 
-    // Create some data to visulize.
+    // Create some data to visulise.
     auto y_data = {
         cmp::generateSineWaveVector(length_1st_graph, -17.0f, 14.0f, 1.0f),
         cmp::generateSineWaveVector(length, -5.0f, 6.0f, 3.0f),
@@ -38,6 +38,7 @@ export class custom_graph_attributes : public juce::Component {
     auto graph_attributes = cmp::GraphAttributeList(y_data.size());
     graph_attributes[0].graph_colour = juce::Colours::pink;
     graph_attributes[0].marker = cmp::Marker::Type::Pentagram;
+    graph_attributes[0].graph_line_opacity = 0.0f;
 
     graph_attributes[1].graph_colour = juce::Colours::blueviolet;
     graph_attributes[1].path_stroke_type = juce::PathStrokeType(10.0f);

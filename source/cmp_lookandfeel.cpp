@@ -320,11 +320,6 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawGraphLine(
   const auto& marker = graph_line_data.graph_attribute.marker;
   auto graph_colour = graph_line_data.graph_attribute.graph_colour.value();
 
-  if (graph_line_data.graph_attribute.graph_line_opacity) {
-    graph_colour = graph_colour.withAlpha(
-        graph_line_data.graph_attribute.graph_line_opacity.value());
-  }
-
   if (graph_points.size() > 1) {
     graph_path.startNewSubPath(graph_points[0]);
     std::for_each(
@@ -338,8 +333,6 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawGraphLine(
     }
 
     g.setColour(graph_colour);
-
-    g.strokePath(graph_path, stroke_type);
 
     if (marker) {
       const auto marker_length = float(getMarkerLength());
@@ -368,6 +361,15 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawGraphLine(
         g.strokePath(path, marker.value().edge_stroke_type);
       }
     }
+
+    if (graph_line_data.graph_attribute.graph_line_opacity) {
+      graph_colour = graph_colour.withAlpha(
+          graph_line_data.graph_attribute.graph_line_opacity.value());
+
+      g.setColour(graph_colour);
+    }
+
+    g.strokePath(graph_path, stroke_type);
   }
 }
 
