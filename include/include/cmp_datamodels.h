@@ -29,6 +29,7 @@
 #endif
 
 #include <optional>
+#include <functional>
 
 #include "juce_gui_basics/juce_gui_basics.h"
 
@@ -522,6 +523,25 @@ const auto getMaximumLabelWidth =
       num2, 2u, maximum_allowed_characters);
   return std::max(font.getStringWidth(min_text), font.getStringWidth(max_text));
 };
+
+template <class ValueType>
+constexpr void iota_delta(auto first, auto last, ValueType x0,
+                          const ValueType dx) {
+  while (first != last) {
+    *first++ = x0;
+    x0 += dx;
+  }
+}
+
+template <class ValueType>
+constexpr void iota_delta(auto first, auto last, ValueType x0,
+                          const ValueType dx,
+                          std::function<ValueType(ValueType)> f) {
+  while (first != last) {
+    *first++ = f(x0);
+    x0 += dx;
+  }
+}
 
 /*============================================================================*/
 

@@ -735,15 +735,6 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
   }
 }
 
-template <class ValueType>
-static constexpr void iota_delta(auto first, auto last, ValueType start_val,
-                                 ValueType delta) {
-  while (first != last) {
-    *first++ = start_val;
-    start_val += delta;
-  }
-}
-
 static constexpr std::vector<float> getLinearTicks(
     const std::size_t num_ticks, const Lim_f lim,
     const std::vector<float> previous_ticks) {

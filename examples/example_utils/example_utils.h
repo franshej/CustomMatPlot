@@ -3,7 +3,7 @@
 
 namespace cmp {
 
-/* Get an vector of float random values. **/
+/* Get an vector of random values. **/
 template <class ValueType>
 std::vector<ValueType> generateUniformRandomVector(const std::size_t length,
                                                    const ValueType min,
@@ -18,4 +18,23 @@ std::vector<ValueType> generateUniformRandomVector(const std::size_t length,
   return retval;
 };
 
+/* Get vector of sine wave. */
+template <class ValueType>
+std::vector<ValueType> generateSineWaveVector(const std::size_t length,
+                                              ValueType min, ValueType max,
+                                              const ValueType num_periods,
+                                              ValueType phase = 0) {
+  std::vector<float> retval(length);
+
+  auto dx =
+      (juce::MathConstants<ValueType>::twoPi * num_periods) / ValueType(length);
+
+  cmp::iota_delta<ValueType>(
+      retval.begin(), retval.end(), phase, dx, [&](ValueType x) {
+        return min + (((std::sin(x) + ValueType(1.0)) * ValueType(0.5)) *
+                      (max - min));
+      });
+
+  return retval;
+};
 }  // namespace cmp

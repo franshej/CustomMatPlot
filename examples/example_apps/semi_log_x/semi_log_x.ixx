@@ -21,7 +21,7 @@ export class semi_log_x : public juce::Component {
     const auto values = {
         cmp::generateUniformRandomVector<float>(1024, 1.0f, 10'000.0f)};
 
-    // Plot some values.
+    // Plot values.
     m_plot.plot(values);
   };
 
