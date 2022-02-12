@@ -58,7 +58,7 @@ class Plot : public juce::Component {
    *
    *  Plot y-data or y-data/x-data. Each vector in y-data represents a single
    *  graph line. E.g. If 'y_data.size() == 3', three graph lines will be
-   *  plotted. If 'x_data' is empty the x-vlues will be set to linearly
+   *  plotted. If 'x_data' is empty the x-values will be set to linearly
    *  increasing from 1 to the size of y-data.
    *
    *  The list of graph_attributes are applied per graph. E.g.
@@ -170,8 +170,8 @@ class Plot : public juce::Component {
    *
    *  Turn on grids and tiny grids.
    *
-   *  @param grid_on grids is drawn if true
-   *  @param tiny_grid_on tiny grids is drawn if true
+   *  @param grid_on grids is drawn if true.
+   *  @param tiny_grid_on tiny grids is drawn if true.
    *  @return void.
    */
   void gridON(const bool grid_on, const bool tiny_grid_on);
@@ -215,7 +215,7 @@ class Plot : public juce::Component {
 
   //==============================================================================
 
-  /** @brief This lamda is triggerd when a tracepoint value is changed.
+  /** @brief This lambda is triggered when a tracepoint value is changed.
    *
    * @param current_plot poiter to this plot.
    * @param previous_trace_point previous tracepoint value.
@@ -423,7 +423,7 @@ class Plot : public juce::Component {
         const juce::Rectangle<int>& bounds, const bool tiny_grids,
         const Lim_f y_lim, std::vector<float>& y_ticks) noexcept = 0;
 
-    /** Updates the x-cordinates of the graph points used when drawing a graph
+    /** Updates the x-coordinates of the graph points used when drawing a graph
      *  line. It also updates the graph point indices used in
      * 'updateYGraphPoints' */
     virtual void updateXGraphPointsAndIndices(
@@ -432,7 +432,7 @@ class Plot : public juce::Component {
         std::vector<std::size_t>& graph_points_indices,
         GraphPoints& graph_points) noexcept = 0;
 
-    /** Updates the y-cordinates of the graph points used when drawing a graph
+    /** Updates the y-coordinates of the graph points used when drawing a graph
      * line. */
     virtual void updateYGraphPoints(
         const juce::Rectangle<int>& bounds, const Lim_f& y_lim,
