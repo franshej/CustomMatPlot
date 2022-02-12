@@ -218,10 +218,11 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
 }
 
 void Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
-  // You must call 'plot' atleast ones before you call this function.
-  jassert(!m_graph_lines[0]->getXValues().empty());
-
   updateYData(y_data, {});
+
+  if (m_graph_lines[0]->getXValues().empty()) UNLIKELY {
+      updateXData({});
+    }
 
   updateTracePointsForNewGraphData();
 
@@ -500,7 +501,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
       i++;
     }
 
-    if (m_y_autoscale) UNLIKELY {
+    if (m_y_autoscale && !m_y_lim) UNLIKELY {
         setAutoYScale();
       }
 

@@ -2,6 +2,7 @@ include(cmake_utils/add_app_example.cmake)
 
 add_subdirectory(example_utils)
 
+add_subdirectory(example_apps/realtime)
 add_subdirectory(example_apps/ticks)
 add_subdirectory(example_apps/marker)
 add_subdirectory(example_apps/lim)
