@@ -82,7 +82,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_trace(std::make_unique<Trace>()),
       m_x_lim({0, 0}),
       m_y_lim({0, 0}),
-      m_graph_params(m_graph_bounds, m_x_lim, m_y_lim) {
+      m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim) {
   lookAndFeelChanged();
 
   addAndMakeVisible(m_grid.get());
@@ -164,12 +164,12 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
 
 void Plot::updateGridGraphsTrace() {
   if (!m_graph_bounds.isEmpty()) {
-    m_grid->updateGrid(m_graph_params);
-    m_trace->updateTracePointsBoundsFrom(m_graph_params);
+    m_grid->updateGrid(m_common_graph_params);
+    m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
 
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateXGraphPoints(m_graph_params);
-      graph_line->updateYGraphPoints(m_graph_params);
+      graph_line->updateXGraphPoints(m_common_graph_params);
+      graph_line->updateYGraphPoints(m_common_graph_params);
     }
   }
 }
@@ -179,7 +179,7 @@ void cmp::Plot::updateTracePointsForNewGraphData() {
     m_trace->updateTracePointsAssociatedWith(graph_line.get());
   }
 
-  m_trace->updateTracePointsBoundsFrom(m_graph_params);
+  m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
 }
 
 void Plot::setAutoXScale() {
@@ -234,13 +234,13 @@ void Plot::fillBetween(
   m_graph_spread_list.resize(graph_spread_indices.size());
   auto graph_spread_it = m_graph_spread_list.begin();
 
-  for (const auto& spread : graph_spread_indices) {
-    if (std::max(spread.first_graph, spread.second_graph) >=
+  for (const auto& spread_index : graph_spread_indices) {
+    if (std::max(spread_index.first_graph, spread_index.second_graph) >=
         m_graph_lines.size()) {
       throw std::range_error("Spread index out of range.");
     }
-    const auto first_graph = m_graph_lines[spread.first_graph].get();
-    const auto second_graph = m_graph_lines[spread.second_graph].get();
+    const auto first_graph = m_graph_lines[spread_index.first_graph].get();
+    const auto second_graph = m_graph_lines[spread_index.second_graph].get();
 
     auto it_colour = fill_area_colours.begin();
 
@@ -276,18 +276,22 @@ void Plot::setXLabel(const std::string& x_label) {
 
 void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
   m_grid->setXLabels(x_labels);
+  m_grid->updateGrid(m_common_graph_params);
 }
 
 void Plot::setYTickLabels(const std::vector<std::string>& y_labels) {
   m_grid->setYLabels(y_labels);
+  m_grid->updateGrid(m_common_graph_params);
 }
 
 void Plot::setXTicks(const std::vector<float>& x_ticks) {
   m_grid->setXTicks(x_ticks);
+  m_grid->updateGrid(m_common_graph_params);
 }
 
 void Plot::setYTicks(const std::vector<float>& y_ticks) {
   m_grid->setYTicks(y_ticks);
+  m_grid->updateGrid(m_common_graph_params);
 }
 
 void Plot::setYLabel(const std::string& y_label) {
@@ -512,7 +516,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
     }
 
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateYGraphPoints(m_graph_params);
+      graph_line->updateYGraphPoints(m_common_graph_params);
     }
   }
 }
@@ -563,9 +567,9 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
   }
 
   for (const auto& graph_line : m_graph_lines) {
-    graph_line->updateXGraphPoints(m_graph_params);
+    graph_line->updateXGraphPoints(m_common_graph_params);
     if (trigger_y_data_update) UNLIKELY {
-        graph_line->updateYGraphPoints(m_graph_params);
+        graph_line->updateYGraphPoints(m_common_graph_params);
       }
   }
 }
@@ -631,7 +635,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
           findNearestGraphPoint(mouse_pos, nullptr);
 
       m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
-      m_trace->updateTracePointsBoundsFrom(m_graph_params);
+      m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
       m_trace->addAndMakeVisibleTo(this);
     }
   }
@@ -670,7 +674,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
                              : juce::Point<float>();
 
       if (m_trace->setDataValueFor(event.eventComponent, closest_data_point,
-                                   m_graph_params)) {
+                                   m_common_graph_params)) {
         if (onTraceValueChange) {
           onTraceValueChange(this, prev_graph_point, closest_data_point);
         }
@@ -685,7 +689,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
       if (m_trace->setCornerPositionForLabelAssociatedWith(event.eventComponent,
                                                            mouse_pos)) {
         m_trace->updateSingleTracePointBoundsFrom(event.eventComponent,
-                                                  m_graph_params);
+                                                  m_common_graph_params);
       }
     }
   }

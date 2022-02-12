@@ -1,1 +1,1 @@
-add_app_example(simple)
+add_app_example(ticks)

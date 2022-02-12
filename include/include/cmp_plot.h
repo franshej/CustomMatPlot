@@ -499,7 +499,7 @@ class Plot : public juce::Component {
   const Scaling m_x_scaling, m_y_scaling;
   cmp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
   juce::Rectangle<int> m_graph_bounds;
-  CommonPlotParameterView m_graph_params;
+  CommonPlotParameterView m_common_graph_params;
 
   GraphLines m_graph_lines;
   GraphSpreadList m_graph_spread_list;
