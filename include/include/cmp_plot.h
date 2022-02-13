@@ -471,7 +471,6 @@ class Plot : public juce::Component {
   void mouseUp(const juce::MouseEvent& event) override;
 
  private:
-  void resizeWithNewGraphArea();
   void resizeChilderns();
 
   std::pair<juce::Point<float>, const GraphLine*> findNearestGraphPoint(
@@ -497,7 +496,9 @@ class Plot : public juce::Component {
 
   bool m_x_autoscale = true, m_y_autoscale = true;
   const Scaling m_x_scaling, m_y_scaling;
-  cmp::Lim_f m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
+
+  cmp::Lim<float> m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
+
   juce::Rectangle<int> m_graph_bounds;
   CommonPlotParameterView m_common_graph_params;
 

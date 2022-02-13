@@ -15,7 +15,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "cmp_datamodels.h"
-#include "cmp_internal_datamodels.h"
+#include "cmp_utils.h"
 
 namespace cmp {
 /**

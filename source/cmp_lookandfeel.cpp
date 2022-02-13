@@ -448,9 +448,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
     juce::Graphics& g, const StringVector& label_texts,
     const std::vector<juce::Colour>& graph_line_colours,
     const juce::Rectangle<int>& bounds) {
-  jassert_return(
-      graph_line_colours.size() == label_texts.size(),
-      "\'label_texts\' and \'graph_line_colours\ must have the same size.'");
+  // 'label_texts' and 'graph_line_colours' must have the same size.
+  jassert(graph_line_colours.size() == label_texts.size());
 
   constexpr std::size_t margin_width = 5u;
   constexpr std::size_t margin_height = 5u;

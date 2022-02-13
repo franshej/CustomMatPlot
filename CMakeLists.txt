@@ -19,7 +19,7 @@ set(SOURCE source/cmp_plot.cpp
 set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
  	                 include/include_internal/cmp_grid.h
                      include/include_internal/cmp_label.h
-                     include/include_internal/cmp_internal_datamodels.h
+                     include/include_internal/cmp_utils.h
                      include/include_internal/cmp_frame.h
                      include/include_internal/cmp_legend.h
                      include/include_internal/cmp_trace.h

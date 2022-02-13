@@ -4,7 +4,7 @@
 #include <tuple>
 
 #include "cmp_graph_line.h"
-#include "cmp_internal_datamodels.h"
+#include "cmp_utils.h"
 #include "cmp_plot.h"
 
 namespace cmp {
