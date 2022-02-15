@@ -246,24 +246,24 @@ template <class ValueType>
   auto num_digits_diff =
       lims_diff_log < 0 ? std::abs(lims_diff_log) + 2 : lims_diff_log;
 
-  auto num_digits_before_sign = 0;
+  auto num_digits_before_sign = 0.0f;
   if (lims_diff_log >= 0 && largest_exp >= 0) {
     if (int(std::ceil(std::log10(value))) == int(largest_abs_exp)) {
-      num_digits_before_sign += largest_abs_exp + 1;
+      num_digits_before_sign += largest_abs_exp + 1.0f;
     } else {
       num_digits_before_sign += largest_abs_exp;
     }
-  } else if (lims_diff_log < 0 && largest_exp > 0) {
+  } else if (lims_diff_log < 0.0f && largest_exp > 0.0f) {
     num_digits_before_sign += largest_abs_exp + num_digits_diff;
-  } else if (lims_diff_log < 0 && largest_exp < 0) {
+  } else if (lims_diff_log < 0.0f && largest_exp < 0.0f) {
     num_digits_before_sign += std::max(num_digits_diff, largest_abs_exp);
   }
 
   const auto num_digits_before_exponent_sign =
-      std::ceil(num_digits_before_sign) + int(value < 0);
+      std::size_t(std::ceil(num_digits_before_sign) + int(value < 0));
 
   const auto num_digits_before_checking_ending_character =
-      num_digits_before_exponent_sign + 2 * int(largest_exp < 0);
+      std::size_t(num_digits_before_exponent_sign + 2 * int(largest_exp < 0));
 
   auto value_text_out =
       value_text.substr(0u, num_digits_before_checking_ending_character);

@@ -1,9 +1,31 @@
 #include "cmp_trace.h"
 
-#include "cmp_plot.h"
 #include "cmp_graph_line.h"
+#include "cmp_plot.h"
 
 namespace cmp {
+
+static TraceLabelCornerPosition getCornerPosition(
+    juce::Point<int> trace_position, juce::Point<int> center_position) {
+  const auto dxdy = trace_position - center_position;
+
+  const auto is_x_pos = dxdy.getX() > 0;
+  const auto is_y_pos = dxdy.getY() > 0;
+
+  auto trace_label_corner_pos = TraceLabelCornerPosition::top_left;
+
+  if (is_x_pos && is_y_pos)
+    trace_label_corner_pos = TraceLabelCornerPosition::top_left;
+  else if (is_x_pos && !is_y_pos)
+    trace_label_corner_pos = TraceLabelCornerPosition::bottom_left;
+  else if (!is_x_pos && is_y_pos)
+    trace_label_corner_pos = TraceLabelCornerPosition::top_right;
+  else if (!is_x_pos && !is_y_pos)
+    trace_label_corner_pos = TraceLabelCornerPosition::bottom_right;
+
+  return trace_label_corner_pos;
+}
+
 template <class ValueType>
 bool TracePoint<ValueType>::setDataValue(
     const juce::Point<ValueType>& graph_value) {
@@ -22,9 +44,11 @@ void TraceLabel<ValueType>::setGraphLabelFrom(
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
     m_x_label.first =
-        "X: " + valueToString(graph_value.getX(), common_plot_params, true).first;
+        "X: " +
+        valueToString(graph_value.getX(), common_plot_params, true).first;
     m_y_label.first =
-        "Y: " + valueToString(graph_value.getY(), common_plot_params, false).first;
+        "Y: " +
+        valueToString(graph_value.getY(), common_plot_params, false).first;
 
     const auto [x_label_bounds, y_label_bounds] =
         lnf->getTraceXYLabelBounds(m_x_label.first, m_y_label.first);
@@ -110,7 +134,8 @@ void Trace::updateSingleTracePointBoundsFrom(
   auto it = m_trace_labelpoints.erase(
       tlp_it, tlp_it);  // remove const for ::const_iterator
 
-  updateSingleTraceLabelTextsAndBoundsInternal(&(*it), common_plot_params);
+  updateSingleTraceLabelTextsAndBoundsInternal(&(*it), common_plot_params,
+                                               true);
 }
 
 void Trace::addAndMakeVisibleTo(juce::Component* parent_comp) {
@@ -126,10 +151,11 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
 }
 
 bool Trace::setDataValueFor(juce::Component* trace_point,
-                                const juce::Point<float>& new_position,
-                                const CommonPlotParameterView common_plot_params) {
+                            const juce::Point<float>& new_position,
+                            const CommonPlotParameterView common_plot_params) {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
-  auto it = m_trace_labelpoints.erase(tlp_it, tlp_it);  // remove const for ::const_iterator
+  auto it = m_trace_labelpoints.erase(
+      tlp_it, tlp_it);  // remove const for ::const_iterator
 
   if (it != m_trace_labelpoints.end() &&
       it->trace_point->setDataValue(new_position)) {
@@ -148,21 +174,8 @@ bool Trace::setCornerPositionForLabelAssociatedWith(
   auto it = m_trace_labelpoints.erase(
       tlp_it, tlp_it);  // remove const for ::const_iterator
 
-  const auto dxdy = mouse_position - it->trace_point->getBounds().getPosition();
-
-  const auto is_x_pos = dxdy.getX() > 0;
-  const auto is_y_pos = dxdy.getY() > 0;
-
-  auto trace_label_corner_pos = TraceLabelCornerPosition::top_left;
-
-  if (is_x_pos && is_y_pos)
-    trace_label_corner_pos = TraceLabelCornerPosition::top_left;
-  else if (is_x_pos && !is_y_pos)
-    trace_label_corner_pos = TraceLabelCornerPosition::bottom_left;
-  else if (!is_x_pos && is_y_pos)
-    trace_label_corner_pos = TraceLabelCornerPosition::top_right;
-  else if (!is_x_pos && !is_y_pos)
-    trace_label_corner_pos = TraceLabelCornerPosition::bottom_right;
+  auto trace_label_corner_pos = getCornerPosition(
+      mouse_position, it->trace_point->getBounds().getPosition());
 
   if (it->trace_label->trace_label_corner_pos != trace_label_corner_pos) {
     it->trace_label->trace_label_corner_pos = trace_label_corner_pos;
@@ -221,7 +234,8 @@ void Trace::removeSingleTracePointAndLabel(
 }
 
 void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
-    TraceLabelPoint_f* tlp, const CommonPlotParameterView common_plot_params) {
+    TraceLabelPoint_f* tlp, const CommonPlotParameterView common_plot_params,
+    bool force_corner_position) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
@@ -239,7 +253,13 @@ void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
         lnf->getTracePointPositionFrom(common_plot_params, data_value) +
         common_plot_params.graph_bounds.getPosition();
 
-    switch (tlp->trace_label->trace_label_corner_pos) {
+    auto trace_label_corner_pos =
+        force_corner_position
+            ? tlp->trace_label->trace_label_corner_pos
+            : getCornerPosition(common_plot_params.graph_bounds.getCentre(),
+                                trace_position);
+
+    switch (trace_label_corner_pos) {
       case TraceLabelCornerPosition::top_left:
         trace_bounds.setPosition(trace_position);
         break;

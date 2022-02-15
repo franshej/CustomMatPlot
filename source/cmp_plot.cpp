@@ -277,22 +277,26 @@ void Plot::setXLabel(const std::string& x_label) {
 
 void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
   m_grid->setXLabels(x_labels);
-  m_grid->updateGrid(m_common_graph_params);
+
+  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid(m_common_graph_params);
 }
 
 void Plot::setYTickLabels(const std::vector<std::string>& y_labels) {
   m_grid->setYLabels(y_labels);
-  m_grid->updateGrid(m_common_graph_params);
+
+  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid(m_common_graph_params);
 }
 
 void Plot::setXTicks(const std::vector<float>& x_ticks) {
   m_grid->setXTicks(x_ticks);
-  m_grid->updateGrid(m_common_graph_params);
+
+  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid(m_common_graph_params);
 }
 
 void Plot::setYTicks(const std::vector<float>& y_ticks) {
   m_grid->setYTicks(y_ticks);
-  m_grid->updateGrid(m_common_graph_params);
+
+  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid(m_common_graph_params);
 }
 
 void Plot::setYLabel(const std::string& y_label) {

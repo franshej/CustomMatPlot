@@ -21,10 +21,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   void drawBackground(juce::Graphics& g, juce::Rectangle<int>& bounds) override;
 
   juce::Colour findAndGetColourFromId(
-      const Plot::ColourIdsGraph colour_id) const noexcept override;
-
-  juce::Colour findAndGetColourFromId(
-      const Plot::ColourIds colour_id) const noexcept override;
+      const int colour_id) const noexcept override;
 
   CONSTEXPR20 juce::Rectangle<int> getPlotBounds(
       juce::Rectangle<int> bounds) const noexcept override;
@@ -52,8 +49,8 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
   CONSTEXPR20 juce::Font getButtonFont() const noexcept override;
 
-  CONSTEXPR20 Plot::ColourIdsGraph getColourFromGraphID(
-      const std::size_t graph_id) const override;
+  CONSTEXPR20 int getColourFromGraphID(
+      const std::size_t graph_index) const override;
 
   CONSTEXPR20 std::size_t getMargin() const noexcept override;
 

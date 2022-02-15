@@ -236,7 +236,8 @@ class Trace {
   /** @internal */
   void updateSingleTraceLabelTextsAndBoundsInternal(
       TraceLabelPoint_f* trace_point_label,
-      const CommonPlotParameterView common_plot_params);
+      const CommonPlotParameterView common_plot_params,
+      bool force_corner_position = false);
   /** @internal */
   void updateTracePointsLookAndFeel();
   /** @internal */

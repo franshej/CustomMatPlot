@@ -237,7 +237,7 @@ class Plot : public juce::Component {
    *  @see Component::setColour, Component::findColour, LookAndFeel::setColour,
    *  LookAndFeel::findColour
    */
-  enum ColourIds {
+  enum ColourIds : int {
     background_colour,        /**< Colour of the background. */
     grid_colour,              /**< Colour of the grids. */
     x_grid_label_colour,      /**< Colour of the label for each x-grid line. */
@@ -257,7 +257,7 @@ class Plot : public juce::Component {
 
   /** @brief A set of colour IDs to use to change the colour of each plot
    * line.*/
-  enum ColourIdsGraph {
+  enum ColourIdsGraph : int {
     first_graph_colour = (1u << 16u), /**< Colour of the first graph. */
     second_graph_colour,              /**< Colour of the second graph. */
     third_graph_colour,               /**< Colour of the third graph. */
@@ -320,21 +320,16 @@ class Plot : public juce::Component {
         const juce::Point<int>& end_coordinates,
         const juce::Rectangle<int>& graph_bounds) noexcept = 0;
 
-    /** A method to find and get the colour for either a 'ColourIdsGraph'
-     * enum.*/
+    /** A method to find and get the colour from an id. */
     virtual CONSTEXPR20 juce::Colour findAndGetColourFromId(
-        const ColourIdsGraph colour_id) const noexcept = 0;
-
-    /** A method to find and get the colour for a 'ColourIds' enum. */
-    virtual CONSTEXPR20 juce::Colour findAndGetColourFromId(
-        const ColourIds colour_id) const noexcept = 0;
+        const int colour_id) const noexcept = 0;
 
     /** Returns the Font used for the Trace and Zoom buttons. */
     virtual CONSTEXPR20 juce::Font getButtonFont() const noexcept = 0;
 
-    /** Returns the 'ColourIdsGraph' for a given id.*/
-    virtual CONSTEXPR20 ColourIdsGraph
-    getColourFromGraphID(const std::size_t graph_id) const = 0;
+    /** Returns the 'ColourIdsGraph' for a given index.*/
+    virtual CONSTEXPR20 int getColourFromGraphID(
+        const std::size_t graph_index) const = 0;
 
     /** Get the graph bounds, where the graphs and grids are to be drawn. A plot
      * component can be given to base the graph bounds on the grid anf axis

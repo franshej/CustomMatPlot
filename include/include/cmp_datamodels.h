@@ -208,7 +208,7 @@ struct Marker {
         break;
     }
 
-    return std::move(path);
+    return path;
   }
 };
 

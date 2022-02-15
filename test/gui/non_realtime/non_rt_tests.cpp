@@ -1,7 +1,7 @@
 #include "cmp_lookandfeel.h"
 #include "test_macros.h"
 
-#define PI2 6.28318530718
+#define PI2 6.28318530718f
 
 TEST(test_xy_ticks, non_real_time) {
   ADD_PLOT;
@@ -73,7 +73,7 @@ TEST(test_semi_log_xy_1000, non_real_time) {
 
   std::vector<float> x_test_data(1000);
   std::iota(x_test_data.begin(), x_test_data.end(), 1.f);
-  for (auto &x : x_test_data) x = x * 1e-3;
+  for (auto &x : x_test_data) x = x * 1e-3f;
 
   PLOT_XY({y_test_data}, {x_test_data});
   GRID_ON;
@@ -145,7 +145,7 @@ TEST(test_flat_curve_0p0001, non_real_time) {
 
   std::vector<float> y_test_data(100);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
-  for (auto &val : y_test_data) val *= 0.00001;
+  for (auto &val : y_test_data) val *= 0.00001f;
 
   PLOT_Y({y_test_data});
 }
