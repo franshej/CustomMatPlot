@@ -11,7 +11,9 @@ juce_add_gui_app(${EXAMPLE_NAME}_example_app
 
 target_sources(${EXAMPLE_NAME}_example_app PRIVATE
     ${EXAMPLE_NAME}_example_app.cpp
-    ${EXAMPLE_NAME}.ixx)
+    ${EXAMPLE_NAME}.h)
+
+target_include_directories(${EXAMPLE_NAME}_example_app PRIVATE ./)
 
 target_compile_definitions(${EXAMPLE_NAME}_example_app PRIVATE
     JUCE_WEB_BROWSER=0

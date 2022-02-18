@@ -1,8 +1,8 @@
-12. Make datamodels private
-13. Remove all warnings
-6. First Release
-7. (Google Tests)
-8. Replace all const string& with string_view
-9. CI/CD
-10. Use constexpr math lib
-11. Set resizing timer on graph_line for smoother resizing
+13. Replace modules with header
+14. Doxygen
+15. Fix license on all headers and cpp?
+16. First Release
+17. Replace all const string& with string_view
+18. CI/CD
+19. Use constexpr math lib
+20. Set resizing timer on graph_line for smoother resizing

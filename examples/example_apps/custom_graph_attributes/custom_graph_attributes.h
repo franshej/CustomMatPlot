@@ -1,13 +1,9 @@
-module;
-
 #include <cmp_plot.h>
 #include <example_utils.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
-export module custom_graph_attributes;
-
 namespace examples {
-export class custom_graph_attributes : public juce::Component {
+class custom_graph_attributes : public juce::Component {
   // Declare plot object.
   cmp::Plot m_plot;
 
