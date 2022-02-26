@@ -54,6 +54,7 @@ class Trace;
 class Zoom;
 class PlotLookAndFeel;
 
+struct LegendDescription;
 struct GraphAttribute;
 struct Marker;
 struct GraphSpread;

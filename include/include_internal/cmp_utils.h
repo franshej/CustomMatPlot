@@ -4,6 +4,28 @@ namespace cmp {
 
 /*============================================================================*/
 
+/**
+ * \struct
+ * @breif A struct that defines a single legend description
+ */
+struct LegendDescription {
+  LegendDescription(std::string desciption)
+      : description{desciption}, description_colour{juce::Colours::pink} {}
+
+  LegendDescription(std::string desciption, juce::Colour description_colour)
+      : description{desciption}, description_colour{description_colour} {}
+
+  LegendDescription()
+      : description{"Unknown data serie."},
+        description_colour{juce::Colours::pink} {}
+
+  /** The description text of the associated graph_line. */
+  std::string description;
+
+  /** The colour of the description text. */
+  juce::Colour description_colour;
+};
+
 /** @brief A struct that defines a single gridline.
  *
  * The struct defines either a vertical or horizontal gridline.
@@ -287,6 +309,7 @@ const auto getMaximumLabelWidth =
 };
 
 /*============================================================================*/
+
 template <class T>
 class ParamBase {
  public:

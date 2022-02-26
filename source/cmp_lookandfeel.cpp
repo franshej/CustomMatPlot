@@ -438,12 +438,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawGridLine(
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
-    juce::Graphics& g, const StringVector& label_texts,
-    const std::vector<juce::Colour>& graph_line_colours,
+    juce::Graphics& g, std::vector<LegendDescription> legend_info,
     const juce::Rectangle<int>& bounds) {
-  // 'label_texts' and 'graph_line_colours' must have the same size.
-  jassert(graph_line_colours.size() == label_texts.size());
-
   constexpr std::size_t margin_width = 5u;
   constexpr std::size_t margin_height = 5u;
   const auto font = getLegendFont();
@@ -455,15 +451,15 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
 
   const auto height = int(font.getHeightInPoints());
   int i = 0u;
-  for (const auto label : label_texts) {
-    const auto width = font.getStringWidth(label);
+  for (const auto li : legend_info) {
+    const auto width = font.getStringWidth(li.description);
     const auto x = margin_width;
     const int y = i * (height + margin_height) + margin_height;
     juce::Rectangle<int> label_bounds = {x, y, width, height};
 
     g.setColour(findColour(Plot::legend_label_colour));
-    g.drawText(label, label_bounds, juce::Justification::centredLeft);
-    g.setColour(graph_line_colours[i]);
+    g.drawText(li.description, label_bounds, juce::Justification::centredLeft);
+    g.setColour(li.description_colour);
     g.fillRect(x + width + margin_width, y + height / 2, margin_width * 2, 2);
     i++;
   }

@@ -297,8 +297,8 @@ class Plot : public juce::Component {
                               const bool grid_on) = 0;
 
     /** This method draws the legend. */
-    virtual void drawLegend(juce::Graphics& g, const StringVector& label_texts,
-                            const std::vector<juce::Colour>& graph_line_colours,
+    virtual void drawLegend(juce::Graphics& g,
+                            std::vector<LegendDescription> legend_info,
                             const juce::Rectangle<int>& bounds) = 0;
 
     /** Fill area between two graph lines. */

@@ -98,6 +98,14 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   m_grid->onGridLabelLengthChanged = [this](cmp::Grid* grid) {
     this->resizeChilderns();
   };
+
+  m_legend->onNumberOfDescriptionsChanged = [this](const auto& desc) {
+    if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
+      const auto legend_bounds = lnf->getLegendBounds(m_graph_bounds, desc);
+
+      m_legend->setBounds(legend_bounds);
+    }
+  };
 }
 
 const IsLabelsSet Plot::getIsLabelsAreSet() const noexcept {
@@ -180,6 +188,10 @@ void cmp::Plot::updateTracePointsForNewGraphData() {
   }
 
   m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
+
+  if (m_legend->isVisible()) {
+    m_legend->updateLegends(m_graph_lines);
+  }
 }
 
 void Plot::setAutoXScale() {
@@ -581,35 +593,12 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
 
 void Plot::setLegend(const StringVector& graph_descriptions) {
   if (m_lookandfeel && m_legend) {
-    m_legend->setVisible(graph_descriptions.size() && m_graph_lines.size());
-
-    m_legend->setDataSeries(&m_graph_lines);
-    auto getDescriptionRef = [&]() -> const StringVector {
-      if (graph_descriptions.size() < m_graph_lines.size()) {
-        auto descriptions = StringVector(m_graph_lines.size());
-        descriptions = graph_descriptions;
-
-        std::size_t i = 0u;
-        std::for_each(descriptions.begin() + graph_descriptions.size(),
-                      descriptions.end(), [&](auto& text) {
-                        text = "Label " +
-                               std::to_string(i + graph_descriptions.size());
-                        i++;
-                      });
-        return descriptions;
-      }
-      return graph_descriptions;
-    };
-
-    const auto graph_descriptions_ref = getDescriptionRef();
-
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
 
-    const auto legend_bounds =
-        lnf->getLegendBounds(m_graph_bounds, graph_descriptions_ref);
+    m_legend->setVisible(true);
 
-    m_legend->setBounds(legend_bounds);
-    m_legend->setLegend(graph_descriptions_ref);
+    m_legend->setLegend(graph_descriptions);
+    m_legend->updateLegends(m_graph_lines);
   }
 }
 
