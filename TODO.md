@@ -1,5 +1,3 @@
-12. Make datamodels private
-13. Remove all warnings
 6. First Release
 7. (Google Tests)
 8. Replace all const string& with string_view
