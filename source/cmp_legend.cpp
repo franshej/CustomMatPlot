@@ -5,10 +5,14 @@
 
 void cmp::Legend::setLegend(const std::vector<std::string>& label_texts) {
   m_label_texts = label_texts;
+
+  m_label_texts_is_changed = true;
 }
 
 void cmp::Legend::updateLegends(const GraphLines& graph_lines) {
-  if (m_legend_descriptions.size() != graph_lines.size()) {
+  if ((m_legend_descriptions.size() != graph_lines.size() ||
+       m_label_texts_is_changed)) {
+    m_label_texts_is_changed = false;
     m_legend_descriptions.resize(m_label_texts.size());
 
     auto it_legend = m_legend_descriptions.begin();
@@ -25,9 +29,12 @@ void cmp::Legend::updateLegends(const GraphLines& graph_lines) {
 
     if (onNumberOfDescriptionsChanged) {
       StringVector dislayed_descriptions(m_legend_descriptions.size());
-      std::copy(m_label_texts.begin(),
-                m_label_texts.begin() + m_legend_descriptions.size(),
-                dislayed_descriptions.begin());
+
+      if (m_label_texts.size() >= m_legend_descriptions.size()) {
+        std::copy(m_label_texts.begin(),
+                  m_label_texts.begin() + m_legend_descriptions.size(),
+                  dislayed_descriptions.begin());
+      }
 
       onNumberOfDescriptionsChanged(dislayed_descriptions);
     }

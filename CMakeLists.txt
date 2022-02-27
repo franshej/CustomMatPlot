@@ -14,7 +14,8 @@ set(SOURCE source/cmp_plot.cpp
            source/cmp_legend.cpp
            source/cmp_trace.cpp
            source/cmp_zoom.cpp
-           source/cmp_lookandfeel.cpp)
+           source/cmp_lookandfeel.cpp
+           source/cmp_downsampler.cpp)
 
 set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
  	                 include/include_internal/cmp_grid.h
@@ -23,7 +24,8 @@ set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
                      include/include_internal/cmp_frame.h
                      include/include_internal/cmp_legend.h
                      include/include_internal/cmp_trace.h
-                     include/include_internal/cmp_zoom.h)
+                     include/include_internal/cmp_zoom.h
+                     include/include_internal/cmp_downsampler.h)
 
 set(PUBLIC_HEADERS include/include/cmp_plot.h
                    include/include/cmp_lookandfeel.h

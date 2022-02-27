@@ -66,5 +66,7 @@ class Legend : public juce::Component {
 
   std::vector<LegendDescription> m_legend_descriptions;
   std::vector<std::string> m_label_texts;
+
+  bool m_label_texts_is_changed{false};
 };
 }  // namespace cmp
