@@ -84,7 +84,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   void drawGridLine(juce::Graphics& g, const GridLine& grid_line,
                     const bool grid_on) override;
 
-  void drawLegend(juce::Graphics& g, std::vector<LegendDescription> legend_info,
+  void drawLegend(juce::Graphics& g, std::vector<LegendLabel> legend_info,
                   const juce::Rectangle<int>& bounds) override;
 
   void drawSpread(juce::Graphics& g, const GraphLine* first_graph,

@@ -438,7 +438,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawGridLine(
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
-    juce::Graphics& g, std::vector<LegendDescription> legend_info,
+    juce::Graphics& g, std::vector<LegendLabel> legend_info,
     const juce::Rectangle<int>& bounds) {
   constexpr std::size_t margin_width = 5u;
   constexpr std::size_t margin_height = 5u;

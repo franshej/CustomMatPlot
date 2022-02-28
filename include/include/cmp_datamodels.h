@@ -37,14 +37,6 @@ namespace cmp {
 
 /*============================================================================*/
 
-/**< Enum to define the scaling of an axis. */
-enum class Scaling : uint32_t {
-  linear,     /**< Linear scaling of the graph line. */
-  logarithmic /**< Logarithmic scaling of the graph line. */
-};
-
-/*============================================================================*/
-
 class GraphLine;
 class Grid;
 class Frame;
@@ -54,7 +46,7 @@ class Trace;
 class Zoom;
 class PlotLookAndFeel;
 
-struct LegendDescription;
+struct LegendLabel;
 struct GraphAttribute;
 struct Marker;
 struct GraphSpread;
@@ -78,6 +70,27 @@ typedef std::vector<juce::Colour> ColourVector;
 typedef std::vector<GraphAttribute> GraphAttributeList;
 typedef std::vector<std::unique_ptr<GraphSpread>> GraphSpreadList;
 typedef Lim<float> Lim_f;
+
+/*============================================================================*/
+
+/**< Enum to define the scaling of an axis. */
+enum class Scaling : uint32_t {
+  linear,     /**< Linear scaling of the graph line. */
+  logarithmic /**< Logarithmic scaling of the graph line. */
+};
+
+/**< Enum to define the type of downsampling. */
+enum class DownsamplingType : uint32_t {
+  no_downsampling, /**< No downsampling. Slow when plotting alot of values. */
+  x_downsaming,    /**< Downsampling only based on the x-values, makes sure that
+                      there is only one plotted value per x-pixel value. Fastest,
+                      but will discard x-values that are located with the same
+                      x-pixel value near each other. Recommended for real-time
+                      plotting. */
+  xy_downsampling, /**< Same resolution as 'no_downsampling' but skips x- & y-values
+                      that do not need to be plotted. It's quicker than
+                      'no_downsampling' but slower than 'x_downsampling'. */
+};
 
 /*============================================================================*/
 

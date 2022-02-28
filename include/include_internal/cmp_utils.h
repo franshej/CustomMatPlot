@@ -6,16 +6,16 @@ namespace cmp {
 
 /**
  * \struct
- * @breif A struct that defines a single legend description
+ * @breif A struct that defines a single legend label
  */
-struct LegendDescription {
-  LegendDescription(std::string desciption)
+struct LegendLabel {
+  LegendLabel(std::string desciption)
       : description{desciption}, description_colour{juce::Colours::pink} {}
 
-  LegendDescription(std::string desciption, juce::Colour description_colour)
+  LegendLabel(std::string desciption, juce::Colour description_colour)
       : description{desciption}, description_colour{description_colour} {}
 
-  LegendDescription()
+  LegendLabel()
       : description{"Unknown data serie."},
         description_colour{juce::Colours::pink} {}
 
