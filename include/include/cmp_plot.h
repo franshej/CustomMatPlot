@@ -419,9 +419,8 @@ class Plot : public juce::Component {
         const Lim_f y_lim, std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-coordinates of the graph points used when drawing a graph
-     *  line. It also updates the graph point indices used in
-     * 'updateYGraphPoints' */
-    virtual void updateXGraphPointsAndIndices(
+     *  line. */
+    virtual void updateXGraphPoints(
         const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
         const std::vector<float>& x_data,
         std::vector<std::size_t>& graph_points_indices,
@@ -490,11 +489,13 @@ class Plot : public juce::Component {
   void updateTracePointsForNewGraphData();
 
   bool m_x_autoscale = true, m_y_autoscale = true;
-  const Scaling m_x_scaling, m_y_scaling;
 
+  /** Common plot parameters. */
+  Scaling m_x_scaling, m_y_scaling;
+  DownsamplingType m_downsampling_type{DownsamplingType::x_downsaming};
+  juce::Rectangle<int> m_graph_bounds;
   cmp::Lim<float> m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
 
-  juce::Rectangle<int> m_graph_bounds;
   CommonPlotParameterView m_common_graph_params;
 
   GraphLines m_graph_lines;

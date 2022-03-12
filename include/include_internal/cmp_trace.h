@@ -3,7 +3,7 @@
  *
  * @brief Componenet for drawing tracepoints.
  *
- * @ingroup SimpleCustomPlotInternal
+ * @ingroup CustomMatPlotInternal
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com

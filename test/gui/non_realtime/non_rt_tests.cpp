@@ -83,7 +83,7 @@ TEST(test_grid_on, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10);
-  std::iota(y_test_data.begin(), y_test_data.end(), 0);
+  std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
 
   PLOT_Y({y_test_data});
   GRID_ON;

@@ -144,13 +144,23 @@ typedef Lim<float> Lim_f;
 
 /** @brief A view of some common plot parameters. */
 struct CommonPlotParameterView {
-  CommonPlotParameterView(const juce::Rectangle<int>& _graph_bounds,
-                          const Lim_f& _x_lim, const Lim_f& _y_lim)
-      : graph_bounds{_graph_bounds}, x_lim{_x_lim}, y_lim{_y_lim} {};
+  CommonPlotParameterView(const juce::Rectangle<int>& gb, const Lim_f& xl,
+                          const Lim_f& yl, const Scaling& xs, const Scaling& ys,
+                          const DownsamplingType& ds)
+      : graph_bounds{gb},
+        x_lim{xl},
+        y_lim{yl},
+        x_scaling{xs},
+        y_scaling{ys},
+        downsampling_type{ds} {};
   CommonPlotParameterView(const juce::Rectangle<int>&&, const Lim_f&&,
-                          const Lim_f&&) = delete;  // prevents rvalue binding
+                          const Lim_f&&, const Scaling&&, const Scaling&&,
+                          const DownsamplingType&&) =
+      delete;  // prevents rvalue binding
   const juce::Rectangle<int>& graph_bounds;
   const Lim_f &x_lim, &y_lim;
+  const Scaling &x_scaling, &y_scaling;
+  const DownsamplingType& downsampling_type;
 };
 
 struct Marker {

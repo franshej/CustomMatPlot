@@ -1,3 +1,15 @@
+/**
+ * @file cmp_utils.h
+ *
+ * @brief Utility functions, classes strucs etc.
+ *
+ * @ingroup CustomMatPlotInternal
+ *
+ * @author Frans Rosencrantz
+ * Contact: Frans.Rosencrantz@gmail.com
+ *
+ */
+
 #pragma once
 
 namespace cmp {
@@ -240,7 +252,7 @@ template <class ValueType>
   const auto [largest_exp,
               largest_abs_exp] = [&]() -> std::pair<ValueType, ValueType> {
     if (max_abs_exp < 2 && min_abs_exp < 2)
-      return {2, 2};
+      return {ValueType(2), ValueType(2)};
     else if (max_abs_exp > min_abs_exp)
       return {max_exp, max_abs_exp};
     else

@@ -101,11 +101,10 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
                     const juce::Point<int>& end_coordinates,
                     const juce::Rectangle<int>& graph_bounds) noexcept override;
 
-  void updateXGraphPointsAndIndices(
-      const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
-      const std::vector<float>& x_data,
-      std::vector<std::size_t>& graph_points_indices,
-      GraphPoints& graph_points) noexcept override;
+  void updateXGraphPoints(const juce::Rectangle<int>& bounds,
+                          const Lim_f& x_lim, const std::vector<float>& x_data,
+                          std::vector<std::size_t>& graph_points_indices,
+                          GraphPoints& graph_points) noexcept override;
 
   void updateYGraphPoints(const juce::Rectangle<int>& bounds,
                           const Lim_f& y_lim, const std::vector<float>& y_data,

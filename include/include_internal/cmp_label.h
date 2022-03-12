@@ -3,7 +3,7 @@
  *
  * @brief Componenets for creating x, y and title labels
  *
- * @ingroup SimpleCustomPlotInternal
+ * @ingroup CustomMatPlotInternal
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com

@@ -4,6 +4,7 @@
 #include <stdexcept>
 
 #include "cmp_plot.h"
+#include "cmp_downsampler.h"
 
 namespace cmp {
 
@@ -161,10 +162,32 @@ void GraphLine::updateXGraphPointsIntern(
   if (m_lookandfeel) {
     const std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
+    switch (common_plot_params.downsampling_type) {
+      case DownsamplingType::no_downsampling:
+        m_graph_point_indices.resize(m_x_data.size());
+
+        std::iota(m_graph_point_indices.begin(), m_graph_point_indices.end(),
+                  0u);
+        break;
+
+      case DownsamplingType::x_downsaming:
+        Downsampler<float>::calculateXIdxs(common_plot_params, m_x_data,
+                                           m_graph_point_indices);
+        break;
+
+      case DownsamplingType::xy_downsampling:
+        Downsampler<float>::calculateXIdxs(common_plot_params, m_x_data,
+                                           m_graph_point_indices);
+        break;
+
+      default:
+        break;
+    }
+
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateXGraphPointsAndIndices(common_plot_params.graph_bounds,
-                                      common_plot_params.x_lim, m_x_data,
-                                      m_graph_point_indices, m_graph_points);
+    lnf->updateXGraphPoints(common_plot_params.graph_bounds,
+                            common_plot_params.x_lim, m_x_data,
+                            m_graph_point_indices, m_graph_points);
   }
 }
 

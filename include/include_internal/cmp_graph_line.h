@@ -3,7 +3,7 @@
  *
  * @brief Componenets for drawing graph lines.
  *
- * @ingroup SimpleCustomPlotInternal
+ * @ingroup CustomMatPlotInternal
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com
