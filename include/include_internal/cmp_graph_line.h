@@ -150,7 +150,7 @@ class GraphLine : public juce::Component {
 
   std::vector<float> m_x_data, m_y_data;
   GraphPoints m_graph_points;
-  std::vector<std::size_t> m_graph_point_indices;
+  std::vector<std::size_t> m_x_graph_point_indices, m_xy_graph_point_indices;
 
   GraphAttribute m_graph_attributes;
 };

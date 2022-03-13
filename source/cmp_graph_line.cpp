@@ -32,8 +32,8 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
       closest_distance = current_distance;
       closest_graph_point = graph_point;
       closest_data_point =
-          juce::Point<float>(m_x_data[m_graph_point_indices[i]],
-                             m_y_data[m_graph_point_indices[i]]);
+          juce::Point<float>(m_x_data[m_x_graph_point_indices[i]],
+                             m_y_data[m_x_graph_point_indices[i]]);
     }
     i++;
   }
@@ -49,7 +49,7 @@ juce::Point<float> GraphLine::findClosestDataPointTo(
   auto nearest_x_dist = std::numeric_limits<float>::max();
   std::size_t nearest_i = 0u;
 
-  for (const auto i : m_graph_point_indices) {
+  for (const auto i : m_x_graph_point_indices) {
     const auto x = m_x_data[i];
     const auto current_x_dist = abs(x - this_data_point.getX());
 
@@ -73,7 +73,7 @@ void GraphLine::resized(){};
 
 void GraphLine::paint(juce::Graphics& g) {
   const GraphLineDataView graph_line_data(m_y_data, m_x_data, m_graph_points,
-                                          m_graph_point_indices,
+                                          m_x_graph_point_indices,
                                           m_graph_attributes);
 
   if (m_lookandfeel) {
@@ -164,20 +164,23 @@ void GraphLine::updateXGraphPointsIntern(
 
     switch (common_plot_params.downsampling_type) {
       case DownsamplingType::no_downsampling:
-        m_graph_point_indices.resize(m_x_data.size());
+        m_x_graph_point_indices.resize(m_x_data.size());
 
-        std::iota(m_graph_point_indices.begin(), m_graph_point_indices.end(),
+        std::iota(m_x_graph_point_indices.begin(), m_x_graph_point_indices.end(),
                   0u);
         break;
 
       case DownsamplingType::x_downsaming:
         Downsampler<float>::calculateXIdxs(common_plot_params, m_x_data,
-                                           m_graph_point_indices);
+                                           m_x_graph_point_indices);
+
+
         break;
 
       case DownsamplingType::xy_downsampling:
         Downsampler<float>::calculateXIdxs(common_plot_params, m_x_data,
-                                           m_graph_point_indices);
+                                           m_x_graph_point_indices);
+        return;
         break;
 
       default:
@@ -187,19 +190,45 @@ void GraphLine::updateXGraphPointsIntern(
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->updateXGraphPoints(common_plot_params.graph_bounds,
                             common_plot_params.x_lim, m_x_data,
-                            m_graph_point_indices, m_graph_points);
+                            m_x_graph_point_indices, m_graph_points);
   }
 }
 
 void GraphLine::updateYGraphPointsIntern(
     const CommonPlotParameterView common_plot_params) noexcept {
   if (m_lookandfeel) {
+    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+
     const std::lock_guard<std::recursive_mutex> lock(m_mutex);
 
-    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+    auto& graph_point_indices = m_x_graph_point_indices;
+
+    switch (common_plot_params.downsampling_type) {
+      case DownsamplingType::no_downsampling:
+        break;
+
+      case DownsamplingType::x_downsaming:
+        break;
+
+      case DownsamplingType::xy_downsampling:
+        Downsampler<float>::calculateXYIdxsFrom(
+            common_plot_params, m_x_graph_point_indices, m_y_data,
+            m_xy_graph_point_indices);
+
+        graph_point_indices = m_xy_graph_point_indices;
+
+        lnf->updateXGraphPoints(common_plot_params.graph_bounds,
+                                common_plot_params.x_lim, m_x_data,
+                                graph_point_indices, m_graph_points);
+        break;
+
+      default:
+        break;
+    }
+
     lnf->updateYGraphPoints(common_plot_params.graph_bounds,
                             common_plot_params.y_lim, m_y_data,
-                            m_graph_point_indices, m_graph_points);
+                            graph_point_indices, m_graph_points);
   }
 }
 

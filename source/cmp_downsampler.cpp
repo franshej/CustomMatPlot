@@ -125,7 +125,73 @@ template <class FloatType>
 void Downsampler<FloatType>::calculateXYIdxsFrom(
     const CommonPlotParameterView common_params,
     const std::vector<std::size_t>& x_idxs,
-    const std::vector<FloatType>& y_data, std::vector<std::size_t>& xy_idxs) {}
+    const std::vector<FloatType>& y_data, std::vector<std::size_t>& xy_idxs) {
+  if (x_idxs.empty()) return;
+
+  xy_idxs.resize(y_data.size());
+
+  if (xy_idxs.size() < 10u) {
+    std::iota(xy_idxs.begin(), xy_idxs.end(), 0u);
+    return;
+  }
+
+  auto xy_i = 0u;
+  auto xy_size = 0u;
+
+  for (auto i = x_idxs.begin();; ++i) {
+    if (i + 1 == x_idxs.end()) {
+      xy_idxs[xy_i++] = *i;
+
+      xy_size += 1;
+
+      break;
+    }
+
+    xy_idxs[xy_i++] = *i;
+
+    const auto index_diff = *(i + 1) - *i;
+
+    if (index_diff == 2u) {
+      xy_idxs[xy_i++] = *i + 1;
+
+      xy_size += 2;
+    } else if (index_diff == 3u) {
+      xy_idxs[xy_i++] = *i + 1;
+      xy_idxs[xy_i++] = *i + 2;
+
+      xy_size += 3;
+    } else if (index_diff > 3u) {
+      auto j = *i + 1;
+
+      auto max_val = y_data[j];
+      auto min_val = y_data[j];
+      auto max_idx = j;
+      auto min_idx = j;
+
+      for (; j < *(i + 1); ++j) {
+        auto y = y_data[j];
+
+        if (y < min_val) {
+          min_val = y;
+
+          min_idx = j;
+        } else if (y > max_val) {
+          max_val = y;
+
+          max_idx = j;
+        }
+      }
+
+      xy_idxs[xy_i++] = min_idx;
+      xy_idxs[xy_i++] = max_idx;
+      xy_size += 3;
+    } else {
+      xy_size += 1;
+    }
+  }
+
+  xy_idxs.resize(xy_size);
+}
 
 template class Downsampler<float>;
 }  // namespace cmp

@@ -101,6 +101,15 @@ class Plot : public juce::Component {
   void fillBetween(const std::vector<GraphSpreadIndex>& graph_spread_indices,
                    const std::vector<juce::Colour>& fill_area_colours = {});
 
+  /** @brief Set downsampling type.
+   *
+   * @see cmp::DownsamplingType for the different types.
+   * default is DownsamplingType::xy_downsampling.
+   *
+   * @param downsampling_type the type of downsampling.
+   */
+  void setDownsamplingType(const DownsamplingType downsampling_type) noexcept;
+
   /** @brief Set the text for label on the X-axis
    *
    *  Set the text for label on the X-axis.
@@ -492,7 +501,7 @@ class Plot : public juce::Component {
 
   /** Common plot parameters. */
   Scaling m_x_scaling, m_y_scaling;
-  DownsamplingType m_downsampling_type{DownsamplingType::x_downsaming};
+  DownsamplingType m_downsampling_type{DownsamplingType::xy_downsampling};
   juce::Rectangle<int> m_graph_bounds;
   cmp::Lim<float> m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
 

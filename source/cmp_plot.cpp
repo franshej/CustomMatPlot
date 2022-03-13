@@ -284,6 +284,13 @@ void Plot::fillBetween(
   }
 }
 
+void cmp::Plot::setDownsamplingType(
+    const DownsamplingType downsampling_type) noexcept {
+  m_downsampling_type = downsampling_type;
+
+  updateGridGraphsTrace();
+}
+
 void Plot::setXLabel(const std::string& x_label) {
   m_plot_label->setXLabel(x_label);
 }
