@@ -83,7 +83,7 @@ TEST(test_grid_on, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10);
-  std::iota(y_test_data.begin(), y_test_data.end(), 0);
+  std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
 
   PLOT_Y({y_test_data});
   GRID_ON;
@@ -93,7 +93,7 @@ TEST(test_tiny_grid_on, non_real_time) {
   ADD_PLOT;
 
   std::vector<float> y_test_data(10);
-  std::iota(y_test_data.begin(), y_test_data.end(), 0);
+  std::iota(y_test_data.begin(), y_test_data.end(), 0.0f);
 
   PLOT_Y({y_test_data});
   TINY_GRID_ON;
@@ -411,4 +411,16 @@ TEST(spread, non_real_time) {
 
   PLOT_Y(test_data_y);
   FILL_BETWEEN(spread_indices);
+}
+
+TEST(xy_downsampling, non_real_time) {
+  ADD_PLOT;
+
+  std::vector<float> y_data(1'000'000u, 0.0f);
+
+  y_data[500'000u] = 1.0f;
+  y_data[500'004u] = -31.0f;
+  y_data[500'006u] = 14.0f;
+
+  PLOT_Y({y_data});
 }

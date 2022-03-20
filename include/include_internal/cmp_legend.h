@@ -3,7 +3,7 @@
  *
  * @brief Componenet for legend
  *
- * @ingroup SimpleCustomPlotInternal
+ * @ingroup CustomMatPlotInternal
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com
@@ -64,7 +64,9 @@ class Legend : public juce::Component {
  private:
   juce::LookAndFeel* m_lookandfeel;
 
-  std::vector<LegendDescription> m_legend_descriptions;
+  std::vector<LegendLabel> m_legend_labels;
   std::vector<std::string> m_label_texts;
+
+  bool m_label_texts_is_changed{false};
 };
 }  // namespace cmp

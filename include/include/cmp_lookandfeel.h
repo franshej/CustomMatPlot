@@ -84,7 +84,7 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   void drawGridLine(juce::Graphics& g, const GridLine& grid_line,
                     const bool grid_on) override;
 
-  void drawLegend(juce::Graphics& g, std::vector<LegendDescription> legend_info,
+  void drawLegend(juce::Graphics& g, std::vector<LegendLabel> legend_info,
                   const juce::Rectangle<int>& bounds) override;
 
   void drawSpread(juce::Graphics& g, const GraphLine* first_graph,
@@ -101,11 +101,10 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
                     const juce::Point<int>& end_coordinates,
                     const juce::Rectangle<int>& graph_bounds) noexcept override;
 
-  void updateXGraphPointsAndIndices(
-      const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
-      const std::vector<float>& x_data,
-      std::vector<std::size_t>& graph_points_indices,
-      GraphPoints& graph_points) noexcept override;
+  void updateXGraphPoints(const juce::Rectangle<int>& bounds,
+                          const Lim_f& x_lim, const std::vector<float>& x_data,
+                          std::vector<std::size_t>& graph_points_indices,
+                          GraphPoints& graph_points) noexcept override;
 
   void updateYGraphPoints(const juce::Rectangle<int>& bounds,
                           const Lim_f& y_lim, const std::vector<float>& y_data,

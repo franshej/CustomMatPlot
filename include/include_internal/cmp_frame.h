@@ -3,7 +3,7 @@
  *
  * @brief Componenet for creating a frame
  *
- * @ingroup SimpleCustomPlotInternal
+ * @ingroup CustomMatPlotInternal
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com

@@ -4,7 +4,7 @@
  * @brief Componenet for drawing the zoom area and store the zoom start and end
  * postion.
  *
- * @ingroup SimpleCustomPlotInternal
+ * @ingroup CustomMatPlotInternal
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com

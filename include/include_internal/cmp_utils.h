@@ -1,3 +1,15 @@
+/**
+ * @file cmp_utils.h
+ *
+ * @brief Utility functions, classes strucs etc.
+ *
+ * @ingroup CustomMatPlotInternal
+ *
+ * @author Frans Rosencrantz
+ * Contact: Frans.Rosencrantz@gmail.com
+ *
+ */
+
 #pragma once
 
 namespace cmp {
@@ -6,16 +18,16 @@ namespace cmp {
 
 /**
  * \struct
- * @breif A struct that defines a single legend description
+ * @breif A struct that defines a single legend label
  */
-struct LegendDescription {
-  LegendDescription(std::string desciption)
+struct LegendLabel {
+  LegendLabel(std::string desciption)
       : description{desciption}, description_colour{juce::Colours::pink} {}
 
-  LegendDescription(std::string desciption, juce::Colour description_colour)
+  LegendLabel(std::string desciption, juce::Colour description_colour)
       : description{desciption}, description_colour{description_colour} {}
 
-  LegendDescription()
+  LegendLabel()
       : description{"Unknown data serie."},
         description_colour{juce::Colours::pink} {}
 
@@ -240,7 +252,7 @@ template <class ValueType>
   const auto [largest_exp,
               largest_abs_exp] = [&]() -> std::pair<ValueType, ValueType> {
     if (max_abs_exp < 2 && min_abs_exp < 2)
-      return {2, 2};
+      return {ValueType(2), ValueType(2)};
     else if (max_abs_exp > min_abs_exp)
       return {max_exp, max_abs_exp};
     else

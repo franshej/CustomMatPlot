@@ -438,7 +438,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawGridLine(
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
-    juce::Graphics& g, std::vector<LegendDescription> legend_info,
+    juce::Graphics& g, std::vector<LegendLabel> legend_info,
     const juce::Rectangle<int>& bounds) {
   constexpr std::size_t margin_width = 5u;
   constexpr std::size_t margin_height = 5u;
@@ -585,103 +585,13 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawZoomArea(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
-    updateXGraphPointsAndIndices(const juce::Rectangle<int>& bounds,
-                                 const Lim_f& x_lim,
-                                 const std::vector<float>& x_data,
-                                 std::vector<std::size_t>& graph_points_indices,
-                                 GraphPoints& graph_points) noexcept {
-  graph_points_indices.resize(x_data.size());
-  graph_points.resize(x_data.size());
-
-  const auto width = static_cast<float>(bounds.getWidth());
+void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXGraphPoints(
+    const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
+    const std::vector<float>& x_data,
+    std::vector<std::size_t>& graph_points_indices,
+    GraphPoints& graph_points) noexcept {
   const auto [x_scale, x_offset] =
-      getXScaleAndOffset(width, x_lim, m_x_scaling);
-
-  std::size_t min_x_index{0u}, max_x_index{x_data.size() - 1u};
-
-  // If the graph has less than 10 values we simply plot all points even if
-  // they are on top of each other.
-  if (x_data.size() < 10u) {
-    std::iota(graph_points_indices.begin(), graph_points_indices.end(), 0u);
-    goto calculate_x_label;
-  }
-
-  // The points that are on top of each other or outside the graph area are
-  // dicarded.
-  for (const auto& x : x_data) {
-    if (x >= x_lim.min) {
-      auto start_i_outside = 2u;
-      while (true) {
-        if ((int(min_x_index) - start_i_outside) >= 0) {
-          // start_i_outside indices outside the left side to get rid of
-          // artifacts.
-          min_x_index = min_x_index - start_i_outside;
-          break;
-        }
-        --start_i_outside;
-      }
-      break;
-    }
-    min_x_index++;
-  }
-
-  for (auto x = x_data.rbegin(); x != x_data.rend(); ++x) {
-    if (*x <= x_lim.max || max_x_index == 0u) {
-      auto start_i_outside = 2u;
-      while (true) {
-        if (max_x_index < x_data.size() - start_i_outside) {
-          // Two indices outside the right side to get rid of artifacts.
-          max_x_index = max_x_index + start_i_outside;
-          break;
-        }
-        --start_i_outside;
-      }
-      break;
-    }
-    max_x_index--;
-  }
-
-  if (min_x_index >= max_x_index) {
-    min_x_index = 0;
-    max_x_index = x_data.size() - 1u;
-    graph_points_indices.resize(max_x_index - min_x_index);
-  }
-
-  graph_points_indices.front() = min_x_index;
-
-  if (max_x_index - min_x_index > 1u) {
-    float last_added_x = std::numeric_limits<float>::min();
-    std::size_t current_index = min_x_index;
-    std::size_t graph_point_index{0u};
-    const auto inverse_x_scale = 1.f / x_scale;
-
-    if constexpr (m_x_scaling == Scaling::linear) {
-      for (auto x = x_data.begin() + min_x_index;
-           x != x_data.begin() + max_x_index; ++x) {
-        if (abs(*x - last_added_x) > inverse_x_scale) {
-          last_added_x = *x;
-          graph_points_indices[graph_point_index++] = current_index;
-        }
-        current_index++;
-      }
-    } else if constexpr (m_x_scaling == Scaling::logarithmic) {
-      for (auto x = x_data.begin() + min_x_index;
-           x != x_data.begin() + max_x_index; ++x) {
-        if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
-          last_added_x = *x;
-          graph_points_indices[graph_point_index++] = current_index;
-        }
-        current_index++;
-      }
-    }
-
-    graph_points_indices.resize(graph_point_index + 1);
-  }
-
-  graph_points_indices.back() = max_x_index;
-
-calculate_x_label:
+      getXScaleAndOffset(float(bounds.getWidth()), x_lim, m_x_scaling);
 
   graph_points.resize(graph_points_indices.size());
 

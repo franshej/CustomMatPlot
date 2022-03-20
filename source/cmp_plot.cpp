@@ -82,7 +82,8 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_trace(std::make_unique<Trace>()),
       m_x_lim({0, 0}),
       m_y_lim({0, 0}),
-      m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim) {
+      m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
+                            m_y_scaling, m_downsampling_type) {
   lookAndFeelChanged();
 
   addAndMakeVisible(m_grid.get());
@@ -281,6 +282,13 @@ void Plot::fillBetween(
       graph_spread->setBounds(m_graph_bounds);
     }
   }
+}
+
+void cmp::Plot::setDownsamplingType(
+    const DownsamplingType downsampling_type) noexcept {
+  m_downsampling_type = downsampling_type;
+
+  updateGridGraphsTrace();
 }
 
 void Plot::setXLabel(const std::string& x_label) {
