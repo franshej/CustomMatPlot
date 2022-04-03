@@ -5,7 +5,7 @@
 
 /*============================================================================*/
 
-static const [[nodiscard]] std::string getNextCustomLabel(
+static const std::string getNextCustomLabel(
     std::vector<std::string>::reverse_iterator& custom_labels_it) {
   return *(custom_labels_it++);
 }
@@ -181,20 +181,19 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getLegendBounds(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Font PlotLookAndFeelDefault<
+juce::Font PlotLookAndFeelDefault<
     x_scaling_t, y_scaling_t>::getLegendFont() const noexcept {
   return juce::Font(14.0f, juce::Font::plain);
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Font PlotLookAndFeelDefault<
+juce::Font PlotLookAndFeelDefault<
     x_scaling_t, y_scaling_t>::getButtonFont() const noexcept {
   return juce::Font(14.0f, juce::Font::plain);
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 int
-PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getColourFromGraphID(
+int PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getColourFromGraphID(
     const std::size_t graph_index) const {
   /**< Colour vector which is useful when iterating over the six graph
    * colours.*/
@@ -262,13 +261,13 @@ CONSTEXPR20 juce::Rectangle<int> PlotLookAndFeelDefault<
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Font PlotLookAndFeelDefault<
-    x_scaling_t, y_scaling_t>::getTraceFont() const noexcept {
+juce::Font PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getTraceFont()
+    const noexcept {
   return juce::Font(14.0f, juce::Font::plain);
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Point<int>
+juce::Point<int>
 PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getTracePointPositionFrom(
     const CommonPlotParameterView common_plot_params,
     const juce::Point<float> graph_values) const noexcept {
@@ -635,7 +634,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
   }
 }
 
-static constexpr std::vector<float> getLinearTicks(
+static std::vector<float> getLinearTicks(
     const std::size_t num_ticks, const Lim_f lim,
     const std::vector<float> previous_ticks) {
   std::vector<float> ticks(num_ticks);
@@ -821,13 +820,13 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Font PlotLookAndFeelDefault<
+juce::Font PlotLookAndFeelDefault<
     x_scaling_t, y_scaling_t>::getGridLabelFont() const noexcept {
   return juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Font PlotLookAndFeelDefault<
+juce::Font PlotLookAndFeelDefault<
     x_scaling_t, y_scaling_t>::getXYTitleFont() const noexcept {
   return juce::Font(20.0f, juce::Font::plain);
 }

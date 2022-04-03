@@ -11,7 +11,7 @@
 
 namespace cmp {
 
-static [[nodiscard]] std::pair<float, float> findMinMaxValuesInGraphLines(
+static std::pair<float, float> findMinMaxValuesInGraphLines(
     const std::vector<std::vector<float>>& data) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
@@ -27,7 +27,7 @@ static [[nodiscard]] std::pair<float, float> findMinMaxValuesInGraphLines(
   return {min_value, max_value};
 }
 
-static [[nodiscard]] std::pair<float, float> findMinMaxValuesInGraphLines(
+static std::pair<float, float> findMinMaxValuesInGraphLines(
     const std::vector<std::unique_ptr<cmp::GraphLine>>& graph_lines,
     const bool isXValue) noexcept {
   auto max_value = -std::numeric_limits<float>::max();

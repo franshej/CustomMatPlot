@@ -365,7 +365,7 @@ class Plot : public juce::Component {
         const std::vector<std::string>& label_texts) const noexcept = 0;
 
     /** Returns the Font used when drawing legends. */
-    virtual CONSTEXPR20 juce::Font getLegendFont() const noexcept = 0;
+    virtual juce::Font getLegendFont() const noexcept = 0;
 
     /** Get margin used for labels and graph bounds. */
     virtual CONSTEXPR20 std::size_t getMargin() const noexcept = 0;
