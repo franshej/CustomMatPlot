@@ -3,7 +3,7 @@
  *
  * @brief Componenet for legend
  *
- * @ingroup SimpleCustomPlotInternal
+ * @ingroup CustomMatPlotInternal
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com
@@ -32,16 +32,18 @@ class Legend : public juce::Component {
    *  @param label_texts the text to be displayed for each data series
    *  @return void.
    */
-  void setLegend(const std::vector<std::string>& label_texts);
+  void setLegend(const StringVector& graph_descriptions);
 
-  /** @brief Set data series
+  /** @breif Update legends
    *
-   *  Set the data series.
+   * Update the legends based on info from the graph_lines.
+   * The legend descriptions are resized based on the graph_lines size.
+   * The colour of the graph_line is displayed before the description text.
    *
-   *  @param data_series poitner to the data series that are plotted.
-   *  @return void.
+   * @param GraphLines* graph_lines in the plot.
+   * @return void.
    */
-  void setDataSeries(const GraphLines* data_series);
+  void updateLegends(const GraphLines& graph_lines);
 
   /** @internal */
   void resized() override;
@@ -50,10 +52,21 @@ class Legend : public juce::Component {
   /** @internal */
   void lookAndFeelChanged() override;
 
+  /** @breif This lamda is trigged when the number of descriptions is changed.
+   *
+   * Can be use to resize the legend when the number of descriptions is changed.
+   *
+   * @param StringVector the descriptions that will be drawn.
+   * @return void.
+   */
+  std::function<void(const StringVector&)> onNumberOfDescriptionsChanged{nullptr};
+
  private:
   juce::LookAndFeel* m_lookandfeel;
 
+  std::vector<LegendLabel> m_legend_labels;
   std::vector<std::string> m_label_texts;
-  const GraphLines* m_graph_lines{nullptr};
+
+  bool m_label_texts_is_changed{false};
 };
 }  // namespace cmp

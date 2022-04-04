@@ -1,8 +1,42 @@
+/**
+ * @file cmp_utils.h
+ *
+ * @brief Utility functions, classes strucs etc.
+ *
+ * @ingroup CustomMatPlotInternal
+ *
+ * @author Frans Rosencrantz
+ * Contact: Frans.Rosencrantz@gmail.com
+ *
+ */
+
 #pragma once
 
 namespace cmp {
 
 /*============================================================================*/
+
+/**
+ * \struct
+ * @breif A struct that defines a single legend label
+ */
+struct LegendLabel {
+  LegendLabel(std::string desciption)
+      : description{desciption}, description_colour{juce::Colours::pink} {}
+
+  LegendLabel(std::string desciption, juce::Colour description_colour)
+      : description{desciption}, description_colour{description_colour} {}
+
+  LegendLabel()
+      : description{"Unknown data serie."},
+        description_colour{juce::Colours::pink} {}
+
+  /** The description text of the associated graph_line. */
+  std::string description;
+
+  /** The colour of the description text. */
+  juce::Colour description_colour;
+};
 
 /** @brief A struct that defines a single gridline.
  *
@@ -218,7 +252,7 @@ template <class ValueType>
   const auto [largest_exp,
               largest_abs_exp] = [&]() -> std::pair<ValueType, ValueType> {
     if (max_abs_exp < 2 && min_abs_exp < 2)
-      return {2, 2};
+      return {ValueType(2), ValueType(2)};
     else if (max_abs_exp > min_abs_exp)
       return {max_exp, max_abs_exp};
     else
@@ -287,6 +321,7 @@ const auto getMaximumLabelWidth =
 };
 
 /*============================================================================*/
+
 template <class T>
 class ParamBase {
  public:
