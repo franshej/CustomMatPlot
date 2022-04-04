@@ -2,7 +2,7 @@
 
 #define APP_EXAMPLE_NAME EXAMPLE_NAME ## _app
 
-#define EXAMPLE_HEADER < ## EXAMPLE_NAME ## .h>
+#define EXAMPLE_HEADER <EXAMPLE_NAME.h>
 
 #include <juce_gui_extra/juce_gui_extra.h>
 
