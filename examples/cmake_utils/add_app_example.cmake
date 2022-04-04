@@ -7,7 +7,7 @@ configure_file(${CMAKE_UTILS_PATH}/app_template.cpp.in
 
 juce_add_gui_app(${EXAMPLE_NAME}_example_app
                  PRODUCT_NAME
-                 "Example app ${EXAMPLE_NAME}.")
+                 "example_app_${EXAMPLE_NAME}")
 
 target_sources(${EXAMPLE_NAME}_example_app PRIVATE
     ${EXAMPLE_NAME}_example_app.cpp
