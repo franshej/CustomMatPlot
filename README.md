@@ -9,7 +9,7 @@ Custom Mat Plot (CMP) is a plotting library for C++. It provides an API for embe
   - [Features](#features)
   - [Requirements](#requirements)
   - [Examples](#examples)
-  - [Audio Plugin Example](#audio-plugin-example)
+  - [Realtime frequency response example](#realtime-frequency-response-example)
   - [Tests](#tests)
   - [License](#license)
 
@@ -36,9 +36,8 @@ Below is the feature list of CMP:
 ## Requirements
 <a name="requirements"></a>
 
-- Compiler that supports C++17 for building the tests or integrate the library with another project.
-- Compiler that supports C++20 (Modules) for building the examples.
-- CMake 3.1.
+- Compiler that supports C++17
+- CMake 3.12
 
 ## Examples
 <a name="examples"></a>
@@ -51,10 +50,10 @@ cmake ../ -DCMP_BUILD_EXAMPLES=ON
 make -j4
 ```
 
-## Audio Plugin Example
-<a name="audio-plugin-example"></a>
+## Realtime frequency response example
+<a name="realtime-frequency-response-example"></a>
 
-An audio plugin example plotting the magnitude response of the incoming left and right signals can be seen here: [TODO]
+An example app plotting the magnitude response of the incoming left and right signals can be seen here: [TODO]
 
 ## Tests
 <a name="tests"></a>

@@ -1,13 +1,9 @@
-module;
-
 #include <cmp_plot.h>
 #include <example_utils.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
-export module fill;
-
 namespace examples {
-export class fill : public juce::Component {
+class fill : public juce::Component {
   // Declare plot object.
   cmp::Plot m_plot;
 

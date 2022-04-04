@@ -1,10 +1,12 @@
-#include <juce_gui_extra/juce_gui_extra.h>
-
 #cmakedefine EXAMPLE_NAME @EXAMPLE_NAME@
 
 #define APP_EXAMPLE_NAME EXAMPLE_NAME ## _app
 
-import EXAMPLE_NAME;
+#define EXAMPLE_HEADER < ## EXAMPLE_NAME ## .h>
+
+#include <juce_gui_extra/juce_gui_extra.h>
+
+#include EXAMPLE_HEADER
 
 //==============================================================================
 class APP_EXAMPLE_NAME  : public juce::JUCEApplication
