@@ -23,10 +23,10 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   juce::Colour findAndGetColourFromId(
       const int colour_id) const noexcept override;
 
-  CONSTEXPR20 juce::Rectangle<int> getPlotBounds(
+  juce::Rectangle<int> getPlotBounds(
       juce::Rectangle<int> bounds) const noexcept override;
 
-  CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
+  std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
   getTraceAndZoomButtonBounds(
       juce::Rectangle<int> graph_bounds) const noexcept override;
 
@@ -34,14 +34,13 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
       const juce::Rectangle<int> bounds,
       const juce::Component *const plot_comp = nullptr) const noexcept override;
 
-  CONSTEXPR20 std::size_t getMaximumAllowedCharacterGridLabel()
-      const noexcept override;
+  std::size_t getMaximumAllowedCharacterGridLabel() const noexcept override;
 
-  CONSTEXPR20 juce::Point<int> getLegendPosition(
+  juce::Point<int> getLegendPosition(
       const juce::Rectangle<int> &graph_bounds,
       const juce::Rectangle<int> &legend_bounds) const noexcept override;
 
-  CONSTEXPR20 juce::Rectangle<int> getLegendBounds(
+  juce::Rectangle<int> getLegendBounds(
       [[maybe_unused]] const juce::Rectangle<int> &graph_bounds,
       const std::vector<std::string> &label_texts) const noexcept override;
 
@@ -51,20 +50,19 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
   int getColourFromGraphID(const std::size_t graph_index) const override;
 
-  CONSTEXPR20 std::size_t getMargin() const noexcept override;
+  std::size_t getMargin() const noexcept override;
 
-  CONSTEXPR20 std::size_t getMarkerLength() const noexcept override;
+  std::size_t getMarkerLength() const noexcept override;
 
   std::pair<juce::Rectangle<int>, juce::Rectangle<int>> getTraceXYLabelBounds(
       const std::string_view x_text,
       const std::string_view y_text) const override;
 
-  CONSTEXPR20 juce::Rectangle<int> getTraceLabelLocalBounds(
+  juce::Rectangle<int> getTraceLabelLocalBounds(
       const juce::Rectangle<int> &x_label_bounds,
       const juce::Rectangle<int> &y_label_bounds) const noexcept override;
 
-  CONSTEXPR20 juce::Rectangle<int> getTracePointLocalBounds()
-      const noexcept override;
+  juce::Rectangle<int> getTracePointLocalBounds() const noexcept override;
 
   juce::Font getTraceFont() const noexcept override;
 
@@ -122,9 +120,9 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
   juce::Font getXYTitleFont() const noexcept override;
 
-  CONSTEXPR20 Scaling getXScaling() const noexcept override;
+  Scaling getXScaling() const noexcept override;
 
-  CONSTEXPR20 Scaling getYScaling() const noexcept override;
+  Scaling getYScaling() const noexcept override;
 
   void updateGridLabels(const CommonPlotParameterView common_plot_params,
                         const std::vector<GridLine> &grid_lines,

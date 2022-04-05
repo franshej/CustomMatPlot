@@ -3,8 +3,8 @@
 #ifdef __cpp_constexpr
 #if __cpp_constexpr >= 201907L
 #define CONSTEXPR20 \
-  constexpr inline  // This macro should be used in those cases where C++20 only
-                    // allows it. Example: virtual CONSTEXPR20 int foo() = 0;
+  constexpr  // This macro should be used in those cases where C++20 only
+             // allows it. Example: virtual CONSTEXPR20 int foo() = 0;
 #else
 #define CONSTEXPR20
 #endif

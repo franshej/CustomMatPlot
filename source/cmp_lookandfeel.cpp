@@ -61,14 +61,14 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::findAndGetColourFromId(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Rectangle<int>
+juce::Rectangle<int>
 PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getPlotBounds(
     juce::Rectangle<int> bounds) const noexcept {
   return juce::Rectangle<int>(0, 0, bounds.getWidth(), bounds.getHeight());
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
+std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
 PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getTraceAndZoomButtonBounds(
     juce::Rectangle<int> graph_bounds) const noexcept {
   return {juce::Rectangle<int>(), juce::Rectangle<int>()};
@@ -132,13 +132,13 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 std::size_t PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
+std::size_t PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     getMaximumAllowedCharacterGridLabel() const noexcept {
   return 6u;
 };
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Point<int>
+juce::Point<int>
 PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getLegendPosition(
     const juce::Rectangle<int>& graph_bounds,
     const juce::Rectangle<int>& legend_bounds) const noexcept {
@@ -154,7 +154,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getLegendPosition(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Rectangle<int>
+juce::Rectangle<int>
 PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getLegendBounds(
     [[maybe_unused]] const juce::Rectangle<int>& graph_bounds,
     const std::vector<std::string>& label_texts) const noexcept {
@@ -181,14 +181,14 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getLegendBounds(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-juce::Font PlotLookAndFeelDefault<
-    x_scaling_t, y_scaling_t>::getLegendFont() const noexcept {
+juce::Font PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getLegendFont()
+    const noexcept {
   return juce::Font(14.0f, juce::Font::plain);
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-juce::Font PlotLookAndFeelDefault<
-    x_scaling_t, y_scaling_t>::getButtonFont() const noexcept {
+juce::Font PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getButtonFont()
+    const noexcept {
   return juce::Font(14.0f, juce::Font::plain);
 }
 
@@ -209,14 +209,14 @@ int PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getColourFromGraphID(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 std::size_t
-PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getMargin() const noexcept {
+std::size_t PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getMargin()
+    const noexcept {
   return 8u;
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 std::size_t PlotLookAndFeelDefault<
-    x_scaling_t, y_scaling_t>::getMarkerLength() const noexcept {
+std::size_t PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getMarkerLength()
+    const noexcept {
   return 20u;
 }
 
@@ -243,7 +243,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getTraceXYLabelBounds(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Rectangle<int>
+juce::Rectangle<int>
 PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getTraceLabelLocalBounds(
     const juce::Rectangle<int>& x_label_bounds,
     const juce::Rectangle<int>& y_label_bounds) const noexcept {
@@ -255,7 +255,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getTraceLabelLocalBounds(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 juce::Rectangle<int> PlotLookAndFeelDefault<
+juce::Rectangle<int> PlotLookAndFeelDefault<
     x_scaling_t, y_scaling_t>::getTracePointLocalBounds() const noexcept {
   return juce::Rectangle<int>(0, 0, 10, 10);
 }
@@ -820,26 +820,26 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-juce::Font PlotLookAndFeelDefault<
-    x_scaling_t, y_scaling_t>::getGridLabelFont() const noexcept {
+juce::Font PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGridLabelFont()
+    const noexcept {
   return juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-juce::Font PlotLookAndFeelDefault<
-    x_scaling_t, y_scaling_t>::getXYTitleFont() const noexcept {
+juce::Font PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getXYTitleFont()
+    const noexcept {
   return juce::Font(20.0f, juce::Font::plain);
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 Scaling
-PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getXScaling() const noexcept {
+Scaling PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getXScaling()
+    const noexcept {
   return m_x_scaling;
 };
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-CONSTEXPR20 Scaling
-PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getYScaling() const noexcept {
+Scaling PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getYScaling()
+    const noexcept {
   return m_y_scaling;
 };
 
