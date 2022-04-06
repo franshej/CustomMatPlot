@@ -436,14 +436,14 @@ juce::LookAndFeel* Plot::castUserLookAndFeel(
 void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
   juce::LookAndFeel* lnf{nullptr};
 
-  if (lnf = castUserLookAndFeel<Scaling::linear, Scaling::linear>(
-          look_and_feel)) {
-  } else if (lnf = castUserLookAndFeel<Scaling::logarithmic, Scaling::linear>(
-                 look_and_feel)) {
-  } else if (lnf = castUserLookAndFeel<Scaling::logarithmic,
-                                       Scaling::logarithmic>(look_and_feel)) {
-  } else if (lnf = castUserLookAndFeel<Scaling::linear, Scaling::logarithmic>(
-                 look_and_feel)) {
+  if ((lnf = castUserLookAndFeel<Scaling::linear, Scaling::linear>(
+           look_and_feel))) {
+  } else if ((lnf = castUserLookAndFeel<Scaling::logarithmic, Scaling::linear>(
+                  look_and_feel))) {
+  } else if ((lnf = castUserLookAndFeel<Scaling::logarithmic,
+                                        Scaling::logarithmic>(look_and_feel))) {
+  } else if ((lnf = castUserLookAndFeel<Scaling::linear, Scaling::logarithmic>(
+                  look_and_feel))) {
   }
 
   resetLookAndFeelChildrens();
@@ -452,16 +452,11 @@ void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
 }
 
 void Plot::lookAndFeelChanged() {
-  if (&getLookAndFeel() == nullptr) {
-    m_lookandfeel_default.reset();
-    m_lookandfeel = nullptr;
-
-    resetLookAndFeelChildrens();
-  } else if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
+  if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = &getLookAndFeel();
     m_lookandfeel_default.reset();
   } else {
-    if (!m_lookandfeel_default)
+    if (!m_lookandfeel_default) {
       if (m_x_scaling == Scaling::logarithmic &&
           m_y_scaling == Scaling::logarithmic) {
         m_lookandfeel_default = std::make_unique<cmp::PlotLookAndFeelDefault<
@@ -477,6 +472,7 @@ void Plot::lookAndFeelChanged() {
         m_lookandfeel_default = std::make_unique<
             cmp::PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>>();
       }
+    }
     m_lookandfeel = m_lookandfeel_default.get();
   }
 
