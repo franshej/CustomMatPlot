@@ -220,6 +220,7 @@ void Trace::addSingleTracePointAndLabel(
   if (m_lookandfeel) trace_point->setLookAndFeel(m_lookandfeel);
 
   trace_point->setDataValue(trace_point_coordinate);
+  
   m_trace_labelpoints.push_back(
       {move(trace_label), move(trace_point), graph_line});
 }

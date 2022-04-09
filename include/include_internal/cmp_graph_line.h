@@ -42,11 +42,14 @@ class GraphLine : public juce::Component {
    * @param this_data_point the data point.
    * @param check_only_distance_from_x check the absolut distance if false else
    * only the x distance.
+   * @param only_visible_data_points find the nearest visible data point if
+   * true.
    * @return closest data point value to this_data_point.
    */
   juce::Point<float> findClosestDataPointTo(
       const juce::Point<float>& this_data_point,
-      bool check_only_distance_from_x = false) const;
+      bool check_only_distance_from_x = false,
+      bool only_visible_data_points = true) const;
 
   /** @brief Get the colour of the graph.
    *

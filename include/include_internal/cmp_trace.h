@@ -138,7 +138,10 @@ class Trace {
 
   /** @brief Add or remove a tracepoint.
    *
-   * The tracepoint is removed if it's already exists.
+   * The tracepoint is removed if it's already exists. Must be followed by
+   * calling 'updateTracePointsBoundsFrom' to display the trace-point.
+   * For efficiency, it's recomended to envoke 'updateTracePointsBoundsFrom'
+   * once after several trace-points has been added.
    *
    * @param trace_point_coordinate the coordinate where the point will be drawn.
    * @param graph_line pointer to a graphline.

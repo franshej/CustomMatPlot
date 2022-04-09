@@ -137,6 +137,16 @@ class Plot : public juce::Component {
    */
   void setTitle(const std::string& title);
 
+  /** @brief Set trace-point
+   *
+   * Set a trace-point to the point on a graph-line closest the coordinate.
+   *
+   * @param trance_point_coordinate the coordinate of where the trace-point is
+   * wish to be set.
+   * @return void.
+   */
+  void setTracePoint(const juce::Point<float>& trace_point_coordinate);
+
   /** @brief Set the text for grid labels on the x-axis
    *
    *  Set custom text for the grid labels and overrides the labels made based
@@ -476,8 +486,9 @@ class Plot : public juce::Component {
  private:
   void resizeChilderns();
 
-  std::pair<juce::Point<float>, const GraphLine*> findNearestGraphPoint(
-      juce::Point<float> point, const GraphLine* graphline);
+  template <bool is_point_data_point>
+  std::pair<juce::Point<float>, const GraphLine*> findNearestPoint(
+      juce::Point<float> point, const GraphLine* graphline = nullptr);
 
   template <Scaling x_scaling, Scaling y_scaling>
   juce::LookAndFeel* castUserLookAndFeel(PlotLookAndFeel* user_look_and_feel);

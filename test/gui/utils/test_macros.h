@@ -77,3 +77,5 @@
 #define Y_TICKS(TICKS) GET_PLOT->setYTicks(TICKS);
 
 #define LEGEND(TEXTS) GET_PLOT->setLegend(TEXTS);
+
+#define SET_TRACE_POINT(COORDINATE) GET_PLOT->setTracePoint(COORDINATE);

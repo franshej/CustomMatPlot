@@ -424,3 +424,19 @@ TEST(xy_downsampling, non_real_time) {
 
   PLOT_Y({y_data});
 }
+
+TEST(set_trace_point, non_real_time) {
+ ADD_PLOT;
+
+ std::vector<float> y_data_1(1'000u, 0.0f);
+ std::iota(y_data_1.begin(), y_data_1.end(), 0.0f);
+
+ std::vector<float> y_data_2(1'000u, 0.0f);
+ std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
+
+ const auto y = {y_data_1, y_data_2};
+
+ PLOT_Y(y);
+
+ SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
+}

@@ -50,6 +50,58 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
   return {min_value, max_value};
 }
 
+template <bool is_point_data_point = false>
+std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestPoint(
+    juce::Point<float> point, const GraphLine* graphline) {
+  auto closest_point = juce::Point<float>(
+      std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+
+  juce::Point<float> closest_data_point, current_point, current_data_point;
+
+  const auto graph_line_exsists =
+      std::find_if(m_graph_lines.begin(), m_graph_lines.end(),
+                   [&graphline](const auto& gl) {
+                     return gl.get() == graphline;
+                   }) != m_graph_lines.end();
+
+  const GraphLine* nearest_graph_line{graph_line_exsists ? graphline : nullptr};
+
+  if (!nearest_graph_line) {
+    for (const auto& graph_line : m_graph_lines) {
+      if constexpr (is_point_data_point) {
+        current_data_point = current_point =
+            graph_line->findClosestDataPointTo(point, false, false);
+
+      } else {
+        const auto [current_graph_point, data_point] =
+            graph_line->findClosestGraphPointTo(point);
+
+        current_point = current_graph_point;
+        current_data_point = data_point;
+      }
+
+      if (point.getDistanceFrom(current_point) <
+          point.getDistanceFrom(closest_point)) {
+        closest_point = current_point;
+        closest_data_point = current_data_point;
+        nearest_graph_line = graph_line.get();
+      }
+    }
+  } else if (graph_line_exsists) {
+    if constexpr (is_point_data_point) {
+      return {nearest_graph_line->findClosestDataPointTo(point),
+              nearest_graph_line};
+    }
+
+    const auto [graph_point, data_point] =
+        nearest_graph_line->findClosestGraphPointTo(point);
+    closest_point = graph_point;
+    closest_data_point = data_point;
+  }
+
+  return {closest_data_point, nearest_graph_line};
+}
+
 void Plot::resetLookAndFeelChildrens() {
   m_grid->setLookAndFeel(nullptr);
   m_plot_label->setLookAndFeel(nullptr);
@@ -325,6 +377,17 @@ void Plot::setYLabel(const std::string& y_label) {
 
 void Plot::setTitle(const std::string& title) { m_plot_label->setTitle(title); }
 
+void Plot::setTracePoint(const juce::Point<float>& trace_point_coordinate) {
+  const auto [closest_data_point, nearest_graph_line] =
+      findNearestPoint<true>(trace_point_coordinate);
+
+  m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
+
+  m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
+
+  m_trace->addAndMakeVisibleTo(this);
+}
+
 void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
   m_grid->setGridON(grid_on, tiny_grid_on);
 }
@@ -374,42 +437,6 @@ void Plot::resizeChilderns() {
       updateGridGraphsTrace();
     }
   }
-}
-
-std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestGraphPoint(
-    juce::Point<float> point, const GraphLine* graphline) {
-  auto closest_graph_point = juce::Point<float>(
-      std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
-
-  auto closest_data_point = juce::Point<float>();
-
-  const auto graph_line_exsists =
-      std::find_if(m_graph_lines.begin(), m_graph_lines.end(),
-                   [&graphline](const auto& gl) {
-                     return gl.get() == graphline;
-                   }) != m_graph_lines.end();
-
-  const GraphLine* nearest_graph_line{graph_line_exsists ? graphline : nullptr};
-
-  if (!nearest_graph_line) {
-    for (const auto& graph_line : m_graph_lines) {
-      const auto [current_graph_point, current_data_point] =
-          graph_line->findClosestGraphPointTo(point);
-      if (point.getDistanceFrom(current_graph_point) <
-          point.getDistanceFrom(closest_graph_point)) {
-        closest_graph_point = current_graph_point;
-        closest_data_point = current_data_point;
-        nearest_graph_line = graph_line.get();
-      }
-    }
-  } else if (graph_line_exsists) {
-    const auto [graph_point, data_point] =
-        nearest_graph_line->findClosestGraphPointTo(point);
-    closest_graph_point = graph_point;
-    closest_data_point = data_point;
-  }
-
-  return {closest_data_point, nearest_graph_line};
 }
 
 void Plot::resized() { resizeChilderns(); }
@@ -630,7 +657,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
               .toFloat();
 
       const auto [closest_data_point, nearest_graph_line] =
-          findNearestGraphPoint(mouse_pos, nullptr);
+          findNearestPoint(mouse_pos, nullptr);
 
       m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
       m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
@@ -665,7 +692,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
           m_trace->getAssociatedGraphLine(event.eventComponent);
 
       const auto [closest_data_point, nearest_graph_line] =
-          findNearestGraphPoint(mouse_pos.toFloat(), associated_graph_line);
+          findNearestPoint(mouse_pos.toFloat(), associated_graph_line);
 
       const auto prev_graph_point =
           onTraceValueChange ? m_trace->getGraphPosition(event.eventComponent)

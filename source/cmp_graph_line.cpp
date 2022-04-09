@@ -1,6 +1,7 @@
 #include "cmp_graph_line.h"
 
 #include <mutex>
+#include <numeric>
 #include <stdexcept>
 
 #include "cmp_plot.h"
@@ -41,15 +42,29 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
 }
 
 juce::Point<float> GraphLine::findClosestDataPointTo(
-    const juce::Point<float>& this_data_point,
-    bool check_only_distance_from_x) const {
+    const juce::Point<float>& this_data_point, bool check_only_distance_from_x,
+    bool only_visible_data_points) const {
   // No y_data empty.
   jassert(!m_x_data.empty());
+
+  // x_data & y_data must have the same size
+  jassert(m_x_data.size() == m_y_data.size());
+
+  const decltype(m_x_graph_point_indices)* indices = &m_x_graph_point_indices;
+  decltype(m_x_graph_point_indices) all_indices;
+
+  if (!only_visible_data_points) {
+    all_indices.resize(m_x_data.size());
+
+    std::iota(all_indices.begin(), all_indices.end(), 0u);
+
+    indices = &all_indices;
+  }
 
   auto nearest_x_dist = std::numeric_limits<float>::max();
   std::size_t nearest_i = 0u;
 
-  for (const auto i : m_x_graph_point_indices) {
+  for (const auto i : *indices) {
     const auto x = m_x_data[i];
     const auto current_x_dist = abs(x - this_data_point.getX());
 
