@@ -513,7 +513,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTraceLabel(
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTracePoint(
     juce::Graphics& g, const juce::Rectangle<int>& bounds) {
-  constexpr int line_thickness = 4;
+  constexpr float line_thickness = 4;
 
   const auto x = float(bounds.getX() + line_thickness / 2);
   const auto y = float(bounds.getY() + line_thickness / 2);

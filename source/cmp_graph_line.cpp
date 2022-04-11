@@ -92,7 +92,7 @@ void GraphLine::paint(juce::Graphics& g) {
                                           m_graph_attributes);
 
   if (m_lookandfeel) {
-    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->drawGraphLine(g, graph_line_data);
@@ -175,7 +175,7 @@ void GraphLine::updateYGraphPoints(
 void GraphLine::updateXGraphPointsIntern(
     const CommonPlotParameterView common_plot_params) noexcept {
   if (m_lookandfeel) {
-    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
     switch (common_plot_params.downsampling_type) {
       case DownsamplingType::no_downsampling:
@@ -214,7 +214,7 @@ void GraphLine::updateYGraphPointsIntern(
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
-    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
     auto& graph_point_indices = m_x_graph_point_indices;
 
@@ -251,7 +251,7 @@ void GraphSpread::resized() {}
 
 void GraphSpread::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
-    const std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->drawSpread(g, m_lower_bound, m_upper_bound, m_spread_colour);
