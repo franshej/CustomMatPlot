@@ -120,6 +120,14 @@ class Trace {
  public:
   ~Trace();
 
+  /** @brief Clear all tracepoints.
+   *
+   * Removes all tracepoints.
+   *
+   * @return void.
+   */
+  void clear() noexcept;
+
   /** @brief Get the associated GraphLine.
    *
    * @param TracePoint juce::Componenet* a TracePoint component.

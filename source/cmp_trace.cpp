@@ -145,6 +145,8 @@ void Trace::addAndMakeVisibleTo(juce::Component* parent_comp) {
   }
 }
 
+void Trace::clear() noexcept { m_trace_labelpoints.clear(); }
+
 void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
   m_lookandfeel = lnf;
   updateTracePointsLookAndFeel();

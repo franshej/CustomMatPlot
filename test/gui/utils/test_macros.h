@@ -79,3 +79,5 @@
 #define LEGEND(TEXTS) GET_PLOT->setLegend(TEXTS);
 
 #define SET_TRACE_POINT(COORDINATE) GET_PLOT->setTracePoint(COORDINATE);
+
+#define CLEAR_TRACE_POINTS GET_PLOT->clearTracePoints();

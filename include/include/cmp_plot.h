@@ -195,6 +195,14 @@ class Plot : public juce::Component {
    */
   void gridON(const bool grid_on, const bool tiny_grid_on);
 
+  /** @brief Clear tracepoints
+   *
+   * Removes all tracepoints.
+   *
+   * @return void.
+   */
+  void clearTracePoints() noexcept;
+
   /** @brief Set Legend
    *
    *  Set descriptions for each graph. The label 'label1..N' will be used if
@@ -219,17 +227,10 @@ class Plot : public juce::Component {
 */
   void setLookAndFeel(PlotLookAndFeel* look_and_feel);
 
-  /** @brief Get info struct about if the labels are set ot not.
-   *
-   *  @return const IsLabelsSet.
-   */
+  /** @internal */
   const IsLabelsSet getIsLabelsAreSet() const noexcept;
 
-  /** @brief Get the max width of the x and y-gird labels
-   *
-   *  @return pair<int, int> where first is the x width and second is the y
-   *  width.
-   */
+  /** @internal */
   const std::pair<int, int> getMaxGridLabelWidth() const noexcept;
 
   //==============================================================================

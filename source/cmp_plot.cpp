@@ -392,6 +392,10 @@ void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
   m_grid->setGridON(grid_on, tiny_grid_on);
 }
 
+void Plot::clearTracePoints() noexcept {
+  m_trace->clear();
+}
+
 void Plot::resizeChilderns() {
   if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
     const auto plot_area = lnf->getPlotBounds(getBounds());

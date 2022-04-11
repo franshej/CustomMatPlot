@@ -440,3 +440,21 @@ TEST(set_trace_point, non_real_time) {
 
  SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 }
+
+TEST(clear_all_tracepoints, non_real_time) {
+ ADD_PLOT;
+
+ std::vector<float> y_data_1(1'000u, 0.0f);
+ std::iota(y_data_1.begin(), y_data_1.end(), 0.0f);
+
+ std::vector<float> y_data_2(1'000u, 0.0f);
+ std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
+
+ const auto y = {y_data_1, y_data_2};
+
+ PLOT_Y(y);
+
+ SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
+
+ CLEAR_TRACE_POINTS
+}
