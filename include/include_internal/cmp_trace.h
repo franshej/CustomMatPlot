@@ -30,7 +30,7 @@ enum class TraceLabelCornerPosition {
 /** @brief A struct that defines a tracepoint. */
 template <class ValueType>
 struct TracePoint : public juce::Component {
-#if IS_CXX_20
+#if THREE_WAY_COMP
   /** Spaceship */
   constexpr bool operator<=>(const TracePoint<ValueType>& rhs) {
     return this->getPosition() <=> rhs.getPosition();
