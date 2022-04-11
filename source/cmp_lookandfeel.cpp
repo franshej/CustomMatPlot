@@ -1,7 +1,8 @@
 
 #include "cmp_lookandfeel.h"
-
 #include "cmp_graph_line.h"
+#include "cmp_label.h"
+#include "cmp_grid.h"
 
 /*============================================================================*/
 
@@ -13,6 +14,18 @@ static const std::string getNextCustomLabel(
 /*============================================================================*/
 
 namespace cmp {
+
+/*============================================================================*/
+
+const IsLabelsSet getIsLabelsAreSet(const cmp::Plot* plot) noexcept {
+  return plot->m_plot_label->getIsLabelsAreSet();
+};
+
+const std::pair<int, int> getMaxGridLabelWidth(const cmp::Plot* plot) noexcept {
+  return plot->m_grid->getMaxGridLabelWidth();
+};
+
+/*============================================================================*/
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::PlotLookAndFeelDefault() {
@@ -88,9 +101,9 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
                            bounds.getHeight() - 125);
 
   if (const auto* plot = dynamic_cast<const Plot*>(plot_comp)) {
-    const auto is_labels_set = plot->getIsLabelsAreSet();
+    const auto is_labels_set = getIsLabelsAreSet(plot);
     const auto [x_grid_label_width, y_grid_label_width] =
-        plot->getMaxGridLabelWidth();
+        getMaxGridLabelWidth(plot);
 
     auto right = 0;
     auto left = getMargin();

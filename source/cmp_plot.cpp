@@ -161,14 +161,6 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   };
 }
 
-const IsLabelsSet Plot::getIsLabelsAreSet() const noexcept {
-  return m_plot_label->getIsLabelsAreSet();
-}
-
-const std::pair<int, int> Plot::getMaxGridLabelWidth() const noexcept {
-  return m_grid->getMaxGridLabelWidth();
-}
-
 void Plot::updateXLim(const Lim_f& new_x_lim) {
   if (new_x_lim.min > new_x_lim.max) UNLIKELY
   throw std::invalid_argument("Min value must be lower than max value.");

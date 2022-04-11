@@ -215,23 +215,17 @@ class Plot : public juce::Component {
   void setLegend(const std::vector<std::string>& graph_descriptions);
 
   /** @brief  Sets the look and feel to use for this component.
-
-    The object passed in will not be deleted by the component, so it's the
-    caller's responsibility to manage it. It may be used at any time until this
-    component has been deleted.
-
-    Calling this method will also invoke the juce::Componenet::setLookAndFeel
-    and in turn sendLookAndFeelChange() method.
-
-    @see getLookAndFeel, lookAndFeelChanged
-*/
+   *
+   * The object passed in will not be deleted by the component, so it's the
+   * caller's responsibility to manage it. It may be used at any time until this
+   * component has been deleted.
+   *
+   * Calling this method will also invoke the juce::Componenet::setLookAndFeel
+   * and in turn sendLookAndFeelChange() method.
+   *
+   * @see getLookAndFeel, lookAndFeelChanged
+   */
   void setLookAndFeel(PlotLookAndFeel* look_and_feel);
-
-  /** @internal */
-  const IsLabelsSet getIsLabelsAreSet() const noexcept;
-
-  /** @internal */
-  const std::pair<int, int> getMaxGridLabelWidth() const noexcept;
 
   //==============================================================================
 
@@ -532,6 +526,10 @@ class Plot : public juce::Component {
   std::unique_ptr<LookAndFeelMethods> m_lookandfeel_default;
 
   juce::ComponentDragger m_comp_dragger;
+
+  friend const IsLabelsSet getIsLabelsAreSet(const cmp::Plot* plot) noexcept;
+
+  friend const std::pair<int, int> getMaxGridLabelWidth(const cmp::Plot* plot) noexcept;
 };
 
 /**
