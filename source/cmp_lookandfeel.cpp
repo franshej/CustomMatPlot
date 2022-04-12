@@ -1025,7 +1025,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXYTitleLabels(
 
   title_label.setBounds(
       graph_bounds.getX() + graph_bounds.getWidth() / 2 - title_margin,
-      graph_bounds.getY() - title_margin + int(font.getHeight()), title_width,
+      graph_bounds.getY() - (title_margin + int(font.getHeight())), title_width,
       font_height);
 }
 
