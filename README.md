@@ -41,7 +41,7 @@ Below is the feature list of CMP:
 
 ## Examples
 <a name="examples"></a>
-The examples are implemented using C++20 modules and can be built using the following commands:
+The examples can be built using the following commands:
 
 ```sh
 mkdir build
@@ -53,7 +53,7 @@ make -j4
 ## Realtime frequency response example
 <a name="realtime-frequency-response-example"></a>
 
-An example app plotting the magnitude response of the incoming left and right signals can be seen here: [TODO]
+An example app plotting the frequency response of the incoming left and right audio signals can be seen here: <a href="https://gitlab.com/frans.rosencrantz/realtime-frequency-plot-example"> Realtime plot example </a>
 
 ## Tests
 <a name="tests"></a>
