@@ -11,6 +11,96 @@ static const std::string getNextCustomLabel(
   return *(custom_labels_it++);
 }
 
+static std::vector<float> getLinearTicks(
+    const std::size_t num_ticks, const cmp::Lim_f lim,
+    const std::vector<float> previous_ticks) {
+  std::vector<float> ticks(num_ticks);
+
+  const auto x_diff = (lim.max - lim.min) / float(num_ticks - 1u);
+  cmp::iota_delta(ticks.begin(), ticks.end(), lim.min, x_diff);
+
+  return ticks;
+};
+
+static constexpr std::pair<float, float> getFirstEndFromPreviousTicks(
+    const std::vector<float>& previous_ticks, const cmp::Lim_f lim) {
+  auto start_value = 0.0f;
+  {
+    auto it = previous_ticks.begin();
+    for (; it != previous_ticks.end(); ++it) {
+      if (*it > lim.min) {
+        if (it != previous_ticks.begin() && (it - 1) != previous_ticks.end()) {
+          start_value = *(it - 1);
+        } else {
+          start_value = *it;
+        }
+        break;
+      }
+    }
+  }
+
+  auto end_value = 0.0f;
+  {
+    auto it = previous_ticks.rbegin();
+    for (; it != previous_ticks.rend(); ++it) {
+      if (*it < lim.max) {
+        if (it != previous_ticks.rbegin() &&
+            (it - 1) != previous_ticks.rend()) {
+          end_value = *(it - 1);
+        } else {
+          end_value = *it;
+        }
+        break;
+      }
+    }
+  }
+
+  return {start_value, end_value};
+}
+
+static std::vector<float> getLogarithmicTicks(
+    const std::size_t num_ticks_per_power, const cmp::Lim_f lim,
+    const std::vector<float>& previous_ticks) {
+  if (!lim) return {};
+
+  const auto min_power = log10(lim.min);
+  const auto max_power = log10(lim.max);
+
+  const auto min_power_floor = std::floor(min_power);
+  const auto max_power_ceil = std::ceil(max_power);
+
+  std::vector<float> ticks;
+
+  if (std::abs(max_power - min_power) < 1.0f && !previous_ticks.empty()) {
+    ticks.resize(num_ticks_per_power);
+
+    const auto [start_value, end_value] =
+        getFirstEndFromPreviousTicks(previous_ticks, lim);
+
+    auto delta = (end_value - start_value) / num_ticks_per_power;
+    cmp::iota_delta(ticks.begin(), ticks.end(), lim.min, delta);
+
+    return ticks;
+  }
+
+  for (float curr_power = min_power_floor; curr_power < max_power_ceil;
+       ++curr_power) {
+    const auto curr_pos_base = pow(10.f, curr_power);
+
+    const auto delta =
+        pow(10.f, curr_power + 1.f) / static_cast<float>(num_ticks_per_power);
+
+    for (float i = 0; i < num_ticks_per_power; ++i) {
+      const auto tick =
+          floor((curr_pos_base + i * delta) / curr_pos_base) * curr_pos_base;
+
+      ticks.push_back(tick);
+    }
+  }
+
+  return ticks;
+};
+
 /*============================================================================*/
 
 namespace cmp {
@@ -467,7 +557,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
     const auto width = font.getStringWidth(li.description);
     const auto x = margin_width;
     const int y = i * (height + margin_height) + margin_height;
-    juce::Rectangle<int> label_bounds = {x, y, width, height};
+    const juce::Rectangle<int> label_bounds = {x, y, width, height};
 
     g.setColour(findColour(Plot::legend_label_colour));
     g.drawText(li.description, label_bounds, juce::Justification::centredLeft);
@@ -646,96 +736,6 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
     }
   }
 }
-
-static std::vector<float> getLinearTicks(
-    const std::size_t num_ticks, const Lim_f lim,
-    const std::vector<float> previous_ticks) {
-  std::vector<float> ticks(num_ticks);
-
-  const auto x_diff = (lim.max - lim.min) / float(num_ticks - 1u);
-  iota_delta(ticks.begin(), ticks.end(), lim.min, x_diff);
-
-  return ticks;
-};
-
-static constexpr std::pair<float, float> getFirstEndFromPreviousTicks(
-    const std::vector<float>& previous_ticks, const Lim_f lim) {
-  auto start_value = 0.0f;
-  {
-    auto it = previous_ticks.begin();
-    for (; it != previous_ticks.end(); ++it) {
-      if (*it > lim.min) {
-        if (it != previous_ticks.begin() && (it - 1) != previous_ticks.end()) {
-          start_value = *(it - 1);
-        } else {
-          start_value = *it;
-        }
-        break;
-      }
-    }
-  }
-
-  auto end_value = 0.0f;
-  {
-    auto it = previous_ticks.rbegin();
-    for (; it != previous_ticks.rend(); ++it) {
-      if (*it < lim.max) {
-        if (it != previous_ticks.rbegin() &&
-            (it - 1) != previous_ticks.rend()) {
-          end_value = *(it - 1);
-        } else {
-          end_value = *it;
-        }
-        break;
-      }
-    }
-  }
-
-  return {start_value, end_value};
-}
-
-static std::vector<float> getLogarithmicTicks(
-    const std::size_t num_ticks_per_power, const Lim_f lim,
-    const std::vector<float>& previous_ticks) {
-  if (!lim) return {};
-
-  const auto min_power = log10(lim.min);
-  const auto max_power = log10(lim.max);
-
-  const auto min_power_floor = std::floor(min_power);
-  const auto max_power_ceil = std::ceil(max_power);
-
-  std::vector<float> ticks;
-
-  if (std::abs(max_power - min_power) < 1.0f && !previous_ticks.empty()) {
-    ticks.resize(num_ticks_per_power);
-
-    const auto [start_value, end_value] =
-        getFirstEndFromPreviousTicks(previous_ticks, lim);
-
-    auto delta = (end_value - start_value) / num_ticks_per_power;
-    iota_delta(ticks.begin(), ticks.end(), lim.min, delta);
-
-    return ticks;
-  }
-
-  for (float curr_power = min_power_floor; curr_power < max_power_ceil;
-       ++curr_power) {
-    const auto curr_pos_base = pow(10.f, curr_power);
-
-    const auto delta =
-        pow(10.f, curr_power + 1.f) / static_cast<float>(num_ticks_per_power);
-
-    for (float i = 0; i < num_ticks_per_power; ++i) {
-      const auto tick =
-          floor((curr_pos_base + i * delta) / curr_pos_base) * curr_pos_base;
-
-      ticks.push_back(tick);
-    }
-  }
-
-  return ticks;
-};
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
