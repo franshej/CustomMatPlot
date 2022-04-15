@@ -33,9 +33,7 @@ set(PUBLIC_HEADERS include/include/cmp_plot.h
 
 add_library(${PROJECT_NAME}
             STATIC
-            ${SOURCE}
-            ${INTERNAL_HEADERS}
-            ${PUBLIC_HEADERS})
+            ${SOURCE})
 
 target_include_directories(${PROJECT_NAME} PUBLIC "include/include"
                                            PRIVATE "include/include_internal")

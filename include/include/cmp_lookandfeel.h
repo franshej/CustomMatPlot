@@ -1,11 +1,4 @@
 /**
- * Copyright (c) 2022 Frans Rosencrantz
- * 
- * This software is released under the MIT License.
- * https://opensource.org/licenses/MIT
- */
-
-/**
  * @file cmp_lookandfeel.h
  *
  * @brief LookAndFeel class.

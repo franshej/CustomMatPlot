@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -61,39 +61,37 @@ static auto calculateXIdxsBetweenStartEnd(const auto start_x_idx,
                                           const auto end_x_idx,
                                           const auto common_params,
                                           const auto& x_data, auto& x_idx) {
-  if (end_x_idx - start_x_idx > 1u) {
-    const auto [x_scale, x_offset] =
-        getXScaleAndOffset(float(common_params.graph_bounds.getWidth()),
-                           common_params.x_lim, common_params.x_scaling);
+  const auto [x_scale, x_offset] =
+      getXScaleAndOffset(float(common_params.graph_bounds.getWidth()),
+                         common_params.x_lim, common_params.x_scaling);
 
-    float last_added_x = std::numeric_limits<float>::min();
-    std::size_t current_index = start_x_idx;
-    std::size_t graph_point_index{0u};
-    const auto inverse_x_scale = 1.f / x_scale;
+  float last_added_x = std::numeric_limits<float>::min();
+  std::size_t current_index = start_x_idx;
+  std::size_t graph_point_index{0u};
+  const auto inverse_x_scale = 1.f / x_scale;
 
-    if (common_params.x_scaling == Scaling::linear) {
-      for (auto x = x_data.begin() + start_x_idx;
-           x != x_data.begin() + end_x_idx; ++x) {
-        if (abs(*x - last_added_x) > inverse_x_scale) {
-          last_added_x = *x;
-          x_idx[graph_point_index++] = current_index;
-        }
-        current_index++;
+  if (common_params.x_scaling == Scaling::linear) {
+    for (auto x = x_data.begin() + start_x_idx; x != x_data.begin() + end_x_idx;
+         ++x) {
+      if (abs(*x - last_added_x) > inverse_x_scale) {
+        last_added_x = *x;
+        x_idx[graph_point_index++] = current_index;
       }
-    } else if (common_params.x_scaling == Scaling::logarithmic) {
-      for (auto x = x_data.begin() + start_x_idx;
-           x != x_data.begin() + end_x_idx; ++x) {
-        if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
-          last_added_x = *x;
-          x_idx[graph_point_index++] = current_index;
-        }
-        current_index++;
-      }
+      current_index++;
     }
-
-    const auto x_idxs_size_required = graph_point_index + 1;
-    return x_idxs_size_required;
+  } else if (common_params.x_scaling == Scaling::logarithmic) {
+    for (auto x = x_data.begin() + start_x_idx; x != x_data.begin() + end_x_idx;
+         ++x) {
+      if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
+        last_added_x = *x;
+        x_idx[graph_point_index++] = current_index;
+      }
+      current_index++;
+    }
   }
+
+  const auto x_idxs_size_required = graph_point_index + 1;
+  return x_idxs_size_required;
 }
 
 template <class FloatType>

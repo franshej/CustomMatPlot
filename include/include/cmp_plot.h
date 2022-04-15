@@ -1,11 +1,4 @@
 /**
- * Copyright (c) 2022 Frans Rosencrantz
- * 
- * This software is released under the MIT License.
- * https://opensource.org/licenses/MIT
- */
-
-/**
  * @file cmp_plot.h
  *
  * @brief Componenets for plotting 2-D lines/marker symbols
