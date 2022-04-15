@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2022 Frans Rosencrantz
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
 #include "cmp_lookandfeel.h"
 #include "test_macros.h"
 

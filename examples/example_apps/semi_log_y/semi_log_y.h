@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2022 Frans Rosencrantz
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
 #include <cmp_plot.h>
 #include <example_utils.h>
 #include <juce_gui_extra/juce_gui_extra.h>

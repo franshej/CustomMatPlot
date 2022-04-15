@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2022 Frans Rosencrantz
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
 #include <stdexcept>
 
 #include "cmp_frame.h"

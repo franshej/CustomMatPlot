@@ -1,4 +1,11 @@
 /**
+ * Copyright (c) 2022 Frans Rosencrantz
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
+/**
  * @file cmp_grid.h
  *
  * @brief Componenets for creating grids and grid labels

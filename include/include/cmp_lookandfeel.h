@@ -1,13 +1,42 @@
-#pragma once
+/**
+ * Copyright (c) 2022 Frans Rosencrantz
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
 
-#include <array>
+/**
+ * @file cmp_lookandfeel.h
+ *
+ * @brief LookAndFeel class.
+ *
+ * @ingroup Custom Mat Plot
+ *
+ * @author Frans Rosencrantz
+ * Contact: Frans.Rosencrantz@gmail.com
+ */
+
+#pragma once
 
 #include "cmp_plot.h"
 
 namespace cmp {
 
+/*
+ *  \class PlotLookAndFeel
+ *  \brief LookAndFeel class for user custom lookanfeel.
+ *
+ *  Inherence from this class if a custom lookandfeel class is wanted.
+ *  Override the functions wanted to be changed.
+ */
 class PlotLookAndFeel;
 
+/*
+ *  \class PlotLookAndFeelDefault
+ *  \brief A template LookAndFeel class.
+ *
+ *  Do not directly inherence from this class, use 'PlotLookAndFeel' instead.
+ */
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   static constexpr auto m_x_scaling = x_scaling_t;

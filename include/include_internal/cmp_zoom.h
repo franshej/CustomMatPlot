@@ -1,4 +1,11 @@
 /**
+ * Copyright (c) 2022 Frans Rosencrantz
+ * 
+ * This software is released under the MIT License.
+ * https://opensource.org/licenses/MIT
+ */
+
+/**
  * @file cmp_zoom.h
  *
  * @brief Componenet for drawing the zoom area and store the zoom start and end
