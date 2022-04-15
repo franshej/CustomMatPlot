@@ -102,20 +102,20 @@ std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestPoint(
   return {closest_data_point, nearest_graph_line};
 }
 
-void Plot::resetLookAndFeelChildrens() {
-  m_grid->setLookAndFeel(nullptr);
-  m_plot_label->setLookAndFeel(nullptr);
-  m_frame->setLookAndFeel(nullptr);
-  m_legend->setLookAndFeel(nullptr);
-  m_zoom->setLookAndFeel(nullptr);
-  m_trace->setLookAndFeel(nullptr);
+void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
+  m_grid->setLookAndFeel(lookandfeel);
+  m_plot_label->setLookAndFeel(lookandfeel);
+  m_frame->setLookAndFeel(lookandfeel);
+  m_legend->setLookAndFeel(lookandfeel);
+  m_zoom->setLookAndFeel(lookandfeel);
+  m_trace->setLookAndFeel(lookandfeel);
 
   for (const auto& graph_line : m_graph_lines) {
-    graph_line->setLookAndFeel(nullptr);
+    graph_line->setLookAndFeel(lookandfeel);
   }
 
   for (const auto& spread : m_graph_spread_list) {
-    spread->setLookAndFeel(nullptr);
+    spread->setLookAndFeel(lookandfeel);
   }
 }
 
@@ -335,6 +335,20 @@ void cmp::Plot::setDownsamplingType(
   updateGridGraphsTrace();
 }
 
+void Plot::setScaling(const Scaling x_scaling,
+                      const Scaling y_scaling) noexcept {
+  if (x_scaling != m_x_scaling || y_scaling != m_y_scaling) {
+    m_x_scaling = x_scaling;
+    m_y_scaling = y_scaling;
+
+    resetLookAndFeelChildrens();
+    m_lookandfeel_default.reset(nullptr);
+    lookAndFeelChanged();
+
+    updateGridGraphsTrace();
+  }
+}
+
 void Plot::setXLabel(const std::string& x_label) {
   m_plot_label->setXLabel(x_label);
 }
@@ -474,42 +488,36 @@ void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
   this->juce::Component::setLookAndFeel(lnf);
 }
 
+std::unique_ptr<Plot::LookAndFeelMethods>
+Plot::getDefaultLookAndFeel() {
+  if (m_x_scaling == Scaling::logarithmic &&
+      m_y_scaling == Scaling::logarithmic) {
+    return std::make_unique<cmp::PlotLookAndFeelDefault<
+        Scaling::logarithmic, Scaling::logarithmic>>();
+  } else if (m_x_scaling == Scaling::logarithmic) {
+    return std::make_unique<
+        cmp::PlotLookAndFeelDefault<Scaling::logarithmic, Scaling::linear>>();
+  } else if (m_y_scaling == Scaling::logarithmic) {
+    return std::make_unique<
+        cmp::PlotLookAndFeelDefault<Scaling::linear, Scaling::logarithmic>>();
+  } else {
+    return std::make_unique<
+        cmp::PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>>();
+  }
+}
+
 void Plot::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = &getLookAndFeel();
     m_lookandfeel_default.reset();
   } else {
     if (!m_lookandfeel_default) {
-      if (m_x_scaling == Scaling::logarithmic &&
-          m_y_scaling == Scaling::logarithmic) {
-        m_lookandfeel_default = std::make_unique<cmp::PlotLookAndFeelDefault<
-            Scaling::logarithmic, Scaling::logarithmic>>();
-      } else if (m_x_scaling == Scaling::logarithmic) {
-        m_lookandfeel_default =
-            std::make_unique<cmp::PlotLookAndFeelDefault<Scaling::logarithmic,
-                                                         Scaling::linear>>();
-      } else if (m_y_scaling == Scaling::logarithmic) {
-        m_lookandfeel_default = std::make_unique<cmp::PlotLookAndFeelDefault<
-            Scaling::linear, Scaling::logarithmic>>();
-      } else {
-        m_lookandfeel_default = std::make_unique<
-            cmp::PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>>();
-      }
+      m_lookandfeel_default = getDefaultLookAndFeel();
     }
     m_lookandfeel = m_lookandfeel_default.get();
   }
 
-  if (m_grid) m_grid->setLookAndFeel(m_lookandfeel);
-  if (m_plot_label) m_plot_label->setLookAndFeel(m_lookandfeel);
-  if (m_frame) m_frame->setLookAndFeel(m_lookandfeel);
-  if (m_legend) m_legend->setLookAndFeel(m_lookandfeel);
-  if (m_zoom) m_zoom->setLookAndFeel(m_lookandfeel);
-  if (m_grid) m_grid->setLookAndFeel(m_lookandfeel);
-  if (m_trace) m_trace->setLookAndFeel(m_lookandfeel);
-
-  for (auto& graph_line : m_graph_lines) {
-    graph_line->setLookAndFeel(m_lookandfeel);
-  }
+  resetLookAndFeelChildrens(m_lookandfeel);
 }
 
 void Plot::updateYData(const std::vector<std::vector<float>>& y_data,

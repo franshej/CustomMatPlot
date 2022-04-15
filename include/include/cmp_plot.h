@@ -13,6 +13,7 @@
 #pragma once
 
 #include "cmp_datamodels.h"
+#include <memory>
 
 namespace cmp {
 
@@ -128,6 +129,16 @@ class Plot : public juce::Component {
    */
   void setYLabel(const std::string& y_label);
 
+  /** @brief Set x & y-axis scaling
+   *
+   *  Set x & y-axis scaling of the plot. @see cmp::Scaling in cmp:datamodels.h.
+   *
+   *  @param x_scaling x-axis scaling.
+   *  @param y_scaling y-axis scaling.
+   *  @return void.
+   */
+  void setScaling(Scaling x_scaling, Scaling y_scaling) noexcept;
+
   /** @brief Set the text for title label
    *
    *  Set the text for title label.
@@ -139,7 +150,8 @@ class Plot : public juce::Component {
 
   /** @brief Set trace-point
    *
-   * Set a trace-point to the point on a graph-line closest the coordinate.
+   * Set a trace-point to the point on a graph-line closest the given
+   * coordinate. The tracepoint will be removed if it already exists.
    *
    * @param trance_point_coordinate the coordinate of where the trace-point is
    * wish to be set.
@@ -479,8 +491,6 @@ class Plot : public juce::Component {
   void mouseUp(const juce::MouseEvent& event) override;
 
  private:
-  void resizeChilderns();
-
   template <bool is_point_data_point>
   std::pair<juce::Point<float>, const GraphLine*> findNearestPoint(
       juce::Point<float> point, const GraphLine* graphline = nullptr);
@@ -488,7 +498,11 @@ class Plot : public juce::Component {
   template <Scaling x_scaling, Scaling y_scaling>
   juce::LookAndFeel* castUserLookAndFeel(PlotLookAndFeel* user_look_and_feel);
 
-  void resetLookAndFeelChildrens();
+  std::unique_ptr<LookAndFeelMethods> getDefaultLookAndFeel();
+
+  void resizeChilderns();
+
+  void resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel = nullptr);
 
   void updateYData(const std::vector<std::vector<float>>& y_data,
                    const GraphAttributeList& graph_attribute_list);
