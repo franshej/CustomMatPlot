@@ -484,3 +484,19 @@ TEST(set_scaling_dynamic, non_real_time) {
 
   SET_SCALING(cmp::Scaling::logarithmic, cmp::Scaling::logarithmic);
 }
+
+TEST(step_function_downsample, non_real_time) {
+  ADD_PLOT;
+
+  std::vector<float> y(10u, 0.0f);
+  y[4] = 1.0f;
+  y[5] = 1.0f;
+
+  std::vector<float> x(10u);
+  std::iota(x.begin(), x.end(), 0.0f);
+
+  x[3] = 4.f;
+  x[6] = 5.f;
+
+  PLOT_XY({y}, {x});
+}

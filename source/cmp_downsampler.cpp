@@ -172,6 +172,7 @@ void Downsampler<FloatType>::calculateXYIdxsFrom(
       auto min_val = y_data[j];
       auto max_idx = j;
       auto min_idx = j;
+      auto min_last = true;
 
       for (; j < *(i + 1); ++j) {
         auto y = y_data[j];
@@ -180,15 +181,25 @@ void Downsampler<FloatType>::calculateXYIdxsFrom(
           min_val = y;
 
           min_idx = j;
+
+          min_last = true;
         } else if (y > max_val) {
           max_val = y;
 
           max_idx = j;
+
+          min_last = false;
         }
       }
 
-      xy_idxs[xy_i++] = min_idx;
-      xy_idxs[xy_i++] = max_idx;
+      if (min_last) {
+        xy_idxs[xy_i++] = max_idx;
+        xy_idxs[xy_i++] = min_idx;
+      } else {
+        xy_idxs[xy_i++] = min_idx;
+        xy_idxs[xy_i++] = max_idx;
+      }
+
       xy_size += 3;
     } else {
       xy_size += 1;
