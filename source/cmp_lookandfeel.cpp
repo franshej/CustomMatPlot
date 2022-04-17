@@ -577,6 +577,10 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
+void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegendBackground(
+    juce::Graphics& g, const juce::Rectangle<int>& legend_bound) {}
+
+template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawSpread(
     juce::Graphics& g, const GraphLine* first_graph,
     const GraphLine* second_graph, const juce::Colour& spread_colour) {
@@ -618,6 +622,10 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTraceLabel(
   g.setColour(findColour(Plot::trace_label_frame_colour));
   g.drawRect(frame_bounds);
 };
+
+template <Scaling x_scaling_t, Scaling y_scaling_t>
+void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTraceLabelBackground(
+    juce::Graphics& g, const juce::Rectangle<int>& trace_label_bound) {}
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTracePoint(

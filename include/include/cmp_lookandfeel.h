@@ -106,12 +106,19 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
   void drawLegend(juce::Graphics &g, std::vector<LegendLabel> legend_info,
                   const juce::Rectangle<int> &bounds) override;
 
+  void drawLegendBackground(juce::Graphics &g,
+                            const juce::Rectangle<int> &legend_bound) override;
+
   void drawSpread(juce::Graphics &g, const GraphLine *first_graph,
                   const GraphLine *second_graph,
                   const juce::Colour &spread_colour) override;
 
   void drawTraceLabel(juce::Graphics &g, const cmp::Label &x_label,
                       const cmp::Label &y_label) override;
+
+  void drawTraceLabelBackground(
+      juce::Graphics &g,
+      const juce::Rectangle<int> &trace_label_bound) override;
 
   void drawTracePoint(juce::Graphics &g,
                       const juce::Rectangle<int> &bounds) override;

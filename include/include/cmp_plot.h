@@ -324,7 +324,11 @@ class Plot : public juce::Component {
     /** This method draws the legend. */
     virtual void drawLegend(juce::Graphics& g,
                             std::vector<LegendLabel> legend_info,
-                            const juce::Rectangle<int>& bounds) = 0;
+                            const juce::Rectangle<int>& bound) = 0;
+
+    /** This method draws the legend background. */
+    virtual void drawLegendBackground(
+        juce::Graphics& g, const juce::Rectangle<int>& legend_bound) = 0;
 
     /** Fill area between two graph lines. */
     virtual void drawSpread(juce::Graphics& g, const GraphLine* first_graph,
@@ -334,6 +338,10 @@ class Plot : public juce::Component {
     /** Draw a single trace point. */
     virtual void drawTraceLabel(juce::Graphics& g, const cmp::Label& x_label,
                                 const cmp::Label& y_label) = 0;
+
+    /** This method draws the trace label background. */
+    virtual void drawTraceLabelBackground(
+        juce::Graphics& g, const juce::Rectangle<int>& trace_label_bound) = 0;
 
     /** Draw trace point. */
     virtual void drawTracePoint(juce::Graphics& g,
