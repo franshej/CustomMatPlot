@@ -1,7 +1,7 @@
-# Custom Mat Plot
+# CustomMatPlot
 ## Plot library for the JUCE Framework
 
-Custom Mat Plot (CMP) is a plotting library for C++. It provides an API for embedding plot components into applications using the JUCE framework. The plot component is easy to integrate and is customizable using the included lookandfeel class.
+CustomMatPlot (CMP) is a plotting library for C++. It provides an API for embedding plot components into applications using the JUCE framework. The plot component is easy to integrate and is customizable using the included lookandfeel class.
 
 > Note: I'm not a senior developer so there may be several design flaws.
 
