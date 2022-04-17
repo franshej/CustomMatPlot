@@ -59,6 +59,7 @@ void PlotLabel::resized() {
 }
 
 void PlotLabel::paint(juce::Graphics &g) {}
+
 void PlotLabel::lookAndFeelChanged() {
   if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     m_lookandfeel = lnf;

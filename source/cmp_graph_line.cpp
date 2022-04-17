@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -11,8 +11,8 @@
 #include <numeric>
 #include <stdexcept>
 
-#include "cmp_plot.h"
 #include "cmp_downsampler.h"
+#include "cmp_plot.h"
 
 namespace cmp {
 
@@ -39,9 +39,8 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
     if (current_distance < closest_distance) {
       closest_distance = current_distance;
       closest_graph_point = graph_point;
-      closest_data_point =
-          juce::Point<float>(m_x_data[m_x_graph_point_indices[i]],
-                             m_y_data[m_x_graph_point_indices[i]]);
+      closest_data_point = juce::Point<float>(
+          m_x_data[m_x_based_ds_indices[i]], m_y_data[m_x_based_ds_indices[i]]);
     }
     i++;
   }
@@ -57,8 +56,8 @@ juce::Point<float> GraphLine::findClosestDataPointTo(
   // x_data & y_data must have the same size
   jassert(m_x_data.size() == m_y_data.size());
 
-  const decltype(m_x_graph_point_indices)* indices = &m_x_graph_point_indices;
-  decltype(m_x_graph_point_indices) all_indices;
+  const decltype(m_x_based_ds_indices)* indices = &m_x_based_ds_indices;
+  decltype(m_x_based_ds_indices) all_indices;
 
   if (!only_visible_data_points) {
     all_indices.resize(m_x_data.size());
@@ -95,7 +94,7 @@ void GraphLine::resized(){};
 
 void GraphLine::paint(juce::Graphics& g) {
   const GraphLineDataView graph_line_data(m_y_data, m_x_data, m_graph_points,
-                                          m_x_graph_point_indices,
+                                          m_x_based_ds_indices,
                                           m_graph_attributes);
 
   if (m_lookandfeel) {
@@ -186,22 +185,20 @@ void GraphLine::updateXGraphPointsIntern(
 
     switch (common_plot_params.downsampling_type) {
       case DownsamplingType::no_downsampling:
-        m_x_graph_point_indices.resize(m_x_data.size());
+        m_x_based_ds_indices.resize(m_x_data.size());
 
-        std::iota(m_x_graph_point_indices.begin(), m_x_graph_point_indices.end(),
-                  0u);
+        std::iota(m_x_based_ds_indices.begin(), m_x_based_ds_indices.end(), 0u);
         break;
 
       case DownsamplingType::x_downsaming:
-        Downsampler<float>::calculateXIdxs(common_plot_params, m_x_data,
-                                           m_x_graph_point_indices);
-
+        Downsampler<float>::calculateXBasedDSIdxs(common_plot_params, m_x_data,
+                                                  m_x_based_ds_indices);
 
         break;
 
       case DownsamplingType::xy_downsampling:
-        Downsampler<float>::calculateXIdxs(common_plot_params, m_x_data,
-                                           m_x_graph_point_indices);
+        Downsampler<float>::calculateXBasedDSIdxs(common_plot_params, m_x_data,
+                                                  m_x_based_ds_indices);
         return;
         break;
 
@@ -212,7 +209,7 @@ void GraphLine::updateXGraphPointsIntern(
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->updateXGraphPoints(common_plot_params.graph_bounds,
                             common_plot_params.x_lim, m_x_data,
-                            m_x_graph_point_indices, m_graph_points);
+                            m_x_based_ds_indices, m_graph_points);
   }
 }
 
@@ -223,7 +220,7 @@ void GraphLine::updateYGraphPointsIntern(
 
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
-    auto& graph_point_indices = m_x_graph_point_indices;
+    auto& graph_point_indices = m_x_based_ds_indices;
 
     switch (common_plot_params.downsampling_type) {
       case DownsamplingType::no_downsampling:
@@ -233,11 +230,11 @@ void GraphLine::updateYGraphPointsIntern(
         break;
 
       case DownsamplingType::xy_downsampling:
-        Downsampler<float>::calculateXYIdxsFrom(
-            common_plot_params, m_x_graph_point_indices, m_y_data,
-            m_xy_graph_point_indices);
+        Downsampler<float>::calculateXYBasedDSIdxs(
+            common_plot_params, m_x_based_ds_indices, m_y_data,
+            m_xy_based_ds_indices);
 
-        graph_point_indices = m_xy_graph_point_indices;
+        graph_point_indices = m_xy_based_ds_indices;
 
         lnf->updateXGraphPoints(common_plot_params.graph_bounds,
                                 common_plot_params.x_lim, m_x_data,

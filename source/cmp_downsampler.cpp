@@ -7,6 +7,7 @@
 
 #include "cmp_downsampler.h"
 
+#include "cmp_datamodels.h"
 #include "cmp_utils.h"
 
 namespace cmp {
@@ -95,10 +96,11 @@ static auto calculateXIdxsBetweenStartEnd(const auto start_x_idx,
 }
 
 template <class FloatType>
-void Downsampler<FloatType>::calculateXIdxs(
+void Downsampler<FloatType>::calculateXBasedDSIdxs(
     const CommonPlotParameterView common_params,
-    const std::vector<FloatType>& x_data, std::vector<std::size_t>& x_idxs) {
-  x_idxs.resize(x_data.size());
+    const std::vector<FloatType>& x_data,
+    std::vector<std::size_t>& x_based_ds_idxs) {
+  x_based_ds_idxs.resize(x_data.size());
 
   const auto& bounds = common_params.graph_bounds;
   const auto& x_lim = common_params.x_lim;
@@ -108,7 +110,7 @@ void Downsampler<FloatType>::calculateXIdxs(
   // If the graph has less than 10 values we simply plot all points even if
   // they are on top of each other.
   if (x_data.size() < 10u) {
-    std::iota(x_idxs.begin(), x_idxs.end(), 0u);
+    std::iota(x_based_ds_idxs.begin(), x_based_ds_idxs.end(), 0u);
     return;
   }
 
@@ -116,55 +118,63 @@ void Downsampler<FloatType>::calculateXIdxs(
 
   const auto end_x_index = computeXEndIdx(x_lim.max, x_data);
 
-  x_idxs.front() = start_x_index;
+  x_based_ds_idxs.front() = start_x_index;
 
   const auto x_idxs_size_required = calculateXIdxsBetweenStartEnd(
-      start_x_index, end_x_index, common_params, x_data, x_idxs);
+      start_x_index, end_x_index, common_params, x_data, x_based_ds_idxs);
 
-  x_idxs.resize(x_idxs_size_required);
+  x_based_ds_idxs.resize(x_idxs_size_required);
 
-  x_idxs.back() = end_x_index;
+  x_based_ds_idxs.back() = end_x_index;
 }
 
 template <class FloatType>
-void Downsampler<FloatType>::calculateXYIdxsFrom(
+void Downsampler<FloatType>::calculateXYBasedDSIdxs(
     const CommonPlotParameterView common_params,
-    const std::vector<std::size_t>& x_idxs,
-    const std::vector<FloatType>& y_data, std::vector<std::size_t>& xy_idxs) {
-  if (x_idxs.empty()) return;
+    const std::vector<std::size_t>& x_based_ds_idxs,
+    const std::vector<FloatType>& y_data,
+    std::vector<std::size_t>& xy_based_ds_idxs) {
+  if (x_based_ds_idxs.empty()) return;
 
-  xy_idxs.resize(y_data.size());
+  xy_based_ds_idxs.resize(y_data.size());
 
-  if (xy_idxs.size() < 10u) {
-    std::iota(xy_idxs.begin(), xy_idxs.end(), 0u);
-    return;
+  // If the graph has less than 10 values we simply plot all points.
+  if (xy_based_ds_idxs.size() < 10u) {
+    xy_based_ds_idxs = x_based_ds_idxs;
   }
 
   auto xy_i = 0u;
   auto xy_size = 0u;
 
-  for (auto i = x_idxs.begin();; ++i) {
-    if (i + 1 == x_idxs.end()) {
-      xy_idxs[xy_i++] = *i;
+  for (auto i = x_based_ds_idxs.begin();; ++i) {
+    // We have reached the last x-based ds index. Let's add it.
+    if (i + 1 == x_based_ds_idxs.end()) UNLIKELY {
+        xy_based_ds_idxs[xy_i++] = *i;
 
-      xy_size += 1;
+        xy_size += 1;
 
-      break;
-    }
+        break;
+      }
 
-    xy_idxs[xy_i++] = *i;
+    // Add the current x-based ds index.
+    xy_based_ds_idxs[xy_i++] = *i;
 
+    // Calculated the index diff between the current and the next x-based ds
+    // index.
     const auto index_diff = *(i + 1) - *i;
 
     if (index_diff == 2u) {
-      xy_idxs[xy_i++] = *i + 1;
+      xy_based_ds_idxs[xy_i++] = *i + 1;
 
       xy_size += 2;
     } else if (index_diff == 3u) {
-      xy_idxs[xy_i++] = *i + 1;
-      xy_idxs[xy_i++] = *i + 2;
+      xy_based_ds_idxs[xy_i++] = *i + 1;
+      xy_based_ds_idxs[xy_i++] = *i + 2;
 
       xy_size += 3;
+
+      // Let's find the min and max y-value that share the same x-pixel and get
+      // their indices.
     } else if (index_diff > 3u) {
       auto j = *i + 1;
 
@@ -192,12 +202,13 @@ void Downsampler<FloatType>::calculateXYIdxsFrom(
         }
       }
 
+      // Make sure that we att the indices in the correct order.
       if (min_last) {
-        xy_idxs[xy_i++] = max_idx;
-        xy_idxs[xy_i++] = min_idx;
+        xy_based_ds_idxs[xy_i++] = max_idx;
+        xy_based_ds_idxs[xy_i++] = min_idx;
       } else {
-        xy_idxs[xy_i++] = min_idx;
-        xy_idxs[xy_i++] = max_idx;
+        xy_based_ds_idxs[xy_i++] = min_idx;
+        xy_based_ds_idxs[xy_i++] = max_idx;
       }
 
       xy_size += 3;
@@ -206,7 +217,7 @@ void Downsampler<FloatType>::calculateXYIdxsFrom(
     }
   }
 
-  xy_idxs.resize(xy_size);
+  xy_based_ds_idxs.resize(xy_size);
 }
 
 template class Downsampler<float>;
