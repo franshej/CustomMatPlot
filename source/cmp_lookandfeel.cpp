@@ -322,6 +322,12 @@ int PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getColourFromGraphID(
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 std::size_t PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getMargin()
     const noexcept {
+  return 20u;
+}
+
+template <Scaling x_scaling_t, Scaling y_scaling_t>
+std::size_t PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getMarginSmall()
+    const noexcept {
   return 8u;
 }
 

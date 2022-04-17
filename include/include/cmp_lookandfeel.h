@@ -74,6 +74,8 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
   std::size_t getMargin() const noexcept override;
 
+  std::size_t getMarginSmall() const noexcept override;
+
   std::size_t getMarkerLength() const noexcept override;
 
   std::pair<juce::Rectangle<int>, juce::Rectangle<int>> getTraceXYLabelBounds(

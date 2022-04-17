@@ -395,6 +395,9 @@ class Plot : public juce::Component {
     /** Get margin used for labels and graph bounds. */
     virtual CONSTEXPR20 std::size_t getMargin() const noexcept = 0;
 
+    /** Get a smaller margin. */
+    virtual CONSTEXPR20 std::size_t getMarginSmall() const noexcept = 0;
+
     /** Get pixel length of marker symbol. */
     virtual CONSTEXPR20 std::size_t getMarkerLength() const noexcept = 0;
 
