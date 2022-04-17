@@ -32,6 +32,7 @@ Below is the feature list of CMP:
 - Custom stroke path.
 - Callback for every visible data point.
 - Callback for tace points.
+- Two different downsampler levels 
 
 ## Requirements
 <a name="requirements"></a>
