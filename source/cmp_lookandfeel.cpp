@@ -142,7 +142,9 @@ void PlotLookAndFeelDefault<x_scaling_t,
   setColour(Plot::x_label_colour, juce::Colour(0xffecf0f1));
   setColour(Plot::y_label_colour, juce::Colour(0xffecf0f1));
   setColour(Plot::title_label_colour, juce::Colour(0xffecf0f1));
+
   setColour(Plot::legend_label_colour, juce::Colour(0xffecf0f1));
+  setColour(Plot::legend_background_colour, juce::Colour(0xff566573));
 
   setColour(Plot::first_graph_colour, juce::Colour(0xffec7063));
   setColour(Plot::second_graph_colour, juce::Colour(0xffa569Bd));
@@ -555,6 +557,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
   const juce::Rectangle<int> frame = {0, 0, bounds.getWidth(),
                                       bounds.getHeight()};
 
+  drawLegendBackground(g, frame);
+
   g.setFont(getLegendFont());
 
   const auto height = int(font.getHeightInPoints());
@@ -578,7 +582,11 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegend(
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawLegendBackground(
-    juce::Graphics& g, const juce::Rectangle<int>& legend_bound) {}
+    juce::Graphics& g, const juce::Rectangle<int>& legend_bound) {
+  g.setColour(findColour(Plot::legend_background_colour));
+
+  g.fillRect(legend_bound);
+}
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawSpread(
@@ -608,24 +616,31 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawSpread(
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTraceLabel(
     juce::Graphics& g, const cmp::Label& x_label, const cmp::Label& y_label) {
-  g.setColour(findColour(Plot::trace_label_colour));
-  g.setFont(getTraceFont());
-  g.drawText(x_label.first, x_label.second, juce::Justification::left);
-  g.drawText(y_label.first, y_label.second, juce::Justification::left);
-
   const auto frame_width =
       std::max(x_label.second.getWidth(), y_label.second.getWidth());
   const auto frame_height = x_label.second.getHeight() +
                             y_label.second.getHeight() + int(getMargin() * 3);
   const auto frame_bounds =
       juce::Rectangle<int>(0, 0, frame_width, frame_height);
+
+  drawTraceLabelBackground(g, frame_bounds);
+
+  g.setColour(findColour(Plot::trace_label_colour));
+  g.setFont(getTraceFont());
+  g.drawText(x_label.first, x_label.second, juce::Justification::left);
+  g.drawText(y_label.first, y_label.second, juce::Justification::left);
+
   g.setColour(findColour(Plot::trace_label_frame_colour));
   g.drawRect(frame_bounds);
 };
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTraceLabelBackground(
-    juce::Graphics& g, const juce::Rectangle<int>& trace_label_bound) {}
+    juce::Graphics& g, const juce::Rectangle<int>& trace_label_bound) {
+  g.setColour(findColour(Plot::trace_background_colour));
+
+  g.fillRect(trace_label_bound);
+}
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawTracePoint(

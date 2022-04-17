@@ -277,6 +277,7 @@ class Plot : public juce::Component {
     trace_point_colour,       /**< Colour of the trace point colour. */
     trace_point_frame_colour, /**< Colour of the trace point frame colour. */
     legend_label_colour,      /**< Colour of the legend label(s). */
+    legend_background_colour, /**< Colour of the legend background. */
     zoom_frame_colour         /**< Colour of the dashed zoom rectangle. */
   };
 
