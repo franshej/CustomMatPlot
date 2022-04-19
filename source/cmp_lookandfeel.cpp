@@ -193,10 +193,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
   const auto estimated_grid_label_width = getGridLabelFont().getStringWidth(
       std::string(getMaximumAllowedCharacterGridLabel(), 'W'));
 
-  auto graph_bounds =
-      juce::Rectangle<int>(estimated_grid_label_width, 50,
-                           bounds.getWidth() - estimated_grid_label_width * 2,
-                           bounds.getHeight() - 125);
+  auto graph_bounds = juce::Rectangle<int>();
 
   if (const auto* plot = dynamic_cast<const Plot*>(plot_comp)) {
     const auto is_labels_set = getIsLabelsAreSet(plot);
@@ -206,8 +203,8 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
     auto right = 0;
     auto left = getMargin();
     auto top = getGridLabelFont().getHeight() / 2;
-    auto bottom =
-        bounds.getHeight() - (getGridLabelFont().getHeight() + getMargin() * 2);
+    auto bottom = bounds.getHeight() - (getGridLabelFont().getHeight() +
+                                        getMargin() + getMarginSmall());
 
     if (is_labels_set.x_label) {
       bottom -= (getXYTitleFont().getHeight() + getMargin());
@@ -222,7 +219,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
     }
 
     if (y_grid_label_width) {
-      left += y_grid_label_width + getMargin();
+      left += y_grid_label_width + getMarginSmall();
     } else {
       left += estimated_grid_label_width;
     }
@@ -322,7 +319,7 @@ int PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getColourFromGraphID(
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 std::size_t PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getMargin()
     const noexcept {
-  return 8u;
+  return 15u;
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
@@ -974,7 +971,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
 
         const auto bound = juce::Rectangle<int>(
             int(position.x) - label_width / 2,
-            common_plot_params.graph_bounds.getBottom() + int(getMargin()),
+            common_plot_params.graph_bounds.getBottom() + int(getMarginSmall()),
             label_width, label_height);
 
         checkInterectionWithLastLabelAndAdd(x_last_label_bound,
@@ -990,7 +987,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
             getLabelWidthAndHeight(font, label);
 
         const auto bound = juce::Rectangle<int>(
-            x - (label_width + int(getMargin())),
+            x - (label_width + int(getMarginSmall())),
             int(position.y) - label_height / 2, label_width, label_height);
 
         checkInterectionWithLastLabelAndAdd(y_last_label_bound,
@@ -1050,7 +1047,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXYTitleLabels(
   x_label.setBounds(
       graph_bounds.getX() + graph_bounds.getWidth() / 2 - x_margin,
       graph_bounds.getBottom() + int(getGridLabelFont().getHeight()) +
-          2 * int(getMargin()),
+          int(getMargin()),
       x_label_width, font_height);
 
   title_label.setBounds(
