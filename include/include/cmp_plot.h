@@ -3,7 +3,7 @@
  *
  * @brief Componenets for plotting 2-D lines/marker symbols
  *
- * @ingroup Custom Mat Plot
+ * @ingroup CustomMatPlot
  *
  * @author Frans Rosencrantz
  * Contact: Frans.Rosencrantz@gmail.com
@@ -434,11 +434,20 @@ class Plot : public juce::Component {
     getTraceAndZoomButtonBounds(
         juce::Rectangle<int> graph_bounds) const noexcept = 0;
 
-    /** Returns the Font used when drawing the x-, y-axis and title labels. */
+    /** Get distance from left of grid x-labels to right side of graph bound. */
+    virtual CONSTEXPR20 int getXGridLabelDistanceFromGraphBound()
+        const noexcept = 0;
+
+    /** Returns the Font used when drawing the x-, y-axis and title labels.
+     */
     virtual CONSTEXPR20 juce::Font getXYTitleFont() const noexcept = 0;
 
     /** Get the x-scaling.*/
     virtual CONSTEXPR20 Scaling getXScaling() const noexcept = 0;
+
+    /** Get distance from top of grid x-labels to bottom of graph bound. */
+    virtual CONSTEXPR20 int getYGridLabelDistanceFromGraphBound(
+        const int y_grid_label_width) const noexcept = 0;
 
     /** Get the y-scaling.*/
     virtual CONSTEXPR20 Scaling getYScaling() const noexcept = 0;

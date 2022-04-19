@@ -1,14 +1,15 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
 
 #include "cmp_lookandfeel.h"
+
 #include "cmp_graph_line.h"
-#include "cmp_label.h"
 #include "cmp_grid.h"
+#include "cmp_label.h"
 
 /*============================================================================*/
 
@@ -203,8 +204,9 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
     auto right = 0;
     auto left = getMargin();
     auto top = getGridLabelFont().getHeight() / 2;
-    auto bottom = bounds.getHeight() - (getGridLabelFont().getHeight() +
-                                        getMargin() + getMarginSmall());
+    auto bottom =
+        bounds.getHeight() - (getGridLabelFont().getHeight() + getMargin() +
+                              getXGridLabelDistanceFromGraphBound());
 
     if (is_labels_set.x_label) {
       bottom -= (getXYTitleFont().getHeight() + getMargin());
@@ -219,7 +221,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
     }
 
     if (y_grid_label_width) {
-      left += y_grid_label_width + getMarginSmall();
+      left += getYGridLabelDistanceFromGraphBound(y_grid_label_width);
     } else {
       left += estimated_grid_label_width;
     }
@@ -364,7 +366,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getTraceLabelLocalBounds(
   const auto width =
       std::max(x_label_bounds.getWidth(), y_label_bounds.getWidth());
   const auto height = y_label_bounds.getBottom() + int(getMarginSmall());
-  
+
   const auto retval = juce::Rectangle<int>(0, 0, width, height);
   return retval;
 }
@@ -866,6 +868,20 @@ juce::Font PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGridLabelFont()
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
+int PlotLookAndFeelDefault<x_scaling_t,
+                           y_scaling_t>::getXGridLabelDistanceFromGraphBound()
+    const noexcept {
+  return getMarginSmall();
+};
+
+template <Scaling x_scaling_t, Scaling y_scaling_t>
+int PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
+    getYGridLabelDistanceFromGraphBound(
+        const int y_grid_label_width) const noexcept {
+  return y_grid_label_width + getMarginSmall();
+};
+
+template <Scaling x_scaling_t, Scaling y_scaling_t>
 juce::Font PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getXYTitleFont()
     const noexcept {
   return juce::Font(20.0f, juce::Font::plain);
@@ -969,10 +985,11 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
         const auto [label_width, label_height] =
             getLabelWidthAndHeight(font, label);
 
-        const auto bound = juce::Rectangle<int>(
-            int(position.x) - label_width / 2,
-            common_plot_params.graph_bounds.getBottom() + int(getMarginSmall()),
-            label_width, label_height);
+        const auto bound =
+            juce::Rectangle<int>(int(position.x) - label_width / 2,
+                                 common_plot_params.graph_bounds.getBottom() +
+                                     getXGridLabelDistanceFromGraphBound(),
+                                 label_width, label_height);
 
         checkInterectionWithLastLabelAndAdd(x_last_label_bound,
                                             x_axis_labels_out, label, bound);
@@ -987,7 +1004,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
             getLabelWidthAndHeight(font, label);
 
         const auto bound = juce::Rectangle<int>(
-            x - (label_width + int(getMarginSmall())),
+            x - getYGridLabelDistanceFromGraphBound(label_width),
             int(position.y) - label_height / 2, label_width, label_height);
 
         checkInterectionWithLastLabelAndAdd(y_last_label_bound,

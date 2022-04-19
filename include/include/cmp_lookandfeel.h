@@ -94,6 +94,11 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
       const CommonPlotParameterView common_plot_params,
       const juce::Point<float> graph_values) const noexcept override;
 
+  int getXGridLabelDistanceFromGraphBound() const noexcept override;
+
+  int getYGridLabelDistanceFromGraphBound(
+      const int y_grid_label_width) const noexcept override;
+
   void drawGraphLine(juce::Graphics &g,
                      const GraphLineDataView graph_line_data) override;
 
