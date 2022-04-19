@@ -338,7 +338,8 @@ class Plot : public juce::Component {
 
     /** Draw a single trace point. */
     virtual void drawTraceLabel(juce::Graphics& g, const cmp::Label& x_label,
-                                const cmp::Label& y_label) = 0;
+                                const cmp::Label& y_label,
+                                const juce::Rectangle<int> bound) = 0;
 
     /** This method draws the trace label background. */
     virtual void drawTraceLabelBackground(

@@ -116,7 +116,8 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
                   const juce::Colour &spread_colour) override;
 
   void drawTraceLabel(juce::Graphics &g, const cmp::Label &x_label,
-                      const cmp::Label &y_label) override;
+                      const cmp::Label &y_label,
+                      const juce::Rectangle<int> bound) override;
 
   void drawTraceLabelBackground(
       juce::Graphics &g,

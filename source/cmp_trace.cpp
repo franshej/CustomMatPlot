@@ -72,7 +72,7 @@ template <class ValueType>
 void TraceLabel<ValueType>::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->drawTraceLabel(g, m_x_label, m_y_label);
+    lnf->drawTraceLabel(g, m_x_label, m_y_label, getLocalBounds());
   }
 }
 
