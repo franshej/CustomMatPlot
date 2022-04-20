@@ -289,7 +289,7 @@ template <class ValueType>
 
   auto num_digits_before_sign = 0.0f;
   if (lims_diff_log >= 0 && largest_exp >= 0) {
-    if (int(std::ceil(std::log10(value))) == int(largest_abs_exp)) {
+    if (int(std::ceil(std::log10(std::abs(value)))) == int(largest_abs_exp)) {
       num_digits_before_sign += largest_abs_exp + 1.0f;
     } else {
       num_digits_before_sign += largest_abs_exp;
@@ -311,7 +311,7 @@ template <class ValueType>
 
   if (value_text_out.back() == '.') {
     value_text_out =
-        value_text.substr(0u, num_digits_before_checking_ending_character + 1);
+        value_text.substr(0u, num_digits_before_checking_ending_character - 1);
   }
 
   return {value_text_out, factor_text};
