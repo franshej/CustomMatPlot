@@ -97,6 +97,8 @@ class PlotLabel : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
+  void updateLabels();
+
   juce::Label m_x_label, m_y_label, m_title_label;
   juce::LookAndFeel *m_lookandfeel;
 };

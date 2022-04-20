@@ -18,14 +18,20 @@ PlotLabel::PlotLabel() {
 
 void PlotLabel::setXLabel(const std::string &x_label) {
   m_x_label.setText(x_label, juce::NotificationType::dontSendNotification);
+
+  updateLabels();
 }
 
 void PlotLabel::setYLabel(const std::string &y_label) {
   m_y_label.setText(y_label, juce::NotificationType::dontSendNotification);
+
+  updateLabels();
 }
 
 void PlotLabel::setTitle(const std::string &title) {
   m_title_label.setText(title, juce::NotificationType::dontSendNotification);
+
+  updateLabels();
 }
 
 const juce::Label &PlotLabel::getXLabel() const noexcept {
@@ -48,7 +54,9 @@ const IsLabelsSet PlotLabel::getIsLabelsAreSet() const noexcept {
   };
 }
 
-void PlotLabel::resized() {
+void PlotLabel::resized() { updateLabels(); }
+
+void PlotLabel::updateLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
     const auto graph_bounds =
