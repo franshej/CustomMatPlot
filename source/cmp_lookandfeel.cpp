@@ -132,7 +132,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::PlotLookAndFeelDefault() {
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t,
                             y_scaling_t>::setDefaultPlotColours() noexcept {
-  setColour(Plot::background_colour, juce::Colour(0xff566573));
+  setColour(Plot::background_colour, juce::Colour(0xff2C3E50));
   setColour(Plot::frame_colour, juce::Colour(0xffcacfd2));
   setColour(Plot::zoom_frame_colour, juce::Colour(0xff99A3A4));
 
@@ -163,7 +163,11 @@ void PlotLookAndFeelDefault<x_scaling_t,
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawBackground(
-    juce::Graphics& g, juce::Rectangle<int>& bounds){};
+    juce::Graphics& g, const juce::Rectangle<int>& bound){
+      g.setColour(findColour(Plot::background_colour));
+
+      g.fillRect(bound);
+    };  
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 juce::Colour

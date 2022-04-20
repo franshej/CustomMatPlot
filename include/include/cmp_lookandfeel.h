@@ -40,7 +40,8 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
 
   void setDefaultPlotColours() noexcept override;
 
-  void drawBackground(juce::Graphics &g, juce::Rectangle<int> &bounds) override;
+  void drawBackground(juce::Graphics &g,
+                      const juce::Rectangle<int> &bound) override;
 
   juce::Colour findAndGetColourFromId(
       const int colour_id) const noexcept override;

@@ -458,7 +458,13 @@ void Plot::resizeChilderns() {
 
 void Plot::resized() { resizeChilderns(); }
 
-void Plot::paint(juce::Graphics& g) {}
+void Plot::paint(juce::Graphics& g) {
+  if (m_lookandfeel) {
+    auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+
+    lnf->drawBackground(g, m_common_graph_params.graph_bounds);
+  }
+}
 
 void Plot::parentHierarchyChanged() {
   getParentComponent()->addMouseListener(this, true);

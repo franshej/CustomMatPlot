@@ -303,7 +303,7 @@ class Plot : public juce::Component {
 
     /** Draw background. */
     virtual void drawBackground(juce::Graphics& g,
-                                juce::Rectangle<int>& bounds) = 0;
+                                const juce::Rectangle<int>& bound) = 0;
 
     /** This method draws a frame around the graph area. */
     virtual void drawFrame(juce::Graphics& g,
