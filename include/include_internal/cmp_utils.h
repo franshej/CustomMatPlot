@@ -310,8 +310,13 @@ template <class ValueType>
       value_text.substr(0u, num_digits_before_checking_ending_character);
 
   if (value_text_out.back() == '.') {
-    value_text_out =
-        value_text.substr(0u, num_digits_before_checking_ending_character - 1);
+    if (lims_diff < 20) {
+      value_text_out = value_text.substr(
+          0u, num_digits_before_checking_ending_character + 1);
+    } else {
+      value_text_out = value_text.substr(
+          0u, num_digits_before_checking_ending_character - 1);
+    }
   }
 
   return {value_text_out, factor_text};
