@@ -1031,8 +1031,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXYTitleLabels(
   const auto y_margin = int(getMargin());
   const auto title_margin = int(getMargin());
 
-  const auto y_label_width = font.getStringWidth(x_label.getText());
-  const auto x_label_width = font.getStringWidth(y_label.getText());
+  const auto y_label_width = font.getStringWidth(y_label.getText());
+  const auto x_label_width = font.getStringWidth(x_label.getText());
   const auto title_width = font.getStringWidth(title_label.getText());
   const auto font_height = int(font.getHeight());
 
