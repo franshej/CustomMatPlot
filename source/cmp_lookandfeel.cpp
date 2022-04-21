@@ -1034,7 +1034,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXYTitleLabels(
   const auto y_label_width = font.getStringWidth(x_label.getText());
   const auto x_label_width = font.getStringWidth(y_label.getText());
   const auto title_width = font.getStringWidth(title_label.getText());
-  const auto font_height = int(font.getHeightInPoints());
+  const auto font_height = int(font.getHeight());
 
   x_label.setFont(font);
   y_label.setFont(font);
@@ -1052,7 +1052,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXYTitleLabels(
                         findColour(Plot::title_label_colour));
 
   const juce::Rectangle<int> y_area = {
-      y_margin, graph_bounds.getY() + graph_bounds.getHeight() / 2 + y_margin,
+      y_margin,
+      graph_bounds.getY() + graph_bounds.getHeight() / 2 + y_label_width / 2,
       y_label_width, font_height};
 
   y_label.setTransform(juce::AffineTransform::rotation(
@@ -1066,13 +1067,13 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXYTitleLabels(
   y_label.setBounds(y_area);
 
   x_label.setBounds(
-      graph_bounds.getX() + graph_bounds.getWidth() / 2 - x_margin,
+      graph_bounds.getX() + graph_bounds.getWidth() / 2 - x_label_width / 2,
       graph_bounds.getBottom() + int(getGridLabelFont().getHeight()) +
           int(getMargin()),
       x_label_width, font_height);
 
   title_label.setBounds(
-      graph_bounds.getX() + graph_bounds.getWidth() / 2 - title_margin,
+      graph_bounds.getX() + graph_bounds.getWidth() / 2 - title_width / 2,
       graph_bounds.getY() - (title_margin + int(font.getHeight())), title_width,
       font_height);
 }
