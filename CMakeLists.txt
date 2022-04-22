@@ -14,9 +14,9 @@ execute_process(
 
 project(cmp_plot VERSION ${GIT_VERSION})
 
-# Generate version file
-configure_file(${CMAKE_SOURCE_DIR}/include/include/cmp_version.h.in
-               include/include/cmp_version.h @ONLY)
+# Generate version header
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/include/cmp_version.h.in
+               ${CMAKE_CURRENT_BINARY_DIR}/include/include/cmp_version.h @ONLY)
 
 set(SOURCE source/cmp_plot.cpp
            source/cmp_graph_line.cpp
