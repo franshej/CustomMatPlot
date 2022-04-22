@@ -114,6 +114,7 @@ namespace cmp {
 
 /*============================================================================*/
 
+inline namespace API_VERSION_MAJOR {
 const IsLabelsSet getIsLabelsAreSet(const cmp::Plot* plot) noexcept {
   return plot->m_plot_label->getIsLabelsAreSet();
 };
@@ -121,6 +122,7 @@ const IsLabelsSet getIsLabelsAreSet(const cmp::Plot* plot) noexcept {
 const std::pair<int, int> getMaxGridLabelWidth(const cmp::Plot* plot) noexcept {
   return plot->m_grid->getMaxGridLabelWidth();
 };
+}  // namespace API_VERSION_MAJOR
 
 /*============================================================================*/
 
@@ -163,11 +165,11 @@ void PlotLookAndFeelDefault<x_scaling_t,
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawBackground(
-    juce::Graphics& g, const juce::Rectangle<int>& bound){
-      g.setColour(findColour(Plot::background_colour));
+    juce::Graphics& g, const juce::Rectangle<int>& bound) {
+  g.setColour(findColour(Plot::background_colour));
 
-      g.fillRect(bound);
-    };  
+  g.fillRect(bound);
+};
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 juce::Colour

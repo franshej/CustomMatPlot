@@ -11,10 +11,13 @@
 
 #pragma once
 
-#include "cmp_datamodels.h"
 #include <memory>
 
+#include "cmp_datamodels.h"
+#include "cmp_version.h"
+
 namespace cmp {
+inline namespace API_VERSION_MAJOR {
 
 /*
  *  \class Plot
@@ -562,9 +565,10 @@ class Plot : public juce::Component {
 
   juce::ComponentDragger m_comp_dragger;
 
-  friend const IsLabelsSet getIsLabelsAreSet(const cmp::Plot* plot) noexcept;
+  friend const IsLabelsSet getIsLabelsAreSet(const Plot* plot) noexcept;
 
-  friend const std::pair<int, int> getMaxGridLabelWidth(const cmp::Plot* plot) noexcept;
+  friend const std::pair<int, int> getMaxGridLabelWidth(
+      const Plot* plot) noexcept;
 };
 
 /**
@@ -597,4 +601,5 @@ class LogLog : public Plot {
   LogLog() : Plot(Scaling::logarithmic, Scaling::logarithmic){};
 };
 
+}  // namespace GIT_VERSION
 }  // namespace cmp

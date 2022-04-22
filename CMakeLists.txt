@@ -4,7 +4,19 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-project(cmp_plot VERSION 0.0.1)
+# Get the latest version
+execute_process(
+    COMMAND git describe --tags --abbrev=0
+    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+    OUTPUT_VARIABLE GIT_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+project(cmp_plot VERSION ${GIT_VERSION})
+
+# Generate version file
+configure_file(${CMAKE_SOURCE_DIR}/include/include/cmp_version.h.in
+               include/include/cmp_version.h @ONLY)
 
 set(SOURCE source/cmp_plot.cpp
            source/cmp_graph_line.cpp
@@ -37,6 +49,9 @@ add_library(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PUBLIC "include/include"
                                            PRIVATE "include/include_internal")
+
+target_include_directories(${PROJECT_NAME} PUBLIC 
+                           ${CMAKE_CURRENT_BINARY_DIR}/include/include)
 
 target_link_libraries(${PROJECT_NAME} 
                       juce::juce_gui_basics)
