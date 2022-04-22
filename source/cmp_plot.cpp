@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -60,8 +60,8 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
 template <bool is_point_data_point = false>
 std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestPoint(
     juce::Point<float> point, const GraphLine* graphline) {
-  auto closest_point = juce::Point<float>(
-      std::numeric_limits<float>::max(), std::numeric_limits<float>::max());
+  auto closest_point = juce::Point<float>(std::numeric_limits<float>::max(),
+                                          std::numeric_limits<float>::max());
 
   juce::Point<float> closest_data_point, current_point, current_data_point;
 
@@ -405,9 +405,7 @@ void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
   m_grid->setGridON(grid_on, tiny_grid_on);
 }
 
-void Plot::clearTracePoints() noexcept {
-  m_trace->clear();
-}
+void Plot::clearTracePoints() noexcept { m_trace->clear(); }
 
 void Plot::resizeChilderns() {
   if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
@@ -501,8 +499,7 @@ void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
   this->juce::Component::setLookAndFeel(lnf);
 }
 
-std::unique_ptr<Plot::LookAndFeelMethods>
-Plot::getDefaultLookAndFeel() {
+std::unique_ptr<Plot::LookAndFeelMethods> Plot::getDefaultLookAndFeel() {
   if (m_x_scaling == Scaling::logarithmic &&
       m_y_scaling == Scaling::logarithmic) {
     return std::make_unique<cmp::PlotLookAndFeelDefault<
@@ -766,4 +763,5 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
     }
   }
 }
+
 }  // namespace cmp

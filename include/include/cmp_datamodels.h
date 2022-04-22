@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -94,8 +94,8 @@ enum class DownsamplingType : uint32_t {
                       but will discard x-values that are located with the same
                       x-pixel value near each other. Recommended for real-time
                       plotting. */
-  xy_downsampling, /**< Same resolution as 'no_downsampling' but skips x- & y-values
-                      that do not need to be plotted. It's quicker than
+  xy_downsampling, /**< Same resolution as 'no_downsampling' but skips x- &
+                      y-values that do not need to be plotted. It's quicker than
                       'no_downsampling' but slower than 'x_downsampling'. */
 };
 

@@ -182,4 +182,4 @@ class PlotLookAndFeel
       public PlotLookAndFeelDefault<Scaling::logarithmic,
                                     Scaling::logarithmic> {};
 
-};  // namespace cmp
+}  // namespace cmp
