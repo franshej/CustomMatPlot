@@ -167,9 +167,11 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
     }
   };
 
-  m_trace->onTracePointChanged = [this](auto prev_data, auto new_data) {
+  m_trace->onTracePointChanged = [this](const auto* trace_point,
+                                        const auto prev_data,
+                                        const auto new_data) {
     if (onTraceValueChange) {
-      onTraceValueChange(this, prev_data, new_data);
+      onTraceValueChange(trace_point, prev_data, new_data);
     }
   };
 }

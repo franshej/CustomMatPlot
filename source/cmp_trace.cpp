@@ -38,7 +38,7 @@ bool TracePoint<ValueType>::setDataPoint(
     const juce::Point<ValueType>& new_data_point) {
   if (m_data_point != new_data_point) {
     if (onDataValueChanged) {
-      onDataValueChanged(m_data_point, new_data_point);
+      onDataValueChanged(this, m_data_point, new_data_point);
     }
 
     m_data_point = new_data_point;
@@ -224,24 +224,26 @@ void Trace::updateTracePointsAssociatedWith(const GraphLine* graph_line) {
   }
 }
 
-void Trace::tracePointCbHelper(juce::Point<float> previous_data_point,
-                         juce::Point<float> new_data_point) {
+void Trace::tracePointCbHelper(const juce::Component* trace_point,
+                               const juce::Point<float> previous_data_point,
+                               const juce::Point<float> new_data_point) {
   if (onTracePointChanged) {
-    onTracePointChanged(previous_data_point, new_data_point);
+    onTracePointChanged(trace_point, previous_data_point, new_data_point);
   }
 }
 
-void Trace::addSingleTracePointAndLabel(
-    const juce::Point<float>& data_point,
-    const GraphLine* graph_line) {
+void Trace::addSingleTracePointAndLabel(const juce::Point<float>& data_point,
+                                        const GraphLine* graph_line) {
   auto trace_label = std::make_unique<TraceLabel_f>();
   auto trace_point = std::make_unique<TracePoint_f>();
 
   if (m_lookandfeel) trace_label->setLookAndFeel(m_lookandfeel);
   if (m_lookandfeel) trace_point->setLookAndFeel(m_lookandfeel);
 
-  trace_point->onDataValueChanged = [this](auto prev_data, auto new_data) {
-    this->tracePointCbHelper(prev_data, new_data);
+  trace_point->onDataValueChanged = [this](const auto* trace_point,
+                                           const auto prev_data,
+                                           const auto new_data) {
+    this->tracePointCbHelper(trace_point, prev_data, new_data);
   };
 
   trace_point->setDataPoint(data_point);

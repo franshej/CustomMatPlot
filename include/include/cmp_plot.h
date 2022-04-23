@@ -249,9 +249,9 @@ class Plot : public juce::Component {
    * @param previous_trace_point previous tracepoint value.
    * @param new_trace_point the new tracepoint value.
    */
-  std::function<void(Plot* current_plot,
-                     juce::Point<float> previous_trace_point,
-                     juce::Point<float> new_trace_point)>
+  std::function<void(const juce::Component* current_plot,
+                     const juce::Point<float> previous_trace_point,
+                     const juce::Point<float> new_trace_point)>
       onTraceValueChange = nullptr;
 
   //==============================================================================

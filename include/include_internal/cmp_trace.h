@@ -59,11 +59,13 @@ struct TracePoint : public juce::Component {
 
   /** @brief This lambda is triggered when a the data value is changed.
    *
+   * @param trace_point pointer
    * @param previous_data_point previous data point.
    * @param new_data_point the new data point.
    */
-  std::function<void(juce::Point<float> previous_data_point,
-                     juce::Point<float> new_data_point)>
+  std::function<void(juce::Component* trace_point,
+                     const juce::Point<float> previous_data_point,
+                     const juce::Point<float> new_data_point)>
       onDataValueChanged = nullptr;
 
   /** @internal */
@@ -255,17 +257,20 @@ class Trace {
 
   /** @brief This lambda is triggered when a tracepoint value is changed.
    *
+   * @param trace_point pointer
    * @param previous_data_point previous data value.
    * @param new_data_point the new data value.
    */
-  std::function<void(juce::Point<float> previous_data_point,
-                     juce::Point<float> new_data_point)>
+  std::function<void(const juce::Component* trace_point,
+                     const juce::Point<float> previous_data_point,
+                     const juce::Point<float> new_data_point)>
       onTracePointChanged = nullptr;
 
  private:
   /** @internal */
-  void tracePointCbHelper(juce::Point<float> previous_data_point,
-                          juce::Point<float> new_data_point);
+  void tracePointCbHelper(const juce::Component* trace_point,
+                          const juce::Point<float> previous_data_point,
+                          const juce::Point<float> new_data_point);
 
   /** @internal */
   void addSingleTracePointAndLabel(
