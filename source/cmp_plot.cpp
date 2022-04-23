@@ -166,6 +166,12 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_legend->setBounds(legend_bounds);
     }
   };
+
+  m_trace->onTracePointChanged = [this](auto prev_data, auto new_data) {
+    if (onTraceValueChange) {
+      onTraceValueChange(this, prev_data, new_data);
+    }
+  };
 }
 
 void Plot::updateXLim(const Lim_f& new_x_lim) {
@@ -708,16 +714,9 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
       const auto [closest_data_point, nearest_graph_line] =
           findNearestPoint(mouse_pos.toFloat(), associated_graph_line);
 
-      const auto prev_graph_point =
-          onTraceValueChange ? m_trace->getGraphPosition(event.eventComponent)
-                             : juce::Point<float>();
+      m_trace->setDataValueFor(event.eventComponent, closest_data_point,
+                               m_common_graph_params);
 
-      if (m_trace->setDataValueFor(event.eventComponent, closest_data_point,
-                                   m_common_graph_params)) {
-        if (onTraceValueChange) {
-          onTraceValueChange(this, prev_graph_point, closest_data_point);
-        }
-      }
     } else if (m_trace->isComponentTraceLabel(event.eventComponent)) {
       auto bounds = event.eventComponent->getBounds();
 

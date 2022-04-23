@@ -500,3 +500,27 @@ TEST(step_function_downsample, non_real_time) {
 
   PLOT_XY({y}, {x});
 }
+
+
+TEST(trace_point_cb, non_real_time) {
+ ADD_SEMI_LOG_X;
+
+ std::vector<float> y_data_1(1'000u, 0.0f);
+ std::iota(y_data_1.begin(), y_data_1.end(), 0.0f);
+
+ std::vector<float> y_data_2(1'000u, 0.0f);
+ std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
+
+ const auto y = {y_data_1, y_data_2};
+
+ PLOT_Y(y);
+
+ SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
+
+ GET_PLOT->onTraceValueChange = [](auto comp, auto prev_data, auto new_data) {
+   DBG("Prev X: " + std::to_string(prev_data.getX()) +
+       "Prev Y: " + std::to_string(prev_data.getY()) +
+       "\nNew X: " + std::to_string(new_data.getX()) +
+       "New Y: " + std::to_string(new_data.getY()));
+ };
+}
