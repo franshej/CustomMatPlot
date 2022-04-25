@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 
+#include "cmp_datamodels.h"
 #include "cmp_frame.h"
 #include "cmp_graph_line.h"
 #include "cmp_grid.h"
@@ -157,8 +158,8 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
 
   m_grid->onGridLabelLengthChanged = [this](cmp::Grid* grid) {
     this->resizeChilderns();
-  };
-
+  }; 
+  
   m_legend->onNumberOfDescriptionsChanged = [this](const auto& desc) {
     if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
       const auto legend_bounds = lnf->getLegendBounds(m_graph_bounds, desc);
@@ -256,14 +257,18 @@ void cmp::Plot::updateTracePointsForNewGraphData() {
 
 void Plot::setAutoXScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, true);
+  
   m_x_lim_default = {min, max};
-  updateXLim({min, max});
+
+  updateXLim(m_x_lim_default);
 }
 
 void Plot::setAutoYScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, false);
+
   m_y_lim_default = {min, max};
-  updateYLim({min, max});
+
+  updateYLim(m_y_lim_default);
 }
 
 void Plot::xLim(const float min, const float max) {

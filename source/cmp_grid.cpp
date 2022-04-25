@@ -36,8 +36,9 @@ void Grid::updateGridInternal(
 
   std::vector<float> x_auto_ticks, y_auto_ticks;
 
-  if (m_custom_x_ticks.empty() || m_custom_y_ticks.empty())
+  if (m_custom_x_ticks.empty() || m_custom_y_ticks.empty()) {
     createAutoGridTicks(x_auto_ticks, y_auto_ticks, common_plot_params);
+  }
 
   const auto &x_ticks =
       m_custom_x_ticks.empty() ? x_auto_ticks : m_custom_x_ticks;

@@ -23,8 +23,8 @@ static std::vector<float> getLinearTicks(
     const std::vector<float> previous_ticks) {
   std::vector<float> ticks(num_ticks);
 
-  const auto x_diff = (lim.max - lim.min) / float(num_ticks - 1u);
-  cmp::iota_delta(ticks.begin(), ticks.end(), lim.min, x_diff);
+  const auto diff = (lim.max - lim.min) / float(num_ticks);
+  cmp::iota_delta(ticks.begin(), ticks.end(), lim.min + diff / 2.0f, diff);
 
   return ticks;
 };
@@ -785,11 +785,11 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
   const auto height = bounds.getHeight();
 
   const auto addVerticalTicksLinear = [&]() {
-    std::size_t num_vertical_lines = 3u;
+    std::size_t num_vertical_lines = 5u;
     if (width > 435u) {
-      num_vertical_lines = 11u;
+      num_vertical_lines = 15u;
     } else if (width <= 435u && width > 175u) {
-      num_vertical_lines = 5u;
+      num_vertical_lines = 7u;
     }
 
     num_vertical_lines =
