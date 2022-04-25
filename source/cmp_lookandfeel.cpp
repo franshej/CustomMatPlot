@@ -10,12 +10,24 @@
 #include "cmp_graph_line.h"
 #include "cmp_grid.h"
 #include "cmp_label.h"
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 /*============================================================================*/
 
 static const std::string getNextCustomLabel(
-    std::vector<std::string>::reverse_iterator& custom_labels_it) {
-  return *(custom_labels_it++);
+    std::vector<std::string>::reverse_iterator& custom_labels_it,
+    const std::vector<std::string>::reverse_iterator& rend) {
+  const auto retval = custom_labels_it++;
+
+  if (retval != rend) {
+    const auto val = *(retval);
+
+    return val;
+  }
+
+  throw std::out_of_range("custom_labels_it is out of range.");
 }
 
 static std::vector<float> getLinearTicks(
@@ -985,7 +997,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
       case GridLine::Direction::vertical: {
         const auto label =
             use_custom_x_labels
-                ? getNextCustomLabel(custom_x_labels_reverse_it)
+                ? getNextCustomLabel(custom_x_labels_reverse_it,
+                                     x_custom_label_ticks.rend())
                 : valueToString(tick, common_plot_params, true).first;
 
         const auto [label_width, label_height] =
@@ -1003,7 +1016,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
       case GridLine::Direction::horizontal: {
         const auto label =
             use_custom_y_labels
-                ? getNextCustomLabel(custom_y_labels_reverse_it)
+                ? getNextCustomLabel(custom_y_labels_reverse_it,
+                                     x_custom_label_ticks.rend())
                 : valueToString(tick, common_plot_params, false).first;
 
         const auto [label_width, label_height] =

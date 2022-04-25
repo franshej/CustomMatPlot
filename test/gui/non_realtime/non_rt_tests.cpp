@@ -46,9 +46,9 @@ TEST(test_custom_y_labels, non_real_time) {
 
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
-  const std::vector<std::string> labels = {"Ett", "Two", "Three", "Fyra",
-                                           "Fem", "Sex", "Sju",   "Atta",
-                                           "Nio", "Tio", "Elva",  "Tolv"};
+  static const std::vector<std::string> labels = {
+      "Ett", "Two",  "Three", "Fyra", "Fem",  "Sex",
+      "Sju", "Atta", "Nio",   "Tio",  "Elva", "Tolv"};
 
   PLOT_Y({y_test_data});
   Y_LABELS(labels)
