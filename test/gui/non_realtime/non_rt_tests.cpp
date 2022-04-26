@@ -8,6 +8,7 @@
 #include "cmp_datamodels.h"
 #include "cmp_lookandfeel.h"
 #include "test_macros.h"
+#include <vector>
 
 #define PI2 6.28318530718f
 
@@ -525,16 +526,39 @@ TEST(trace_point_cb, non_real_time) {
  };
 }
 
+static auto create_heart(const auto amplitude, const std::size_t N) {
+  auto in_type = amplitude;
+
+  std::vector<decltype(in_type)> x(N), y(N);
+
+  for (auto i = 0; i < N; ++i) {
+    const auto t = 2 * M_PI * i / N;
+
+    constexpr auto k = (13.0f / 16.0f);
+    constexpr auto k1 = (5.0f / 16.0f);
+    constexpr auto k2 = (2.0f / 16.0f);
+    constexpr auto k3 = (1.0f / 16.0f);
+
+    x.at(i) = amplitude * sin(t) * sin(t) * sin(t);
+    y.at(i) = amplitude * (k * cos(t) - k1 * cos(2 * t) - k2 * cos(3 * t) -
+                           k3 * cos(4 * t));
+  }
+
+  return std::make_pair(x, y);
+}
+
 TEST(heart, non_real_time) {
   ADD_PLOT;
 
-  int n = 5000;
-  std::vector<float> x(n), y(n);
-  for (int i = 0; i < n; ++i) {
-    const float t = 2 * M_PI * i / n;
-    x.at(i) = 16 * sin(t) * sin(t) * sin(t);
-    y.at(i) = 13 * cos(t) - 5 * cos(2 * t) - 2 * cos(3 * t) - cos(4 * t);
+  std::vector<std::vector<float>> xs, ys;
+
+  constexpr auto num_hearts = 10;
+  for (size_t i = 0; i < num_hearts; ++i) {
+    const auto [x, y] = create_heart(float(i), 5000u);
+
+    xs.push_back(y);
+    ys.push_back(x);
   }
 
-  PLOT_XY({y}, {x});
+  PLOT_XY(xs, ys);
 }
