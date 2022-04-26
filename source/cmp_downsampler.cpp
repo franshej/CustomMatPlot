@@ -9,6 +9,7 @@
 
 #include "cmp_datamodels.h"
 #include "cmp_utils.h"
+#include <algorithm>
 
 namespace cmp {
 static auto computeXStartIdx(const auto x_min_lim, const auto& x_data) {
@@ -32,6 +33,9 @@ static auto computeXStartIdx(const auto x_min_lim, const auto& x_data) {
     }
     start_x_index++;
   }
+
+  start_x_index =
+      start_x_index == x_data.size() ? x_data.size() - 1u : start_x_index;
 
   return start_x_index;
 }
