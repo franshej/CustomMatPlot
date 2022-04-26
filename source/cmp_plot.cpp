@@ -16,6 +16,7 @@
 #include "cmp_lookandfeel.h"
 #include "cmp_trace.h"
 #include "cmp_zoom.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 
 namespace cmp {
 
@@ -266,13 +267,7 @@ static auto getLimOffset(const auto min, const auto max, const auto scaling) {
     const auto new_min_offset = min - diff;
     const auto new_max_offset = max + diff;
 
-    const auto zero = decltype(min)(0);
-
-    if (min <= zero || new_min_offset > zero) {
-      new_min = new_min_offset;
-    }
-
-    return Lim<decltype(new_min)>(new_min, new_max_offset);
+    return Lim<decltype(new_min)>(new_min_offset, new_max_offset);
   }
 
   return Lim<decltype(new_min)>(min, max);
@@ -378,9 +373,22 @@ void cmp::Plot::setDownsamplingType(
   updateGridGraphsTrace();
 }
 
+static auto jassetLogLimBelowZero(const auto scaling, const auto lim) {
+  const auto zero = decltype(lim.min)(0);
+
+  // You are trying to use a negative limit but the axis is logarithmic. Don't
+  // do that. Use ylim or xlim to set limits above 0. Then call 'setScaling()'
+  // if that is used.
+  jassert(!(scaling == Scaling::logarithmic &&
+            (lim.min <= zero || lim.max <= zero)));
+}
+
 void Plot::setScaling(const Scaling x_scaling,
                       const Scaling y_scaling) noexcept {
   if (x_scaling != m_x_scaling || y_scaling != m_y_scaling) {
+    jassetLogLimBelowZero(x_scaling, m_x_lim_default);
+    jassetLogLimBelowZero(y_scaling, m_y_lim_default);
+
     m_x_scaling = x_scaling;
     m_y_scaling = y_scaling;
 

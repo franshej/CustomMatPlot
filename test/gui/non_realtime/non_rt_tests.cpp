@@ -256,6 +256,7 @@ TEST(test_legend_6, non_real_time) {
     for (auto &y : y_vec) {
       y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
     }
+
     std::stringstream stream;
     stream << std::fixed << std::setprecision(0) << (i + 1);
     legends.emplace_back("First sine with amplitude of: " + stream.str());
@@ -482,6 +483,9 @@ TEST(set_scaling_dynamic, non_real_time) {
   PLOT_Y(y);
 
   SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
+
+  Y_LIM(100, 1100);
+  X_LIM(1, 1000);
 
   SET_SCALING(cmp::Scaling::logarithmic, cmp::Scaling::logarithmic);
 }
