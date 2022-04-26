@@ -524,3 +524,17 @@ TEST(trace_point_cb, non_real_time) {
        "New Y: " + std::to_string(new_data.getY()));
  };
 }
+
+TEST(heart, non_real_time) {
+  ADD_PLOT;
+
+  int n = 5000;
+  std::vector<float> x(n), y(n);
+  for (int i = 0; i < n; ++i) {
+    const float t = 2 * M_PI * i / n;
+    x.at(i) = 16 * sin(t) * sin(t) * sin(t);
+    y.at(i) = 13 * cos(t) - 5 * cos(2 * t) - 2 * cos(3 * t) - cos(4 * t);
+  }
+
+  PLOT_XY({y}, {x});
+}
