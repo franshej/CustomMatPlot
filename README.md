@@ -51,8 +51,10 @@ cmake ../ -DCMP_BUILD_EXAMPLES=ON
 make -j4
 ```
 
-## Realtime frequency response example
+## Realtime frequency response example app
 <a name="realtime-frequency-response-example"></a>
+
+![Image](img/freq-plot-ui.png)
 
 An example app plotting the frequency response of the incoming left and right audio signals can be seen here: <a href="https://gitlab.com/frans.rosencrantz/realtime-frequency-plot-example"> Realtime plot example </a>
 
