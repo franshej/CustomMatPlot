@@ -104,6 +104,9 @@ enum class DownsamplingType : uint32_t {
 /** @brief A template struct that defines min and max. */
 template <class ValueType>
 struct Lim {
+  constexpr Lim(ValueType new_min, ValueType new_max)
+      : min{new_min}, max{new_max} {}
+
   ValueType min;
   ValueType max;
 

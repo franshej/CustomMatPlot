@@ -142,6 +142,8 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_trace(std::make_unique<Trace>()),
       m_x_lim({0, 0}),
       m_y_lim({0, 0}),
+      m_x_lim_default({0, 0}),
+      m_y_lim_default({0, 0}),
       m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
                             m_y_scaling, m_downsampling_type) {
   lookAndFeelChanged();
@@ -158,8 +160,8 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
 
   m_grid->onGridLabelLengthChanged = [this](cmp::Grid* grid) {
     this->resizeChilderns();
-  }; 
-  
+  };
+
   m_legend->onNumberOfDescriptionsChanged = [this](const auto& desc) {
     if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
       const auto legend_bounds = lnf->getLegendBounds(m_graph_bounds, desc);
@@ -255,10 +257,31 @@ void cmp::Plot::updateTracePointsForNewGraphData() {
   }
 }
 
+static auto getLimOffset(const auto min, const auto max, const auto scaling) {
+  auto new_min = min;
+
+  if (scaling == Scaling::linear) {
+    const auto diff = (max - min) / decltype(min)(20);
+
+    const auto new_min_offset = min - diff;
+    const auto new_max_offset = max + diff;
+
+    const auto zero = decltype(min)(0);
+
+    if (min <= zero || new_min_offset > zero) {
+      new_min = new_min_offset;
+    }
+
+    return Lim<decltype(new_min)>(new_min, new_max_offset);
+  }
+
+  return Lim<decltype(new_min)>(min, max);
+}
+
 void Plot::setAutoXScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, true);
-  
-  m_x_lim_default = {min, max};
+
+  m_x_lim_default = getLimOffset(min, max, m_x_scaling);
 
   updateXLim(m_x_lim_default);
 }
@@ -266,7 +289,7 @@ void Plot::setAutoXScale() {
 void Plot::setAutoYScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, false);
 
-  m_y_lim_default = {min, max};
+  m_y_lim_default = getLimOffset(min, max, m_y_scaling);
 
   updateYLim(m_y_lim_default);
 }
