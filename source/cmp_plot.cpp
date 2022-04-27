@@ -402,6 +402,8 @@ void Plot::setScaling(const Scaling x_scaling,
 
 void Plot::setXLabel(const std::string& x_label) {
   m_plot_label->setXLabel(x_label);
+
+  resizeChilderns();
 }
 
 void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
@@ -430,9 +432,15 @@ void Plot::setYTicks(const std::vector<float>& y_ticks) {
 
 void Plot::setYLabel(const std::string& y_label) {
   m_plot_label->setYLabel(y_label);
+
+  resizeChilderns();
 }
 
-void Plot::setTitle(const std::string& title) { m_plot_label->setTitle(title); }
+void Plot::setTitle(const std::string& title) {
+  m_plot_label->setTitle(title);
+
+  resizeChilderns();
+}
 
 void Plot::setTracePoint(const juce::Point<float>& trace_point_coordinate) {
   const auto [closest_data_point, nearest_graph_line] =
@@ -541,6 +549,8 @@ void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
   resetLookAndFeelChildrens();
 
   this->juce::Component::setLookAndFeel(lnf);
+
+  resizeChilderns();
 }
 
 std::unique_ptr<Plot::LookAndFeelMethods> Plot::getDefaultLookAndFeel() {
