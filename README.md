@@ -81,12 +81,18 @@ Use the graph line attributes to change the appearance of the graph lines. See c
 The examples can be built using the following commands:
 
 ```sh
+# Clone repository
 git clone https://github.com/franshej/CustomMatPlot.git
+
+cd CustomMatPlot
+
+# Update submodules
 git submodule update --init
 
 mkdir build
 cd build
 
+# Config & build
 cmake ../ -DCMP_BUILD_EXAMPLES=ON
 make -j4
 ```
