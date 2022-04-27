@@ -3,6 +3,12 @@
 
 CustomMatPlot (CMP) is a plotting library for C++. It provides an API for embedding plot components into applications using the JUCE framework. The plot component is easy to integrate and is customizable using the included lookandfeel class.
 
+
+| ![Image](img/spread.png)  | ![Image](img/sines.png)|
+| ------------- | ------------- |
+
+
+
 > Note: I'm not a senior developer so there may be several design flaws.
 
 ## Table of Content
@@ -34,11 +40,26 @@ Below is the feature list of CMP:
 - Callback for tace points.
 - Two different downsampler levels 
 
+![Image](img/heart.png) 
+
 ## Requirements
 <a name="requirements"></a>
 
 - Compiler that supports C++17
 - CMake 3.12
+
+## Controls
+
+The CMP compontent implements MouseEvents to interact with the plot using the mouse. Below is a list with the current added mouse commands:
+
+1. Left click drag anywhere in the graph area to zoom into the plot. The zoom area is displayed as traced lined rectangle.
+2. Right click to zoom out to home.
+3. Double-click to add a trace-point to the graph lines closest to the mouse pointer.
+4. Double-click on a trace-point to remove it.
+5. Drag the trace point to move it along the graph-line.
+6. Move the trace point label by dragging it.
+7. Move the legend to by dragging it.
+8. [TODO] Panning
 
 ## Examples
 <a name="examples"></a>
@@ -75,7 +96,7 @@ TEST(ramp, non_real_time) {
 }
 ```
 
-![Image](img/ramp-test.png)
+![Image](img/ramp.png)
 
 
 ## License
