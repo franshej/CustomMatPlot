@@ -61,6 +61,13 @@ The CMP compontent implements MouseEvents to interact with the plot using the mo
 7. Move the legend to by dragging it.
 8. [TODO] Panning
 
+## LookAndFeel
+
+Customize the plot to your liking by overriding the lookandfeel functions. See the lookandfeel example.
+
+![Image](img/lookandfeel.png)
+
+
 ## Examples
 <a name="examples"></a>
 The examples can be built using the following commands:
@@ -78,7 +85,6 @@ make -j4
 An example app plotting the frequency response of the incoming left and right audio signals can be seen here: <a href="https://gitlab.com/frans.rosencrantz/realtime-frequency-plot-example"> Realtime plot example </a>
 
 ![Image](img/freq-plot-ui.png)
-
 
 ## Tests
 <a name="tests"></a>
