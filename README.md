@@ -3,10 +3,8 @@
 
 CustomMatPlot (CMP) is a plotting library for C++. It provides an API for embedding plot components into applications using the JUCE framework. The plot component is easy to integrate and is customizable using the included lookandfeel class.
 
-
 | ![Image](img/spread.png)  | ![Image](img/sines.png)|
 | ------------- | ------------- |
-
 
 > Note: I'm not a senior developer so there may be several design flaws.
 
@@ -83,8 +81,12 @@ Use the graph line attributes to change the appearance of the graph lines. See c
 The examples can be built using the following commands:
 
 ```sh
+git clone https://github.com/franshej/CustomMatPlot.git
+git submodule update --init
+
 mkdir build
 cd build
+
 cmake ../ -DCMP_BUILD_EXAMPLES=ON
 make -j4
 ```
