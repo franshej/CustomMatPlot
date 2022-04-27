@@ -14,6 +14,9 @@ CustomMatPlot (CMP) is a plotting library for C++. It provides an API for embedd
 ## Table of Content
   - [Features](#features)
   - [Requirements](#requirements)
+  - [Controls](#controls)
+  - [LookAndFeel](#lookandfeel)
+  - [Graph line attributes](#graph-line-attributes)
   - [Examples](#examples)
   - [Realtime frequency response example](#realtime-frequency-response-example)
   - [Tests](#tests)
@@ -49,6 +52,7 @@ Below is the feature list of CMP:
 - CMake 3.12
 
 ## Controls
+<a name="controls"></a>
 
 The CMP compontent implements MouseEvents to interact with the plot using the mouse. Below is a list with the current added mouse commands:
 
@@ -62,12 +66,14 @@ The CMP compontent implements MouseEvents to interact with the plot using the mo
 8. [TODO] Panning
 
 ## LookAndFeel
+<a name="lookandfeel"></a>
 
 Customize the plot to your liking by overriding the lookandfeel functions. See the lookandfeel example.
 
 ![Image](img/lookandfeel.png)
 
 ## Graph line attributes
+<a name="graph-line-attributes"></a>
 
 Use the graph line attributes to change the appearance of the graph lines. See custom_graph_attributes example.
 
