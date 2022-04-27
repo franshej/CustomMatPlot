@@ -8,7 +8,6 @@ CustomMatPlot (CMP) is a plotting library for C++. It provides an API for embedd
 | ------------- | ------------- |
 
 
-
 > Note: I'm not a senior developer so there may be several design flaws.
 
 ## Table of Content
@@ -93,7 +92,7 @@ make -j4
 ## Realtime frequency response example app
 <a name="realtime-frequency-response-example"></a>
 
-An example app plotting the frequency response of the incoming left and right audio signals can be seen here: <a href="https://gitlab.com/frans.rosencrantz/realtime-frequency-plot-example"> Realtime plot example </a>
+An example app plotting the frequency response of the incoming left and right audio signals can be seen here: <a href="https://github.com/franshej/Realtime-Frequency-Plot-Example"> Realtime plot example </a>
 
 ![Image](img/freq-plot-ui.png)
 
