@@ -45,7 +45,7 @@ Below is the feature list of CMP:
 ## Requirements
 <a name="requirements"></a>
 
-- Compiler that supports C++17
+- Compiler that supports C++20  (TODO: Make it support 17)
 - CMake 3.12
 
 ## Controls
