@@ -48,8 +48,9 @@ TEST(test_custom_y_labels, non_real_time) {
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   static const std::vector<std::string> labels = {
-      "Ett", "Two",  "Three", "Fyra", "Fem",  "Sex",
-      "Sju", "Atta", "Nio",   "Tio",  "Elva", "Tolv"};
+      "Ett",     "Two",     "Three",  "Fyra",   "Fem",    "Sex",
+      "Sju",     "Atta",    "Nio",    "Tio",    "Elva",   "Tolv",
+      "Tretton", "Fjorton", "Femton", "Sexton", "sjutton"};
 
   PLOT_Y({y_test_data});
   Y_LABELS(labels)
@@ -265,6 +266,12 @@ TEST(test_legend_6, non_real_time) {
 
   PLOT_Y(test_data_y);
   LEGEND(legends);
+
+  TITLE("Some good looking sines!")
+  X_LABEL("Time (s)")
+  Y_LABEL("Voltage (V)")
+
+  GRID_ON;
 }
 
 TEST(test_legend_2, non_real_time) {
@@ -403,10 +410,10 @@ TEST(markers, non_real_time) {
 }
 
 TEST(spread, non_real_time) {
-  ADD_PLOT;
+  ADD_SEMI_LOG_X;
 
   std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(4, std::vector<float>(10));
+      std::vector<std::vector<float>>(4, std::vector<float>(1000));
 
   float i = 0;
   for (auto &y_vec : test_data_y) {
@@ -421,6 +428,10 @@ TEST(spread, non_real_time) {
 
   PLOT_Y(test_data_y);
   FILL_BETWEEN(spread_indices);
+
+  X_LABEL("Logarithmic x-axis");
+  Y_LABEL("Linear y-axis");
+  TITLE("Nice looking fills between graph lines!");
 }
 
 TEST(xy_downsampling, non_real_time) {
