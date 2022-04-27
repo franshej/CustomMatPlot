@@ -64,7 +64,7 @@ class TestHandler : public juce::Component {
  public:
   TestHandler(const std::string category)
       : m_menu_label("", "Tests: "), m_category(category) {
-    setSize(1200, 800);
+    setSize(900, 600);
 
     // Calls all the test functions created by the user.
     std::shared_ptr<node> cur;
