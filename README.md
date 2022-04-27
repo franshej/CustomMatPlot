@@ -67,6 +67,11 @@ Customize the plot to your liking by overriding the lookandfeel functions. See t
 
 ![Image](img/lookandfeel.png)
 
+## Graph line attributes
+
+Use the graph line attributes to change the appearance of the graph lines. See custom_graph_attributes example.
+
+![Image](img/graph_line_attributes.png)
 
 ## Examples
 <a name="examples"></a>
