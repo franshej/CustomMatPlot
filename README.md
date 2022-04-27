@@ -54,9 +54,10 @@ make -j4
 ## Realtime frequency response example app
 <a name="realtime-frequency-response-example"></a>
 
+An example app plotting the frequency response of the incoming left and right audio signals can be seen here: <a href="https://gitlab.com/frans.rosencrantz/realtime-frequency-plot-example"> Realtime plot example </a>
+
 ![Image](img/freq-plot-ui.png)
 
-An example app plotting the frequency response of the incoming left and right audio signals can be seen here: <a href="https://gitlab.com/frans.rosencrantz/realtime-frequency-plot-example"> Realtime plot example </a>
 
 ## Tests
 <a name="tests"></a>
@@ -73,6 +74,10 @@ TEST(ramp, non_real_time) {
   PLOT_Y({y_test_data});
 }
 ```
+
+![Image](img/ramp-test.png)
+
+
 ## License
 <a name="license"></a>
 
