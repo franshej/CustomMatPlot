@@ -59,7 +59,7 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
   return {min_value, max_value};
 }
 
-template <bool is_point_data_point = false>
+template <bool is_point_data_point>
 std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestPoint(
     juce::Point<float> point, const GraphLine* graphline) {
   auto closest_point = juce::Point<float>(std::numeric_limits<float>::max(),

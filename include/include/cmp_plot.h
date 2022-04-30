@@ -17,7 +17,6 @@
 #include "cmp_version.h"
 
 namespace cmp {
-inline namespace API_VERSION_MAJOR {
 
 /*
  *  \class Plot
@@ -515,7 +514,7 @@ class Plot : public juce::Component {
   void mouseUp(const juce::MouseEvent& event) override;
 
  private:
-  template <bool is_point_data_point>
+  template <bool is_point_data_point = false>
   std::pair<juce::Point<float>, const GraphLine*> findNearestPoint(
       juce::Point<float> point, const GraphLine* graphline = nullptr);
 
@@ -601,5 +600,4 @@ class LogLog : public Plot {
   LogLog() : Plot(Scaling::logarithmic, Scaling::logarithmic){};
 };
 
-}  // namespace GIT_VERSION
 }  // namespace cmp

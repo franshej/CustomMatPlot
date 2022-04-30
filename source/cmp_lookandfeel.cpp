@@ -126,7 +126,6 @@ namespace cmp {
 
 /*============================================================================*/
 
-inline namespace API_VERSION_MAJOR {
 const IsLabelsSet getIsLabelsAreSet(const cmp::Plot* plot) noexcept {
   return plot->m_plot_label->getIsLabelsAreSet();
 };
@@ -134,7 +133,6 @@ const IsLabelsSet getIsLabelsAreSet(const cmp::Plot* plot) noexcept {
 const std::pair<int, int> getMaxGridLabelWidth(const cmp::Plot* plot) noexcept {
   return plot->m_grid->getMaxGridLabelWidth();
 };
-}  // namespace API_VERSION_MAJOR
 
 /*============================================================================*/
 
@@ -889,14 +887,14 @@ template <Scaling x_scaling_t, Scaling y_scaling_t>
 int PlotLookAndFeelDefault<x_scaling_t,
                            y_scaling_t>::getXGridLabelDistanceFromGraphBound()
     const noexcept {
-  return getMarginSmall();
+  return int(getMarginSmall());
 };
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 int PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     getYGridLabelDistanceFromGraphBound(
         const int y_grid_label_width) const noexcept {
-  return y_grid_label_width + getMarginSmall();
+  return y_grid_label_width + int(getMarginSmall());
 };
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
@@ -954,6 +952,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
                                    num_vertical_lines;
     } else {
       x_custom_label_ticks.resize(num_vertical_lines);
+
+      custom_x_labels_reverse_it = x_custom_label_ticks.rbegin();
     }
   }
 
@@ -965,6 +965,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
                                    num_horizonal_lines;
     } else {
       y_custom_label_ticks.resize(num_horizonal_lines);
+
+      custom_y_labels_reverse_it = y_custom_label_ticks.rbegin();
     }
   }
 
@@ -1017,7 +1019,7 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
         const auto label =
             use_custom_y_labels
                 ? getNextCustomLabel(custom_y_labels_reverse_it,
-                                     x_custom_label_ticks.rend())
+                                     y_custom_label_ticks.rend())
                 : valueToString(tick, common_plot_params, false).first;
 
         const auto [label_width, label_height] =

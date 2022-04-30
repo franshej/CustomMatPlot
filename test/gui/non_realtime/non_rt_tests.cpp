@@ -9,6 +9,7 @@
 #include "cmp_lookandfeel.h"
 #include "test_macros.h"
 #include <vector>
+#include <cmath>
 
 #define PI2 6.28318530718f
 
@@ -547,7 +548,7 @@ static auto create_heart(const auto amplitude, const std::size_t N) {
   std::vector<decltype(in_type)> x(N), y(N);
 
   for (auto i = 0; i < N; ++i) {
-    const auto t = 2 * M_PI * i / N;
+    const auto t = 2 * juce::MathConstants<decltype(in_type)>::pi * i / N;
 
     constexpr auto k = (13.0f / 16.0f);
     constexpr auto k1 = (5.0f / 16.0f);
