@@ -89,7 +89,7 @@ enum class Scaling : uint32_t {
 /**< Enum to define the type of downsampling. */
 enum class DownsamplingType : uint32_t {
   no_downsampling, /**< No downsampling. Slow when plotting alot of values. */
-  x_downsaming,    /**< Downsampling only based on the x-values, makes sure that
+  x_downsampling,    /**< Downsampling only based on the x-values, makes sure that
                       there is only one plotted value per x-pixel value. Fastest,
                       but will discard x-values that are located with the same
                       x-pixel value near each other. Recommended for real-time

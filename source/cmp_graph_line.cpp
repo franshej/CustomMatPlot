@@ -190,7 +190,7 @@ void GraphLine::updateXGraphPointsIntern(
         std::iota(m_x_based_ds_indices.begin(), m_x_based_ds_indices.end(), 0u);
         break;
 
-      case DownsamplingType::x_downsaming:
+      case DownsamplingType::x_downsampling:
         Downsampler<float>::calculateXBasedDSIdxs(common_plot_params, m_x_data,
                                                   m_x_based_ds_indices);
 
@@ -226,7 +226,7 @@ void GraphLine::updateYGraphPointsIntern(
       case DownsamplingType::no_downsampling:
         break;
 
-      case DownsamplingType::x_downsaming:
+      case DownsamplingType::x_downsampling:
         break;
 
       case DownsamplingType::xy_downsampling:

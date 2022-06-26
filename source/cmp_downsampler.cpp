@@ -70,7 +70,7 @@ static auto calculateXIdxsBetweenStartEnd(const auto start_x_idx,
       getXScaleAndOffset(float(common_params.graph_bounds.getWidth()),
                          common_params.x_lim, common_params.x_scaling);
 
-  float last_added_x = std::numeric_limits<float>::min();
+  float last_added_x = x_data[start_x_idx];
   std::size_t current_index = start_x_idx;
   std::size_t graph_point_index{0u};
   const auto inverse_x_scale = 1.f / x_scale;
