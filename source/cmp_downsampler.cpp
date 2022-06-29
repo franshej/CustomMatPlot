@@ -65,31 +65,37 @@ static auto computeXEndIdx(const auto x_max_lim, const auto& x_data) {
 static auto calculateXIdxsBetweenStartEnd(const auto start_x_idx,
                                           const auto end_x_idx,
                                           const auto common_params,
-                                          const auto& x_data, auto& x_idx) {
+                                          const auto& x_data, auto& x_based_ds_idxs) {
   const auto [x_scale, x_offset] =
       getXScaleAndOffset(float(common_params.graph_bounds.getWidth()),
                          common_params.x_lim, common_params.x_scaling);
 
   float last_added_x = x_data[start_x_idx];
   std::size_t current_index = start_x_idx;
-  std::size_t graph_point_index{0u};
-  const auto inverse_x_scale = 1.f / x_scale;
+  std::size_t graph_point_index{1u};
+  const auto inverse_x_scale = 1.0f / x_scale;
+  auto last_x_diff = 0.f;
 
   if (common_params.x_scaling == Scaling::linear) {
-    for (auto x = x_data.begin() + start_x_idx; x != x_data.begin() + end_x_idx;
-         ++x) {
-      if (abs(*x - last_added_x) > inverse_x_scale) {
-        last_added_x = *x;
-        x_idx[graph_point_index++] = current_index;
+    for (auto i = current_index; i < end_x_idx;
+         ++i) {
+      const auto current_x_diff = i > 0 ? x_data[i - 1] - x_data[i] : 0.f;
+
+      // If the x values suddenly go opposite, we need to add that value.
+      const auto force_add_x = (std::signbit(last_x_diff) != std::signbit(current_x_diff));
+      last_x_diff = current_x_diff;
+
+      if (force_add_x || (abs(last_added_x - x_data[i])) > inverse_x_scale) {
+        last_added_x = x_data[i];
+        x_based_ds_idxs[graph_point_index++] = i;
       }
-      current_index++;
     }
   } else if (common_params.x_scaling == Scaling::logarithmic) {
     for (auto x = x_data.begin() + start_x_idx; x != x_data.begin() + end_x_idx;
          ++x) {
       if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
         last_added_x = *x;
-        x_idx[graph_point_index++] = current_index;
+        x_based_ds_idxs[graph_point_index++] = current_index;
       }
       current_index++;
     }
