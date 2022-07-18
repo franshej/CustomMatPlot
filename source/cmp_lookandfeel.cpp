@@ -7,12 +7,13 @@
 
 #include "cmp_lookandfeel.h"
 
-#include "cmp_graph_line.h"
-#include "cmp_grid.h"
-#include "cmp_label.h"
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "cmp_graph_line.h"
+#include "cmp_grid.h"
+#include "cmp_label.h"
 
 /*============================================================================*/
 
@@ -41,7 +42,7 @@ static std::vector<float> getLinearTicks(
   return ticks;
 };
 
-static constexpr std::pair<float, float> getFirstEndFromPreviousTicks(
+static std::pair<float, float> getFirstAndEndFromPreviousTicks(
     const std::vector<float>& previous_ticks, const cmp::Lim_f lim) {
   auto start_value = 0.0f;
   {
@@ -94,7 +95,7 @@ static std::vector<float> getLogarithmicTicks(
     ticks.resize(num_ticks_per_power);
 
     const auto [start_value, end_value] =
-        getFirstEndFromPreviousTicks(previous_ticks, lim);
+        getFirstAndEndFromPreviousTicks(previous_ticks, lim);
 
     auto delta = (end_value - start_value) / num_ticks_per_power;
     cmp::iota_delta(ticks.begin(), ticks.end(), lim.min, delta);
