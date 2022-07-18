@@ -117,14 +117,10 @@ struct Lim {
     return *this;
   }
 
-#if THREE_WAY_COMP
-  auto operator<=>(const Lim<ValueType>&) const noexcept = default;
-#else
-  /** No spaceship  :( */
   bool operator==(const Lim<ValueType>& rhs) const noexcept {
     return min == rhs.min && max == rhs.max;
   }
-#endif
+
   constexpr explicit operator bool() const noexcept {
     constexpr auto zero = static_cast<ValueType>(0);
 
