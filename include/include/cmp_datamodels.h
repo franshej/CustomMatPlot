@@ -121,6 +121,10 @@ struct Lim {
     return min == rhs.min && max == rhs.max;
   }
 
+  bool operator!=(const Lim<ValueType>& rhs) const noexcept {
+    return min != rhs.min || max != rhs.max;
+  }
+
   constexpr explicit operator bool() const noexcept {
     constexpr auto zero = static_cast<ValueType>(0);
 
