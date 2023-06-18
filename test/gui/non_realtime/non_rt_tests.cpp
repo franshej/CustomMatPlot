@@ -326,6 +326,22 @@ TEST(look_and_feel, non_real_time) {
   GET_PLOT->setLookAndFeel(lnf.get());
 }
 
+class MyLnf_2 : public cmp::PlotLookAndFeel {
+  bool isXAxisLabelsBelowGraph() const noexcept override { return false; }
+};
+
+TEST(x_axis_above_graph, non_real_time) {
+  ADD_SEMI_LOG_Y;
+
+  std::vector<float> y_test_data(1000);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+  auto lnf = std::make_shared<MyLnf_2>();
+
+  PARENT->lnf.emplace_back(lnf);
+  PLOT_Y({y_test_data});
+  GET_PLOT->setLookAndFeel(lnf.get());
+}
+
 TEST(set_custom_colour, non_real_time) {
   ADD_PLOT;
 

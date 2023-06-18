@@ -495,6 +495,9 @@ class Plot : public juce::Component {
                                      const juce::Rectangle<int>& graph_bounds,
                                      juce::Label& x_label, juce::Label& y_label,
                                      juce::Label& title_label) = 0;
+
+    /** Is x-axis labels above or below the graph area */
+    virtual CONSTEXPR20 bool isXAxisLabelsBelowGraph() const noexcept = 0;
   };
 
   //==============================================================================

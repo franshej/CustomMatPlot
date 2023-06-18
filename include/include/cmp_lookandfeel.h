@@ -173,6 +173,8 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
                            const juce::Rectangle<int> &graph_bounds,
                            juce::Label &x_label, juce::Label &y_label,
                            juce::Label &title_label) override;
+
+  bool isXAxisLabelsBelowGraph() const noexcept override;
 };  // class PlotLookAndFeelDefault
 
 class PlotLookAndFeel

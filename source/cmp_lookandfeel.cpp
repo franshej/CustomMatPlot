@@ -220,10 +220,16 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
 
     auto right = 0;
     auto left = getMargin();
-    auto top = getGridLabelFont().getHeight() / 2;
+    auto top = getMargin() + getMarginSmall();
+
+    const auto is_x_axis_label_below_graph = isXAxisLabelsBelowGraph();
     auto bottom =
-        bounds.getHeight() - (getGridLabelFont().getHeight() + getMargin() +
-                              getXGridLabelDistanceFromGraphBound());
+        is_x_axis_label_below_graph
+            ? bounds.getHeight() -
+                  (getGridLabelFont().getHeight() + getMargin() +
+                   getXGridLabelDistanceFromGraphBound())
+            : bounds.getHeight() -
+                  (getMargin() + getXGridLabelDistanceFromGraphBound());
 
     if (is_labels_set.x_label) {
       bottom -= (getXYTitleFont().getHeight() + getMargin());
@@ -234,7 +240,7 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getGraphBounds(
     }
 
     if (is_labels_set.title_label) {
-      top = getXYTitleFont().getHeight() + 2 * getMargin();
+      top += getXYTitleFont().getHeight() + getMargin();
     }
 
     if (y_grid_label_width) {
@@ -1007,10 +1013,15 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
         const auto [label_width, label_height] =
             getLabelWidthAndHeight(font, label);
 
+        const auto is_x_axis_label_below_graph = isXAxisLabelsBelowGraph();
+        const auto bound_y =
+            is_x_axis_label_below_graph
+                ? common_plot_params.graph_bounds.getBottom() +
+                      getXGridLabelDistanceFromGraphBound()
+                : common_plot_params.graph_bounds.getTopLeft().y - label_height;
+
         const auto bound =
-            juce::Rectangle<int>(int(position.x) - label_width / 2,
-                                 common_plot_params.graph_bounds.getBottom() +
-                                     getXGridLabelDistanceFromGraphBound(),
+            juce::Rectangle<int>(int(position.x) - label_width / 2, bound_y,
                                  label_width, label_height);
 
         checkInterectionWithLastLabelAndAdd(x_last_label_bound,
@@ -1091,10 +1102,20 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXYTitleLabels(
           int(getMargin()),
       x_label_width, font_height);
 
+  const auto is_x_axis_label_below_graph = isXAxisLabelsBelowGraph();
+  const auto bound_y =
+      is_x_axis_label_below_graph
+          ? graph_bounds.getY() - (title_margin + int(font.getHeight()))
+          : graph_bounds.getY() - getGridLabelFont().getHeight() * 2;
+
   title_label.setBounds(
       graph_bounds.getX() + graph_bounds.getWidth() / 2 - title_width / 2,
-      graph_bounds.getY() - (title_margin + int(font.getHeight())), title_width,
-      font_height);
+      bound_y, title_width, font_height);
+}
+
+template <Scaling x_scaling_t, Scaling y_scaling_t>
+bool PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::isXAxisLabelsBelowGraph() const noexcept {
+  return true;
 }
 
 template class PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>;
