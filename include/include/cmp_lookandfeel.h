@@ -22,18 +22,10 @@ namespace cmp {
  *  Inherence from this class if a custom lookandfeel class is wanted.
  *  Override the functions wanted to be changed.
  */
-class PlotLookAndFeel;
 
-/*
- *  \class PlotLookAndFeelDefault
- *  \brief A template LookAndFeel class.
- *
- *  Do not directly inherence from this class, use 'PlotLookAndFeel' instead.
- */
-template <Scaling x_scaling_t, Scaling y_scaling_t>
-class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
+class PlotLookAndFeel : public Plot::LookAndFeelMethods {
  public:
-  PlotLookAndFeelDefault();
+  PlotLookAndFeel();
 
   void setDefaultPlotColours() noexcept override;
 
@@ -172,13 +164,6 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
                            juce::Label &title_label) override;
 
   bool isXAxisLabelsBelowGraph() const noexcept override;
-};  // class PlotLookAndFeelDefault
-
-class PlotLookAndFeel
-    : public PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>,
-      public PlotLookAndFeelDefault<Scaling::logarithmic, Scaling::linear>,
-      public PlotLookAndFeelDefault<Scaling::linear, Scaling::logarithmic>,
-      public PlotLookAndFeelDefault<Scaling::logarithmic,
-                                    Scaling::logarithmic> {};
+};  // class PlotLookAndFeel
 
 }  // namespace cmp

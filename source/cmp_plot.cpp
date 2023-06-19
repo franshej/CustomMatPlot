@@ -521,53 +521,14 @@ void Plot::parentHierarchyChanged() {
   lookAndFeelChanged();
 }
 
-template <Scaling x_scaling, Scaling y_scaling>
-juce::LookAndFeel* Plot::castUserLookAndFeel(
-    PlotLookAndFeel* user_look_and_feel) {
-  if (m_x_scaling != x_scaling || m_y_scaling != y_scaling) {
-  } else if (auto* lnf =
-                 dynamic_cast<PlotLookAndFeelDefault<x_scaling, y_scaling>*>(
-                     user_look_and_feel)) {
-    return lnf;
-  }
-  return nullptr;
-}
-
 void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
-  juce::LookAndFeel* lnf{nullptr};
-
-  if ((lnf = castUserLookAndFeel<Scaling::linear, Scaling::linear>(
-           look_and_feel))) {
-  } else if ((lnf = castUserLookAndFeel<Scaling::logarithmic, Scaling::linear>(
-                  look_and_feel))) {
-  } else if ((lnf = castUserLookAndFeel<Scaling::logarithmic,
-                                        Scaling::logarithmic>(look_and_feel))) {
-  } else if ((lnf = castUserLookAndFeel<Scaling::linear, Scaling::logarithmic>(
-                  look_and_feel))) {
-  }
-
   resetLookAndFeelChildrens();
-
-  this->juce::Component::setLookAndFeel(lnf);
-
+  this->juce::Component::setLookAndFeel(look_and_feel);
   resizeChilderns();
 }
 
 std::unique_ptr<Plot::LookAndFeelMethods> Plot::getDefaultLookAndFeel() {
-  if (m_x_scaling == Scaling::logarithmic &&
-      m_y_scaling == Scaling::logarithmic) {
-    return std::make_unique<cmp::PlotLookAndFeelDefault<
-        Scaling::logarithmic, Scaling::logarithmic>>();
-  } else if (m_x_scaling == Scaling::logarithmic) {
-    return std::make_unique<
-        cmp::PlotLookAndFeelDefault<Scaling::logarithmic, Scaling::linear>>();
-  } else if (m_y_scaling == Scaling::logarithmic) {
-    return std::make_unique<
-        cmp::PlotLookAndFeelDefault<Scaling::linear, Scaling::logarithmic>>();
-  } else {
-    return std::make_unique<
-        cmp::PlotLookAndFeelDefault<Scaling::linear, Scaling::linear>>();
-  }
+  return std::make_unique<PlotLookAndFeel>();
 }
 
 void Plot::lookAndFeelChanged() {
