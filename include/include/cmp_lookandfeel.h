@@ -32,9 +32,6 @@ class PlotLookAndFeel;
  */
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
-  static constexpr auto m_x_scaling = x_scaling_t;
-  static constexpr auto m_y_scaling = y_scaling_t;
-
  public:
   PlotLookAndFeelDefault();
 
@@ -136,31 +133,31 @@ class PlotLookAndFeelDefault : public Plot::LookAndFeelMethods {
                     const juce::Point<int> &end_coordinates,
                     const juce::Rectangle<int> &graph_bounds) noexcept override;
 
-  void updateXGraphPoints(const juce::Rectangle<int> &bounds,
-                          const Lim_f &x_lim, const std::vector<float> &x_data,
-                          std::vector<std::size_t> &graph_points_indices,
-                          GraphPoints &graph_points) noexcept override;
+  void updateXGraphPoints(
+      const CommonPlotParameterView &common_plot_parameter_view,
+      const std::vector<float> &x_data,
+      std::vector<std::size_t> &graph_points_indices,
+      GraphPoints &graph_points) noexcept override;
 
-  void updateYGraphPoints(const juce::Rectangle<int> &bounds,
-                          const Lim_f &y_lim, const std::vector<float> &y_data,
-                          const std::vector<std::size_t> &graph_points_indices,
-                          GraphPoints &graph_points) noexcept override;
+  void updateYGraphPoints(
+      const CommonPlotParameterView &common_plot_parameter_view,
+      const std::vector<float> &y_data,
+      const std::vector<std::size_t> &graph_points_indices,
+      GraphPoints &graph_points) noexcept override;
 
   void updateVerticalGridLineTicksAuto(
-      const juce::Rectangle<int> &bounds, const bool tiny_grids,
-      const Lim_f x_lim, std::vector<float> &x_ticks) noexcept override;
+      const juce::Rectangle<int> &bounds,
+      const CommonPlotParameterView &common_plot_parameter_view,
+      const bool tiny_grids, std::vector<float> &x_ticks) noexcept override;
 
   void updateHorizontalGridLineTicksAuto(
-      const juce::Rectangle<int> &bounds, const bool tiny_grids,
-      const Lim_f y_lim, std::vector<float> &y_ticks) noexcept override;
+      const juce::Rectangle<int> &bounds,
+      const CommonPlotParameterView &common_plot_parameter_view,
+      const bool tiny_grids, std::vector<float> &y_ticks) noexcept override;
 
   juce::Font getGridLabelFont() const noexcept override;
 
   juce::Font getXYTitleFont() const noexcept override;
-
-  Scaling getXScaling() const noexcept override;
-
-  Scaling getYScaling() const noexcept override;
 
   void updateGridLabels(const CommonPlotParameterView common_plot_params,
                         const std::vector<GridLine> &grid_lines,

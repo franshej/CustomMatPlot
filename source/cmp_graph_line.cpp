@@ -207,9 +207,8 @@ void GraphLine::updateXGraphPointsIntern(
     }
 
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateXGraphPoints(common_plot_params.graph_bounds,
-                            common_plot_params.x_lim, m_x_data,
-                            m_x_based_ds_indices, m_graph_points);
+    lnf->updateXGraphPoints(common_plot_params, m_x_data, m_x_based_ds_indices,
+                            m_graph_points);
   }
 }
 
@@ -236,8 +235,7 @@ void GraphLine::updateYGraphPointsIntern(
 
         graph_point_indices = m_xy_based_ds_indices;
 
-        lnf->updateXGraphPoints(common_plot_params.graph_bounds,
-                                common_plot_params.x_lim, m_x_data,
+        lnf->updateXGraphPoints(common_plot_params, m_x_data,
                                 graph_point_indices, m_graph_points);
         break;
 
@@ -245,9 +243,8 @@ void GraphLine::updateYGraphPointsIntern(
         break;
     }
 
-    lnf->updateYGraphPoints(common_plot_params.graph_bounds,
-                            common_plot_params.y_lim, m_y_data,
-                            graph_point_indices, m_graph_points);
+    lnf->updateYGraphPoints(common_plot_params, m_y_data, graph_point_indices,
+                            m_graph_points);
   }
 }
 

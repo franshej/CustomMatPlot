@@ -413,21 +413,21 @@ PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getTracePointPositionFrom(
     const juce::Point<float> graph_values) const noexcept {
   const auto [x_scale, x_offset] =
       getXScaleAndOffset(float(common_plot_params.graph_bounds.getWidth()),
-                         common_plot_params.x_lim, getXScaling());
+                         common_plot_params.x_lim, common_plot_params.x_scaling);
 
   const auto [y_scale, y_offset] =
       getYScaleAndOffset(float(common_plot_params.graph_bounds.getHeight()),
-                         common_plot_params.y_lim, getYScaling());
+                         common_plot_params.y_lim, common_plot_params.y_scaling);
 
   float x;
   float y;
 
-  if constexpr (m_x_scaling == Scaling::linear) {
+  if (common_plot_params.x_scaling == Scaling::linear) {
     x = getXGraphValueLinear(graph_values.getX(), x_scale, x_offset);
   } else {
     x = getXGraphPointsLogarithmic(graph_values.getX(), x_scale, x_offset);
   }
-  if constexpr (m_y_scaling == Scaling::linear) {
+  if (common_plot_params.y_scaling == Scaling::linear) {
     y = getYGraphValueLinear(graph_values.getY(), y_scale, y_offset);
   } else {
     y = getYGraphPointsLogarithmic(graph_values.getY(), y_scale, y_offset);
@@ -740,22 +740,23 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::drawZoomArea(
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXGraphPoints(
-    const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
+    const CommonPlotParameterView& common_plot_parameter_view,
     const std::vector<float>& x_data,
     std::vector<std::size_t>& graph_points_indices,
     GraphPoints& graph_points) noexcept {
-  const auto [x_scale, x_offset] =
-      getXScaleAndOffset(float(bounds.getWidth()), x_lim, m_x_scaling);
+  const auto [x_scale, x_offset] = getXScaleAndOffset(
+      float(common_plot_parameter_view.graph_bounds.getWidth()),
+      common_plot_parameter_view.x_lim, common_plot_parameter_view.x_scaling);
 
   graph_points.resize(graph_points_indices.size());
 
   std::size_t i{0u};
-  if constexpr (m_x_scaling == Scaling::linear) {
+  if (common_plot_parameter_view.x_scaling == Scaling::linear) {
     for (const auto i_x : graph_points_indices) {
       graph_points[i++].setX(
           getXGraphValueLinear(x_data[i_x], x_scale, x_offset));
     }
-  } else if constexpr (m_x_scaling == Scaling::logarithmic) {
+  } else if (common_plot_parameter_view.x_scaling == Scaling::logarithmic) {
     for (const auto i_x : graph_points_indices) {
       graph_points[i++].setX(
           getXGraphPointsLogarithmic(x_data[i_x], x_scale, x_offset));
@@ -765,22 +766,23 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXGraphPoints(
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
-    const juce::Rectangle<int>& bounds, const Lim_f& y_lim,
+    const CommonPlotParameterView& common_plot_parameter_view,
     const std::vector<float>& y_data,
     const std::vector<std::size_t>& graph_points_indices,
     GraphPoints& graph_points) noexcept {
-  const auto [y_scale, y_offset] =
-      getYScaleAndOffset(bounds.toFloat().getHeight(), y_lim, m_y_scaling);
+  const auto [y_scale, y_offset] = getYScaleAndOffset(
+      common_plot_parameter_view.graph_bounds.toFloat().getHeight(),
+      common_plot_parameter_view.y_lim, common_plot_parameter_view.y_scaling);
 
   std::size_t i = 0u;
 
-  if constexpr (m_y_scaling == Scaling::linear) {
+  if (common_plot_parameter_view.y_scaling == Scaling::linear) {
     for (const auto i_y : graph_points_indices) {
       graph_points[i].setY(
           getYGraphValueLinear(y_data[i_y], y_scale, y_offset));
       i++;
     }
-  } else if constexpr (m_y_scaling == Scaling::logarithmic) {
+  } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
     for (const auto i_y : graph_points_indices) {
       graph_points[i].setY(
           getYGraphPointsLogarithmic(y_data[i_y], y_scale, y_offset));
@@ -791,9 +793,10 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateYGraphPoints(
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
-    updateVerticalGridLineTicksAuto(const juce::Rectangle<int>& bounds,
-                                    const bool tiny_grids, const Lim_f x_lim,
-                                    std::vector<float>& x_ticks) noexcept {
+    updateVerticalGridLineTicksAuto(
+        const juce::Rectangle<int>& bounds,
+        const CommonPlotParameterView& common_plot_parameter_view,
+        const bool tiny_grids, std::vector<float>& x_ticks) noexcept {
   static std::vector<float> previous_ticks;
 
   x_ticks.clear();
@@ -812,7 +815,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     num_vertical_lines =
         std::size_t(tiny_grids ? num_vertical_lines * 1.5 : num_vertical_lines);
 
-    x_ticks = getLinearTicks(num_vertical_lines, x_lim, previous_ticks);
+    x_ticks = getLinearTicks(num_vertical_lines,
+                             common_plot_parameter_view.x_lim, previous_ticks);
   };
 
   const auto addVerticalTicksLogarithmic = [&]() {
@@ -825,12 +829,13 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     num_ticks_per_power = std::size_t(tiny_grids ? num_ticks_per_power * 1.5
                                                  : num_ticks_per_power);
 
-    x_ticks = getLogarithmicTicks(num_ticks_per_power, x_lim, previous_ticks);
+    x_ticks = getLogarithmicTicks(
+        num_ticks_per_power, common_plot_parameter_view.x_lim, previous_ticks);
   };
 
-  if constexpr (m_x_scaling == Scaling::linear) {
+  if (common_plot_parameter_view.x_scaling == Scaling::linear) {
     addVerticalTicksLinear();
-  } else if constexpr (m_x_scaling == Scaling::logarithmic) {
+  } else if (common_plot_parameter_view.x_scaling == Scaling::logarithmic) {
     addVerticalTicksLogarithmic();
   }
 
@@ -839,9 +844,10 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
-    updateHorizontalGridLineTicksAuto(const juce::Rectangle<int>& bounds,
-                                      const bool tiny_grids, const Lim_f y_lim,
-                                      std::vector<float>& y_ticks) noexcept {
+    updateHorizontalGridLineTicksAuto(
+        const juce::Rectangle<int>& bounds,
+        const CommonPlotParameterView& common_plot_parameter_view,
+        const bool tiny_grids, std::vector<float>& y_ticks) noexcept {
   static std::vector<float> previous_ticks;
 
   y_ticks.clear();
@@ -859,7 +865,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     num_horizontal_lines = tiny_grids ? std::size_t(num_horizontal_lines * 1.5)
                                       : num_horizontal_lines;
 
-    y_ticks = getLinearTicks(num_horizontal_lines, y_lim, previous_ticks);
+    y_ticks = getLinearTicks(num_horizontal_lines,
+                             common_plot_parameter_view.y_lim, previous_ticks);
   };
 
   const auto addHorizontalTicksLogarithmic = [&]() {
@@ -872,12 +879,13 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::
     num_ticks_per_power = tiny_grids ? std::size_t(num_ticks_per_power * 1.5)
                                      : num_ticks_per_power;
 
-    y_ticks = getLogarithmicTicks(num_ticks_per_power, y_lim, previous_ticks);
+    y_ticks = getLogarithmicTicks(
+        num_ticks_per_power, common_plot_parameter_view.y_lim, previous_ticks);
   };
 
-  if constexpr (m_y_scaling == Scaling::linear) {
+  if (common_plot_parameter_view.y_scaling == Scaling::linear) {
     addHorizontalTicksLinear();
-  } else if constexpr (m_y_scaling == Scaling::logarithmic) {
+  } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
     addHorizontalTicksLogarithmic();
   }
 
@@ -909,18 +917,6 @@ juce::Font PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getXYTitleFont()
     const noexcept {
   return juce::Font(20.0f, juce::Font::plain);
 }
-
-template <Scaling x_scaling_t, Scaling y_scaling_t>
-Scaling PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getXScaling()
-    const noexcept {
-  return m_x_scaling;
-};
-
-template <Scaling x_scaling_t, Scaling y_scaling_t>
-Scaling PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::getYScaling()
-    const noexcept {
-  return m_y_scaling;
-};
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
 void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateGridLabels(
@@ -1114,7 +1110,8 @@ void PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::updateXYTitleLabels(
 }
 
 template <Scaling x_scaling_t, Scaling y_scaling_t>
-bool PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::isXAxisLabelsBelowGraph() const noexcept {
+bool PlotLookAndFeelDefault<x_scaling_t, y_scaling_t>::isXAxisLabelsBelowGraph()
+    const noexcept {
   return true;
 }
 

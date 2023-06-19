@@ -444,33 +444,29 @@ class Plot : public juce::Component {
      */
     virtual CONSTEXPR20 juce::Font getXYTitleFont() const noexcept = 0;
 
-    /** Get the x-scaling.*/
-    virtual CONSTEXPR20 Scaling getXScaling() const noexcept = 0;
-
     /** Get distance from top of grid x-labels to bottom of graph bound. */
     virtual CONSTEXPR20 int getYGridLabelDistanceFromGraphBound(
         const int y_grid_label_width) const noexcept = 0;
-
-    /** Get the y-scaling.*/
-    virtual CONSTEXPR20 Scaling getYScaling() const noexcept = 0;
 
     /** Defines the default colours */
     virtual void setDefaultPlotColours() noexcept = 0;
 
     /** Updates the x-ticks with auto generated ticks. */
     virtual void updateVerticalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds, const bool tiny_grids,
-        const Lim_f x_lim, std::vector<float>& x_ticks) noexcept = 0;
+        const juce::Rectangle<int>& bounds,
+        const CommonPlotParameterView& common_plot_parameter_view,
+        const bool tiny_grids, std::vector<float>& x_ticks) noexcept = 0;
 
     /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds, const bool tiny_grids,
-        const Lim_f y_lim, std::vector<float>& y_ticks) noexcept = 0;
+        const juce::Rectangle<int>& bounds,
+        const CommonPlotParameterView& common_plot_parameter_view,
+        const bool tiny_grids, std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-coordinates of the graph points used when drawing a graph
      *  line. */
     virtual void updateXGraphPoints(
-        const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
+        const CommonPlotParameterView& common_plot_parameter_view,
         const std::vector<float>& x_data,
         std::vector<std::size_t>& graph_points_indices,
         GraphPoints& graph_points) noexcept = 0;
@@ -478,7 +474,7 @@ class Plot : public juce::Component {
     /** Updates the y-coordinates of the graph points used when drawing a graph
      * line. */
     virtual void updateYGraphPoints(
-        const juce::Rectangle<int>& bounds, const Lim_f& y_lim,
+        const CommonPlotParameterView& common_plot_parameter_view,
         const std::vector<float>& y_data,
         const std::vector<std::size_t>& graph_points_indices,
         GraphPoints& graph_points) noexcept = 0;

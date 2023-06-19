@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -11,8 +11,8 @@
 #include <tuple>
 
 #include "cmp_graph_line.h"
-#include "cmp_utils.h"
 #include "cmp_plot.h"
+#include "cmp_utils.h"
 
 namespace cmp {
 
@@ -103,10 +103,12 @@ void Grid::addGridLines(const std::vector<float> &ticks,
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
         return getXScaleAndOffset(graph_bounds.getWidth(),
-                                  common_plot_params.x_lim, lnf->getXScaling());
+                                  common_plot_params.x_lim,
+                                  common_plot_params.x_scaling);
       }
       return getYScaleAndOffset(graph_bounds.getHeight(),
-                                common_plot_params.y_lim, lnf->getYScaling());
+                                common_plot_params.y_lim,
+                                common_plot_params.y_scaling);
     };
 
     const auto [scale, offset] = getScaleOffset();
@@ -131,7 +133,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
           grid_line.position = {
               graph_bounds.getX() +
-                  (lnf->getXScaling() == Scaling::linear
+                  (common_plot_params.x_scaling == Scaling::linear
                        ? getXGraphValueLinear(t, scale, offset)
                        : getXGraphPointsLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
@@ -155,7 +157,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           grid_line.position = {
               graph_bounds.getX(),
               std::ceil(graph_bounds.getY() +
-                        (lnf->getYScaling() == Scaling::linear
+                        (common_plot_params.y_scaling == Scaling::linear
                              ? getYGraphValueLinear(t, scale, offset)
                              : getYGraphPointsLogarithmic(t, scale, offset)))};
 
@@ -263,12 +265,12 @@ void Grid::createAutoGridTicks(
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<cmp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
-      lnf->updateVerticalGridLineTicksAuto(getBounds(),
+      lnf->updateVerticalGridLineTicksAuto(getBounds(), common_plot_params,
                                            m_config_params.tiny_grid_on,
-                                           common_plot_params.x_lim, x_ticks);
-      lnf->updateHorizontalGridLineTicksAuto(getBounds(),
+                                           x_ticks);
+      lnf->updateHorizontalGridLineTicksAuto(getBounds(), common_plot_params,
                                              m_config_params.tiny_grid_on,
-                                             common_plot_params.y_lim, y_ticks);
+                                             y_ticks);
     }
   }
 }
