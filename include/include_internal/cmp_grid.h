@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -123,7 +123,7 @@ class Grid : public juce::Component {
    *  @param common_plot_params common graph attributes.
    *  @return void.
    */
-  void updateGrid(const CommonPlotParameterView common_plot_params);
+  void updateGrid(const CommonPlotParameterView& common_plot_params);
 
   /** @brief Get the max width of the x and y-labels
    *
@@ -181,6 +181,7 @@ class Grid : public juce::Component {
 
   juce::LookAndFeel* m_lookandfeel;
   GridConfigParams m_config_params;
+  const CommonPlotParameterView* m_common_plot_params{nullptr};
 
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_labels,
       m_x_axis_labels;

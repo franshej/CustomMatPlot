@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -129,7 +129,7 @@ class GraphLine : public juce::Component {
    *  @param common_plot_params common plot parameters.
    *  @return void.
    */
-  void updateXGraphPoints(const CommonPlotParameterView common_plot_params);
+  void updateXGraphPoints(const CommonPlotParameterView& common_plot_params);
 
   /** @brief Update the y-value in the graph points.
    *
@@ -139,7 +139,7 @@ class GraphLine : public juce::Component {
    *  @param common_plot_params common plot parameters.
    *  @return void.
    */
-  void updateYGraphPoints(const CommonPlotParameterView common_plot_params);
+  void updateYGraphPoints(const CommonPlotParameterView& common_plot_params);
 
   //==============================================================================
 
@@ -161,6 +161,7 @@ class GraphLine : public juce::Component {
   std::vector<float> m_x_data, m_y_data;
   GraphPoints m_graph_points;
   std::vector<std::size_t> m_x_based_ds_indices, m_xy_based_ds_indices;
+  const CommonPlotParameterView* m_common_plot_params{nullptr};
 
   GraphAttribute m_graph_attributes;
 };

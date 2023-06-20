@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -49,18 +49,16 @@ bool TracePoint<ValueType>::setDataPoint(
 }
 
 template <class ValueType>
-void TraceLabel<ValueType>::setGraphLabelFrom(
-    const juce::Point<ValueType>& graph_value,
-    const CommonPlotParameterView common_plot_params) {
-  if (m_lookandfeel) {
+void TraceLabel<ValueType>::updateTraceLabel() {
+  if (m_graph_value && m_common_plot_params && m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
     m_x_label.first =
         "X: " +
-        valueToString(graph_value.getX(), common_plot_params, true).first;
-    m_y_label.first =
-        "Y: " +
-        valueToString(graph_value.getY(), common_plot_params, false).first;
+        valueToString(m_graph_value->getX(), *m_common_plot_params, true).first;
+    m_y_label.first = "Y: " + valueToString(m_graph_value->getY(),
+                                            *m_common_plot_params, false)
+                                  .first;
 
     const auto [x_label_bounds, y_label_bounds] =
         lnf->getTraceXYLabelBounds(m_x_label.first, m_y_label.first);
@@ -68,6 +66,15 @@ void TraceLabel<ValueType>::setGraphLabelFrom(
     m_x_label.second = x_label_bounds;
     m_y_label.second = y_label_bounds;
   }
+}
+
+template <class ValueType>
+void TraceLabel<ValueType>::setGraphLabelFrom(
+    const juce::Point<ValueType>& graph_value,
+    const CommonPlotParameterView& common_plot_params) {
+  m_common_plot_params = &common_plot_params;
+  m_graph_value = &graph_value;
+  updateTraceLabel();
 }
 
 template <class ValueType>
@@ -85,6 +92,7 @@ template <class ValueType>
 void TraceLabel<ValueType>::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
+    updateTraceLabel();
   } else {
     m_lookandfeel = nullptr;
   }
@@ -114,9 +122,8 @@ juce::Point<float> Trace::getGraphPosition(
   return juce::Point<float>();
 }
 
-void Trace::addOrRemoveTracePoint(
-    const juce::Point<float>& data_point,
-    const GraphLine* graph_line) {
+void Trace::addOrRemoveTracePoint(const juce::Point<float>& data_point,
+                                  const GraphLine* graph_line) {
   if (std::find_if(m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
                    [&data_point](const auto& tl) {
                      return (*tl.trace_point) == data_point;
@@ -261,6 +268,7 @@ void Trace::removeSingleTracePointAndLabel(
                      }));
 }
 
+// TODO : remove this function so it's updated when lookandfeel is changed
 void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
     TraceLabelPoint_f* tlp, const CommonPlotParameterView common_plot_params,
     bool force_corner_position) {

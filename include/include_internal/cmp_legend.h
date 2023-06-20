@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -66,7 +66,8 @@ class Legend : public juce::Component {
    * @param StringVector the descriptions that will be drawn.
    * @return void.
    */
-  std::function<void(const StringVector&)> onNumberOfDescriptionsChanged{nullptr};
+  std::function<void(const StringVector&)> onNumberOfDescriptionsChanged{
+      nullptr};
 
  private:
   juce::LookAndFeel* m_lookandfeel;
@@ -75,5 +76,6 @@ class Legend : public juce::Component {
   std::vector<std::string> m_label_texts;
 
   bool m_label_texts_is_changed{false};
+  const GraphLines* m_graph_lines{nullptr};
 };
 }  // namespace cmp

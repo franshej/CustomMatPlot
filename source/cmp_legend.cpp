@@ -7,6 +7,7 @@
 
 #include "cmp_legend.h"
 
+#include "cmp_datamodels.h"
 #include "cmp_graph_line.h"
 #include "cmp_plot.h"
 
@@ -19,6 +20,8 @@ void cmp::Legend::setLegend(const std::vector<std::string>& label_texts) {
 void cmp::Legend::updateLegends(const GraphLines& graph_lines) {
   if ((m_legend_labels.size() != graph_lines.size() ||
        m_label_texts_is_changed)) {
+    m_graph_lines = &graph_lines;
+
     m_label_texts_is_changed = false;
     m_legend_labels.resize(m_label_texts.size());
 
@@ -61,6 +64,9 @@ void cmp::Legend::paint(juce::Graphics& g) {
 void cmp::Legend::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
+    if (m_graph_lines) {
+      updateLegends(*m_graph_lines);
+    }
   } else {
     m_lookandfeel = nullptr;
   }

@@ -108,6 +108,10 @@ void GraphLine::paint(juce::Graphics& g) {
 void GraphLine::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
+    if (m_common_plot_params) {
+      updateXGraphPointsIntern(*m_common_plot_params);
+      updateYGraphPointsIntern(*m_common_plot_params);
+    }
   } else {
     m_lookandfeel = nullptr;
   }
@@ -157,23 +161,25 @@ const GraphPoints& GraphLine::getGraphPoints() const noexcept {
 }
 
 void GraphLine::updateXGraphPoints(
-    const CommonPlotParameterView common_plot_params) {
+    const CommonPlotParameterView& common_plot_params) {
   // x_lim must be set to calculate the xdata.
   jassert(common_plot_params.x_lim);
 
   // x_data empty.
   jassert(!m_x_data.empty());
+  m_common_plot_params = &common_plot_params;
 
   updateXGraphPointsIntern(common_plot_params);
 }
 
 void GraphLine::updateYGraphPoints(
-    const CommonPlotParameterView common_plot_params) {
+    const CommonPlotParameterView& common_plot_params) {
   // x_lim must be set to calculate the xdata.
   jassert(common_plot_params.y_lim);
 
   // y_data empty.
   jassert(!m_y_data.empty());
+  m_common_plot_params = &common_plot_params;
 
   updateYGraphPointsIntern(common_plot_params);
 }

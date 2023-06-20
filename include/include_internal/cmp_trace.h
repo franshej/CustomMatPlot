@@ -90,7 +90,7 @@ template <class ValueType>
 struct TraceLabel : public juce::Component {
   /** Set the graph labels from point. */
   void setGraphLabelFrom(const juce::Point<ValueType>& graph_value,
-                         const CommonPlotParameterView common_plot_params);
+                         const CommonPlotParameterView& common_plot_params);
 
   /** @internal */
   void resized() override;
@@ -108,7 +108,13 @@ struct TraceLabel : public juce::Component {
 
  private:
   /** @internal */
+  void updateTraceLabel();
+  /** @internal */
   juce::LookAndFeel* m_lookandfeel;
+  /** @internal */
+  CommonPlotParameterView const *m_common_plot_params{nullptr};
+  /** @internal */
+  juce::Point<ValueType> const *m_graph_value{nullptr};
 };
 
 /** @brief A typedef defines a tracelabel using floats. */

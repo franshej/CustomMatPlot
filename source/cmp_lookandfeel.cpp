@@ -463,12 +463,12 @@ void PlotLookAndFeel::drawGridLabels(juce::Graphics& g,
                                      const LabelVector& x_axis_labels,
                                      const LabelVector& y_axis_labels) {
   g.setColour(findColour(Plot::x_grid_label_colour));
-
   g.setFont(getGridLabelFont());
   for (const auto& x_axis_text : x_axis_labels) {
     g.drawText(x_axis_text.first, x_axis_text.second,
                juce::Justification::centred);
   }
+    g.setColour(findColour(Plot::y_grid_label_colour));
   for (const auto& y_axis_text : y_axis_labels) {
     g.drawText(y_axis_text.first, y_axis_text.second,
                juce::Justification::centredRight);

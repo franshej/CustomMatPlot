@@ -223,6 +223,9 @@ void Grid::paint(juce::Graphics &g) {
 void Grid::lookAndFeelChanged() {
   if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
+    if (m_common_plot_params != nullptr) {
+      updateGridInternal(*m_common_plot_params);
+    }
   } else {
     m_lookandfeel = nullptr;
   }
@@ -232,7 +235,8 @@ void Grid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
 }
 
-void Grid::updateGrid(const CommonPlotParameterView common_plot_params) {
+void Grid::updateGrid(const CommonPlotParameterView &common_plot_params) {
+  m_common_plot_params = &common_plot_params;
   updateGridInternal(common_plot_params);
 }
 
