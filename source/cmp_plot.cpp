@@ -258,7 +258,9 @@ void cmp::Plot::updateTracePointsForNewGraphData() {
   }
 }
 
-static auto getLimOffset(const auto min, const auto max, const auto scaling) {
+template <class ValueType>
+static auto getLimOffset(const ValueType min, const ValueType max,
+                         const cmp::Scaling scaling) {
   auto new_min = min;
 
   if (scaling == Scaling::linear) {
@@ -276,7 +278,7 @@ static auto getLimOffset(const auto min, const auto max, const auto scaling) {
 void Plot::setAutoXScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, true);
 
-  m_x_lim_default = getLimOffset(min, max, m_x_scaling);
+  m_x_lim_default = getLimOffset<decltype(min)>(min, max, m_x_scaling);
 
   updateXLim(m_x_lim_default);
 }
@@ -284,7 +286,7 @@ void Plot::setAutoXScale() {
 void Plot::setAutoYScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, false);
 
-  m_y_lim_default = getLimOffset(min, max, m_y_scaling);
+  m_y_lim_default = getLimOffset<decltype(min)>(min, max, m_y_scaling);
 
   updateYLim(m_y_lim_default);
 }
@@ -373,7 +375,9 @@ void cmp::Plot::setDownsamplingType(
   updateGridGraphsTrace();
 }
 
-static auto jassetLogLimBelowZero(const auto scaling, const auto lim) {
+template <class ValueType>
+static auto jassetLogLimBelowZero(const cmp::Scaling scaling,
+                                  const Lim<ValueType> lim) {
   const auto zero = decltype(lim.min)(0);
 
   // You are trying to use a negative limit but the axis is logarithmic. Don't

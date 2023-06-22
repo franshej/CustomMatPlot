@@ -558,7 +558,8 @@ TEST(trace_point_cb, non_real_time) {
  };
 }
 
-static auto create_heart(const auto amplitude, const std::size_t N) {
+template <typename T>
+static auto create_heart(const T amplitude, const std::size_t N) {
   auto in_type = amplitude;
 
   std::vector<decltype(in_type)> x(N), y(N);

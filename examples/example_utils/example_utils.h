@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -31,7 +31,7 @@ std::vector<ValueType> generateSineWaveVector(const std::size_t length,
                                               ValueType min, ValueType max,
                                               const ValueType num_periods,
                                               ValueType phase = 0) {
-  std::vector<float> retval(length);
+  std::vector<ValueType> retval(length);
 
   auto dx =
       (juce::MathConstants<ValueType>::twoPi * num_periods) / ValueType(length);

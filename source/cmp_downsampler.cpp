@@ -7,12 +7,16 @@
 
 #include "cmp_downsampler.h"
 
+#include <algorithm>
+#include <cstddef>
+
 #include "cmp_datamodels.h"
 #include "cmp_utils.h"
-#include <algorithm>
 
 namespace cmp {
-static auto computeXStartIdx(const auto x_min_lim, const auto& x_data) {
+template <class ValueType>
+static auto computeXStartIdx(const ValueType x_min_lim,
+                             const std::vector<ValueType>& x_data) {
   int start_x_index{0};
 
   // The points that are on top of each other or outside the graph area are
@@ -40,8 +44,10 @@ static auto computeXStartIdx(const auto x_min_lim, const auto& x_data) {
   return start_x_index;
 }
 
-static auto computeXEndIdx(const auto x_max_lim, const auto& x_data) {
-  std::size_t end_x_index{x_data.size() - 1};
+template <class ValueType>
+static auto computeXEndIdx(const ValueType x_max_lim,
+                           const std::vector<ValueType>& x_data) {
+  int end_x_index{int(x_data.size() - 1)};
 
   for (auto x = x_data.rbegin(); x != x_data.rend(); ++x) {
     if (*x <= x_max_lim || end_x_index == 0u) {
@@ -62,10 +68,12 @@ static auto computeXEndIdx(const auto x_max_lim, const auto& x_data) {
   return end_x_index;
 }
 
-static auto calculateXIdxsBetweenStartEnd(const auto start_x_idx,
-                                          const auto end_x_idx,
-                                          const auto common_params,
-                                          const auto& x_data, auto& x_based_ds_idxs) {
+template <class ValueType, class IndexType, class ForwardIt>
+static auto calculateXIdxsBetweenStartEnd(
+    const ForwardIt start_x_idx, const ForwardIt end_x_idx,
+    const cmp::CommonPlotParameterView common_params,
+    const std::vector<ValueType>& x_data,
+    std::vector<IndexType>& x_based_ds_idxs) {
   const auto [x_scale, x_offset] =
       getXScaleAndOffset(float(common_params.graph_bounds.getWidth()),
                          common_params.x_lim, common_params.x_scaling);
@@ -77,12 +85,12 @@ static auto calculateXIdxsBetweenStartEnd(const auto start_x_idx,
   auto last_x_diff = 0.f;
 
   if (common_params.x_scaling == Scaling::linear) {
-    for (auto i = current_index; i < end_x_idx;
-         ++i) {
+    for (auto i = current_index; i < end_x_idx; ++i) {
       const auto current_x_diff = i > 0 ? x_data[i - 1] - x_data[i] : 0.f;
 
       // If the x values suddenly go opposite, we need to add that value.
-      const auto force_add_x = (std::signbit(last_x_diff) != std::signbit(current_x_diff));
+      const auto force_add_x =
+          (std::signbit(last_x_diff) != std::signbit(current_x_diff));
       last_x_diff = current_x_diff;
 
       if (force_add_x || (abs(last_added_x - x_data[i])) > inverse_x_scale) {
@@ -124,14 +132,17 @@ void Downsampler<FloatType>::calculateXBasedDSIdxs(
     return;
   }
 
-  const auto start_x_index = computeXStartIdx(x_lim.min, x_data);
+  const auto start_x_index =
+      computeXStartIdx<decltype(x_lim.min)>(x_lim.min, x_data);
 
-  const auto end_x_index = computeXEndIdx(x_lim.max, x_data);
+  const auto end_x_index =
+      computeXEndIdx<decltype(x_lim.max)>(x_lim.max, x_data);
 
   x_based_ds_idxs.front() = start_x_index;
 
-  const auto x_idxs_size_required = calculateXIdxsBetweenStartEnd(
-      start_x_index, end_x_index, common_params, x_data, x_based_ds_idxs);
+  const auto x_idxs_size_required =
+      calculateXIdxsBetweenStartEnd<FloatType, size_t>(
+          start_x_index, end_x_index, common_params, x_data, x_based_ds_idxs);
 
   x_based_ds_idxs.resize(x_idxs_size_required);
 

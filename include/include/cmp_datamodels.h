@@ -89,11 +89,11 @@ enum class Scaling : uint32_t {
 /**< Enum to define the type of downsampling. */
 enum class DownsamplingType : uint32_t {
   no_downsampling, /**< No downsampling. Slow when plotting alot of values. */
-  x_downsampling,    /**< Downsampling only based on the x-values, makes sure that
-                      there is only one plotted value per x-pixel value. Fastest,
-                      but will discard x-values that are located with the same
-                      x-pixel value near each other. Recommended for real-time
-                      plotting. */
+  x_downsampling,  /**< Downsampling only based on the x-values, makes sure that
+                    there is only one plotted value per x-pixel value. Fastest,
+                    but will discard x-values that are located with the same
+                    x-pixel value near each other. Recommended for real-time
+                    plotting. */
   xy_downsampling, /**< Same resolution as 'no_downsampling' but skips x- &
                       y-values that do not need to be plotted. It's quicker than
                       'no_downsampling' but slower than 'x_downsampling'. */
@@ -282,19 +282,19 @@ struct GraphSpreadIndex {
 
 /*============================================================================*/
 
-template <class ValueType>
-constexpr void iota_delta(auto first, auto last, ValueType x0,
-                          const ValueType dx) {
+template <class ForwardIt, class ValueType>
+CONSTEXPR20 void iota_delta(ForwardIt first, ForwardIt last, ValueType x0,
+                            const ValueType dx) {
   while (first != last) {
     *first++ = x0;
     x0 += dx;
   }
 }
 
-template <class ValueType>
-constexpr void iota_delta(auto first, auto last, ValueType x0,
-                          const ValueType dx,
-                          std::function<ValueType(ValueType)> f) {
+template <class ValueType, class ForwardIt>
+CONSTEXPR20 void iota_delta(ForwardIt first, ForwardIt last, ValueType x0,
+                            const ValueType dx,
+                            std::function<ValueType(ValueType)> f) {
   while (first != last) {
     *first++ = f(x0);
     x0 += dx;
