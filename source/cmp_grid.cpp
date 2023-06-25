@@ -18,16 +18,16 @@ namespace cmp {
 
 /*============================================================================*/
 
-void Grid::createLabels(const CommonPlotParameterView common_plot_params) {
+void Grid::createLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->updateGridLabels(common_plot_params, m_grid_lines, m_custom_x_labels,
-                          m_custom_y_labels, m_x_axis_labels, m_y_axis_labels);
+    lnf->updateGridLabels(*m_common_plot_params, m_grid_lines,
+                          m_custom_x_labels, m_custom_y_labels, m_x_axis_labels,
+                          m_y_axis_labels);
   }
 }
 
-void Grid::updateGridInternal(
-    const CommonPlotParameterView common_plot_params) {
+void Grid::updateGridInternal() {
   if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
     // width and height must be larger than zero.
     jassertfalse;
@@ -37,7 +37,7 @@ void Grid::updateGridInternal(
   std::vector<float> x_auto_ticks, y_auto_ticks;
 
   if (m_custom_x_ticks.empty() || m_custom_y_ticks.empty()) {
-    createAutoGridTicks(x_auto_ticks, y_auto_ticks, common_plot_params);
+    createAutoGridTicks(x_auto_ticks, y_auto_ticks);
   }
 
   const auto &x_ticks =
@@ -48,10 +48,10 @@ void Grid::updateGridInternal(
   m_grid_lines.clear();
   m_grid_lines.reserve(x_ticks.size() + y_ticks.size());
 
-  addGridLines(x_ticks, GridLine::Direction::vertical, common_plot_params);
-  addGridLines(y_ticks, GridLine::Direction::horizontal, common_plot_params);
+  addGridLines(x_ticks, GridLine::Direction::vertical);
+  addGridLines(y_ticks, GridLine::Direction::horizontal);
 
-  createLabels(common_plot_params);
+  createLabels();
 
   if (onGridLabelLengthChanged && m_lookandfeel) {
     const auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
@@ -92,8 +92,7 @@ void Grid::updateGridInternal(
 }
 
 void Grid::addGridLines(const std::vector<float> &ticks,
-                        const GridLine::Direction direction,
-                        const CommonPlotParameterView common_plot_params) {
+                        const GridLine::Direction direction) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
@@ -103,12 +102,12 @@ void Grid::addGridLines(const std::vector<float> &ticks,
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
         return getXScaleAndOffset(graph_bounds.getWidth(),
-                                  common_plot_params.x_lim,
-                                  common_plot_params.x_scaling);
+                                  m_common_plot_params->x_lim,
+                                  m_common_plot_params->x_scaling);
       }
       return getYScaleAndOffset(graph_bounds.getHeight(),
-                                common_plot_params.y_lim,
-                                common_plot_params.y_scaling);
+                                m_common_plot_params->y_lim,
+                                m_common_plot_params->y_scaling);
     };
 
     const auto [scale, offset] = getScaleOffset();
@@ -133,7 +132,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
           grid_line.position = {
               graph_bounds.getX() +
-                  (common_plot_params.x_scaling == Scaling::linear
+                  (m_common_plot_params->x_scaling == Scaling::linear
                        ? getXGraphValueLinear(t, scale, offset)
                        : getXGraphPointsLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
@@ -157,7 +156,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           grid_line.position = {
               graph_bounds.getX(),
               std::ceil(graph_bounds.getY() +
-                        (common_plot_params.y_scaling == Scaling::linear
+                        (m_common_plot_params->y_scaling == Scaling::linear
                              ? getYGraphValueLinear(t, scale, offset)
                              : getYGraphPointsLogarithmic(t, scale, offset)))};
 
@@ -223,8 +222,8 @@ void Grid::paint(juce::Graphics &g) {
 void Grid::lookAndFeelChanged() {
   if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
-    if (m_common_plot_params != nullptr) {
-      updateGridInternal(*m_common_plot_params);
+    if (getBounds().getWidth() > 0 && getBounds().getHeight() > 0) {
+      updateGridInternal();
     }
   } else {
     m_lookandfeel = nullptr;
@@ -235,10 +234,7 @@ void Grid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
 }
 
-void Grid::updateGrid(const CommonPlotParameterView &common_plot_params) {
-  m_common_plot_params = &common_plot_params;
-  updateGridInternal(common_plot_params);
-}
+void Grid::updateGrid() { updateGridInternal(); }
 
 void Grid::resized() {}
 
@@ -263,16 +259,15 @@ void Grid::setYTicks(const std::vector<float> &y_ticks) {
   m_custom_y_ticks = y_ticks;
 }
 
-void Grid::createAutoGridTicks(
-    std::vector<float> &x_ticks, std::vector<float> &y_ticks,
-    const CommonPlotParameterView common_plot_params) {
+void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
+                               std::vector<float> &y_ticks) {
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<cmp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
-      lnf->updateVerticalGridLineTicksAuto(getBounds(), common_plot_params,
+      lnf->updateVerticalGridLineTicksAuto(getBounds(), *m_common_plot_params,
                                            m_config_params.tiny_grid_on,
                                            x_ticks);
-      lnf->updateHorizontalGridLineTicksAuto(getBounds(), common_plot_params,
+      lnf->updateHorizontalGridLineTicksAuto(getBounds(), *m_common_plot_params,
                                              m_config_params.tiny_grid_on,
                                              y_ticks);
     }

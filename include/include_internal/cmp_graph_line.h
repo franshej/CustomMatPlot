@@ -33,7 +33,14 @@ namespace cmp {
  */
 class GraphLine : public juce::Component {
  public:
-  /**@brief Find closest point on graph from graph point.
+  /**
+   * @brief Construct a new Graph Line object.
+   * @param common_plot_parameter_view the common plot parameters.
+   */
+  GraphLine(const CommonPlotParameterView& common_plot_parameter_view)
+      : m_common_plot_params(&common_plot_parameter_view){};
+
+  /** @brief Find closest point on graph from graph point.
    *
    * @param this_graph_point the point on the graph.
    * @param check_only_distance_from_x check the absolut distance if false else

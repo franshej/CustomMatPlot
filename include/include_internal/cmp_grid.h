@@ -58,6 +58,13 @@ struct GridConfigParams {
  */
 class Grid : public juce::Component {
  public:
+  /** @brief Construct a new Grid object.
+   *
+   *  @param common_plot_parameter_view the common plot parameters.
+   */
+  Grid(const CommonPlotParameterView& common_plot_parameter_view)
+      : m_common_plot_params(&common_plot_parameter_view){};
+
   /** @brief Set the bounds of where the grids will be drawn
    *
    *  The grid area must be within the bounds of this componenet. The
@@ -120,10 +127,9 @@ class Grid : public juce::Component {
    *  This function updates the grid if any new parameter is set. Should be
    *  called after an parameter is set to update the grid.
    *
-   *  @param common_plot_params common graph attributes.
    *  @return void.
    */
-  void updateGrid(const CommonPlotParameterView& common_plot_params);
+  void updateGrid();
 
   /** @brief Get the max width of the x and y-labels
    *
@@ -155,20 +161,17 @@ class Grid : public juce::Component {
    *
    *  @param x_ticks x-ticks to be populated.
    *  @param y_ticks y-ticks to be populated.
-   *  @param common_plot_params common graph attributes.
    *  @return void.
    */
   void createAutoGridTicks(std::vector<float>& x_ticks,
-                           std::vector<float>& y_ticks,
-                           const CommonPlotParameterView common_plot_params);
+                           std::vector<float>& y_ticks);
 
-  void createLabels(const CommonPlotParameterView common_plot_params);
+  void createLabels();
 
-  void updateGridInternal(const CommonPlotParameterView common_plot_params);
+  void updateGridInternal();
 
   void addGridLines(const std::vector<float>& ticks,
-                    const GridLine::Direction direction,
-                    const CommonPlotParameterView common_plot_params);
+                    const GridLine::Direction direction);
 
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks;

@@ -167,7 +167,6 @@ void GraphLine::updateXGraphPoints(
 
   // x_data empty.
   jassert(!m_x_data.empty());
-  m_common_plot_params = &common_plot_params;
 
   updateXGraphPointsIntern(common_plot_params);
 }
@@ -179,7 +178,6 @@ void GraphLine::updateYGraphPoints(
 
   // y_data empty.
   jassert(!m_y_data.empty());
-  m_common_plot_params = &common_plot_params;
 
   updateYGraphPointsIntern(common_plot_params);
 }

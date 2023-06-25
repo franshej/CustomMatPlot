@@ -135,18 +135,18 @@ enum RadioButtonIds { TraceZoomButtons = 1001 };
 Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
     : m_x_scaling(x_scaling),
       m_y_scaling(y_scaling),
-      m_plot_label(std::make_unique<PlotLabel>()),
-      m_frame(std::make_unique<Frame>()),
-      m_legend(std::make_unique<Legend>()),
-      m_zoom(std::make_unique<Zoom>()),
-      m_grid(std::make_unique<Grid>()),
-      m_trace(std::make_unique<Trace>()),
       m_x_lim({0, 0}),
       m_y_lim({0, 0}),
       m_x_lim_default({0, 0}),
       m_y_lim_default({0, 0}),
       m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
-                            m_y_scaling, m_downsampling_type) {
+                            m_y_scaling, m_downsampling_type),
+      m_plot_label(std::make_unique<PlotLabel>()),
+      m_frame(std::make_unique<Frame>()),
+      m_legend(std::make_unique<Legend>()),
+      m_zoom(std::make_unique<Zoom>()),
+      m_grid(std::make_unique<Grid>(m_common_graph_params)),
+      m_trace(std::make_unique<Trace>()) {
   lookAndFeelChanged();
 
   addAndMakeVisible(m_grid.get());
@@ -236,7 +236,7 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
 
 void Plot::updateGridGraphsTrace() {
   if (!m_graph_bounds.isEmpty()) {
-    m_grid->updateGrid(m_common_graph_params);
+    m_grid->updateGrid();
     m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
 
     for (const auto& graph_line : m_graph_lines) {
@@ -413,25 +413,25 @@ void Plot::setXLabel(const std::string& x_label) {
 void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
   m_grid->setXLabels(x_labels);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid(m_common_graph_params);
+  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
 }
 
 void Plot::setYTickLabels(const std::vector<std::string>& y_labels) {
   m_grid->setYLabels(y_labels);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid(m_common_graph_params);
+  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
 }
 
 void Plot::setXTicks(const std::vector<float>& x_ticks) {
   m_grid->setXTicks(x_ticks);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid(m_common_graph_params);
+  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
 }
 
 void Plot::setYTicks(const std::vector<float>& y_ticks) {
   m_grid->setYTicks(y_ticks);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid(m_common_graph_params);
+  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
 }
 
 void Plot::setYLabel(const std::string& y_label) {
@@ -562,7 +562,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
             const auto colour_id = lnf->getColourFromGraphID(i);
             const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
-            graph_line = std::make_unique<GraphLine>();
+            graph_line = std::make_unique<GraphLine>(m_common_graph_params);
 
             graph_line->setColour(graph_colour);
             graph_line->setLookAndFeel(m_lookandfeel);
