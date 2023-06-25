@@ -148,7 +148,6 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
       m_trace(std::make_unique<Trace>()) {
   lookAndFeelChanged();
-
   addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
   addAndMakeVisible(m_zoom.get());
@@ -399,7 +398,6 @@ void Plot::setScaling(const Scaling x_scaling,
     resetLookAndFeelChildrens();
     m_lookandfeel_default.reset(nullptr);
     lookAndFeelChanged();
-
     updateGridGraphsTrace();
   }
 }
@@ -451,9 +449,7 @@ void Plot::setTracePoint(const juce::Point<float>& trace_point_coordinate) {
       findNearestPoint<true>(trace_point_coordinate);
 
   m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
-
   m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
-
   m_trace->addAndMakeVisibleTo(this);
 }
 
@@ -465,41 +461,40 @@ void Plot::clearTracePoints() noexcept { m_trace->clear(); }
 
 void Plot::resizeChilderns() {
   if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
-    const auto plot_area = lnf->getPlotBounds(getBounds());
-    const auto graph_bounds = lnf->getGraphBounds(getBounds(), this);
+    const auto plot_bound = lnf->getPlotBounds(getBounds());
+    const auto graph_bound = lnf->getGraphBounds(getBounds(), this);
 
-    if (!graph_bounds.isEmpty() && m_graph_bounds != graph_bounds) {
-      m_graph_bounds = graph_bounds;
+    if (!graph_bound.isEmpty() && m_graph_bounds != graph_bound) {
+      m_graph_bounds = graph_bound;
 
       if (m_grid) {
-        m_grid->setGridBounds(graph_bounds);
-        m_grid->setBounds(plot_area);
+        m_grid->setGridBounds(graph_bound);
+        m_grid->setBounds(plot_bound);
       }
 
-      if (m_plot_label) m_plot_label->setBounds(plot_area);
+      if (m_plot_label) m_plot_label->setBounds(plot_bound);
 
       constexpr auto margin_for_1px_outside = 1;
       const juce::Rectangle<int> frame_bound = {
-          graph_bounds.getX(), graph_bounds.getY(),
-          graph_bounds.getWidth() + margin_for_1px_outside,
-          graph_bounds.getHeight() + margin_for_1px_outside};
+          graph_bound.getX(), graph_bound.getY(),
+          graph_bound.getWidth() + margin_for_1px_outside,
+          graph_bound.getHeight() + margin_for_1px_outside};
 
       if (m_frame) m_frame->setBounds(frame_bound);
-
-      if (m_zoom) m_zoom->setBounds(graph_bounds);
+      if (m_zoom) m_zoom->setBounds(graph_bound);
 
       for (const auto& graph_line : m_graph_lines) {
-        graph_line->setBounds(graph_bounds);
+        graph_line->setBounds(graph_bound);
       }
 
       for (const auto& spread : m_graph_spread_list) {
-        spread->setBounds(graph_bounds);
+        spread->setBounds(graph_bound);
       }
 
       if (m_legend) {
         auto legend_bounds = m_legend->getBounds();
         const auto legend_postion =
-            lnf->getLegendPosition(graph_bounds, legend_bounds);
+            lnf->getLegendPosition(graph_bound, legend_bounds);
         legend_bounds.setPosition(legend_postion);
 
         m_legend->setBounds(legend_bounds);
@@ -563,7 +558,6 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
             const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
             graph_line = std::make_unique<GraphLine>(m_common_graph_params);
-
             graph_line->setColour(graph_colour);
             graph_line->setLookAndFeel(m_lookandfeel);
             graph_line->setBounds(m_graph_bounds);
@@ -660,7 +654,6 @@ void Plot::setLegend(const StringVector& graph_descriptions) {
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
 
     m_legend->setVisible(true);
-
     m_legend->setLegend(graph_descriptions);
     m_legend->updateLegends(m_graph_lines);
   }
@@ -672,7 +665,6 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
       if (event.mods.isRightButtonDown()) {
         updateXLim(m_x_lim_default);
         updateYLim(m_y_lim_default);
-
         updateGridGraphsTrace();
 
         repaint();
@@ -767,7 +759,6 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
 
       updateXLim({std::min(x_min, x_max), std::max(x_min, x_max)});
       updateYLim({std::min(y_min, y_max), std::max(y_min, y_max)});
-
       updateGridGraphsTrace();
       m_zoom->reset();
 
