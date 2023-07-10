@@ -80,23 +80,38 @@ typedef Lim<float> Lim_f;
 
 /*============================================================================*/
 
-/**< Enum to define the scaling of an axis. */
+/** Enum to define the scaling of an axis. */
 enum class Scaling : uint32_t {
-  linear,     /**< Linear scaling of the graph line. */
-  logarithmic /**< Logarithmic scaling of the graph line. */
+  linear,     /** Linear scaling of the graph line. */
+  logarithmic /** Logarithmic scaling of the graph line. */
 };
 
-/**< Enum to define the type of downsampling. */
+/** Enum to define the type of downsampling. */
 enum class DownsamplingType : uint32_t {
-  no_downsampling, /**< No downsampling. Slow when plotting alot of values. */
-  x_downsampling,  /**< Downsampling only based on the x-values, makes sure that
+  no_downsampling, /** No downsampling. Slow when plotting alot of values. */
+  x_downsampling,  /** Downsampling only based on the x-values, makes sure that
                     there is only one plotted value per x-pixel value. Fastest,
                     but will discard x-values that are located with the same
                     x-pixel value near each other. Recommended for real-time
                     plotting. */
-  xy_downsampling, /**< Same resolution as 'no_downsampling' but skips x- &
+  xy_downsampling, /** Same resolution as 'no_downsampling' but skips x- &
                       y-values that do not need to be plotted. It's quicker than
                       'no_downsampling' but slower than 'x_downsampling'. */
+};
+
+/** Enum to define a type of action that will occur for a input */
+enum class UserInputAction : uint32_t {
+  create_tracepoint,        /** Creates a tracepoint. */
+  drag_tracepoint_along_x,  /** Dragging a tracepoint along the x-axis. */
+  drag_tracepoint_along_y,  /** Dragging a tracepoint along the y-axis. */
+  drag_tracepoint_along_xy, /** Dragging a tracepoint along the x- & y-axis. */
+
+  zoom_region_start_drag, /** Start of a zoom region when dragging. */
+  zoom_region_draw_drag,  /** Drawing of a zoom region when dragging. */
+  zoom_region_end_drag,   /** End of a zoom region when dragging. */
+  zoom_in,  /** Zoom in. */
+  zoom_out, /** Zoom out. */
+  zoom_reset /** Reset the zoom. */
 };
 
 /*============================================================================*/
@@ -146,7 +161,7 @@ constexpr Lim<ValueType> operator/(const Lim<ValueType>& rhs,
   new_lim.min = rhs.min / val;
   new_lim.max = rhs.max / val;
 
-  return move(new_lim);
+  return new_lim;
 };
 
 /** @brief A struct that defines min and max using float. */
