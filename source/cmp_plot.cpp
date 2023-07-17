@@ -5,6 +5,8 @@
  * https://opensource.org/licenses/MIT
  */
 
+#include "cmp_plot.h"
+
 #include <stdexcept>
 
 #include "cmp_datamodels.h"
@@ -659,8 +661,71 @@ void Plot::setLegend(const StringVector& graph_descriptions) {
   }
 }
 
+void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
+  const auto component_pos = event.eventComponent->getBounds().getPosition();
+
+  const auto mouse_pos =
+      (event.getPosition() + component_pos - m_graph_bounds.getPosition())
+          .toFloat();
+
+  const auto [closest_data_point, nearest_graph_line] =
+      findNearestPoint(mouse_pos, nullptr);
+
+  m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
+  m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
+  m_trace->addAndMakeVisibleTo(this);
+}
+
+void Plot::mouseHandler(const juce::MouseEvent& event,
+                        const UserInputAction user_input) {
+  switch (user_input) {
+    case UserInputAction::create_tracepoint: {
+      addOrRemoveTracePoint(event);
+      break;
+    }
+    case UserInputAction::drag_tracepoint_along_x: {
+      break;
+    }
+    case UserInputAction::drag_tracepoint_along_y: {
+      break;
+    }
+    case UserInputAction::drag_tracepoint_along_xy: {
+      break;
+    }
+    case UserInputAction::select_tracepoint: {
+      break;
+    }
+    case UserInputAction::select_multiple_tracepoints: {
+      break;
+    }
+    case UserInputAction::zoom_region_start_drag: {
+      break;
+    }
+    case UserInputAction::zoom_region_draw_drag: {
+      break;
+    }
+    case UserInputAction::zoom_region_end_drag: {
+      break;
+    }
+    case UserInputAction::zoom_in: {
+      break;
+    }
+    case UserInputAction::zoom_out: {
+      break;
+    }
+    case UserInputAction::zoom_reset: {
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+}
+
 void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
+    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+
     if (m_zoom.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
         updateXLim(m_x_lim_default);
@@ -674,19 +739,8 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
     }
 
     if (event.getNumberOfClicks() > 1) {
-      const auto component_pos =
-          event.eventComponent->getBounds().getPosition();
-
-      const auto mouse_pos =
-          (event.getPosition() + component_pos - m_graph_bounds.getPosition())
-              .toFloat();
-
-      const auto [closest_data_point, nearest_graph_line] =
-          findNearestPoint(mouse_pos, nullptr);
-
-      m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
-      m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
-      m_trace->addAndMakeVisibleTo(this);
+      mouseHandler(
+          event, lnf->getUserInputMapAction().at(UserInput::left_mouse_double));
     }
   }
 }

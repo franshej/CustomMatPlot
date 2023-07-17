@@ -94,24 +94,42 @@ enum class DownsamplingType : uint32_t {
                     but will discard x-values that are located with the same
                     x-pixel value near each other. Recommended for real-time
                     plotting. */
-  xy_downsampling, /** Same resolution as 'no_downsampling' but skips x- &
-                      y-values that do not need to be plotted. It's quicker than
-                      'no_downsampling' but slower than 'x_downsampling'. */
+  xy_downsampling, /** Skips x- & y-values that shares the same pixel on the
+                      screen. It's quicker than 'no_downsampling' but slower
+                      than 'x_downsampling'. */
 };
 
-/** Enum to define a type of action that will occur for a input */
+/** Enum to define the user input. */
+enum class UserInput : uint32_t {
+  left_mouse_down,   /** Left mouse button is pressed. */
+  left_mouse_up,     /** Left mouse button is released. */
+  left_mouse_drag,   /** Left mouse button is dragged. */
+  left_mouse_double, /** Left mouse button is double clicked. */
+  right_mouse_down,  /** Right mouse button is pressed. */
+  right_mouse_up,    /** Right mouse button is released. */
+  right_mouse_drag,  /** Right mouse button is dragged. */
+  middle_mouse_down, /** Middle mouse button is pressed. */
+  middle_mouse_up,   /** Middle mouse button is released. */
+  middle_mouse_drag, /** Middle mouse button is dragged. */
+  mouse_scroll_up,   /** Mouse wheel is scrolled up. */
+  mouse_scroll_down, /** Mouse wheel is scrolled down. */
+};
+
+/** Enum to define a type of action that will occur for a input. */
 enum class UserInputAction : uint32_t {
   create_tracepoint,        /** Creates a tracepoint. */
   drag_tracepoint_along_x,  /** Dragging a tracepoint along the x-axis. */
   drag_tracepoint_along_y,  /** Dragging a tracepoint along the y-axis. */
   drag_tracepoint_along_xy, /** Dragging a tracepoint along the x- & y-axis. */
+  select_tracepoint,        /** Selecting a tracepoint. */
+  select_multiple_tracepoints, /** Selecting multiple tracepoints. */
 
   zoom_region_start_drag, /** Start of a zoom region when dragging. */
   zoom_region_draw_drag,  /** Drawing of a zoom region when dragging. */
   zoom_region_end_drag,   /** End of a zoom region when dragging. */
-  zoom_in,  /** Zoom in. */
-  zoom_out, /** Zoom out. */
-  zoom_reset /** Reset the zoom. */
+  zoom_in,                /** Zoom in. */
+  zoom_out,               /** Zoom out. */
+  zoom_reset              /** Reset the zoom. */
 };
 
 /*============================================================================*/

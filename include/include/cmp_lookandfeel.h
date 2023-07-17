@@ -89,6 +89,9 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   int getYGridLabelDistanceFromGraphBound(
       const int y_grid_label_width) const noexcept override;
 
+  std::map<UserInput, UserInputAction> getUserInputMapAction()
+        const noexcept override;
+
   void drawGraphLine(juce::Graphics &g,
                      const GraphLineDataView graph_line_data) override;
 

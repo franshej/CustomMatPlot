@@ -355,7 +355,8 @@ juce::Rectangle<int> PlotLookAndFeel::getTraceLabelLocalBounds(
   return retval;
 }
 
-juce::Rectangle<int> PlotLookAndFeel::getTracePointLocalBounds() const noexcept {
+juce::Rectangle<int> PlotLookAndFeel::getTracePointLocalBounds()
+    const noexcept {
   return juce::Rectangle<int>(0, 0, 10, 10);
 }
 
@@ -468,7 +469,7 @@ void PlotLookAndFeel::drawGridLabels(juce::Graphics& g,
     g.drawText(x_axis_text.first, x_axis_text.second,
                juce::Justification::centred);
   }
-    g.setColour(findColour(Plot::y_grid_label_colour));
+  g.setColour(findColour(Plot::y_grid_label_colour));
   for (const auto& y_axis_text : y_axis_labels) {
     g.drawText(y_axis_text.first, y_axis_text.second,
                juce::Justification::centredRight);
@@ -836,8 +837,7 @@ juce::Font PlotLookAndFeel::getGridLabelFont() const noexcept {
   return juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
 }
 
-int PlotLookAndFeel::getXGridLabelDistanceFromGraphBound()
-    const noexcept {
+int PlotLookAndFeel::getXGridLabelDistanceFromGraphBound() const noexcept {
   return int(getMarginSmall());
 };
 
@@ -848,6 +848,13 @@ int PlotLookAndFeel::getYGridLabelDistanceFromGraphBound(
 
 juce::Font PlotLookAndFeel::getXYTitleFont() const noexcept {
   return juce::Font(20.0f, juce::Font::plain);
+}
+
+std::map<UserInput, UserInputAction> PlotLookAndFeel::getUserInputMapAction()
+    const noexcept {
+  std::map<UserInput, UserInputAction> action_map;
+  action_map[UserInput::left_mouse_double] = UserInputAction::create_tracepoint;
+  return action_map;
 }
 
 void PlotLookAndFeel::updateGridLabels(
