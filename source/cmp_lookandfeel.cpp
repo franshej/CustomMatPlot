@@ -629,7 +629,7 @@ void PlotLookAndFeel::drawTracePoint(juce::Graphics& g,
   }
 }
 
-void PlotLookAndFeel::drawZoomArea(
+void PlotLookAndFeel::drawSelectionArea(
     juce::Graphics& g, juce::Point<int>& start_coordinates,
     const juce::Point<int>& end_coordinates,
     const juce::Rectangle<int>& graph_bounds) noexcept {

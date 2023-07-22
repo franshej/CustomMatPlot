@@ -17,7 +17,7 @@
 #include "cmp_legend.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_trace.h"
-#include "cmp_zoom.h"
+#include "cmp_graph_area.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 
 namespace cmp {
@@ -118,7 +118,7 @@ void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
   m_plot_label->setLookAndFeel(lookandfeel);
   m_frame->setLookAndFeel(lookandfeel);
   m_legend->setLookAndFeel(lookandfeel);
-  m_zoom->setLookAndFeel(lookandfeel);
+  m_graph_area->setLookAndFeel(lookandfeel);
   m_trace->setLookAndFeel(lookandfeel);
 
   for (const auto& graph_line : m_graph_lines) {
@@ -146,18 +146,18 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_plot_label(std::make_unique<PlotLabel>()),
       m_frame(std::make_unique<Frame>()),
       m_legend(std::make_unique<Legend>()),
-      m_zoom(std::make_unique<Zoom>()),
+      m_graph_area(std::make_unique<GraphArea>()),
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
       m_trace(std::make_unique<Trace>()) {
   lookAndFeelChanged();
   addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
-  addAndMakeVisible(m_zoom.get());
+  addAndMakeVisible(m_graph_area.get());
   addAndMakeVisible(m_plot_label.get());
   addAndMakeVisible(m_frame.get());
 
   m_legend->setAlwaysOnTop(true);
-  m_zoom->toBehind(m_legend.get());
+  m_graph_area->toBehind(m_legend.get());
   m_grid->toBack();
 
   m_grid->onGridLabelLengthChanged = [this](cmp::Grid* grid) {
@@ -359,7 +359,7 @@ void Plot::fillBetween(
 
       addAndMakeVisible(graph_spread.get());
 
-      graph_spread->toBehind(m_zoom.get());
+      graph_spread->toBehind(m_graph_area.get());
     } else {
       graph_spread->m_lower_bound = first_graph;
       graph_spread->m_upper_bound = second_graph;
@@ -483,7 +483,7 @@ void Plot::resizeChilderns() {
           graph_bound.getHeight() + margin_for_1px_outside};
 
       if (m_frame) m_frame->setBounds(frame_bound);
-      if (m_zoom) m_zoom->setBounds(graph_bound);
+      if (m_graph_area) m_graph_area->setBounds(graph_bound);
 
       for (const auto& graph_line : m_graph_lines) {
         graph_line->setBounds(graph_bound);
@@ -565,7 +565,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
             graph_line->setBounds(m_graph_bounds);
 
             addAndMakeVisible(graph_line.get());
-            graph_line->toBehind(m_zoom.get());
+            graph_line->toBehind(m_graph_area.get());
             i++;
           }
         }
@@ -726,7 +726,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
 
-    if (m_zoom.get() == event.eventComponent) {
+    if (m_graph_area.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
         updateXLim(m_x_lim_default);
         updateYLim(m_y_lim_default);
@@ -749,15 +749,15 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
   if (isVisible()) {
     if (m_legend.get() == event.eventComponent) {
       m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
-    } else if (m_zoom.get() == event.eventComponent &&
+    } else if (m_graph_area.get() == event.eventComponent &&
                event.getDistanceFromDragStart() > 4 &&
                event.getNumberOfClicks() == 1) {
-      if (!m_zoom->isStartPosSet()) {
-        m_zoom->setStartPosition(event.getPosition());
+      if (!m_graph_area->isStartPosSet()) {
+        m_graph_area->setStartPosition(event.getPosition());
       } else {
-        m_zoom->setEndPosition(event.getPosition());
+        m_graph_area->setEndPosition(event.getPosition());
 
-        m_zoom->repaint();
+        m_graph_area->repaint();
       }
     } else if (m_trace->isComponentTracePoint(event.eventComponent) &&
                event.getNumberOfClicks() == 1) {
@@ -794,12 +794,12 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
 
 void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
-    if (m_zoom.get() == event.eventComponent && m_zoom->isStartPosSet() &&
+    if (m_graph_area.get() == event.eventComponent && m_graph_area->isStartPosSet() &&
         !event.mods.isRightButtonDown()) {
       const auto local_graph_bounds = getLocalBoundsFrom<float>(m_graph_bounds);
 
-      const auto start_pos = m_zoom->getStartPosition();
-      const auto end_pos = m_zoom->getEndPosition();
+      const auto start_pos = m_graph_area->getStartPosition();
+      const auto end_pos = m_graph_area->getEndPosition();
 
       const auto x_min = getXFromXCoordinate(
           float(start_pos.getX()), local_graph_bounds, m_x_lim, m_x_scaling);
@@ -814,7 +814,7 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
       updateXLim({std::min(x_min, x_max), std::max(x_min, x_max)});
       updateYLim({std::min(y_min, y_max), std::max(y_min, y_max)});
       updateGridGraphsTrace();
-      m_zoom->reset();
+      m_graph_area->reset();
 
       repaint();
     }

@@ -124,7 +124,7 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   void drawTracePoint(juce::Graphics &g,
                       const juce::Rectangle<int> &bounds) override;
 
-  void drawZoomArea(juce::Graphics &g, juce::Point<int> &start_coordinates,
+  void drawSelectionArea(juce::Graphics &g, juce::Point<int> &start_coordinates,
                     const juce::Point<int> &end_coordinates,
                     const juce::Rectangle<int> &graph_bounds) noexcept override;
 

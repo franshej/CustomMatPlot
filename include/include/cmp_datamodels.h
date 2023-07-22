@@ -50,7 +50,7 @@ class Frame;
 class PlotLabel;
 class Legend;
 class Trace;
-class Zoom;
+class GraphArea;
 class PlotLookAndFeel;
 
 struct LegendLabel;

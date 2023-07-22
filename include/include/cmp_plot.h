@@ -351,8 +351,8 @@ class Plot : public juce::Component {
     virtual void drawTracePoint(juce::Graphics& g,
                                 const juce::Rectangle<int>& bounds) = 0;
 
-    /** This method draws the area the user wants to zoom in on. */
-    virtual void drawZoomArea(
+    /** This method draws the selection area (e.g. zoom area). */
+    virtual void drawSelectionArea(
         juce::Graphics& g, juce::Point<int>& start_coordinates,
         const juce::Point<int>& end_coordinates,
         const juce::Rectangle<int>& graph_bounds) noexcept = 0;
@@ -568,7 +568,7 @@ class Plot : public juce::Component {
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;
   std::unique_ptr<Legend> m_legend;
-  std::unique_ptr<Zoom> m_zoom;
+  std::unique_ptr<GraphArea> m_graph_area;
   std::unique_ptr<Trace> m_trace;
 
   /** Look and feel */
