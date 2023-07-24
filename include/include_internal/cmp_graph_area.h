@@ -24,7 +24,7 @@
 
 namespace cmp {
 /**
- * \class GraphSelectionArea
+ * \class GraphArea #TODO find a better name for this class. Maybe GraphOverlay, GraphSelectionArea?
  * \brief A component for drawing the graph selection on the graph area.
  *
  * The idea is to use this component to draw the zoom area, selection area or move a trace

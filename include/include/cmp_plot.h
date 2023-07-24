@@ -511,6 +511,8 @@ class Plot : public juce::Component {
   void lookAndFeelChanged() override;
   /** @internal */
   void mouseDrag(const juce::MouseEvent& event) override;
+  /** @internal mouse drag state. */
+  MouseDragState m_mouse_drag_state = MouseDragState::none;
   /** @internal */
   void mouseDown(const juce::MouseEvent& event) override;
   /** @internal */
@@ -551,6 +553,20 @@ class Plot : public juce::Component {
                     const UserInputAction user_input_action);
   /** @internal */
   void addOrRemoveTracePoint(const juce::MouseEvent& event);
+  /** @internal */
+  void resetZoom();
+  /** @internal */
+  void setStartPosSelectedRegion(const juce::Point<int>& start_position);
+  /** @internal */
+  void drawSelectedRegion(const juce::Point<int>& end_position);
+  /** @internal */
+  void zoomOnSelectedRegion();
+  /** @internal */
+  void moveTracepoint(const juce::MouseEvent& event);
+  /** @internal */
+  void moveTracepointLabel(const juce::MouseEvent& event);
+  /** @internal */
+  void moveLegend(const juce::MouseEvent& event);
 
   juce::ComponentDragger m_comp_dragger;
 
@@ -558,7 +574,7 @@ class Plot : public juce::Component {
   Scaling m_x_scaling, m_y_scaling;
   DownsamplingType m_downsampling_type{DownsamplingType::xy_downsampling};
   juce::Rectangle<int> m_graph_bounds;
-  cmp::Lim<float> m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
+  cmp::Lim<float> m_x_lim, m_y_lim, m_x_lim_start, m_y_lim_start;
   CommonPlotParameterView m_common_graph_params;
 
   /** Child components */
