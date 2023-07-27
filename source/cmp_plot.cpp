@@ -5,17 +5,19 @@
  * https://opensource.org/licenses/MIT
  */
 
+#include "cmp_plot.h"
+
 #include <stdexcept>
 
 #include "cmp_datamodels.h"
 #include "cmp_frame.h"
+#include "cmp_graph_area.h"
 #include "cmp_graph_line.h"
 #include "cmp_grid.h"
 #include "cmp_label.h"
 #include "cmp_legend.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_trace.h"
-#include "cmp_zoom.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 
 namespace cmp {
@@ -116,7 +118,7 @@ void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
   m_plot_label->setLookAndFeel(lookandfeel);
   m_frame->setLookAndFeel(lookandfeel);
   m_legend->setLookAndFeel(lookandfeel);
-  m_zoom->setLookAndFeel(lookandfeel);
+  m_graph_area->setLookAndFeel(lookandfeel);
   m_trace->setLookAndFeel(lookandfeel);
 
   for (const auto& graph_line : m_graph_lines) {
@@ -137,25 +139,25 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_y_scaling(y_scaling),
       m_x_lim({0, 0}),
       m_y_lim({0, 0}),
-      m_x_lim_default({0, 0}),
-      m_y_lim_default({0, 0}),
+      m_x_lim_start({0, 0}),
+      m_y_lim_start({0, 0}),
       m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
                             m_y_scaling, m_downsampling_type),
       m_plot_label(std::make_unique<PlotLabel>()),
       m_frame(std::make_unique<Frame>()),
       m_legend(std::make_unique<Legend>()),
-      m_zoom(std::make_unique<Zoom>()),
+      m_graph_area(std::make_unique<GraphArea>()),
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
       m_trace(std::make_unique<Trace>()) {
   lookAndFeelChanged();
   addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
-  addAndMakeVisible(m_zoom.get());
+  addAndMakeVisible(m_graph_area.get());
   addAndMakeVisible(m_plot_label.get());
   addAndMakeVisible(m_frame.get());
 
   m_legend->setAlwaysOnTop(true);
-  m_zoom->toBehind(m_legend.get());
+  m_graph_area->toBehind(m_legend.get());
   m_grid->toBack();
 
   m_grid->onGridLabelLengthChanged = [this](cmp::Grid* grid) {
@@ -277,28 +279,28 @@ static auto getLimOffset(const ValueType min, const ValueType max,
 void Plot::setAutoXScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, true);
 
-  m_x_lim_default = getLimOffset<decltype(min)>(min, max, m_x_scaling);
+  m_x_lim_start = getLimOffset<decltype(min)>(min, max, m_x_scaling);
 
-  updateXLim(m_x_lim_default);
+  updateXLim(m_x_lim_start);
 }
 
 void Plot::setAutoYScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, false);
 
-  m_y_lim_default = getLimOffset<decltype(min)>(min, max, m_y_scaling);
+  m_y_lim_start = getLimOffset<decltype(min)>(min, max, m_y_scaling);
 
-  updateYLim(m_y_lim_default);
+  updateYLim(m_y_lim_start);
 }
 
 void Plot::xLim(const float min, const float max) {
   updateXLim({min, max});
-  m_x_lim_default = {min, max};
+  m_x_lim_start = {min, max};
   m_x_autoscale = false;
 }
 
 void Plot::yLim(const float min, const float max) {
   updateYLim({min, max});
-  m_y_lim_default = {min, max};
+  m_y_lim_start = {min, max};
   m_y_autoscale = false;
 }
 
@@ -346,18 +348,13 @@ void Plot::fillBetween(
                             : first_graph->getColour();
 
     auto& graph_spread = *graph_spread_it++;
-
     if (!graph_spread) {
       graph_spread =
           std::make_unique<GraphSpread>(first_graph, second_graph, colour);
-
       graph_spread->setBounds(m_graph_bounds);
-
       graph_spread->setLookAndFeel(m_lookandfeel);
-
       addAndMakeVisible(graph_spread.get());
-
-      graph_spread->toBehind(m_zoom.get());
+      graph_spread->toBehind(m_graph_area.get());
     } else {
       graph_spread->m_lower_bound = first_graph;
       graph_spread->m_upper_bound = second_graph;
@@ -389,8 +386,8 @@ static auto jassetLogLimBelowZero(const cmp::Scaling scaling,
 void Plot::setScaling(const Scaling x_scaling,
                       const Scaling y_scaling) noexcept {
   if (x_scaling != m_x_scaling || y_scaling != m_y_scaling) {
-    jassetLogLimBelowZero(x_scaling, m_x_lim_default);
-    jassetLogLimBelowZero(y_scaling, m_y_lim_default);
+    jassetLogLimBelowZero(x_scaling, m_x_lim_start);
+    jassetLogLimBelowZero(y_scaling, m_y_lim_start);
 
     m_x_scaling = x_scaling;
     m_y_scaling = y_scaling;
@@ -481,7 +478,7 @@ void Plot::resizeChilderns() {
           graph_bound.getHeight() + margin_for_1px_outside};
 
       if (m_frame) m_frame->setBounds(frame_bound);
-      if (m_zoom) m_zoom->setBounds(graph_bound);
+      if (m_graph_area) m_graph_area->setBounds(graph_bound);
 
       for (const auto& graph_line : m_graph_lines) {
         graph_line->setBounds(graph_bound);
@@ -563,7 +560,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
             graph_line->setBounds(m_graph_bounds);
 
             addAndMakeVisible(graph_line.get());
-            graph_line->toBehind(m_zoom.get());
+            graph_line->toBehind(m_graph_area.get());
             i++;
           }
         }
@@ -659,110 +656,210 @@ void Plot::setLegend(const StringVector& graph_descriptions) {
   }
 }
 
+void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
+  const auto component_pos = event.eventComponent->getBounds().getPosition();
+
+  const auto mouse_pos =
+      (event.getPosition() + component_pos - m_graph_bounds.getPosition())
+          .toFloat();
+
+  const auto [closest_data_point, nearest_graph_line] =
+      findNearestPoint(mouse_pos, nullptr);
+
+  m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
+  m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
+  m_trace->addAndMakeVisibleTo(this);
+}
+
+void Plot::mouseHandler(const juce::MouseEvent& event,
+                        const UserInputAction user_input) {
+  switch (user_input) {
+    case UserInputAction::create_tracepoint: {
+      addOrRemoveTracePoint(event);
+      break;
+    }
+    case UserInputAction::move_graph_point: {
+      break;
+    }
+    case UserInputAction::move_tracepoint: {
+      moveTracepoint(event);
+      break;
+    }
+    case UserInputAction::move_tracepoint_label: {
+      moveTracepointLabel(event);
+      break;
+    }
+    case UserInputAction::move_legend: {
+      moveLegend(event);
+      break;
+    }
+    case UserInputAction::select_tracepoint: {
+      break;
+    }
+    case UserInputAction::select_multiple_tracepoints: {
+      break;
+    }
+    case UserInputAction::zoom_region_start_drag: {
+      setStartPosSelectedRegion(event.getPosition());
+      break;
+    }
+    case UserInputAction::zoom_region_draw_drag: {
+      drawSelectedRegion(event.getPosition());
+      break;
+    }
+    case UserInputAction::zoom_region_end_drag: {
+      zoomOnSelectedRegion();
+      break;
+    }
+    case UserInputAction::zoom_in: {
+      break;
+    }
+    case UserInputAction::zoom_out: {
+      break;
+    }
+    case UserInputAction::zoom_reset: {
+      resetZoom();
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+}
+
+void Plot::resetZoom() {
+  updateXLim(m_x_lim_start);
+  updateYLim(m_y_lim_start);
+  updateGridGraphsTrace();
+  repaint();
+}
+
+void Plot::setStartPosSelectedRegion(const juce::Point<int>& start_position) {
+  m_graph_area->setStartPosition(start_position);
+}
+
+void Plot::drawSelectedRegion(const juce::Point<int>& end_position) {
+  m_graph_area->setEndPosition(end_position);
+  m_graph_area->repaint();
+}
+
+void Plot::zoomOnSelectedRegion() {
+  const auto local_graph_bounds = getLocalBoundsFrom<float>(m_graph_bounds);
+
+  const auto start_pos = m_graph_area->getStartPosition();
+  const auto end_pos = m_graph_area->getEndPosition();
+
+  const auto x_min = getXFromXCoordinate(
+      float(start_pos.getX()), local_graph_bounds, m_x_lim, m_x_scaling);
+  const auto x_max = getXFromXCoordinate(
+      float(end_pos.getX()), local_graph_bounds, m_x_lim, m_x_scaling);
+
+  const auto y_min = getYFromYCoordinate(
+      float(start_pos.getY()), local_graph_bounds, m_y_lim, m_y_scaling);
+  const auto y_max = getYFromYCoordinate(
+      float(end_pos.getY()), local_graph_bounds, m_y_lim, m_y_scaling);
+
+  updateXLim({std::min(x_min, x_max), std::max(x_min, x_max)});
+  updateYLim({std::min(y_min, y_max), std::max(y_min, y_max)});
+  updateGridGraphsTrace();
+
+  m_graph_area->reset();
+  m_mouse_drag_state = MouseDragState::none;
+  repaint();
+}
+
+void Plot::moveTracepoint(const juce::MouseEvent& event) {
+  auto bounds = event.eventComponent->getBounds();
+
+  const auto mouse_pos =
+      bounds.getPosition() - m_graph_bounds.getPosition() +
+      event.getEventRelativeTo(event.eventComponent).getPosition();
+
+  const auto* associated_graph_line =
+      m_trace->getAssociatedGraphLine(event.eventComponent);
+
+  const auto [closest_data_point, nearest_graph_line] =
+      findNearestPoint(mouse_pos.toFloat(), associated_graph_line);
+
+  m_trace->setDataValueFor(event.eventComponent, closest_data_point,
+                           m_common_graph_params);
+}
+
+void Plot::moveTracepointLabel(const juce::MouseEvent& event) {
+  auto bounds = event.eventComponent->getBounds();
+
+  const auto mouse_pos =
+      bounds.getPosition() +
+      event.getEventRelativeTo(event.eventComponent).getPosition();
+
+  if (m_trace->setCornerPositionForLabelAssociatedWith(event.eventComponent,
+                                                       mouse_pos)) {
+    m_trace->updateSingleTracePointBoundsFrom(event.eventComponent,
+                                              m_common_graph_params);
+  }
+}
+
+void Plot::moveLegend(const juce::MouseEvent& event) {
+  m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
+}
+
 void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
-    if (m_zoom.get() == event.eventComponent) {
+    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+    if (m_graph_area.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
-        updateXLim(m_x_lim_default);
-        updateYLim(m_y_lim_default);
-        updateGridGraphsTrace();
-
-        repaint();
-      } else if (m_legend.get() == event.eventComponent) {
-        m_comp_dragger.startDraggingComponent(event.eventComponent, event);
+        mouseHandler(event,
+                     lnf->getUserInputAction(UserInput::right_mouse_down));
       }
     }
 
+    if (m_mouse_drag_state == MouseDragState::none) {
+      m_mouse_drag_state = MouseDragState::start;
+    }
+
     if (event.getNumberOfClicks() > 1) {
-      const auto component_pos =
-          event.eventComponent->getBounds().getPosition();
-
-      const auto mouse_pos =
-          (event.getPosition() + component_pos - m_graph_bounds.getPosition())
-              .toFloat();
-
-      const auto [closest_data_point, nearest_graph_line] =
-          findNearestPoint(mouse_pos, nullptr);
-
-      m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
-      m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
-      m_trace->addAndMakeVisibleTo(this);
+      mouseHandler(event,
+                   lnf->getUserInputAction(UserInput::left_mouse_double));
     }
   }
 }
 
 void Plot::mouseDrag(const juce::MouseEvent& event) {
   if (isVisible()) {
+    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
     if (m_legend.get() == event.eventComponent) {
       m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
-    } else if (m_zoom.get() == event.eventComponent &&
-               event.getDistanceFromDragStart() > 4 &&
+    } else if (m_graph_area.get() == event.eventComponent &&
+               event.mouseWasDraggedSinceMouseDown() &&
                event.getNumberOfClicks() == 1) {
-      if (!m_zoom->isStartPosSet()) {
-        m_zoom->setStartPosition(event.getPosition());
+      if (m_mouse_drag_state == MouseDragState::start) {
+        mouseHandler(event,
+                     lnf->getUserInputAction(UserInput::left_mouse_drag_start));
+        m_mouse_drag_state = MouseDragState::drag;
       } else {
-        m_zoom->setEndPosition(event.getPosition());
-
-        m_zoom->repaint();
+        mouseHandler(event,
+                     lnf->getUserInputAction(UserInput::left_mouse_drag));
+        m_mouse_drag_state = MouseDragState::drag;
       }
     } else if (m_trace->isComponentTracePoint(event.eventComponent) &&
                event.getNumberOfClicks() == 1) {
-      auto bounds = event.eventComponent->getBounds();
-
-      const auto mouse_pos =
-          bounds.getPosition() - m_graph_bounds.getPosition() +
-          event.getEventRelativeTo(event.eventComponent).getPosition();
-
-      const auto* associated_graph_line =
-          m_trace->getAssociatedGraphLine(event.eventComponent);
-
-      const auto [closest_data_point, nearest_graph_line] =
-          findNearestPoint(mouse_pos.toFloat(), associated_graph_line);
-
-      m_trace->setDataValueFor(event.eventComponent, closest_data_point,
-                               m_common_graph_params);
-
+      mouseHandler(event, lnf->getUserInputAction(
+                              UserInput::left_mouse_drag_tracepoint));
     } else if (m_trace->isComponentTraceLabel(event.eventComponent)) {
-      auto bounds = event.eventComponent->getBounds();
-
-      const auto mouse_pos =
-          bounds.getPosition() +
-          event.getEventRelativeTo(event.eventComponent).getPosition();
-
-      if (m_trace->setCornerPositionForLabelAssociatedWith(event.eventComponent,
-                                                           mouse_pos)) {
-        m_trace->updateSingleTracePointBoundsFrom(event.eventComponent,
-                                                  m_common_graph_params);
-      }
+      mouseHandler(event, lnf->getUserInputAction(
+                              UserInput::left_mouse_drag_trace_label));
     }
   }
 }
 
 void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
-    if (m_zoom.get() == event.eventComponent && m_zoom->isStartPosSet() &&
+    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+    if (m_graph_area.get() == event.eventComponent &&
+        m_mouse_drag_state == MouseDragState::drag &&
         !event.mods.isRightButtonDown()) {
-      const auto local_graph_bounds = getLocalBoundsFrom<float>(m_graph_bounds);
-
-      const auto start_pos = m_zoom->getStartPosition();
-      const auto end_pos = m_zoom->getEndPosition();
-
-      const auto x_min = getXFromXCoordinate(
-          float(start_pos.getX()), local_graph_bounds, m_x_lim, m_x_scaling);
-      const auto x_max = getXFromXCoordinate(
-          float(end_pos.getX()), local_graph_bounds, m_x_lim, m_x_scaling);
-
-      const auto y_min = getYFromYCoordinate(
-          float(start_pos.getY()), local_graph_bounds, m_y_lim, m_y_scaling);
-      const auto y_max = getYFromYCoordinate(
-          float(end_pos.getY()), local_graph_bounds, m_y_lim, m_y_scaling);
-
-      updateXLim({std::min(x_min, x_max), std::max(x_min, x_max)});
-      updateYLim({std::min(y_min, y_max), std::max(y_min, y_max)});
-      updateGridGraphsTrace();
-      m_zoom->reset();
-
-      repaint();
+      mouseHandler(event,
+                   lnf->getUserInputAction(UserInput::left_mouse_drag_end));
     }
   }
 }

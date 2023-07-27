@@ -89,6 +89,15 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   int getYGridLabelDistanceFromGraphBound(
       const int y_grid_label_width) const noexcept override;
 
+  std::map<UserInput, UserInputAction> getDefaultUserInputMapAction()
+      const noexcept override;
+
+  std::map<UserInput, UserInputAction> overrideUserInputMapAction(std::map<UserInput, UserInputAction> default_user_input_map_action)
+      const noexcept override;
+
+  UserInputAction getUserInputAction(
+      UserInput user_input) const noexcept override;
+
   void drawGraphLine(juce::Graphics &g,
                      const GraphLineDataView graph_line_data) override;
 
@@ -121,9 +130,10 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   void drawTracePoint(juce::Graphics &g,
                       const juce::Rectangle<int> &bounds) override;
 
-  void drawZoomArea(juce::Graphics &g, juce::Point<int> &start_coordinates,
-                    const juce::Point<int> &end_coordinates,
-                    const juce::Rectangle<int> &graph_bounds) noexcept override;
+  void drawSelectionArea(
+      juce::Graphics &g, juce::Point<int> &start_coordinates,
+      const juce::Point<int> &end_coordinates,
+      const juce::Rectangle<int> &graph_bounds) noexcept override;
 
   void updateXGraphPoints(
       const CommonPlotParameterView &common_plot_parameter_view,

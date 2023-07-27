@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "cmp_datamodels.h"
 #include "cmp_graph_line.h"
 #include "cmp_grid.h"
 #include "cmp_label.h"
@@ -355,7 +356,8 @@ juce::Rectangle<int> PlotLookAndFeel::getTraceLabelLocalBounds(
   return retval;
 }
 
-juce::Rectangle<int> PlotLookAndFeel::getTracePointLocalBounds() const noexcept {
+juce::Rectangle<int> PlotLookAndFeel::getTracePointLocalBounds()
+    const noexcept {
   return juce::Rectangle<int>(0, 0, 10, 10);
 }
 
@@ -468,7 +470,7 @@ void PlotLookAndFeel::drawGridLabels(juce::Graphics& g,
     g.drawText(x_axis_text.first, x_axis_text.second,
                juce::Justification::centred);
   }
-    g.setColour(findColour(Plot::y_grid_label_colour));
+  g.setColour(findColour(Plot::y_grid_label_colour));
   for (const auto& y_axis_text : y_axis_labels) {
     g.drawText(y_axis_text.first, y_axis_text.second,
                juce::Justification::centredRight);
@@ -628,7 +630,7 @@ void PlotLookAndFeel::drawTracePoint(juce::Graphics& g,
   }
 }
 
-void PlotLookAndFeel::drawZoomArea(
+void PlotLookAndFeel::drawSelectionArea(
     juce::Graphics& g, juce::Point<int>& start_coordinates,
     const juce::Point<int>& end_coordinates,
     const juce::Rectangle<int>& graph_bounds) noexcept {
@@ -836,8 +838,7 @@ juce::Font PlotLookAndFeel::getGridLabelFont() const noexcept {
   return juce::Font("Arial Rounded MT", 16.f, juce::Font::plain);
 }
 
-int PlotLookAndFeel::getXGridLabelDistanceFromGraphBound()
-    const noexcept {
+int PlotLookAndFeel::getXGridLabelDistanceFromGraphBound() const noexcept {
   return int(getMarginSmall());
 };
 
@@ -848,6 +849,48 @@ int PlotLookAndFeel::getYGridLabelDistanceFromGraphBound(
 
 juce::Font PlotLookAndFeel::getXYTitleFont() const noexcept {
   return juce::Font(20.0f, juce::Font::plain);
+}
+
+std::map<UserInput, UserInputAction>
+PlotLookAndFeel::getDefaultUserInputMapAction() const noexcept {
+  std::map<UserInput, UserInputAction> action_map;
+
+  // clang-format off
+  action_map[UserInput::left_mouse_double] =            UserInputAction::create_tracepoint;
+  action_map[UserInput::right_mouse_down] =             UserInputAction::zoom_reset;
+  action_map[UserInput::left_mouse_drag_start] =        UserInputAction::zoom_region_start_drag;
+  action_map[UserInput::left_mouse_drag_end] =          UserInputAction::zoom_region_end_drag;
+  action_map[UserInput::left_mouse_drag] =              UserInputAction::zoom_region_draw_drag;
+  action_map[UserInput::left_mouse_drag_tracepoint] =   UserInputAction::move_tracepoint;
+  action_map[UserInput::left_mouse_drag_legend] =       UserInputAction::move_legend;
+  action_map[UserInput::left_mouse_drag_trace_label] =  UserInputAction::move_tracepoint_label;
+  // clang-format on
+
+  return action_map;
+}
+
+std::map<UserInput, UserInputAction>
+PlotLookAndFeel::overrideUserInputMapAction(
+    std::map<UserInput, UserInputAction> default_user_input_map_action)
+    const noexcept {
+  return default_user_input_map_action;
+}
+
+UserInputAction PlotLookAndFeel::getUserInputAction(
+    UserInput user_input) const noexcept {
+  static std::map<UserInput, UserInputAction> action_map =
+      overrideUserInputMapAction(getDefaultUserInputMapAction());
+
+  try {
+    return action_map.at(user_input);
+  } catch (const std::out_of_range& e) {
+    jassertfalse;
+    // It seems that you are trying to use a UserInput that is not
+    // defined. Please add it to the map in
+    // `overrideDefaultUserInputMapAction()`.
+  }
+
+  return UserInputAction::none;
 }
 
 void PlotLookAndFeel::updateGridLabels(

@@ -50,7 +50,7 @@ class Frame;
 class PlotLabel;
 class Legend;
 class Trace;
-class Zoom;
+class GraphArea;
 class PlotLookAndFeel;
 
 struct LegendLabel;
@@ -80,23 +80,100 @@ typedef Lim<float> Lim_f;
 
 /*============================================================================*/
 
-/**< Enum to define the scaling of an axis. */
+/** Enum to define the scaling of an axis. */
 enum class Scaling : uint32_t {
-  linear,     /**< Linear scaling of the graph line. */
-  logarithmic /**< Logarithmic scaling of the graph line. */
+  linear,     /** Linear scaling of the graph line. */
+  logarithmic /** Logarithmic scaling of the graph line. */
 };
 
-/**< Enum to define the type of downsampling. */
+/** Enum to define the type of downsampling. */
 enum class DownsamplingType : uint32_t {
-  no_downsampling, /**< No downsampling. Slow when plotting alot of values. */
-  x_downsampling,  /**< Downsampling only based on the x-values, makes sure that
+  no_downsampling, /** No downsampling. Slow when plotting alot of values. */
+  x_downsampling,  /** Downsampling only based on the x-values, makes sure that
                     there is only one plotted value per x-pixel value. Fastest,
                     but will discard x-values that are located with the same
                     x-pixel value near each other. Recommended for real-time
                     plotting. */
-  xy_downsampling, /**< Same resolution as 'no_downsampling' but skips x- &
-                      y-values that do not need to be plotted. It's quicker than
-                      'no_downsampling' but slower than 'x_downsampling'. */
+  xy_downsampling, /** Skips x- & y-values that shares the same pixel on the
+                      screen. It's quicker than 'no_downsampling' but slower
+                      than 'x_downsampling'. */
+};
+
+/** Enum to define the user input. */
+enum class UserInput : uint32_t {
+  /** User input related to the graph area. */
+  left_mouse_down,       /** Left mouse button is pressed. */
+  left_mouse_up,         /** Left mouse button is released. */
+  left_mouse_drag_start, /** Start of a left mouse button drag. */
+  left_mouse_drag_end,   /** End of a left mouse button drag. */
+  left_mouse_drag,       /** Left mouse button is dragged. */
+  left_mouse_double,     /** Left mouse button is double clicked. */
+  right_mouse_down,      /** Right mouse button is pressed. */
+  right_mouse_up,        /** Right mouse button is released. */
+  right_mouse_drag,      /** Right mouse button is dragged. */
+  middle_mouse_down,     /** Middle mouse button is pressed. */
+  middle_mouse_up,       /** Middle mouse button is released. */
+  middle_mouse_drag,     /** Middle mouse button is dragged. */
+  mouse_scroll_up,       /** Mouse wheel is scrolled up. */
+  mouse_scroll_down,     /** Mouse wheel is scrolled down. */
+
+  /** Tracepoint related user input. */
+  left_mouse_down_tracepoint, /** Left mouse button is pressed on a tracepoint.
+                               */
+  left_mouse_up_tracepoint,   /** Left mouse button is released on a
+                               * tracepoint. */
+  left_mouse_drag_tracepoint, /** Left mouse button is dragged on a tracepoint.
+                               */
+  left_mouse_double_tracepoint, /** Left mouse button is double clicked on a
+                                 * tracepoint. */
+
+  /** TraceLabel related user input. */
+  left_mouse_down_trace_label, /** Left mouse button is pressed on a trace
+                                * label. */
+  left_mouse_up_trace_label,   /** Left mouse button is released on a trace
+                                * label. */
+  left_mouse_drag_trace_label, /** Left mouse button is dragged on a trace
+                                * label. */
+
+  /** Legend related user input. */
+  left_mouse_down_legend, /** Left mouse button is pressed on a legend. */
+  left_mouse_up_legend,   /** Left mouse button is released on a legend. */
+  left_mouse_drag_legend, /** Left mouse button is dragged on a legend. */
+};
+
+/** Enum to define a type of action that will occur for a input. */
+enum class UserInputAction : uint32_t {
+  /** Tracepoint related actions. */
+  create_tracepoint,           /** Creates a tracepoint. */
+  move_tracepoint,             /** Move a tracepoint. */
+  move_tracepoint_label,       /** Move a tracepoint label. */
+  select_tracepoint,           /** Selecting a tracepoint. */
+  select_multiple_tracepoints, /** Selecting multiple tracepoints. */
+
+  /** Zoom related actions. */
+  zoom_region_start_drag, /** Start of a zoom region when dragging. */
+  zoom_region_draw_drag,  /** Drawing of a zoom region when dragging. */
+  zoom_region_end_drag,   /** End of a zoom region when dragging. */
+  zoom_in,                /** Zoom in. */
+  zoom_out,               /** Zoom out. */
+  zoom_reset,             /** Reset the zoom. */
+
+  /** Graph point related actions. */
+  move_graph_point, /** Move a graph point. */
+
+  /** Move legend related actions. */
+  move_legend, /** Move a legend. */
+
+  /** No action */
+  none /** No action. */
+};
+
+/** Enum to define if the mouse has just start currently dragging or does not
+ * drag. */
+enum class MouseDragState : uint32_t {
+  start, /** Start of a mouse drag. */
+  drag,  /** Mouse is currently dragging. */
+  none   /** No drag state. */
 };
 
 /*============================================================================*/
@@ -146,7 +223,7 @@ constexpr Lim<ValueType> operator/(const Lim<ValueType>& rhs,
   new_lim.min = rhs.min / val;
   new_lim.max = rhs.max / val;
 
-  return move(new_lim);
+  return new_lim;
 };
 
 /** @brief A struct that defines min and max using float. */

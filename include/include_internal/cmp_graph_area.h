@@ -1,15 +1,14 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
 
 /**
- * @file cmp_zoom.h
+ * @file cmp_graph_area.h
  *
- * @brief Componenet for drawing the zoom area and store the zoom start and end
- * postion.
+ * @brief A class for drawing selection overlay on the graph area.
  *
  * @ingroup CustomMatPlotInternal
  *
@@ -20,22 +19,22 @@
 
 #pragma once
 
-#include <juce_gui_basics/juce_gui_basics.h>
 #include <cmp_datamodels.h>
+#include <juce_gui_basics/juce_gui_basics.h>
 
 namespace cmp {
 /**
- * \class Zoom
- * \brief A class for drawing the zoom area.
+ * \class GraphArea #TODO find a better name for this class. Maybe GraphOverlay, GraphSelectionArea?
+ * \brief A component for drawing the graph selection on the graph area.
  *
- * The idea is to use this component to draw the zoom area and store the start
- * and end position.
+ * The idea is to use this component to draw the zoom area, selection area or move a trace
+ * point.
  */
-class Zoom : public juce::Component {
+class GraphArea : public juce::Component {
  public:
-  /** @brief Get the start zoom area postion.
+  /** @brief Get the start postion.
    *
-   *  Get the start screen postion of zoom area.
+   *  Get the start postion.
    *
    *  @return a point of the start postion.
    */
@@ -66,7 +65,7 @@ class Zoom : public juce::Component {
    */
   void reset() noexcept;
 
-  /** @brief Set the start zoom area postion.
+  /** @brief Set the start postion.
    *
    *  Set the start screen postion of zoom area.
    *
