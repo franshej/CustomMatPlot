@@ -163,6 +163,9 @@ enum class UserInputAction : uint32_t {
 
   /** Move legend related actions. */
   move_legend, /** Move a legend. */
+
+  /** No action */
+  none /** No action. */
 };
 
 /** Enum to define if the mouse has just start currently dragging or does not

@@ -851,24 +851,46 @@ juce::Font PlotLookAndFeel::getXYTitleFont() const noexcept {
   return juce::Font(20.0f, juce::Font::plain);
 }
 
-std::map<UserInput, UserInputAction> PlotLookAndFeel::getUserInputMapAction()
-    const noexcept {
-  static std::map<UserInput, UserInputAction> action_map = []() {
-    // clang-format off
-    std::map<UserInput, UserInputAction> action_map;
-    action_map[UserInput::left_mouse_double] =            UserInputAction::create_tracepoint;
-    action_map[UserInput::right_mouse_down] =             UserInputAction::zoom_reset;
-    action_map[UserInput::left_mouse_drag_start] =        UserInputAction::zoom_region_start_drag;
-    action_map[UserInput::left_mouse_drag_end] =          UserInputAction::zoom_region_end_drag;
-    action_map[UserInput::left_mouse_drag] =              UserInputAction::zoom_region_draw_drag;
-    action_map[UserInput::left_mouse_drag_tracepoint] =   UserInputAction::move_tracepoint;
-    action_map[UserInput::left_mouse_drag_legend] =       UserInputAction::move_legend;
-    action_map[UserInput::left_mouse_drag_trace_label] =  UserInputAction::move_tracepoint_label;
-    // clang-format on
-    return action_map;
-  }();
+std::map<UserInput, UserInputAction>
+PlotLookAndFeel::getDefaultUserInputMapAction() const noexcept {
+  std::map<UserInput, UserInputAction> action_map;
+
+  // clang-format off
+  action_map[UserInput::left_mouse_double] =            UserInputAction::create_tracepoint;
+  action_map[UserInput::right_mouse_down] =             UserInputAction::zoom_reset;
+  action_map[UserInput::left_mouse_drag_start] =        UserInputAction::zoom_region_start_drag;
+  action_map[UserInput::left_mouse_drag_end] =          UserInputAction::zoom_region_end_drag;
+  action_map[UserInput::left_mouse_drag] =              UserInputAction::zoom_region_draw_drag;
+  action_map[UserInput::left_mouse_drag_tracepoint] =   UserInputAction::move_tracepoint;
+  action_map[UserInput::left_mouse_drag_legend] =       UserInputAction::move_legend;
+  action_map[UserInput::left_mouse_drag_trace_label] =  UserInputAction::move_tracepoint_label;
+  // clang-format on
 
   return action_map;
+}
+
+std::map<UserInput, UserInputAction>
+PlotLookAndFeel::overrideUserInputMapAction(
+    std::map<UserInput, UserInputAction> default_user_input_map_action)
+    const noexcept {
+  return default_user_input_map_action;
+}
+
+UserInputAction PlotLookAndFeel::getUserInputAction(
+    UserInput user_input) const noexcept {
+  static std::map<UserInput, UserInputAction> action_map =
+      overrideUserInputMapAction(getDefaultUserInputMapAction());
+
+  try {
+    return action_map.at(user_input);
+  } catch (const std::out_of_range& e) {
+    jassertfalse;
+    // It seems that you are trying to use a UserInput that is not
+    // defined. Please add it to the map in
+    // `overrideDefaultUserInputMapAction()`.
+  }
+
+  return UserInputAction::none;
 }
 
 void PlotLookAndFeel::updateGridLabels(

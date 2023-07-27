@@ -808,8 +808,8 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
     if (m_graph_area.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
-        mouseHandler(event, lnf->getUserInputMapAction().at(
-                                UserInput::right_mouse_down));
+        mouseHandler(event,
+                     lnf->getUserInputAction(UserInput::right_mouse_down));
       }
     }
 
@@ -818,8 +818,8 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
     }
 
     if (event.getNumberOfClicks() > 1) {
-      mouseHandler(
-          event, lnf->getUserInputMapAction().at(UserInput::left_mouse_double));
+      mouseHandler(event,
+                   lnf->getUserInputAction(UserInput::left_mouse_double));
     }
   }
 }
@@ -833,20 +833,20 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
                event.mouseWasDraggedSinceMouseDown() &&
                event.getNumberOfClicks() == 1) {
       if (m_mouse_drag_state == MouseDragState::start) {
-        mouseHandler(event, lnf->getUserInputMapAction().at(
-                                UserInput::left_mouse_drag_start));
+        mouseHandler(event,
+                     lnf->getUserInputAction(UserInput::left_mouse_drag_start));
         m_mouse_drag_state = MouseDragState::drag;
       } else {
-        mouseHandler(
-            event, lnf->getUserInputMapAction().at(UserInput::left_mouse_drag));
+        mouseHandler(event,
+                     lnf->getUserInputAction(UserInput::left_mouse_drag));
         m_mouse_drag_state = MouseDragState::drag;
       }
     } else if (m_trace->isComponentTracePoint(event.eventComponent) &&
                event.getNumberOfClicks() == 1) {
-      mouseHandler(event, lnf->getUserInputMapAction().at(
+      mouseHandler(event, lnf->getUserInputAction(
                               UserInput::left_mouse_drag_tracepoint));
     } else if (m_trace->isComponentTraceLabel(event.eventComponent)) {
-      mouseHandler(event, lnf->getUserInputMapAction().at(
+      mouseHandler(event, lnf->getUserInputAction(
                               UserInput::left_mouse_drag_trace_label));
     }
   }
@@ -858,8 +858,8 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
     if (m_graph_area.get() == event.eventComponent &&
         m_mouse_drag_state == MouseDragState::drag &&
         !event.mods.isRightButtonDown()) {
-      mouseHandler(event, lnf->getUserInputMapAction().at(
-                              UserInput::left_mouse_drag_end));
+      mouseHandler(event,
+                   lnf->getUserInputAction(UserInput::left_mouse_drag_end));
     }
   }
 }

@@ -448,9 +448,18 @@ class Plot : public juce::Component {
     virtual CONSTEXPR20 int getYGridLabelDistanceFromGraphBound(
         const int y_grid_label_width) const noexcept = 0;
 
-    /** Get the user inputs map to actions. */
-    virtual std::map<UserInput, UserInputAction> getUserInputMapAction()
+    /** Get defualt user input map action. */
+    virtual std::map<UserInput, UserInputAction> getDefaultUserInputMapAction()
         const noexcept = 0;
+
+    /** Override the default user input map action. */
+    virtual std::map<UserInput, UserInputAction> overrideUserInputMapAction(
+        std::map<UserInput, UserInputAction> default_user_input_map_action)
+        const noexcept = 0;
+
+    /** Get the user input action for a given user input. */
+    virtual UserInputAction getUserInputAction(
+        UserInput user_input) const noexcept = 0;
 
     /** Defines the default colours */
     virtual void setDefaultPlotColours() noexcept = 0;
