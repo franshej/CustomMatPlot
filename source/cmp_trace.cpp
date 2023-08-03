@@ -223,7 +223,7 @@ void Trace::updateTracePointsAssociatedWith(const GraphLine* graph_line) {
     if (tlp.associated_graph_line == graph_line) {
       const auto data_value = tlp.trace_point->m_data_point;
 
-      const auto nearest_data_value =
+      const auto [nearest_data_value, _] =
           graph_line->findClosestDataPointTo(data_value, true);
 
       tlp.trace_point->setDataPoint(nearest_data_value);

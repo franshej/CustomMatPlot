@@ -530,7 +530,7 @@ class Plot : public juce::Component {
  private:
   /** @internal */
   template <bool is_point_data_point = false>
-  std::pair<juce::Point<float>, const GraphLine*> findNearestPoint(
+  std::tuple<juce::Point<float>, size_t, const GraphLine*> findNearestPoint(
       juce::Point<float> point, const GraphLine* graphline = nullptr);
   /** @internal */
   std::unique_ptr<LookAndFeelMethods> getDefaultLookAndFeel();
@@ -576,6 +576,8 @@ class Plot : public juce::Component {
   void moveTracepointLabel(const juce::MouseEvent& event);
   /** @internal */
   void moveLegend(const juce::MouseEvent& event);
+  /** @internal */
+  void addTracePointsFromSelectedArea();
 
   juce::ComponentDragger m_comp_dragger;
 

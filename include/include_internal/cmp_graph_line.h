@@ -45,9 +45,9 @@ class GraphLine : public juce::Component {
    * @param this_graph_point the point on the graph.
    * @param check_only_distance_from_x check the absolut distance if false else
    * only the x distance.
-   * @return {closest point on graph, closest data point value}
+   * @return {closest point on graph, closest data point value, graph point index}
    */
-  std::pair<juce::Point<float>, juce::Point<float>> findClosestGraphPointTo(
+  std::tuple<juce::Point<float>, juce::Point<float>, size_t> findClosestGraphPointTo(
       const juce::Point<float>& this_graph_point,
       bool check_only_distance_from_x = false) const;
 
@@ -58,9 +58,9 @@ class GraphLine : public juce::Component {
    * only the x distance.
    * @param only_visible_data_points find the nearest visible data point if
    * true.
-   * @return closest data point value to this_data_point.
+   * @return closest data point value to this_data_point and the graph point index.
    */
-  juce::Point<float> findClosestDataPointTo(
+  std::pair<juce::Point<float>, size_t>  findClosestDataPointTo(
       const juce::Point<float>& this_data_point,
       bool check_only_distance_from_x = false,
       bool only_visible_data_points = true) const;

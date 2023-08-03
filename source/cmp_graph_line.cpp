@@ -7,6 +7,7 @@
 
 #include "cmp_graph_line.h"
 
+#include <cstddef>
 #include <mutex>
 #include <numeric>
 #include <stdexcept>
@@ -20,7 +21,7 @@ void GraphLine::setColour(const juce::Colour graph_colour) {
   m_graph_attributes.graph_colour = graph_colour;
 }
 
-std::pair<juce::Point<float>, juce::Point<float>>
+std::tuple<juce::Point<float>, juce::Point<float>, size_t>
 GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
                                    bool check_only_distance_from_x) const {
   // No graph points.
@@ -44,10 +45,11 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
     }
     i++;
   }
-  return {closest_graph_point, closest_data_point};
+  
+  return {closest_graph_point, closest_data_point, i - 1u};
 }
 
-juce::Point<float> GraphLine::findClosestDataPointTo(
+std::pair<juce::Point<float>, size_t> GraphLine::findClosestDataPointTo(
     const juce::Point<float>& this_data_point, bool check_only_distance_from_x,
     bool only_visible_data_points) const {
   // No y_data empty.
@@ -83,7 +85,7 @@ juce::Point<float> GraphLine::findClosestDataPointTo(
   const auto closest_data_point =
       juce::Point<float>(m_x_data[nearest_i], m_y_data[nearest_i]);
 
-  return closest_data_point;
+  return {closest_data_point, nearest_i};
 }
 
 juce::Colour GraphLine::getColour() const noexcept {

@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <iterator>
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <cmp_datamodels.h>
 
@@ -124,10 +125,9 @@ typedef TraceLabel<float> TraceLabel_f;
 template <class ValueType>
 struct TraceLabelPoint {
   std::unique_ptr<TraceLabel<ValueType>> trace_label;
-
   std::unique_ptr<TracePoint<ValueType>> trace_point;
-
   const GraphLine* associated_graph_line{nullptr};
+  std::size_t trace_label_index{0};
 };
 
 /** @brief A struct that defines a tracelabel and a tracepoint using floats. */

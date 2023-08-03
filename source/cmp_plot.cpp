@@ -7,6 +7,7 @@
 
 #include "cmp_plot.h"
 
+#include <cstddef>
 #include <stdexcept>
 
 #include "cmp_datamodels.h"
@@ -62,12 +63,13 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
 }
 
 template <bool is_point_data_point>
-std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestPoint(
+std::tuple<juce::Point<float>, size_t, const GraphLine*> Plot::findNearestPoint(
     juce::Point<float> point, const GraphLine* graphline) {
   auto closest_point = juce::Point<float>(std::numeric_limits<float>::max(),
                                           std::numeric_limits<float>::max());
 
   juce::Point<float> closest_data_point, current_point, current_data_point;
+  size_t graph_point_index{0};
 
   const auto graph_line_exsists =
       std::find_if(m_graph_lines.begin(), m_graph_lines.end(),
@@ -80,15 +82,18 @@ std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestPoint(
   if (!nearest_graph_line) {
     for (const auto& graph_line : m_graph_lines) {
       if constexpr (is_point_data_point) {
-        current_data_point = current_point =
+        const auto [data_point, graph_point_index_temp] =
             graph_line->findClosestDataPointTo(point, false, false);
 
+        current_data_point = current_point = data_point;
+        graph_point_index = graph_point_index_temp;
       } else {
-        const auto [current_graph_point, data_point] =
+        const auto [current_graph_point, data_point, graph_point_index_temp] =
             graph_line->findClosestGraphPointTo(point);
 
         current_point = current_graph_point;
         current_data_point = data_point;
+        graph_point_index = graph_point_index_temp;
       }
 
       if (point.getDistanceFrom(current_point) <
@@ -100,17 +105,19 @@ std::pair<juce::Point<float>, const GraphLine*> Plot::findNearestPoint(
     }
   } else if (graph_line_exsists) {
     if constexpr (is_point_data_point) {
-      return {nearest_graph_line->findClosestDataPointTo(point),
-              nearest_graph_line};
+      const auto [data_point, graph_point_index_temp] =
+          nearest_graph_line->findClosestDataPointTo(point);
+      return {data_point, graph_point_index_temp, nearest_graph_line};
     }
 
-    const auto [graph_point, data_point] =
+    const auto [graph_point, data_point, graph_point_index_temp] =
         nearest_graph_line->findClosestGraphPointTo(point);
     closest_point = graph_point;
     closest_data_point = data_point;
+    graph_point_index = graph_point_index_temp;
   }
 
-  return {closest_data_point, nearest_graph_line};
+  return {closest_data_point, graph_point_index, nearest_graph_line};
 }
 
 void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
@@ -146,7 +153,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_plot_label(std::make_unique<PlotLabel>()),
       m_frame(std::make_unique<Frame>()),
       m_legend(std::make_unique<Legend>()),
-      m_graph_area(std::make_unique<GraphArea>()),
+      m_graph_area(std::make_unique<GraphArea>(m_common_graph_params)),
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
       m_trace(std::make_unique<Trace>()) {
   lookAndFeelChanged();
@@ -442,7 +449,7 @@ void Plot::setTitle(const std::string& title) {
 }
 
 void Plot::setTracePoint(const juce::Point<float>& trace_point_coordinate) {
-  const auto [closest_data_point, nearest_graph_line] =
+  const auto [closest_data_point, graph_point_index, nearest_graph_line] =
       findNearestPoint<true>(trace_point_coordinate);
 
   m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
@@ -663,7 +670,7 @@ void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
       (event.getPosition() + component_pos - m_graph_bounds.getPosition())
           .toFloat();
 
-  const auto [closest_data_point, nearest_graph_line] =
+  const auto [closest_data_point, _, nearest_graph_line] =
       findNearestPoint(mouse_pos, nullptr);
 
   m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
@@ -744,28 +751,34 @@ void Plot::drawSelectedRegion(const juce::Point<int>& end_position) {
 }
 
 void Plot::zoomOnSelectedRegion() {
-  const auto local_graph_bounds = getLocalBoundsFrom<float>(m_graph_bounds);
+  const auto data_bound = m_graph_area->getDataBound<float>();
 
-  const auto start_pos = m_graph_area->getStartPosition();
-  const auto end_pos = m_graph_area->getEndPosition();
-
-  const auto x_min = getXFromXCoordinate(
-      float(start_pos.getX()), local_graph_bounds, m_x_lim, m_x_scaling);
-  const auto x_max = getXFromXCoordinate(
-      float(end_pos.getX()), local_graph_bounds, m_x_lim, m_x_scaling);
-
-  const auto y_min = getYFromYCoordinate(
-      float(start_pos.getY()), local_graph_bounds, m_y_lim, m_y_scaling);
-  const auto y_max = getYFromYCoordinate(
-      float(end_pos.getY()), local_graph_bounds, m_y_lim, m_y_scaling);
-
-  updateXLim({std::min(x_min, x_max), std::max(x_min, x_max)});
-  updateYLim({std::min(y_min, y_max), std::max(y_min, y_max)});
+  updateXLim({data_bound.getX(), data_bound.getX() + data_bound.getWidth()});
+  updateYLim({data_bound.getY(), data_bound.getY() + data_bound.getHeight()});
   updateGridGraphsTrace();
 
   m_graph_area->reset();
   m_mouse_drag_state = MouseDragState::none;
   repaint();
+}
+
+void Plot::addTracePointsFromSelectedArea() {
+  const auto data_bound = m_graph_area->getDataBound<float>();
+
+  // Find all x/y pairs within data_bound
+  // for (const auto& graph_line : m_graph_lines) {
+  //  const auto& x_data = graph_line->getXValues();
+  //  const auto& y_data = graph_line->getYValues();
+  //
+  //  for (std::size_t i = 0; i < x_data.size(); ++i) {
+  //    if (x_data[i] >= data_bound.getX() &&
+  //        x_data[i] <= data_bound.getX() + data_bound.getWidth() &&
+  //        y_data[i] >= data_bound.getY() &&
+  //        y_data[i] <= data_bound.getY() + data_bound.getHeight()) {
+  //      m_trace->addTracePoint({x_data[i], y_data[i]}, graph_line);
+  //    }
+  //  }
+  //}
 }
 
 void Plot::moveTracepoint(const juce::MouseEvent& event) {
@@ -778,7 +791,7 @@ void Plot::moveTracepoint(const juce::MouseEvent& event) {
   const auto* associated_graph_line =
       m_trace->getAssociatedGraphLine(event.eventComponent);
 
-  const auto [closest_data_point, nearest_graph_line] =
+  const auto [closest_data_point, _, nearest_graph_line] =
       findNearestPoint(mouse_pos.toFloat(), associated_graph_line);
 
   m_trace->setDataValueFor(event.eventComponent, closest_data_point,
