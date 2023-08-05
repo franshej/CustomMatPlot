@@ -194,6 +194,13 @@ struct Lim {
     return *this;
   }
 
+  constexpr Lim<ValueType>& operator=(const Lim<ValueType> rhs) {
+    min = rhs.min;
+    max = rhs.max;
+
+    return *this;
+  }
+
   bool operator==(const Lim<ValueType>& rhs) const noexcept {
     return min == rhs.min && max == rhs.max;
   }

@@ -555,6 +555,9 @@ class Plot : public juce::Component {
   void updateGridGraphsTrace();
   /** @internal */
   void updateTracePointsForNewGraphData();
+  /** @internal */
+  void setTracePointInternal(const juce::Point<float>& trace_point_coordinate,
+                             bool is_point_data_point);
 
   /** User input related things  */
   /** @internal */

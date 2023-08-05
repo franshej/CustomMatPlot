@@ -103,6 +103,15 @@ class GraphArea : public juce::Component {
   template <typename ValueType>
   juce::Rectangle<ValueType> getDataBound() const noexcept;
 
+  /** @brief Get the selected area bound.
+   *
+   *  The selected area bound is the rectangle of the selected area.
+   *
+   *  @return rectangle of the selected area.
+   */
+  template <typename ValueType>
+  juce::Rectangle<ValueType> getSelectedAreaBound() const noexcept;
+
   /** @internal */
   void resized() override;
   /** @internal */

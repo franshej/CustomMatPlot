@@ -88,4 +88,19 @@ juce::Rectangle<ValueType> GraphArea::getDataBound() const noexcept {
 
 template juce::Rectangle<float> GraphArea::getDataBound() const noexcept;
 
+template <typename ValueType>
+juce::Rectangle<ValueType> GraphArea::getSelectedAreaBound() const noexcept {
+  const auto start_pos = this->getStartPosition();
+  const auto end_pos = this->getEndPosition();
+
+  const auto x_min = std::min(start_pos.getX(), end_pos.getX());
+  const auto x_width = std::max(start_pos.getX(), end_pos.getX()) - x_min;
+  const auto y_min = std::min(start_pos.getY(), end_pos.getY());
+  const auto y_height = std::max(start_pos.getY(), end_pos.getY()) - y_min;
+
+  return juce::Rectangle<ValueType>{x_min, y_min, x_width, y_height};
+};
+
+template juce::Rectangle<int> GraphArea::getSelectedAreaBound() const noexcept;
+
 }  // namespace cmp

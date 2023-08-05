@@ -41,11 +41,11 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
       closest_distance = current_distance;
       closest_graph_point = graph_point;
       closest_data_point = juce::Point<float>(
-          m_x_data[m_x_based_ds_indices[i]], m_y_data[m_x_based_ds_indices[i]]);
+          m_x_data[m_xy_based_ds_indices[i]], m_y_data[m_xy_based_ds_indices[i]]);
     }
     i++;
   }
-  
+
   return {closest_graph_point, closest_data_point, i - 1u};
 }
 
@@ -162,6 +162,10 @@ const GraphPoints& GraphLine::getGraphPoints() const noexcept {
   return m_graph_points;
 }
 
+const std::vector<size_t>& GraphLine::getGraphPointIndices() const noexcept {
+  return m_xy_based_ds_indices;
+}
+
 void GraphLine::updateXGraphPoints(
     const CommonPlotParameterView& common_plot_params) {
   // x_lim must be set to calculate the xdata.
@@ -225,7 +229,7 @@ void GraphLine::updateYGraphPointsIntern(
 
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
-    auto& graph_point_indices = m_x_based_ds_indices;
+    m_xy_based_ds_indices = m_x_based_ds_indices;
 
     switch (common_plot_params.downsampling_type) {
       case DownsamplingType::no_downsampling:
@@ -239,17 +243,15 @@ void GraphLine::updateYGraphPointsIntern(
             common_plot_params, m_x_based_ds_indices, m_y_data,
             m_xy_based_ds_indices);
 
-        graph_point_indices = m_xy_based_ds_indices;
-
         lnf->updateXGraphPoints(common_plot_params, m_x_data,
-                                graph_point_indices, m_graph_points);
+                                m_xy_based_ds_indices, m_graph_points);
         break;
 
       default:
         break;
     }
 
-    lnf->updateYGraphPoints(common_plot_params, m_y_data, graph_point_indices,
+    lnf->updateYGraphPoints(common_plot_params, m_y_data, m_xy_based_ds_indices,
                             m_graph_points);
   }
 }

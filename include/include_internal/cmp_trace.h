@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -19,10 +19,10 @@
 
 #pragma once
 
-#include <iterator>
-#include <juce_gui_basics/juce_gui_basics.h>
 #include <cmp_datamodels.h>
+#include <juce_gui_basics/juce_gui_basics.h>
 
+#include <iterator>
 #include <optional>
 
 namespace cmp {
@@ -38,6 +38,11 @@ enum class TraceLabelCornerPosition {
 /** @brief A struct that defines a tracepoint. */
 template <class ValueType>
 struct TracePoint : public juce::Component {
+  explicit TracePoint(const size_t graph_point_index,
+                      const GraphLine* graph_line)
+      : graph_point_index(graph_point_index),
+        associated_graph_line(graph_line){};
+
 #if THREE_WAY_COMP
   /** Spaceship */
   constexpr bool operator<=>(const TracePoint<ValueType>& rhs) {
@@ -52,11 +57,12 @@ struct TracePoint : public juce::Component {
 
   /** Compare with other data point. */
   constexpr bool operator==(const juce::Point<ValueType>& other_data_point) {
-    return m_data_point == other_data_point;
+    return data_point == other_data_point;
   }
 
   /** Set the data point. return true if succeeded */
-  bool setDataPoint(const juce::Point<ValueType>& new_data_point);
+  bool setDataPoint(const juce::Point<ValueType>& new_data_point,
+                    const size_t graph_point_index);
 
   /** @brief This lambda is triggered when a the data value is changed.
    *
@@ -80,7 +86,13 @@ struct TracePoint : public juce::Component {
   juce::LookAndFeel* m_lookandfeel;
 
   /** The x and y values of the tracepoint. */
-  juce::Point<ValueType> m_data_point;
+  juce::Point<ValueType> data_point;
+
+  /** The index of the graph point that this trace point is associated with. */
+  size_t graph_point_index{0};
+
+  /** The graph line that this trace point is associated with. */
+  const GraphLine* associated_graph_line{nullptr};
 };
 
 /** @brief A struct that defines a tracepoint using floats. */
@@ -113,9 +125,9 @@ struct TraceLabel : public juce::Component {
   /** @internal */
   juce::LookAndFeel* m_lookandfeel;
   /** @internal */
-  CommonPlotParameterView const *m_common_plot_params{nullptr};
+  CommonPlotParameterView const* m_common_plot_params{nullptr};
   /** @internal */
-  juce::Point<ValueType> const *m_graph_value{nullptr};
+  juce::Point<ValueType> const* m_graph_value{nullptr};
 };
 
 /** @brief A typedef defines a tracelabel using floats. */
@@ -126,8 +138,6 @@ template <class ValueType>
 struct TraceLabelPoint {
   std::unique_ptr<TraceLabel<ValueType>> trace_label;
   std::unique_ptr<TracePoint<ValueType>> trace_point;
-  const GraphLine* associated_graph_line{nullptr};
-  std::size_t trace_label_index{0};
 };
 
 /** @brief A struct that defines a tracelabel and a tracepoint using floats. */
@@ -142,6 +152,9 @@ typedef TraceLabelPoint<float> TraceLabelPoint_f;
  */
 class Trace {
  public:
+  /** Constructor. */
+  Trace(CommonPlotParameterView common_plot_params);
+
   /** Destructor. Setting lookandfeel to nullptr. */
   ~Trace();
 
@@ -178,28 +191,26 @@ class Trace {
    *
    * @param trace_point_coordinate the coordinate where the point will be drawn.
    * @param graph_line pointer to a graphline.
+   * @param graph_point_index the index of the graph point that is associated
+   * with this tracepoint
    * @return void.
    */
   void addOrRemoveTracePoint(const juce::Point<float>& trace_point_coordinate,
-                             const GraphLine* graph_line);
+                             const GraphLine* graph_line,
+                             const size_t graph_point_index);
 
-  /** @brief Update the tracepoint bounds from graph attributes.
+  /** @brief Update the tracepoint bounds.
    *
-   * @param common_plot_params common plot parameters.
    * @return void.
    */
-  void updateTracePointsBoundsFrom(
-      const CommonPlotParameterView common_plot_params);
+  void updateTracePointsBoundsFrom();
 
   /** @brief Update a single tracepoint bounds from graph attributes.
    *
    * @param trace_label_or_point either a tracepoint or tracelabel.
-   * @param common_plot_params common plot parameters.
    * @return void.
    */
-  void updateSingleTracePointBoundsFrom(
-      juce::Component* trace_label_or_point,
-      const CommonPlotParameterView common_plot_params);
+  void updateSingleTracePointBoundsFrom(juce::Component* trace_label_or_point);
 
   /** @brief Add the tracepoints to a parent component
    *
@@ -219,13 +230,15 @@ class Trace {
   /** @brief Set the data value for a tracepoint.
    *
    * @param tracepoint the tracepoint which data value will be set.
-   * @param common_plot_params common plot parameters.
    * @param new_position the new position for the tracepoint.
+   * @param graph_point_index the index of the graph point that is associated
+   * with this tracepoint
+   *
    * @return true if the value was changed.
    */
   bool setDataValueFor(juce::Component* trace_point,
                        const juce::Point<float>& new_position,
-                       const CommonPlotParameterView common_plot_params);
+                       const size_t graph_point_index);
 
   /** @brief Set the coner position of a single tracelabel.
    *
@@ -281,7 +294,7 @@ class Trace {
   /** @internal */
   void addSingleTracePointAndLabel(
       const juce::Point<float>& trace_point_coordinate,
-      const GraphLine* graph_line);
+      const GraphLine* graph_line, const size_t graph_point_index);
 
   /** @internal */
   void removeSingleTracePointAndLabel(
@@ -289,9 +302,7 @@ class Trace {
 
   /** @internal */
   void updateSingleTraceLabelTextsAndBoundsInternal(
-      TraceLabelPoint_f* trace_point_label,
-      const CommonPlotParameterView common_plot_params,
-      bool force_corner_position = false);
+      TraceLabelPoint_f* trace_point_label, bool force_corner_position = false);
 
   /** @internal */
   void updateTracePointsLookAndFeel();
@@ -299,10 +310,9 @@ class Trace {
   /** @internal */
   std::vector<TraceLabelPoint_f>::const_iterator
   findTraceLabelPointIteratorFrom(const juce::Component* trace_point) const;
-
   juce::LookAndFeel* m_lookandfeel;
-
   std::vector<TraceLabelPoint_f> m_trace_labelpoints;
+  CommonPlotParameterView m_common_plot_params;
 };
 
 }  // namespace cmp

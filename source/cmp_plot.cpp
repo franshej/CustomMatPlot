@@ -155,7 +155,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_legend(std::make_unique<Legend>()),
       m_graph_area(std::make_unique<GraphArea>(m_common_graph_params)),
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
-      m_trace(std::make_unique<Trace>()) {
+      m_trace(std::make_unique<Trace>(m_common_graph_params)) {
   lookAndFeelChanged();
   addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
@@ -245,7 +245,7 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
 void Plot::updateGridGraphsTrace() {
   if (!m_graph_bounds.isEmpty()) {
     m_grid->updateGrid();
-    m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
+    m_trace->updateTracePointsBoundsFrom();
 
     for (const auto& graph_line : m_graph_lines) {
       graph_line->updateXGraphPoints(m_common_graph_params);
@@ -259,7 +259,7 @@ void cmp::Plot::updateTracePointsForNewGraphData() {
     m_trace->updateTracePointsAssociatedWith(graph_line.get());
   }
 
-  m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
+  m_trace->updateTracePointsBoundsFrom();
 
   if (m_legend->isVisible()) {
     m_legend->updateLegends(m_graph_lines);
@@ -449,11 +449,20 @@ void Plot::setTitle(const std::string& title) {
 }
 
 void Plot::setTracePoint(const juce::Point<float>& trace_point_coordinate) {
-  const auto [closest_data_point, graph_point_index, nearest_graph_line] =
-      findNearestPoint<true>(trace_point_coordinate);
+  this->setTracePointInternal(trace_point_coordinate, true);
+}
 
-  m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
-  m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
+// Set trace point internal
+void Plot::setTracePointInternal(
+    const juce::Point<float>& trace_point_coordinate,
+    bool is_point_data_point) {
+  const auto [closest_data_point, graph_point_index, nearest_graph_line] =
+      is_point_data_point ? findNearestPoint<true>(trace_point_coordinate)
+                          : findNearestPoint<false>(trace_point_coordinate);
+
+  m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line,
+                                 graph_point_index);
+  m_trace->updateTracePointsBoundsFrom();
   m_trace->addAndMakeVisibleTo(this);
 }
 
@@ -670,11 +679,12 @@ void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
       (event.getPosition() + component_pos - m_graph_bounds.getPosition())
           .toFloat();
 
-  const auto [closest_data_point, _, nearest_graph_line] =
+  const auto [closest_data_point, graph_point_index, nearest_graph_line] =
       findNearestPoint(mouse_pos, nullptr);
 
-  m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line);
-  m_trace->updateTracePointsBoundsFrom(m_common_graph_params);
+  m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line,
+                                 graph_point_index);
+  m_trace->updateTracePointsBoundsFrom();
   m_trace->addAndMakeVisibleTo(this);
 }
 
@@ -704,6 +714,7 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
       break;
     }
     case UserInputAction::select_multiple_tracepoints: {
+      addTracePointsFromSelectedArea();
       break;
     }
     case UserInputAction::zoom_region_start_drag: {
@@ -763,22 +774,21 @@ void Plot::zoomOnSelectedRegion() {
 }
 
 void Plot::addTracePointsFromSelectedArea() {
-  const auto data_bound = m_graph_area->getDataBound<float>();
+  const auto selected_area =
+      m_graph_area->getSelectedAreaBound<int>().toFloat();
 
-  // Find all x/y pairs within data_bound
-  // for (const auto& graph_line : m_graph_lines) {
-  //  const auto& x_data = graph_line->getXValues();
-  //  const auto& y_data = graph_line->getYValues();
-  //
-  //  for (std::size_t i = 0; i < x_data.size(); ++i) {
-  //    if (x_data[i] >= data_bound.getX() &&
-  //        x_data[i] <= data_bound.getX() + data_bound.getWidth() &&
-  //        y_data[i] >= data_bound.getY() &&
-  //        y_data[i] <= data_bound.getY() + data_bound.getHeight()) {
-  //      m_trace->addTracePoint({x_data[i], y_data[i]}, graph_line);
-  //    }
-  //  }
-  //}
+  for (const auto& graph_line : m_graph_lines) {
+    const auto& graph_points = graph_line->getGraphPoints();
+    for (const auto& graph_point : graph_points) {
+      if (selected_area.contains(graph_point)) {
+        this->setTracePointInternal(graph_point, false);
+      };
+    }
+  }
+
+  m_graph_area->reset();
+  m_mouse_drag_state = MouseDragState::none;
+  repaint();
 }
 
 void Plot::moveTracepoint(const juce::MouseEvent& event) {
@@ -791,11 +801,11 @@ void Plot::moveTracepoint(const juce::MouseEvent& event) {
   const auto* associated_graph_line =
       m_trace->getAssociatedGraphLine(event.eventComponent);
 
-  const auto [closest_data_point, _, nearest_graph_line] =
+  const auto [closest_data_point, graph_point_index, nearest_graph_line] =
       findNearestPoint(mouse_pos.toFloat(), associated_graph_line);
 
   m_trace->setDataValueFor(event.eventComponent, closest_data_point,
-                           m_common_graph_params);
+                           graph_point_index);
 }
 
 void Plot::moveTracepointLabel(const juce::MouseEvent& event) {
@@ -807,8 +817,7 @@ void Plot::moveTracepointLabel(const juce::MouseEvent& event) {
 
   if (m_trace->setCornerPositionForLabelAssociatedWith(event.eventComponent,
                                                        mouse_pos)) {
-    m_trace->updateSingleTracePointBoundsFrom(event.eventComponent,
-                                              m_common_graph_params);
+    m_trace->updateSingleTracePointBoundsFrom(event.eventComponent);
   }
 }
 
