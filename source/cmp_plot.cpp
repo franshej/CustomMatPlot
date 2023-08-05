@@ -63,7 +63,7 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
 }
 
 template <bool is_point_data_point>
-std::tuple<juce::Point<float>, size_t, const GraphLine*> Plot::findNearestPoint(
+std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
     juce::Point<float> point, const GraphLine* graphline) {
   auto closest_point = juce::Point<float>(std::numeric_limits<float>::max(),
                                           std::numeric_limits<float>::max());
@@ -107,7 +107,7 @@ std::tuple<juce::Point<float>, size_t, const GraphLine*> Plot::findNearestPoint(
     if constexpr (is_point_data_point) {
       const auto [data_point, graph_point_index_temp] =
           nearest_graph_line->findClosestDataPointTo(point);
-      return {data_point, graph_point_index_temp, nearest_graph_line};
+      return {graph_point_index_temp, nearest_graph_line};
     }
 
     const auto [graph_point, data_point, graph_point_index_temp] =
@@ -117,7 +117,7 @@ std::tuple<juce::Point<float>, size_t, const GraphLine*> Plot::findNearestPoint(
     graph_point_index = graph_point_index_temp;
   }
 
-  return {closest_data_point, graph_point_index, nearest_graph_line};
+  return {graph_point_index, nearest_graph_line};
 }
 
 void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
@@ -456,12 +456,11 @@ void Plot::setTracePoint(const juce::Point<float>& trace_point_coordinate) {
 void Plot::setTracePointInternal(
     const juce::Point<float>& trace_point_coordinate,
     bool is_point_data_point) {
-  const auto [closest_data_point, graph_point_index, nearest_graph_line] =
+  const auto [graph_point_index, nearest_graph_line] =
       is_point_data_point ? findNearestPoint<true>(trace_point_coordinate)
                           : findNearestPoint<false>(trace_point_coordinate);
 
-  m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line,
-                                 graph_point_index);
+  m_trace->addOrRemoveTracePoint(nearest_graph_line, graph_point_index);
   m_trace->updateTracePointsBoundsFrom();
   m_trace->addAndMakeVisibleTo(this);
 }
@@ -679,11 +678,10 @@ void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
       (event.getPosition() + component_pos - m_graph_bounds.getPosition())
           .toFloat();
 
-  const auto [closest_data_point, graph_point_index, nearest_graph_line] =
+  const auto [graph_point_index, nearest_graph_line] =
       findNearestPoint(mouse_pos, nullptr);
 
-  m_trace->addOrRemoveTracePoint(closest_data_point, nearest_graph_line,
-                                 graph_point_index);
+  m_trace->addOrRemoveTracePoint(nearest_graph_line, graph_point_index);
   m_trace->updateTracePointsBoundsFrom();
   m_trace->addAndMakeVisibleTo(this);
 }
@@ -779,12 +777,17 @@ void Plot::addTracePointsFromSelectedArea() {
 
   for (const auto& graph_line : m_graph_lines) {
     const auto& graph_points = graph_line->getGraphPoints();
+    size_t graph_point_index = 0;
     for (const auto& graph_point : graph_points) {
       if (selected_area.contains(graph_point)) {
-        this->setTracePointInternal(graph_point, false);
+        m_trace->addOrRemoveTracePoint(graph_line.get(), graph_point_index);
       };
+      graph_point_index++;
     }
   }
+
+  m_trace->updateTracePointsBoundsFrom();
+  m_trace->addAndMakeVisibleTo(this);
 
   m_graph_area->reset();
   m_mouse_drag_state = MouseDragState::none;
@@ -801,11 +804,11 @@ void Plot::moveTracepoint(const juce::MouseEvent& event) {
   const auto* associated_graph_line =
       m_trace->getAssociatedGraphLine(event.eventComponent);
 
-  const auto [closest_data_point, graph_point_index, nearest_graph_line] =
+  const auto [graph_point_index, nearest_graph_line] =
       findNearestPoint(mouse_pos.toFloat(), associated_graph_line);
 
-  m_trace->setDataValueFor(event.eventComponent, closest_data_point,
-                           graph_point_index);
+  m_trace->setGraphPointFor(event.eventComponent, graph_point_index,
+                            nearest_graph_line);
 }
 
 void Plot::moveTracepointLabel(const juce::MouseEvent& event) {

@@ -29,6 +29,7 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
 
   auto closest_graph_point = juce::Point<float>();
   auto closest_data_point = juce::Point<float>();
+  auto closest_i = 0u;
 
   auto closest_distance = std::numeric_limits<float>::max();
   std::size_t i = 0u;
@@ -40,13 +41,14 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
     if (current_distance < closest_distance) {
       closest_distance = current_distance;
       closest_graph_point = graph_point;
+      closest_i = i;
       closest_data_point = juce::Point<float>(
           m_x_data[m_xy_based_ds_indices[i]], m_y_data[m_xy_based_ds_indices[i]]);
     }
     i++;
   }
 
-  return {closest_graph_point, closest_data_point, i - 1u};
+  return {closest_graph_point, closest_data_point, closest_i};
 }
 
 std::pair<juce::Point<float>, size_t> GraphLine::findClosestDataPointTo(
@@ -91,6 +93,12 @@ std::pair<juce::Point<float>, size_t> GraphLine::findClosestDataPointTo(
 juce::Colour GraphLine::getColour() const noexcept {
   return m_graph_attributes.graph_colour.value();
 }
+
+juce::Point<float> GraphLine::getDataPoint(size_t graph_point_index) const
+{
+  return juce::Point<float>(m_x_data[m_xy_based_ds_indices[graph_point_index]],
+                            m_y_data[m_xy_based_ds_indices[graph_point_index]]);
+};
 
 void GraphLine::resized(){};
 

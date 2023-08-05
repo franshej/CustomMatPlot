@@ -52,7 +52,7 @@ class GraphLine : public juce::Component {
   findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
                           bool check_only_distance_from_x = false) const;
 
-  /**@brief Find closest data point to this data point.
+  /** @brief Find closest data point to this data point.
    *
    * @param this_data_point the data point.
    * @param check_only_distance_from_x check the absolut distance if false else
@@ -66,6 +66,13 @@ class GraphLine : public juce::Component {
       const juce::Point<float>& this_data_point,
       bool check_only_distance_from_x = false,
       bool only_visible_data_points = true) const;
+
+  /** @brief Get data point for a graph point index.
+   *
+   *  @param graph_point_index the graph point index.
+   *  @return the data point.
+   */
+  juce::Point<float> getDataPoint(size_t graph_point_index) const;
 
   /** @brief Get the colour of the graph.
    *

@@ -530,7 +530,7 @@ class Plot : public juce::Component {
  private:
   /** @internal */
   template <bool is_point_data_point = false>
-  std::tuple<juce::Point<float>, size_t, const GraphLine*> findNearestPoint(
+  std::tuple<size_t, const GraphLine*> findNearestPoint(
       juce::Point<float> point, const GraphLine* graphline = nullptr);
   /** @internal */
   std::unique_ptr<LookAndFeelMethods> getDefaultLookAndFeel();

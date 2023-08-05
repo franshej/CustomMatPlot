@@ -189,14 +189,12 @@ class Trace {
    * For efficiency, it's recomended to envoke 'updateTracePointsBoundsFrom'
    * once after several trace-points has been added.
    *
-   * @param trace_point_coordinate the coordinate where the point will be drawn.
-   * @param graph_line pointer to a graphline.
+   * @param graph_line pointer to a graph line.
    * @param graph_point_index the index of the graph point that is associated
    * with this tracepoint
    * @return void.
    */
-  void addOrRemoveTracePoint(const juce::Point<float>& trace_point_coordinate,
-                             const GraphLine* graph_line,
+  void addOrRemoveTracePoint(const GraphLine* graph_line,
                              const size_t graph_point_index);
 
   /** @brief Update the tracepoint bounds.
@@ -227,18 +225,18 @@ class Trace {
    */
   void setLookAndFeel(juce::LookAndFeel* lnf);
 
-  /** @brief Set the data value for a tracepoint.
+  /** @brief Set the graph point for a tracepoint.
    *
    * @param tracepoint the tracepoint which data value will be set.
-   * @param new_position the new position for the tracepoint.
    * @param graph_point_index the index of the graph point that is associated
    * with this tracepoint
+   * @param graph_line the graph line that the graph point belongs to.
    *
    * @return true if the value was changed.
    */
-  bool setDataValueFor(juce::Component* trace_point,
-                       const juce::Point<float>& new_position,
-                       const size_t graph_point_index);
+  bool setGraphPointFor(juce::Component* trace_point,
+                        const size_t graph_point_index,
+                        const GraphLine* graph_line);
 
   /** @brief Set the coner position of a single tracelabel.
    *
@@ -292,13 +290,12 @@ class Trace {
                           const juce::Point<float> new_data_point);
 
   /** @internal */
-  void addSingleTracePointAndLabel(
-      const juce::Point<float>& trace_point_coordinate,
-      const GraphLine* graph_line, const size_t graph_point_index);
+  void addSingleTracePointAndLabel(const GraphLine* graph_line,
+                                   const size_t graph_point_index);
 
   /** @internal */
-  void removeSingleTracePointAndLabel(
-      const juce::Point<float>& trace_point_coordinate);
+  void removeSingleTracePointAndLabel(const GraphLine* graph_line,
+                                      const size_t graph_point_index);
 
   /** @internal */
   void updateSingleTraceLabelTextsAndBoundsInternal(
