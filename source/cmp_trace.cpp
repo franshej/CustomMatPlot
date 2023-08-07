@@ -131,17 +131,14 @@ juce::Point<float> Trace::getGraphPosition(
 void Trace::addOrRemoveTracePoint(const GraphLine* graph_line,
                                   const size_t graph_point_index) {
   const auto data_point = graph_line->getDataPoint(graph_point_index);
-  if (std::find_if(m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
-                   [&data_point](const auto& tl) {
-                     return (*tl.trace_point) == data_point;
-                   }) == m_trace_labelpoints.end()) {
-    addSingleTracePointAndLabel(graph_line, graph_point_index);
+  if (!doesTracePointExist(graph_line, graph_point_index)) {
+    addSingleTracePointAndLabelInternal(graph_line, graph_point_index);
   } else {
     removeSingleTracePointAndLabel(graph_line, graph_point_index);
   }
 }
 
-void Trace::updateTracePointsBoundsFrom() {
+void Trace::updateTracePointsBounds() {
   for (auto& tlp : m_trace_labelpoints) {
     updateSingleTraceLabelTextsAndBoundsInternal(&tlp);
   }
@@ -176,8 +173,8 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
 }
 
 bool Trace::setGraphPointFor(juce::Component* trace_point,
-                            const size_t graph_point_index,
-                            const GraphLine* graph_line) {
+                             const size_t graph_point_index,
+                             const GraphLine* graph_line) {
   const auto data_point = graph_line->getDataPoint(graph_point_index);
 
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
@@ -245,8 +242,8 @@ void Trace::tracePointCbHelper(const juce::Component* trace_point,
   }
 }
 
-void Trace::addSingleTracePointAndLabel(const GraphLine* graph_line,
-                                        const size_t graph_point_index) {
+void Trace::addSingleTracePointAndLabelInternal(
+    const GraphLine* graph_line, const size_t graph_point_index) {
   auto trace_label = std::make_unique<TraceLabel_f>();
   auto trace_point =
       std::make_unique<TracePoint_f>(graph_point_index, graph_line);
@@ -266,14 +263,40 @@ void Trace::addSingleTracePointAndLabel(const GraphLine* graph_line,
   m_trace_labelpoints.push_back({move(trace_label), move(trace_point)});
 }
 
+bool Trace::doesTracePointExist(const GraphLine* graph_line,
+                                const size_t graph_point_index) const {
+  return std::find_if(
+             m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
+             [&graph_point_index, &graph_line](const auto& tl) {
+               return (tl.trace_point->associated_graph_line == graph_line) &&
+                      (tl.trace_point->graph_point_index == graph_point_index);
+             }) != m_trace_labelpoints.end();
+}
+
+void Trace::addTracePoint(const GraphLine* graph_line,
+                          const size_t graph_point_index) {
+  if (!doesTracePointExist(graph_line, graph_point_index)) {
+    addSingleTracePointAndLabelInternal(graph_line, graph_point_index);
+  }
+}
+
+const TracePoint<float>* Trace::getTracePointFrom(
+    const juce::Component* trace_point) const {
+  const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
+  if (tlp_it != m_trace_labelpoints.end()) {
+    return tlp_it->trace_point.get();
+  }
+  return nullptr;
+}
+
 void Trace::removeSingleTracePointAndLabel(const GraphLine* graph_line,
                                            const size_t graph_point_index) {
-  const auto data_point = graph_line->getDataPoint(graph_point_index);
-  m_trace_labelpoints.erase(
-      std::remove_if(m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
-                     [&data_point](const auto& tlp) {
-                       return *tlp.trace_point == data_point;
-                     }));
+  m_trace_labelpoints.erase(std::remove_if(
+      m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
+      [&graph_line, &graph_point_index](const auto& tlp) {
+        return tlp.trace_point->associated_graph_line == graph_line &&
+               tlp.trace_point->graph_point_index == graph_point_index;
+      }));
 }
 
 // TODO : remove this function so it's updated when lookandfeel is changed

@@ -104,6 +104,14 @@ class GraphLine : public juce::Component {
    */
   void setXValues(const std::vector<float>& x_values);
 
+  /** @brief Set a single x/y value for the graph-line
+   *
+   *  @param juce::Point<float> the x/y value.
+   *  @param index the index of the x/y value.
+   *  @return boolean if the index is valid.
+   */
+  bool setXYValue(const juce::Point<float>& xy_value, size_t index);
+
   /** @brief Get y-values
    *
    *  Get a const reference of the y-values.

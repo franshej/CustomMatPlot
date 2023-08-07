@@ -151,15 +151,19 @@ enum class UserInputAction : uint32_t {
   select_multiple_tracepoints, /** Selecting multiple tracepoints. */
 
   /** Zoom related actions. */
-  zoom_region_start_drag, /** Start of a zoom region when dragging. */
-  zoom_region_draw_drag,  /** Drawing of a zoom region when dragging. */
-  zoom_region_end_drag,   /** End of a zoom region when dragging. */
-  zoom_in,                /** Zoom in. */
-  zoom_out,               /** Zoom out. */
-  zoom_reset,             /** Reset the zoom. */
+  zoom_selected_area, /** Zoom in on selected area. */
+  zoom_in,            /** Zoom in. */
+  zoom_out,           /** Zoom out. */
+  zoom_reset,         /** Reset the zoom. */
+
+  /** Selection area related actions. */
+  select_area_start, /** Set start positon for selected area. */
+  select_area_draw,  /** Set end position of selected are and draw the area. */
 
   /** Graph point related actions. */
-  move_graph_point, /** Move a graph point. */
+  create_movable_graph_point, /** Create a movable graph point. */
+  move_movable_graph_point,   /** Move a graph point. */
+  remove_movable_graph_point, /** Remove a graph point. */
 
   /** Move legend related actions. */
   move_legend, /** Move a legend. */

@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -171,8 +171,21 @@ constexpr float getYFromYCoordinate(const float y_pos,
   }
 }
 
+static juce::Point<float> getDataPointFromGraphCoordinate(
+    const juce::Point<float> pos,
+    const CommonPlotParameterView common_plot_params) noexcept {
+  const auto x = getXFromXCoordinate(
+      pos.getX(), common_plot_params.graph_bounds.toFloat(), common_plot_params.x_lim,
+      common_plot_params.x_scaling);
+  const auto y = getYFromYCoordinate(
+      pos.getY(), common_plot_params.graph_bounds.toFloat(), common_plot_params.y_lim,
+      common_plot_params.y_scaling);
+
+  return juce::Point<float>(x, y);
+}
+
 constexpr auto getXGraphValueLinear =
-    [](const float x, const float x_scale, const float x_offset) -> auto {
+    [](const float x, const float x_scale, const float x_offset) -> auto{
   return (x * x_scale) - x_offset;
 };
 

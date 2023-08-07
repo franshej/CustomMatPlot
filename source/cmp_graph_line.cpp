@@ -42,8 +42,9 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
       closest_distance = current_distance;
       closest_graph_point = graph_point;
       closest_i = i;
-      closest_data_point = juce::Point<float>(
-          m_x_data[m_xy_based_ds_indices[i]], m_y_data[m_xy_based_ds_indices[i]]);
+      closest_data_point =
+          juce::Point<float>(m_x_data[m_xy_based_ds_indices[i]],
+                             m_y_data[m_xy_based_ds_indices[i]]);
     }
     i++;
   }
@@ -94,8 +95,7 @@ juce::Colour GraphLine::getColour() const noexcept {
   return m_graph_attributes.graph_colour.value();
 }
 
-juce::Point<float> GraphLine::getDataPoint(size_t graph_point_index) const
-{
+juce::Point<float> GraphLine::getDataPoint(size_t graph_point_index) const {
   return juce::Point<float>(m_x_data[m_xy_based_ds_indices[graph_point_index]],
                             m_y_data[m_xy_based_ds_indices[graph_point_index]]);
 };
@@ -156,6 +156,15 @@ void GraphLine::setYValues(const std::vector<float>& y_data) {
 void GraphLine::setXValues(const std::vector<float>& x_data) {
   if (m_x_data.size() != x_data.size()) m_x_data.resize(x_data.size());
   std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
+}
+
+bool GraphLine::setXYValue(const juce::Point<float>& xy_value, size_t index) {
+  if (index >= m_x_data.size()) return false;
+
+  m_x_data[index] = xy_value.getX();
+  m_y_data[index] = xy_value.getY();
+
+  return true;
 }
 
 const std::vector<float>& GraphLine::getYValues() const noexcept {

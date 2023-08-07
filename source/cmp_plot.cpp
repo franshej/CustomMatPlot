@@ -19,6 +19,7 @@
 #include "cmp_legend.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_trace.h"
+#include "cmp_utils.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 
 namespace cmp {
@@ -245,7 +246,7 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
 void Plot::updateGridGraphsTrace() {
   if (!m_graph_bounds.isEmpty()) {
     m_grid->updateGrid();
-    m_trace->updateTracePointsBoundsFrom();
+    m_trace->updateTracePointsBounds();
 
     for (const auto& graph_line : m_graph_lines) {
       graph_line->updateXGraphPoints(m_common_graph_params);
@@ -259,7 +260,7 @@ void cmp::Plot::updateTracePointsForNewGraphData() {
     m_trace->updateTracePointsAssociatedWith(graph_line.get());
   }
 
-  m_trace->updateTracePointsBoundsFrom();
+  m_trace->updateTracePointsBounds();
 
   if (m_legend->isVisible()) {
     m_legend->updateLegends(m_graph_lines);
@@ -461,7 +462,7 @@ void Plot::setTracePointInternal(
                           : findNearestPoint<false>(trace_point_coordinate);
 
   m_trace->addOrRemoveTracePoint(nearest_graph_line, graph_point_index);
-  m_trace->updateTracePointsBoundsFrom();
+  m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 }
 
@@ -682,7 +683,7 @@ void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
       findNearestPoint(mouse_pos, nullptr);
 
   m_trace->addOrRemoveTracePoint(nearest_graph_line, graph_point_index);
-  m_trace->updateTracePointsBoundsFrom();
+  m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 }
 
@@ -691,9 +692,6 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
   switch (user_input) {
     case UserInputAction::create_tracepoint: {
       addOrRemoveTracePoint(event);
-      break;
-    }
-    case UserInputAction::move_graph_point: {
       break;
     }
     case UserInputAction::move_tracepoint: {
@@ -715,15 +713,15 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
       addTracePointsFromSelectedArea();
       break;
     }
-    case UserInputAction::zoom_region_start_drag: {
+    case UserInputAction::select_area_start: {
       setStartPosSelectedRegion(event.getPosition());
       break;
     }
-    case UserInputAction::zoom_region_draw_drag: {
+    case UserInputAction::select_area_draw: {
       drawSelectedRegion(event.getPosition());
       break;
     }
-    case UserInputAction::zoom_region_end_drag: {
+    case UserInputAction::zoom_selected_area: {
       zoomOnSelectedRegion();
       break;
     }
@@ -737,10 +735,64 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
       resetZoom();
       break;
     }
+    case UserInputAction::create_movable_graph_point: {
+      createMovableGraphPoint(event);
+      break;
+    }
+    case UserInputAction::move_movable_graph_point: {
+      moveMovableGraphPoint(event);
+      break;
+    }
+    case UserInputAction::remove_movable_graph_point: {
+      break;
+    }
     default: {
       break;
     }
   }
+}
+
+void Plot::moveMovableGraphPoint(const juce::MouseEvent& event) {
+  const auto component_pos = event.eventComponent->getBounds().getPosition();
+
+  const auto mouse_pos =
+      (event.getPosition() + component_pos - m_graph_bounds.getPosition())
+          .toFloat();
+
+  const auto data_position =
+      getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params);
+
+  if (auto trace_point = m_trace->getTracePointFrom(event.eventComponent)) {
+    const auto graph_line = trace_point->associated_graph_line;
+    const auto graph_point_index = trace_point->graph_point_index;
+
+    for (const auto& graph : m_graph_lines) {
+      if (graph.get() == graph_line) {
+        graph->setXYValue(data_position, graph_point_index);
+        graph->updateXGraphPoints(m_common_graph_params);
+        graph->updateYGraphPoints(m_common_graph_params);
+        updateTracePointsForNewGraphData();
+        break;
+      }
+    }
+  }
+
+  repaint();
+}
+
+void Plot::createMovableGraphPoint(const juce::MouseEvent& event) {
+  const auto component_pos = event.eventComponent->getBounds().getPosition();
+
+  const auto mouse_pos =
+      (event.getPosition() + component_pos - m_graph_bounds.getPosition())
+          .toFloat();
+
+  const auto [graph_point_index, nearest_graph_line] =
+      findNearestPoint(mouse_pos, nullptr);
+
+  m_trace->addTracePoint(nearest_graph_line, graph_point_index);
+  m_trace->updateTracePointsBounds();
+  m_trace->addAndMakeVisibleTo(this);
 }
 
 void Plot::resetZoom() {
@@ -786,7 +838,7 @@ void Plot::addTracePointsFromSelectedArea() {
     }
   }
 
-  m_trace->updateTracePointsBoundsFrom();
+  m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 
   m_graph_area->reset();

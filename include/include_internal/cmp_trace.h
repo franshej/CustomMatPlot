@@ -185,9 +185,7 @@ class Trace {
   /** @brief Add or remove a tracepoint.
    *
    * The tracepoint is removed if it's already exists. Must be followed by
-   * calling 'updateTracePointsBoundsFrom' to display the trace-point.
-   * For efficiency, it's recomended to envoke 'updateTracePointsBoundsFrom'
-   * once after several trace-points has been added.
+   * calling 'updateTracePointsBounds' to display the trace-point.
    *
    * @param graph_line pointer to a graph line.
    * @param graph_point_index the index of the graph point that is associated
@@ -197,11 +195,32 @@ class Trace {
   void addOrRemoveTracePoint(const GraphLine* graph_line,
                              const size_t graph_point_index);
 
+  /** @brief Add single tracepoint.
+   *
+   * Add tracepoint. Must be followed by
+   * calling 'updateTracePointsBounds' to display the trace-point.
+   *
+   * @param graph_line pointer to a graph line.
+   * @param graph_point_index the index of the graph point that is associated
+   * with this tracepoint
+   * @return void.
+   */
+  void addTracePoint(const GraphLine* graph_line,
+                     const size_t graph_point_index);
+
+  /** @brief Get tracepoint from juce::component.
+   *
+   * @param trace_point must be a tracepoint component.
+   * @return const TracePoint* the tracepoint if found else nullptr.
+   */
+  const TracePoint<float>* getTracePointFrom(
+      const juce::Component* trace_point) const;
+
   /** @brief Update the tracepoint bounds.
    *
    * @return void.
    */
-  void updateTracePointsBoundsFrom();
+  void updateTracePointsBounds();
 
   /** @brief Update a single tracepoint bounds from graph attributes.
    *
@@ -290,8 +309,8 @@ class Trace {
                           const juce::Point<float> new_data_point);
 
   /** @internal */
-  void addSingleTracePointAndLabel(const GraphLine* graph_line,
-                                   const size_t graph_point_index);
+  void addSingleTracePointAndLabelInternal(const GraphLine* graph_line,
+                                           const size_t graph_point_index);
 
   /** @internal */
   void removeSingleTracePointAndLabel(const GraphLine* graph_line,
@@ -303,6 +322,10 @@ class Trace {
 
   /** @internal */
   void updateTracePointsLookAndFeel();
+
+  /** @internal */
+  bool doesTracePointExist(const GraphLine* graph_line,
+                           const size_t graph_point_index) const;
 
   /** @internal */
   std::vector<TraceLabelPoint_f>::const_iterator

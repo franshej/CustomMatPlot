@@ -581,6 +581,10 @@ class Plot : public juce::Component {
   void moveLegend(const juce::MouseEvent& event);
   /** @internal */
   void addTracePointsFromSelectedArea();
+  /** @internal */
+  void createMovableGraphPoint(const juce::MouseEvent& event);
+  /** @internal */
+  void moveMovableGraphPoint(const juce::MouseEvent& event);
 
   juce::ComponentDragger m_comp_dragger;
 
