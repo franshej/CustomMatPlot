@@ -311,44 +311,46 @@ void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
     const auto x_bound = tlp->trace_label->m_x_label.second;
     const auto y_bound = tlp->trace_label->m_y_label.second;
 
-    const auto local_trace_bounds =
-        lnf->getTraceLabelLocalBounds(x_bound, y_bound);
-    auto trace_bounds = local_trace_bounds;
-
     const auto trace_position =
         lnf->getTracePointPositionFrom(m_common_plot_params, data_value) +
         m_common_plot_params.graph_bounds.getPosition();
 
-    auto trace_label_corner_pos =
-        force_corner_position
-            ? tlp->trace_label->trace_label_corner_pos
-            : getCornerPosition(m_common_plot_params.graph_bounds.getCentre(),
-                                trace_position);
+    if (tlp->trace_point_type == TracePointType::not_movable) {
+      const auto local_trace_bounds =
+          lnf->getTraceLabelLocalBounds(x_bound, y_bound);
+      auto trace_bounds = local_trace_bounds;
 
-    switch (trace_label_corner_pos) {
-      case TraceLabelCornerPosition::top_left:
-        trace_bounds.setPosition(trace_position);
-        break;
-      case TraceLabelCornerPosition::top_right:
-        trace_bounds.setPosition(
-            trace_position.getX() - trace_bounds.getWidth(),
-            trace_position.getY());
-        break;
-      case TraceLabelCornerPosition::bottom_left:
-        trace_bounds.setPosition(
-            trace_position.getX(),
-            trace_position.getY() - trace_bounds.getHeight());
-        break;
-      case TraceLabelCornerPosition::bottom_right:
-        trace_bounds.setPosition(
-            trace_position.getX() - trace_bounds.getWidth(),
-            trace_position.getY() - trace_bounds.getHeight());
-        break;
-      default:
-        break;
+      auto trace_label_corner_pos =
+          force_corner_position
+              ? tlp->trace_label->trace_label_corner_pos
+              : getCornerPosition(m_common_plot_params.graph_bounds.getCentre(),
+                                  trace_position);
+
+      switch (trace_label_corner_pos) {
+        case TraceLabelCornerPosition::top_left:
+          trace_bounds.setPosition(trace_position);
+          break;
+        case TraceLabelCornerPosition::top_right:
+          trace_bounds.setPosition(
+              trace_position.getX() - trace_bounds.getWidth(),
+              trace_position.getY());
+          break;
+        case TraceLabelCornerPosition::bottom_left:
+          trace_bounds.setPosition(
+              trace_position.getX(),
+              trace_position.getY() - trace_bounds.getHeight());
+          break;
+        case TraceLabelCornerPosition::bottom_right:
+          trace_bounds.setPosition(
+              trace_position.getX() - trace_bounds.getWidth(),
+              trace_position.getY() - trace_bounds.getHeight());
+          break;
+        default:
+          break;
+      }
+
+      tlp->trace_label->setBounds(trace_bounds);
     }
-
-    tlp->trace_label->setBounds(trace_bounds);
 
     auto trace_point_bounds = lnf->getTracePointLocalBounds();
     trace_point_bounds.setCentre(trace_position);

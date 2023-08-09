@@ -88,7 +88,8 @@ struct TracePoint : public juce::Component {
   /** The x and y values of the tracepoint. */
   juce::Point<ValueType> data_point;
 
-  /** The index of the graph point that this trace point is associated with. */
+  /** The index of the graph point that this trace point is associated with.
+   * TODO: should be data point index and not graph point index. */
   size_t graph_point_index{0};
 
   /** The graph line that this trace point is associated with. */
@@ -138,6 +139,7 @@ template <class ValueType>
 struct TraceLabelPoint {
   std::unique_ptr<TraceLabel<ValueType>> trace_label;
   std::unique_ptr<TracePoint<ValueType>> trace_point;
+  TracePointType trace_point_type{TracePointType::not_movable};
 };
 
 /** @brief A struct that defines a tracelabel and a tracepoint using floats. */

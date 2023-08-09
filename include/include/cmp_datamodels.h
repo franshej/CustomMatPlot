@@ -180,6 +180,14 @@ enum class MouseDragState : uint32_t {
   none   /** No drag state. */
 };
 
+/** Enum to define of which type of tracepoint. */
+enum class TracePointType : uint32_t {
+  /** Tracepoint that is not movable. */
+  not_movable,
+  /** Tracepoint that is movable. */
+  movable,
+};
+
 /*============================================================================*/
 
 /** @brief A template struct that defines min and max. */
