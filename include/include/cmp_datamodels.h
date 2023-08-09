@@ -180,12 +180,16 @@ enum class MouseDragState : uint32_t {
   none   /** No drag state. */
 };
 
-/** Enum to define of which type of tracepoint. */
-enum class TracePointType : uint32_t {
-  /** Tracepoint that is not movable. */
-  not_movable,
-  /** Tracepoint that is movable. */
-  movable,
+/** Enum to define when the tracepoint/Label should be visible or not. */
+enum class TracePointVisibilityType : uint32_t {
+  /** Tracepoint and label is not visible. */
+  not_visible,
+  /** Tracepoint is visible only when selected. Tracelabel is not visible. */
+  point_visible_when_selected,
+  /** Tracepoint and label are visible when selected. */
+  point_label_visible_when_selected,
+  /** Tracepoint is always visible. */
+  visible,
 };
 
 /*============================================================================*/

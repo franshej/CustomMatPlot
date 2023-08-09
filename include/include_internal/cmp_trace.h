@@ -137,9 +137,27 @@ typedef TraceLabel<float> TraceLabel_f;
 /** @brief A struct that defines a tracelabel and a tracepoint */
 template <class ValueType>
 struct TraceLabelPoint {
+  /** Constructor. */
+  TraceLabelPoint(std::unique_ptr<TraceLabel<ValueType>>,
+                  std::unique_ptr<TracePoint<ValueType>>);
+
+  /** @brief Set if tracepoint is selected or not.
+   *
+   * @param selected true if selected.
+   * @return void.
+   */
+  void setSelection(const bool selected);
+  TracePointVisibilityType trace_point_visiblility_type{
+      TracePointVisibilityType::visible};
+
   std::unique_ptr<TraceLabel<ValueType>> trace_label;
   std::unique_ptr<TracePoint<ValueType>> trace_point;
-  TracePointType trace_point_type{TracePointType::not_movable};
+
+ private:
+  /** @internal */
+  bool selected{false};
+  /** @internal */
+  void updateVisibilityInternal();
 };
 
 /** @brief A struct that defines a tracelabel and a tracepoint using floats. */

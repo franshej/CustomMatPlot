@@ -315,42 +315,40 @@ void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
         lnf->getTracePointPositionFrom(m_common_plot_params, data_value) +
         m_common_plot_params.graph_bounds.getPosition();
 
-    if (tlp->trace_point_type == TracePointType::not_movable) {
-      const auto local_trace_bounds =
-          lnf->getTraceLabelLocalBounds(x_bound, y_bound);
-      auto trace_bounds = local_trace_bounds;
+    const auto local_trace_bounds =
+        lnf->getTraceLabelLocalBounds(x_bound, y_bound);
+    auto trace_bounds = local_trace_bounds;
 
-      auto trace_label_corner_pos =
-          force_corner_position
-              ? tlp->trace_label->trace_label_corner_pos
-              : getCornerPosition(m_common_plot_params.graph_bounds.getCentre(),
-                                  trace_position);
+    auto trace_label_corner_pos =
+        force_corner_position
+            ? tlp->trace_label->trace_label_corner_pos
+            : getCornerPosition(m_common_plot_params.graph_bounds.getCentre(),
+                                trace_position);
 
-      switch (trace_label_corner_pos) {
-        case TraceLabelCornerPosition::top_left:
-          trace_bounds.setPosition(trace_position);
-          break;
-        case TraceLabelCornerPosition::top_right:
-          trace_bounds.setPosition(
-              trace_position.getX() - trace_bounds.getWidth(),
-              trace_position.getY());
-          break;
-        case TraceLabelCornerPosition::bottom_left:
-          trace_bounds.setPosition(
-              trace_position.getX(),
-              trace_position.getY() - trace_bounds.getHeight());
-          break;
-        case TraceLabelCornerPosition::bottom_right:
-          trace_bounds.setPosition(
-              trace_position.getX() - trace_bounds.getWidth(),
-              trace_position.getY() - trace_bounds.getHeight());
-          break;
-        default:
-          break;
-      }
-
-      tlp->trace_label->setBounds(trace_bounds);
+    switch (trace_label_corner_pos) {
+      case TraceLabelCornerPosition::top_left:
+        trace_bounds.setPosition(trace_position);
+        break;
+      case TraceLabelCornerPosition::top_right:
+        trace_bounds.setPosition(
+            trace_position.getX() - trace_bounds.getWidth(),
+            trace_position.getY());
+        break;
+      case TraceLabelCornerPosition::bottom_left:
+        trace_bounds.setPosition(
+            trace_position.getX(),
+            trace_position.getY() - trace_bounds.getHeight());
+        break;
+      case TraceLabelCornerPosition::bottom_right:
+        trace_bounds.setPosition(
+            trace_position.getX() - trace_bounds.getWidth(),
+            trace_position.getY() - trace_bounds.getHeight());
+        break;
+      default:
+        break;
     }
+
+    tlp->trace_label->setBounds(trace_bounds);
 
     auto trace_point_bounds = lnf->getTracePointLocalBounds();
     trace_point_bounds.setCentre(trace_position);
@@ -393,6 +391,47 @@ void TracePoint<ValueType>::lookAndFeelChanged() {
   } else {
     m_lookandfeel = nullptr;
   }
+}
+
+template <class ValueType>
+void TraceLabelPoint<ValueType>::updateVisibilityInternal() {
+  switch (trace_point_visiblility_type) {
+    case TracePointVisibilityType::not_visible:
+      trace_point->setVisible(false);
+      trace_label->setVisible(false);
+      break;
+    case TracePointVisibilityType::point_visible_when_selected:
+      trace_point->setVisible(selected);
+      trace_label->setVisible(false);
+      break;
+    case TracePointVisibilityType::point_label_visible_when_selected:
+      trace_point->setVisible(selected);
+      trace_label->setVisible(selected);
+      break;
+    case TracePointVisibilityType::visible:
+      trace_point->setVisible(true);
+      trace_label->setVisible(true);
+      break;
+    default:
+      trace_point->setVisible(true);
+      trace_label->setVisible(true);
+      break;
+  }
+}
+
+template <class ValueType>
+void TraceLabelPoint<ValueType>::setSelection(const bool selected) {
+  this->selected = selected;
+  this->updateVisibilityInternal();
+}
+
+template <class ValueType>
+TraceLabelPoint<ValueType>::TraceLabelPoint(
+    std::unique_ptr<TraceLabel<ValueType>> _trace_label,
+    std::unique_ptr<TracePoint<ValueType>> _trace_point)
+    : trace_label(std::move(_trace_label)),
+      trace_point(std::move(_trace_point)) {
+  this->updateVisibilityInternal();
 }
 
 }  // namespace cmp
