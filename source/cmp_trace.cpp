@@ -38,13 +38,13 @@ static TraceLabelCornerPosition getCornerPosition(
 template <class ValueType>
 bool TracePoint<ValueType>::setDataPoint(
     const juce::Point<ValueType>& new_data_point,
-    const size_t graph_point_index) {
+    const size_t data_point_index) {
   if (data_point != new_data_point) {
     if (onDataValueChanged) {
       onDataValueChanged(this, data_point, new_data_point);
     }
     this->data_point = new_data_point;
-    this->graph_point_index = graph_point_index;
+    this->data_point_index = data_point_index;
 
     return true;
   }
@@ -129,12 +129,13 @@ juce::Point<float> Trace::getGraphPosition(
 }
 
 void Trace::addOrRemoveTracePoint(const GraphLine* graph_line,
-                                  const size_t graph_point_index) {
-  const auto data_point = graph_line->getDataPoint(graph_point_index);
-  if (!doesTracePointExist(graph_line, graph_point_index)) {
-    addSingleTracePointAndLabelInternal(graph_line, graph_point_index);
+                                  const size_t data_point_index) {
+  const auto data_point =
+      graph_line->getDataPointFromDataPointIndex(data_point_index);
+  if (!doesTracePointExist(graph_line, data_point_index)) {
+    addSingleTracePointAndLabelInternal(graph_line, data_point_index);
   } else {
-    removeSingleTracePointAndLabel(graph_line, graph_point_index);
+    removeSingleTracePointAndLabel(graph_line, data_point_index);
   }
 }
 
@@ -173,16 +174,17 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
 }
 
 bool Trace::setGraphPointFor(juce::Component* trace_point,
-                             const size_t graph_point_index,
+                             const size_t data_point_index,
                              const GraphLine* graph_line) {
-  const auto data_point = graph_line->getDataPoint(graph_point_index);
+  const auto data_point =
+      graph_line->getDataPointFromDataPointIndex(data_point_index);
 
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
   auto it = m_trace_labelpoints.erase(
       tlp_it, tlp_it);  // remove const for ::const_iterator
 
   if (it != m_trace_labelpoints.end() &&
-      it->trace_point->setDataPoint(data_point, graph_point_index)) {
+      it->trace_point->setDataPoint(data_point, data_point_index)) {
     updateSingleTraceLabelTextsAndBoundsInternal(&(*it));
 
     return true;
@@ -226,10 +228,10 @@ void Trace::updateTracePointsAssociatedWith(const GraphLine* graph_line) {
     if (tlp.trace_point->associated_graph_line == graph_line) {
       const auto data_value = tlp.trace_point->data_point;
 
-      const auto [nearest_data_value, graph_point_index] =
+      const auto [nearest_data_value, data_point_index] =
           graph_line->findClosestDataPointTo(data_value, true);
 
-      tlp.trace_point->setDataPoint(nearest_data_value, graph_point_index);
+      tlp.trace_point->setDataPoint(nearest_data_value, data_point_index);
     }
   }
 }
@@ -242,11 +244,11 @@ void Trace::tracePointCbHelper(const juce::Component* trace_point,
   }
 }
 
-void Trace::addSingleTracePointAndLabelInternal(
-    const GraphLine* graph_line, const size_t graph_point_index) {
+void Trace::addSingleTracePointAndLabelInternal(const GraphLine* graph_line,
+                                                const size_t data_point_index) {
   auto trace_label = std::make_unique<TraceLabel_f>();
   auto trace_point =
-      std::make_unique<TracePoint_f>(graph_point_index, graph_line);
+      std::make_unique<TracePoint_f>(data_point_index, graph_line);
 
   if (m_lookandfeel) trace_label->setLookAndFeel(m_lookandfeel);
   if (m_lookandfeel) trace_point->setLookAndFeel(m_lookandfeel);
@@ -257,26 +259,27 @@ void Trace::addSingleTracePointAndLabelInternal(
     this->tracePointCbHelper(trace_point, prev_data, new_data);
   };
 
-  const auto data_point = graph_line->getDataPoint(graph_point_index);
-  trace_point->setDataPoint(data_point, graph_point_index);
+  const auto data_point =
+      graph_line->getDataPointFromDataPointIndex(data_point_index);
+  trace_point->setDataPoint(data_point, data_point_index);
 
   m_trace_labelpoints.push_back({move(trace_label), move(trace_point)});
 }
 
 bool Trace::doesTracePointExist(const GraphLine* graph_line,
-                                const size_t graph_point_index) const {
+                                const size_t data_point_index) const {
   return std::find_if(
              m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
-             [&graph_point_index, &graph_line](const auto& tl) {
+             [&data_point_index, &graph_line](const auto& tl) {
                return (tl.trace_point->associated_graph_line == graph_line) &&
-                      (tl.trace_point->graph_point_index == graph_point_index);
+                      (tl.trace_point->data_point_index == data_point_index);
              }) != m_trace_labelpoints.end();
 }
 
 void Trace::addTracePoint(const GraphLine* graph_line,
-                          const size_t graph_point_index) {
-  if (!doesTracePointExist(graph_line, graph_point_index)) {
-    addSingleTracePointAndLabelInternal(graph_line, graph_point_index);
+                          const size_t data_point_index) {
+  if (!doesTracePointExist(graph_line, data_point_index)) {
+    addSingleTracePointAndLabelInternal(graph_line, data_point_index);
   }
 }
 
@@ -290,12 +293,12 @@ const TracePoint<float>* Trace::getTracePointFrom(
 }
 
 void Trace::removeSingleTracePointAndLabel(const GraphLine* graph_line,
-                                           const size_t graph_point_index) {
+                                           const size_t data_point_index) {
   m_trace_labelpoints.erase(std::remove_if(
       m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
-      [&graph_line, &graph_point_index](const auto& tlp) {
+      [&graph_line, &data_point_index](const auto& tlp) {
         return tlp.trace_point->associated_graph_line == graph_line &&
-               tlp.trace_point->graph_point_index == graph_point_index;
+               tlp.trace_point->data_point_index == data_point_index;
       }));
 }
 

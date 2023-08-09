@@ -70,7 +70,7 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
                                           std::numeric_limits<float>::max());
 
   juce::Point<float> closest_data_point, current_point, current_data_point;
-  size_t graph_point_index{0};
+  size_t data_point_index{0};
 
   const auto graph_line_exsists =
       std::find_if(m_graph_lines.begin(), m_graph_lines.end(),
@@ -83,18 +83,18 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
   if (!nearest_graph_line) {
     for (const auto& graph_line : m_graph_lines) {
       if constexpr (is_point_data_point) {
-        const auto [data_point, graph_point_index_temp] =
+        const auto [data_point, data_point_index_temp] =
             graph_line->findClosestDataPointTo(point, false, false);
 
         current_data_point = current_point = data_point;
-        graph_point_index = graph_point_index_temp;
+        data_point_index = data_point_index_temp;
       } else {
-        const auto [current_graph_point, data_point, graph_point_index_temp] =
+        const auto [current_graph_point, data_point, data_point_index_temp] =
             graph_line->findClosestGraphPointTo(point);
 
         current_point = current_graph_point;
         current_data_point = data_point;
-        graph_point_index = graph_point_index_temp;
+        data_point_index = data_point_index_temp;
       }
 
       if (point.getDistanceFrom(current_point) <
@@ -106,19 +106,19 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
     }
   } else if (graph_line_exsists) {
     if constexpr (is_point_data_point) {
-      const auto [data_point, graph_point_index_temp] =
+      const auto [data_point, data_point_index_temp] =
           nearest_graph_line->findClosestDataPointTo(point);
-      return {graph_point_index_temp, nearest_graph_line};
+      return {data_point_index_temp, nearest_graph_line};
     }
 
-    const auto [graph_point, data_point, graph_point_index_temp] =
+    const auto [graph_point, data_point, data_point_index_temp] =
         nearest_graph_line->findClosestGraphPointTo(point);
     closest_point = graph_point;
     closest_data_point = data_point;
-    graph_point_index = graph_point_index_temp;
+    data_point_index = data_point_index_temp;
   }
 
-  return {graph_point_index, nearest_graph_line};
+  return {data_point_index, nearest_graph_line};
 }
 
 void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
@@ -457,11 +457,11 @@ void Plot::setTracePoint(const juce::Point<float>& trace_point_coordinate) {
 void Plot::setTracePointInternal(
     const juce::Point<float>& trace_point_coordinate,
     bool is_point_data_point) {
-  const auto [graph_point_index, nearest_graph_line] =
+  const auto [data_point_index, nearest_graph_line] =
       is_point_data_point ? findNearestPoint<true>(trace_point_coordinate)
                           : findNearestPoint<false>(trace_point_coordinate);
 
-  m_trace->addOrRemoveTracePoint(nearest_graph_line, graph_point_index);
+  m_trace->addOrRemoveTracePoint(nearest_graph_line, data_point_index);
   m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 }
@@ -679,10 +679,10 @@ void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
       (event.getPosition() + component_pos - m_graph_bounds.getPosition())
           .toFloat();
 
-  const auto [graph_point_index, nearest_graph_line] =
+  const auto [data_point_index, nearest_graph_line] =
       findNearestPoint(mouse_pos, nullptr);
 
-  m_trace->addOrRemoveTracePoint(nearest_graph_line, graph_point_index);
+  m_trace->addOrRemoveTracePoint(nearest_graph_line, data_point_index);
   m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 }
@@ -764,11 +764,11 @@ void Plot::moveMovableGraphPoint(const juce::MouseEvent& event) {
 
   if (auto trace_point = m_trace->getTracePointFrom(event.eventComponent)) {
     const auto graph_line = trace_point->associated_graph_line;
-    const auto graph_point_index = trace_point->graph_point_index;
+    const auto data_point_index = trace_point->data_point_index;
 
     for (const auto& graph : m_graph_lines) {
       if (graph.get() == graph_line) {
-        graph->setXYValue(data_position, graph_point_index);
+        graph->setXYValue(data_position, data_point_index);
         graph->updateXGraphPoints(m_common_graph_params);
         graph->updateYGraphPoints(m_common_graph_params);
         updateTracePointsForNewGraphData();
@@ -787,10 +787,10 @@ void Plot::createMovableGraphPoint(const juce::MouseEvent& event) {
       (event.getPosition() + component_pos - m_graph_bounds.getPosition())
           .toFloat();
 
-  const auto [graph_point_index, nearest_graph_line] =
+  const auto [data_point_index, nearest_graph_line] =
       findNearestPoint(mouse_pos, nullptr);
 
-  m_trace->addTracePoint(nearest_graph_line, graph_point_index);
+  m_trace->addTracePoint(nearest_graph_line, data_point_index);
   m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 }
@@ -829,12 +829,14 @@ void Plot::addTracePointsFromSelectedArea() {
 
   for (const auto& graph_line : m_graph_lines) {
     const auto& graph_points = graph_line->getGraphPoints();
-    size_t graph_point_index = 0;
+    size_t data_point_index = 0;
+
+    //TODO:: should selected all points in the area instead
     for (const auto& graph_point : graph_points) {
       if (selected_area.contains(graph_point)) {
-        m_trace->addOrRemoveTracePoint(graph_line.get(), graph_point_index);
+        m_trace->addOrRemoveTracePoint(graph_line.get(), data_point_index);
       };
-      graph_point_index++;
+      data_point_index++;
     }
   }
 
@@ -856,10 +858,10 @@ void Plot::moveTracepoint(const juce::MouseEvent& event) {
   const auto* associated_graph_line =
       m_trace->getAssociatedGraphLine(event.eventComponent);
 
-  const auto [graph_point_index, nearest_graph_line] =
+  const auto [data_point_index, nearest_graph_line] =
       findNearestPoint(mouse_pos.toFloat(), associated_graph_line);
 
-  m_trace->setGraphPointFor(event.eventComponent, graph_point_index,
+  m_trace->setGraphPointFor(event.eventComponent, data_point_index,
                             nearest_graph_line);
 }
 

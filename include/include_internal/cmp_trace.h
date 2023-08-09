@@ -38,9 +38,9 @@ enum class TraceLabelCornerPosition {
 /** @brief A struct that defines a tracepoint. */
 template <class ValueType>
 struct TracePoint : public juce::Component {
-  explicit TracePoint(const size_t graph_point_index,
+  explicit TracePoint(const size_t data_point_index,
                       const GraphLine* graph_line)
-      : graph_point_index(graph_point_index),
+      : data_point_index(data_point_index),
         associated_graph_line(graph_line){};
 
 #if THREE_WAY_COMP
@@ -62,7 +62,7 @@ struct TracePoint : public juce::Component {
 
   /** Set the data point. return true if succeeded */
   bool setDataPoint(const juce::Point<ValueType>& new_data_point,
-                    const size_t graph_point_index);
+                    const size_t data_point_index);
 
   /** @brief This lambda is triggered when a the data value is changed.
    *
@@ -88,9 +88,8 @@ struct TracePoint : public juce::Component {
   /** The x and y values of the tracepoint. */
   juce::Point<ValueType> data_point;
 
-  /** The index of the graph point that this trace point is associated with.
-   * TODO: should be data point index and not graph point index. */
-  size_t graph_point_index{0};
+  /** The index of the data point that this trace point is associated with. */
+  size_t data_point_index{0};
 
   /** The graph line that this trace point is associated with. */
   const GraphLine* associated_graph_line{nullptr};
