@@ -372,10 +372,22 @@ void Plot::fillBetween(
   }
 }
 
-void cmp::Plot::setDownsamplingType(
-    const DownsamplingType downsampling_type) noexcept {
-  m_downsampling_type = downsampling_type;
+void cmp::Plot::setDownsamplingType(const DownsamplingType downsampling_type) {
+  this->setDownsamplingTypeInternal(downsampling_type);
+}
 
+void cmp::Plot::setDownsamplingTypeInternal(
+    const DownsamplingType downsampling_type) {
+  if (downsampling_type > DownsamplingType::no_downsampling &&
+      m_graph_point_move_type > GraphPointMoveType::none) {
+    jassertfalse;  // You can't change the downsampling type if you configured
+                   // it possible to move the graph points. Call
+                   // 'setGraphPointMoveType()' with a value of
+                   // 'GraphPointMoveType::none' first.
+    m_graph_point_move_type = GraphPointMoveType::none;
+  } else {
+    m_downsampling_type = downsampling_type;
+  }
   updateGridGraphsTrace();
 }
 
@@ -831,7 +843,7 @@ void Plot::addTracePointsFromSelectedArea() {
     const auto& graph_points = graph_line->getGraphPoints();
     size_t data_point_index = 0;
 
-    //TODO:: should selected all points in the area instead
+    // TODO:: should selected all points in the area instead
     for (const auto& graph_point : graph_points) {
       if (selected_area.contains(graph_point)) {
         m_trace->addOrRemoveTracePoint(graph_line.get(), data_point_index);
@@ -941,6 +953,46 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
                    lnf->getUserInputAction(UserInput::left_mouse_drag_end));
     }
   }
+}
+
+void Plot::setMovePointsType(const GraphPointMoveType move_points_type) {
+  m_graph_point_move_type = move_points_type;
+  updateTracepointsForGraphData();
+}
+
+void Plot::addTracepointsForGraphData() {
+  m_trace->clear();
+
+  for (const auto& graph_line : m_graph_lines) {
+    const auto& x_values = graph_line->getXValues();
+    size_t data_point_index = 0;
+
+    for (; data_point_index < x_values.size(); data_point_index++) {
+      m_trace->addTracePoint(graph_line.get(), data_point_index);
+    }
+  }
+
+  m_trace->updateTracePointsBounds();
+  m_trace->addAndMakeVisibleTo(this);
+}
+
+void Plot::updateTracepointsForGraphData() {
+  switch (m_graph_point_move_type) {
+    case GraphPointMoveType::none:
+      return;
+      break;
+    case GraphPointMoveType::horizontal:
+      this->setDownsamplingTypeInternal(DownsamplingType::no_downsampling);
+      break;
+    case GraphPointMoveType::vertical:
+      this->setDownsamplingTypeInternal(DownsamplingType::no_downsampling);
+      break;
+    case GraphPointMoveType::horizontal_vertical:
+      this->setDownsamplingTypeInternal(DownsamplingType::no_downsampling);
+      break;
+  }
+
+  addTracepointsForGraphData();
 }
 
 }  // namespace cmp

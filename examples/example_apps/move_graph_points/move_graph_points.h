@@ -1,12 +1,14 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
 
 #include <cmp_plot.h>
 #include <juce_gui_extra/juce_gui_extra.h>
+
+#include "cmp_datamodels.h"
 
 namespace examples {
 class move_graph_points : public juce::Component {
@@ -20,8 +22,10 @@ class move_graph_points : public juce::Component {
     // Add the plot object as a child component.
     addAndMakeVisible(m_plot);
 
-    // Plot some values.
+        // Plot some values.
     m_plot.plot({{1, 3, 7, 9, 13}});
+
+    m_plot.setMovePointsType(cmp::GraphPointMoveType::horizontal);
   };
 
   void resized() override {
@@ -29,4 +33,4 @@ class move_graph_points : public juce::Component {
     m_plot.setBounds(getBounds());
   };
 };
-}
+}  // namespace examples

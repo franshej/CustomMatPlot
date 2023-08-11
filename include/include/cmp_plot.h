@@ -107,10 +107,27 @@ class Plot : public juce::Component {
    *
    * @see cmp::DownsamplingType for the different types.
    * default is DownsamplingType::xy_downsampling.
+   * @note The downsampling type will be set to
+   * DownsamplingType::no_downsampling if move_point_type >
+   * GraphPointMoveType::none.
    *
    * @param downsampling_type the type of downsampling.
    */
-  void setDownsamplingType(const DownsamplingType downsampling_type) noexcept;
+  void setDownsamplingType(const DownsamplingType downsampling_type);
+
+  /** @brief Set if it should be possible to move graph points and in which
+   * direction(s).
+   *
+   * @note The downsampling type will be set to
+   * DownsamplingType::no_downsampling if move_point_type >
+   * GraphPointMoveType::none.
+   * @see cmp::GraphPointMoveType for the different types, default is
+   * GraphPointMoveType::none.
+   *
+   * @param move_points_type the type of graph point movement.
+   * @return void.
+   */
+  void setMovePointsType(const GraphPointMoveType move_points_type);
 
   /** @brief Set the text for label on the X-axis
    *
@@ -220,7 +237,7 @@ class Plot : public juce::Component {
    *
    *  Set descriptions for each graph. The label 'label1..N' will be used if
    *  fewers numbers of graph_descriptions are provided than existing numbers of
-   *  graphs.
+   *  graph lines.
    *
    *  @param graph_descriptions description of the graphs
    *  @return void.
@@ -556,8 +573,15 @@ class Plot : public juce::Component {
   /** @internal */
   void updateTracePointsForNewGraphData();
   /** @internal */
+  void addTracepointsForGraphData();
+  /** @internal */
   void setTracePointInternal(const juce::Point<float>& trace_point_coordinate,
                              bool is_point_data_point);
+  /** @internal */
+  void updateTracepointsForGraphData();
+
+  /** @internal */
+  void setDownsamplingTypeInternal(const DownsamplingType downsampling_type);
 
   /** User input related things  */
   /** @internal */
@@ -609,11 +633,13 @@ class Plot : public juce::Component {
   juce::LookAndFeel* m_lookandfeel;
   std::unique_ptr<LookAndFeelMethods> m_lookandfeel_default;
 
+  /** Friend functions */
   friend const IsLabelsSet getIsLabelsAreSet(const Plot* plot) noexcept;
-
   friend const std::pair<int, int> getMaxGridLabelWidth(
       const Plot* plot) noexcept;
 
+  /** Other variables */
+  GraphPointMoveType m_graph_point_move_type{GraphPointMoveType::none};
   bool m_x_autoscale = true, m_y_autoscale = true;
 };
 

@@ -192,6 +192,18 @@ enum class TracePointVisibilityType : uint32_t {
   visible,
 };
 
+/** Enum to define how a graph point can be moved */
+enum class GraphPointMoveType : uint32_t {
+  /** Graph point can't be moved. */
+  none,
+  /** Graph point can be moved horizontally. */
+  horizontal,
+  /** Graph point can be moved vertically. */
+  vertical,
+  /** Graph point can be moved horizontally and vertically. */
+  horizontal_vertical,
+};
+
 /*============================================================================*/
 
 /** @brief A template struct that defines min and max. */
