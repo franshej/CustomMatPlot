@@ -25,37 +25,18 @@
 namespace cmp {
 
 static std::pair<float, float> findMinMaxValuesInGraphLines(
-    const std::vector<std::vector<float>>& data) noexcept {
-  auto max_value = -std::numeric_limits<float>::max();
-  auto min_value = std::numeric_limits<float>::max();
-
-  for (const auto& single_data_vector : data) {
-    const auto& current_max =
-        *std::max_element(single_data_vector.begin(), single_data_vector.end());
-    max_value = current_max > max_value ? current_max : max_value;
-    const auto& current_min =
-        *std::min_element(single_data_vector.begin(), single_data_vector.end());
-    min_value = current_min < min_value ? current_min : min_value;
-  }
-  return {min_value, max_value};
-}
-
-static std::pair<float, float> findMinMaxValuesInGraphLines(
     const std::vector<std::unique_ptr<cmp::GraphLine>>& graph_lines,
     const bool isXValue) noexcept {
   auto max_value = -std::numeric_limits<float>::max();
   auto min_value = std::numeric_limits<float>::max();
 
   for (const auto& graph : graph_lines) {
-    const auto& single_data_vector =
-        isXValue ? graph->getXValues() : graph->getYValues();
+    const auto& values = isXValue ? graph->getXValues() : graph->getYValues();
 
-    if (!single_data_vector.empty()) {
-      const auto& current_max = *std::max_element(single_data_vector.begin(),
-                                                  single_data_vector.end());
+    if (!values.empty()) {
+      const auto& current_max = *std::max_element(values.begin(), values.end());
       max_value = current_max > max_value ? current_max : max_value;
-      const auto& current_min = *std::min_element(single_data_vector.begin(),
-                                                  single_data_vector.end());
+      const auto& current_min = *std::min_element(values.begin(), values.end());
       min_value = current_min < min_value ? current_min : min_value;
     }
   }
