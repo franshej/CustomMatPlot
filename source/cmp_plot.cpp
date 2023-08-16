@@ -253,6 +253,8 @@ void Plot::updateGridGraphsTrace() {
       graph_line->updateYGraphPoints(m_common_graph_params);
     }
   }
+
+  addTracepointsForGraphData();
 }
 
 void cmp::Plot::updateTracePointsForNewGraphData() {
@@ -961,6 +963,7 @@ void Plot::setMovePointsType(const GraphPointMoveType move_points_type) {
 }
 
 void Plot::addTracepointsForGraphData() {
+  if (m_graph_point_move_type == GraphPointMoveType::none) return;
   m_trace->clear();
 
   for (const auto& graph_line : m_graph_lines) {
@@ -991,8 +994,5 @@ void Plot::updateTracepointsForGraphData() {
       this->setDownsamplingTypeInternal(DownsamplingType::no_downsampling);
       break;
   }
-
-  addTracepointsForGraphData();
 }
-
 }  // namespace cmp
