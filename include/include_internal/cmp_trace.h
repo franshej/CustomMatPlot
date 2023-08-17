@@ -40,8 +40,7 @@ template <class ValueType>
 struct TracePoint : public juce::Component {
   explicit TracePoint(const size_t data_point_index,
                       const GraphLine* graph_line)
-      : data_point_index(data_point_index),
-        associated_graph_line(graph_line){};
+      : data_point_index(data_point_index), associated_graph_line(graph_line){};
 
 #if THREE_WAY_COMP
   /** Spaceship */
@@ -136,9 +135,15 @@ typedef TraceLabel<float> TraceLabel_f;
 /** @brief A struct that defines a tracelabel and a tracepoint */
 template <class ValueType>
 struct TraceLabelPoint {
-  /** Constructor. */
+  /* @brief Constructor.
+   *
+   * @param trace_label a TraceLabel component.
+   * @param trace_point a TracePoint component.
+   * @param trace_point_visiblility_type the visibility of the tracepoint.
+   */
   TraceLabelPoint(std::unique_ptr<TraceLabel<ValueType>>,
-                  std::unique_ptr<TracePoint<ValueType>>);
+                  std::unique_ptr<TracePoint<ValueType>>,
+                  const TracePointVisibilityType);
 
   /** @brief Set if tracepoint is selected or not.
    *
@@ -148,6 +153,9 @@ struct TraceLabelPoint {
   void setSelection(const bool selected);
   TracePointVisibilityType trace_point_visiblility_type{
       TracePointVisibilityType::visible};
+
+  /** @brief Update visibility */
+  void updateVisibility();
 
   std::unique_ptr<TraceLabel<ValueType>> trace_label;
   std::unique_ptr<TracePoint<ValueType>> trace_point;
@@ -212,7 +220,8 @@ class Trace {
    * @return void.
    */
   void addOrRemoveTracePoint(const GraphLine* graph_line,
-                             const size_t graph_point_index);
+                             const size_t graph_point_index,
+                             const TracePointVisibilityType trace_point_visibility = TracePointVisibilityType::visible);
 
   /** @brief Add single tracepoint.
    *
@@ -222,10 +231,12 @@ class Trace {
    * @param graph_line pointer to a graph line.
    * @param graph_point_index the index of the graph point that is associated
    * with this tracepoint
+   * @param trace_point_visibility the visibility of the tracepoint.
    * @return void.
    */
   void addTracePoint(const GraphLine* graph_line,
-                     const size_t graph_point_index);
+                     const size_t graph_point_index,
+                     const TracePointVisibilityType trace_point_visibility);
 
   /** @brief Get tracepoint from juce::component.
    *
@@ -329,7 +340,9 @@ class Trace {
 
   /** @internal */
   void addSingleTracePointAndLabelInternal(const GraphLine* graph_line,
-                                           const size_t graph_point_index);
+                                           const size_t graph_point_index,
+                                           const TracePointVisibilityType
+                                               trace_point_visibility);
 
   /** @internal */
   void removeSingleTracePointAndLabel(const GraphLine* graph_line,

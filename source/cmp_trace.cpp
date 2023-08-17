@@ -9,6 +9,7 @@
 
 #include <cstddef>
 
+#include "cmp_datamodels.h"
 #include "cmp_graph_line.h"
 #include "cmp_plot.h"
 
@@ -129,11 +130,13 @@ juce::Point<float> Trace::getGraphPosition(
 }
 
 void Trace::addOrRemoveTracePoint(const GraphLine* graph_line,
-                                  const size_t data_point_index) {
+                                  const size_t data_point_index,
+                                  const TracePointVisibilityType visibility) {
   const auto data_point =
       graph_line->getDataPointFromDataPointIndex(data_point_index);
   if (!doesTracePointExist(graph_line, data_point_index)) {
-    addSingleTracePointAndLabelInternal(graph_line, data_point_index);
+    addSingleTracePointAndLabelInternal(graph_line, data_point_index,
+                                        visibility);
   } else {
     removeSingleTracePointAndLabel(graph_line, data_point_index);
   }
@@ -160,9 +163,10 @@ void Trace::updateSingleTracePointBoundsFrom(
 }
 
 void Trace::addAndMakeVisibleTo(juce::Component* parent_comp) {
-  for (const auto& tlp : m_trace_labelpoints) {
-    parent_comp->addAndMakeVisible(tlp.trace_label.get());
-    parent_comp->addAndMakeVisible(tlp.trace_point.get());
+  for (auto& tlp : m_trace_labelpoints) {
+    parent_comp->addChildComponent(tlp.trace_label.get());
+    parent_comp->addChildComponent(tlp.trace_point.get());
+    tlp.updateVisibility();
   }
 }
 
@@ -244,8 +248,9 @@ void Trace::tracePointCbHelper(const juce::Component* trace_point,
   }
 }
 
-void Trace::addSingleTracePointAndLabelInternal(const GraphLine* graph_line,
-                                                const size_t data_point_index) {
+void Trace::addSingleTracePointAndLabelInternal(
+    const GraphLine* graph_line, const size_t data_point_index,
+    const TracePointVisibilityType trace_point_visibility) {
   auto trace_label = std::make_unique<TraceLabel_f>();
   auto trace_point =
       std::make_unique<TracePoint_f>(data_point_index, graph_line);
@@ -263,7 +268,8 @@ void Trace::addSingleTracePointAndLabelInternal(const GraphLine* graph_line,
       graph_line->getDataPointFromDataPointIndex(data_point_index);
   trace_point->setDataPoint(data_point, data_point_index);
 
-  m_trace_labelpoints.push_back({move(trace_label), move(trace_point)});
+  m_trace_labelpoints.push_back(
+      {move(trace_label), move(trace_point), trace_point_visibility});
 }
 
 bool Trace::doesTracePointExist(const GraphLine* graph_line,
@@ -277,9 +283,11 @@ bool Trace::doesTracePointExist(const GraphLine* graph_line,
 }
 
 void Trace::addTracePoint(const GraphLine* graph_line,
-                          const size_t data_point_index) {
+                          const size_t data_point_index,
+                          const TracePointVisibilityType visibility_type) {
   if (!doesTracePointExist(graph_line, data_point_index)) {
-    addSingleTracePointAndLabelInternal(graph_line, data_point_index);
+    addSingleTracePointAndLabelInternal(graph_line, data_point_index,
+                                        visibility_type);
   }
 }
 
@@ -398,25 +406,36 @@ void TracePoint<ValueType>::lookAndFeelChanged() {
 
 template <class ValueType>
 void TraceLabelPoint<ValueType>::updateVisibilityInternal() {
+  const auto setComponentTransparency = [](auto& component,
+                                           const bool transparent) {
+    component.setVisible(true);
+    if (transparent) {
+      component.setAlpha(0.0f);
+      component.setOpaque(false);
+    } else {
+      component.setAlpha(1.0f);
+    }
+  };
+
   switch (trace_point_visiblility_type) {
     case TracePointVisibilityType::not_visible:
       trace_point->setVisible(false);
       trace_label->setVisible(false);
       break;
     case TracePointVisibilityType::point_visible_when_selected:
-      trace_point->setVisible(selected);
+      setComponentTransparency(*trace_point, !selected);
       trace_label->setVisible(false);
       break;
     case TracePointVisibilityType::point_label_visible_when_selected:
-      trace_point->setVisible(selected);
+      setComponentTransparency(*trace_point, !selected);
       trace_label->setVisible(selected);
       break;
     case TracePointVisibilityType::visible:
-      trace_point->setVisible(true);
+      setComponentTransparency(*trace_point, !selected);
       trace_label->setVisible(true);
       break;
     default:
-      trace_point->setVisible(true);
+      setComponentTransparency(*trace_point, !selected);
       trace_label->setVisible(true);
       break;
   }
@@ -431,9 +450,16 @@ void TraceLabelPoint<ValueType>::setSelection(const bool selected) {
 template <class ValueType>
 TraceLabelPoint<ValueType>::TraceLabelPoint(
     std::unique_ptr<TraceLabel<ValueType>> _trace_label,
-    std::unique_ptr<TracePoint<ValueType>> _trace_point)
+    std::unique_ptr<TracePoint<ValueType>> _trace_point,
+    const TracePointVisibilityType _trace_point_visiblility_type)
     : trace_label(std::move(_trace_label)),
-      trace_point(std::move(_trace_point)) {
+      trace_point(std::move(_trace_point)),
+      trace_point_visiblility_type(_trace_point_visiblility_type) {
+  this->updateVisibilityInternal();
+}
+
+template <class ValueType>
+void TraceLabelPoint<ValueType>::updateVisibility() {
   this->updateVisibilityInternal();
 }
 

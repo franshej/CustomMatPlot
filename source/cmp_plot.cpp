@@ -235,7 +235,7 @@ void Plot::updateGridGraphsTrace() {
     }
   }
 
-  addTracepointsForGraphData();
+  addTracePointsForGraphData();
 }
 
 void cmp::Plot::updateTracePointsForNewGraphData() {
@@ -731,7 +731,6 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
       break;
     }
     case UserInputAction::create_movable_graph_point: {
-      createMovableGraphPoint(event);
       break;
     }
     case UserInputAction::move_movable_graph_point: {
@@ -773,21 +772,6 @@ void Plot::moveMovableGraphPoint(const juce::MouseEvent& event) {
   }
 
   repaint();
-}
-
-void Plot::createMovableGraphPoint(const juce::MouseEvent& event) {
-  const auto component_pos = event.eventComponent->getBounds().getPosition();
-
-  const auto mouse_pos =
-      (event.getPosition() + component_pos - m_graph_bounds.getPosition())
-          .toFloat();
-
-  const auto [data_point_index, nearest_graph_line] =
-      findNearestPoint(mouse_pos, nullptr);
-
-  m_trace->addTracePoint(nearest_graph_line, data_point_index);
-  m_trace->updateTracePointsBounds();
-  m_trace->addAndMakeVisibleTo(this);
 }
 
 void Plot::resetZoom() {
@@ -943,7 +927,7 @@ void Plot::setMovePointsType(const GraphPointMoveType move_points_type) {
   updateTracepointsForGraphData();
 }
 
-void Plot::addTracepointsForGraphData() {
+void Plot::addTracePointsForGraphData() {
   if (m_graph_point_move_type == GraphPointMoveType::none) return;
   m_trace->clear();
 
@@ -952,7 +936,9 @@ void Plot::addTracepointsForGraphData() {
     size_t data_point_index = 0;
 
     for (; data_point_index < x_values.size(); data_point_index++) {
-      m_trace->addTracePoint(graph_line.get(), data_point_index);
+      m_trace->addTracePoint(
+          graph_line.get(), data_point_index,
+          TracePointVisibilityType::point_visible_when_selected);
     }
   }
 
