@@ -107,7 +107,7 @@ void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
   m_plot_label->setLookAndFeel(lookandfeel);
   m_frame->setLookAndFeel(lookandfeel);
   m_legend->setLookAndFeel(lookandfeel);
-  m_graph_area->setLookAndFeel(lookandfeel);
+  m_selected_area->setLookAndFeel(lookandfeel);
   m_trace->setLookAndFeel(lookandfeel);
 
   for (const auto& graph_line : m_graph_lines) {
@@ -135,18 +135,18 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_plot_label(std::make_unique<PlotLabel>()),
       m_frame(std::make_unique<Frame>()),
       m_legend(std::make_unique<Legend>()),
-      m_graph_area(std::make_unique<GraphArea>(m_common_graph_params)),
+      m_selected_area(std::make_unique<GraphArea>(m_common_graph_params)),
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
       m_trace(std::make_unique<Trace>(m_common_graph_params)) {
   lookAndFeelChanged();
   addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
-  addAndMakeVisible(m_graph_area.get());
+  addAndMakeVisible(m_selected_area.get());
   addAndMakeVisible(m_plot_label.get());
   addAndMakeVisible(m_frame.get());
 
   m_legend->setAlwaysOnTop(true);
-  m_graph_area->toBehind(m_legend.get());
+  m_selected_area->toBehind(m_legend.get());
   m_grid->toBack();
 
   m_grid->onGridLabelLengthChanged = [this](cmp::Grid* grid) {
@@ -341,7 +341,7 @@ void Plot::fillBetween(
       graph_spread->setBounds(m_graph_bounds);
       graph_spread->setLookAndFeel(m_lookandfeel);
       addAndMakeVisible(graph_spread.get());
-      graph_spread->toBehind(m_graph_area.get());
+      graph_spread->toBehind(m_selected_area.get());
     } else {
       graph_spread->m_lower_bound = first_graph;
       graph_spread->m_upper_bound = second_graph;
@@ -485,7 +485,7 @@ void Plot::resizeChilderns() {
           graph_bound.getHeight() + margin_for_1px_outside};
 
       if (m_frame) m_frame->setBounds(frame_bound);
-      if (m_graph_area) m_graph_area->setBounds(graph_bound);
+      if (m_selected_area) m_selected_area->setBounds(graph_bound);
 
       for (const auto& graph_line : m_graph_lines) {
         graph_line->setBounds(graph_bound);
@@ -567,7 +567,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
             graph_line->setBounds(m_graph_bounds);
 
             addAndMakeVisible(graph_line.get());
-            graph_line->toBehind(m_graph_area.get());
+            graph_line->toBehind(m_selected_area.get());
             i++;
           }
         }
@@ -752,16 +752,35 @@ void Plot::selectTracePoint(const juce::MouseEvent& event) {
 }
 
 void Plot::deselectTracePoint(const juce::MouseEvent& event) {
-  m_trace->selectTracePoint(event.eventComponent, false);
+  for (auto& trace_point : m_trace->getTraceLabelPoints()) {
+    m_trace->selectTracePoint(trace_point.trace_point.get(), false);
+  }
 }
 
 void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
 
-  const auto d_data_position =
+  auto d_data_position =
       getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params) -
       getDataPointFromGraphCoordinate(m_prev_mouse_position,
                                       m_common_graph_params);
+
+  switch (m_graph_point_move_type) {
+    case GraphPointMoveType::horizontal: {
+      d_data_position.setY(0.f);
+      break;
+    }
+    case GraphPointMoveType::vertical: {
+      d_data_position.setX(0.f);
+      break;
+    }
+    case GraphPointMoveType::horizontal_vertical: {
+      break;
+    }
+    default: {
+      break;
+    }
+  }
 
   for (const auto& trace_label_point : m_trace->getTraceLabelPoints()) {
     if (!trace_label_point.isSelected()) continue;
@@ -793,47 +812,47 @@ void Plot::resetZoom() {
 }
 
 void Plot::setStartPosSelectedRegion(const juce::Point<int>& start_position) {
-  m_graph_area->setStartPosition(start_position);
+  for (auto& trace_point : m_trace->getTraceLabelPoints()) {
+    m_trace->selectTracePoint(trace_point.trace_point.get(), false);
+  }
+
+  m_selected_area->setStartPosition(start_position);
 }
 
 void Plot::drawSelectedRegion(const juce::Point<int>& end_position) {
-  m_graph_area->setEndPosition(end_position);
-  m_graph_area->repaint();
+  m_selected_area->setEndPosition(end_position);
+  m_selected_area->repaint();
 }
 
 void Plot::zoomOnSelectedRegion() {
-  const auto data_bound = m_graph_area->getDataBound<float>();
+  const auto data_bound = m_selected_area->getDataBound<float>();
 
   updateXLim({data_bound.getX(), data_bound.getX() + data_bound.getWidth()});
   updateYLim({data_bound.getY(), data_bound.getY() + data_bound.getHeight()});
   updateGridGraphsTrace();
 
-  m_graph_area->reset();
+  m_selected_area->reset();
   m_mouse_drag_state = MouseDragState::none;
   repaint();
 }
 
 void Plot::selectedTracePointsWithinSelectedArea() {
-  const auto selected_area =
-      m_graph_area->getSelectedAreaBound<int>().toFloat();
+  const auto selected_area = m_selected_area->getSelectedAreaBound<int>();
+  constexpr auto margin = juce::Point<int>(2, 5);
 
-  for (const auto& graph_line : m_graph_lines) {
-    const auto& graph_points = graph_line->getGraphPoints();
-    size_t data_point_index = 0;
+  for (auto& trace_point : m_trace->getTraceLabelPoints()) {
+    auto trace_point_pos = trace_point.trace_point->getBounds().getPosition() -
+                           m_graph_bounds.getPosition() + margin;
 
-    // TODO:: should selected all points in the area instead
-    for (const auto& graph_point : graph_points) {
-      if (selected_area.contains(graph_point)) {
-        m_trace->addOrRemoveTracePoint(graph_line.get(), data_point_index);
-      };
-      data_point_index++;
+    if (selected_area.contains(trace_point_pos)) {
+      m_trace->selectTracePoint(trace_point.trace_point.get(), true);
     }
   }
 
   m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 
-  m_graph_area->reset();
+  m_selected_area->reset();
   m_mouse_drag_state = MouseDragState::none;
   repaint();
 }
@@ -877,7 +896,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
     m_prev_mouse_position = getMousePositionRelativeToGraphArea(event);
 
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
-    if (m_graph_area.get() == event.eventComponent) {
+    if (m_selected_area.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
         mouseHandler(event,
                      lnf->getUserInputAction(UserInput::right_mouse_down));
@@ -907,7 +926,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
     if (m_legend.get() == event.eventComponent) {
       m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
-    } else if (m_graph_area.get() == event.eventComponent &&
+    } else if (m_selected_area.get() == event.eventComponent &&
                event.mouseWasDraggedSinceMouseDown() &&
                event.getNumberOfClicks() == 1) {
       if (m_mouse_drag_state == MouseDragState::start) {
@@ -933,7 +952,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
 void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
-    if (m_graph_area.get() == event.eventComponent &&
+    if (m_selected_area.get() == event.eventComponent &&
         m_mouse_drag_state == MouseDragState::drag &&
         !event.mods.isRightButtonDown()) {
       mouseHandler(event,
@@ -959,10 +978,10 @@ void Plot::addTracePointsForGraphData() {
   m_trace->clear();
 
   for (const auto& graph_line : m_graph_lines) {
-    const auto& x_values = graph_line->getXValues();
+    const auto& y_values = graph_line->getYValues();
     size_t data_point_index = 0;
 
-    for (; data_point_index < x_values.size(); data_point_index++) {
+    for (; data_point_index < y_values.size(); data_point_index++) {
       m_trace->addTracePoint(
           graph_line.get(), data_point_index,
           TracePointVisibilityType::point_visible_when_selected);

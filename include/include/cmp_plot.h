@@ -631,7 +631,7 @@ class Plot : public juce::Component {
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;
   std::unique_ptr<Legend> m_legend;
-  std::unique_ptr<GraphArea> m_graph_area;
+  std::unique_ptr<GraphArea> m_selected_area;
   std::unique_ptr<Trace> m_trace;
 
   /** Look and feel */

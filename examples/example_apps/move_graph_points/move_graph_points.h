@@ -22,10 +22,11 @@ class move_graph_points : public juce::Component {
     // Add the plot object as a child component.
     addAndMakeVisible(m_plot);
     
-    m_plot.setMovePointsType(cmp::GraphPointMoveType::horizontal);
+    // Set the graph point move type to vertical.
+    m_plot.setMovePointsType(cmp::GraphPointMoveType::vertical);
 
     // Plot some values.
-    m_plot.plot({{1, 3, 7, 9, 13}});
+    m_plot.plot({{1, 3, 7, 9, 13}, {9, 21, 4, 9, 32, 4, 5, 6, 7, 8, 9, 10, 11}});
   };
 
   void resized() override {
