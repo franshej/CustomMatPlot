@@ -543,6 +543,8 @@ class Plot : public juce::Component {
   void mouseDown(const juce::MouseEvent& event) override;
   /** @internal */
   void mouseUp(const juce::MouseEvent& event) override;
+  /** @internal */
+  juce::Point<float> getMousePositionRelativeToGraphArea(const juce::MouseEvent &event) const;
 
  private:
   /** @internal */
@@ -604,11 +606,16 @@ class Plot : public juce::Component {
   /** @internal */
   void moveLegend(const juce::MouseEvent& event);
   /** @internal */
-  void addTracePointsFromSelectedArea();
+  void selectedTracePointsWithinSelectedArea();
   /** @internal */
-  void moveMovableGraphPoint(const juce::MouseEvent& event);
+  void selectTracePoint(const juce::MouseEvent& event);
+  /** @internal */
+  void deselectTracePoint(const juce::MouseEvent& event);
+  /** @internal */
+  void moveSelectedTracePoints(const juce::MouseEvent& event);
 
   juce::ComponentDragger m_comp_dragger;
+  juce::Point<float> m_prev_mouse_position{0.f, 0.f};
 
   /** Common plot parameters. */
   Scaling m_x_scaling, m_y_scaling;

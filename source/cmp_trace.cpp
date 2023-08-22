@@ -37,15 +37,22 @@ static TraceLabelCornerPosition getCornerPosition(
 }
 
 template <class ValueType>
-bool TracePoint<ValueType>::setDataPoint(
-    const juce::Point<ValueType>& new_data_point,
-    const size_t data_point_index) {
-  if (data_point != new_data_point) {
-    if (onDataValueChanged) {
-      onDataValueChanged(this, data_point, new_data_point);
-    }
-    this->data_point = new_data_point;
+juce::Point<ValueType> TracePoint<ValueType>::getDataPoint() const {
+  return this->associated_graph_line->getDataPointFromDataPointIndex(
+      data_point_index);
+}
+template <class ValueType>
+bool TracePoint<ValueType>::setDataPoint(const size_t data_point_index,
+                                         const GraphLine* graph_line) {
+  if (this->data_point_index != data_point_index ||
+      graph_line != associated_graph_line) {
+    const auto data_point = getDataPoint();
+
+    this->associated_graph_line = graph_line;
     this->data_point_index = data_point_index;
+    if (onDataValueChanged) {
+      onDataValueChanged(this, data_point, getDataPoint());
+    }
 
     return true;
   }
@@ -119,12 +126,12 @@ const GraphLine* Trace::getAssociatedGraphLine(
     return it->trace_point->associated_graph_line;
 }
 
-juce::Point<float> Trace::getGraphPosition(
+juce::Point<float> Trace::getDataPosition(
     const juce::Component* trace_point_label) const {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point_label);
 
   if (tlp_it != m_trace_labelpoints.end())
-    return tlp_it->trace_point->data_point;
+    return tlp_it->trace_point->getDataPoint();
 
   return juce::Point<float>();
 }
@@ -132,8 +139,6 @@ juce::Point<float> Trace::getGraphPosition(
 void Trace::addOrRemoveTracePoint(const GraphLine* graph_line,
                                   const size_t data_point_index,
                                   const TracePointVisibilityType visibility) {
-  const auto data_point =
-      graph_line->getDataPointFromDataPointIndex(data_point_index);
   if (!doesTracePointExist(graph_line, data_point_index)) {
     addSingleTracePointAndLabelInternal(graph_line, data_point_index,
                                         visibility);
@@ -177,18 +182,15 @@ void Trace::setLookAndFeel(juce::LookAndFeel* lnf) {
   updateTracePointsLookAndFeel();
 }
 
-bool Trace::setGraphPointFor(juce::Component* trace_point,
-                             const size_t data_point_index,
-                             const GraphLine* graph_line) {
-  const auto data_point =
-      graph_line->getDataPointFromDataPointIndex(data_point_index);
-
+bool Trace::setDataPointFor(juce::Component* trace_point,
+                            const size_t data_point_index,
+                            const GraphLine* graph_line) {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_point);
   auto it = m_trace_labelpoints.erase(
       tlp_it, tlp_it);  // remove const for ::const_iterator
 
   if (it != m_trace_labelpoints.end() &&
-      it->trace_point->setDataPoint(data_point, data_point_index)) {
+      it->trace_point->setDataPoint(data_point_index, graph_line)) {
     updateSingleTraceLabelTextsAndBoundsInternal(&(*it));
 
     return true;
@@ -227,19 +229,6 @@ bool Trace::isComponentTraceLabel(const juce::Component* component) const {
              m_trace_labelpoints.end();
 }
 
-void Trace::updateTracePointsAssociatedWith(const GraphLine* graph_line) {
-  for (auto& tlp : m_trace_labelpoints) {
-    if (tlp.trace_point->associated_graph_line == graph_line) {
-      const auto data_value = tlp.trace_point->data_point;
-
-      const auto [nearest_data_value, data_point_index] =
-          graph_line->findClosestDataPointTo(data_value, true);
-
-      tlp.trace_point->setDataPoint(nearest_data_value, data_point_index);
-    }
-  }
-}
-
 void Trace::tracePointCbHelper(const juce::Component* trace_point,
                                const juce::Point<float> previous_data_point,
                                const juce::Point<float> new_data_point) {
@@ -264,10 +253,6 @@ void Trace::addSingleTracePointAndLabelInternal(
     this->tracePointCbHelper(trace_point, prev_data, new_data);
   };
 
-  const auto data_point =
-      graph_line->getDataPointFromDataPointIndex(data_point_index);
-  trace_point->setDataPoint(data_point, data_point_index);
-
   m_trace_labelpoints.push_back(
       {move(trace_label), move(trace_point), trace_point_visibility});
 }
@@ -289,6 +274,11 @@ void Trace::addTracePoint(const GraphLine* graph_line,
     addSingleTracePointAndLabelInternal(graph_line, data_point_index,
                                         visibility_type);
   }
+}
+
+void Trace::selectTracePoint(const juce::Component* component,
+                             const bool selected) {
+  findTraceLabelPointIteratorFrom(component)->setSelection(selected);
 }
 
 const TracePoint<float>* Trace::getTracePointFrom(
@@ -316,7 +306,7 @@ void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
-    const auto data_value = tlp->trace_point->data_point;
+    const auto data_value = tlp->trace_point->getDataPoint();
     tlp->trace_label->setGraphLabelFrom(data_value, m_common_plot_params);
 
     const auto x_bound = tlp->trace_label->m_x_label.second;
@@ -372,6 +362,19 @@ void Trace::updateTracePointsLookAndFeel() {
     trace_label_point.trace_label->setLookAndFeel(m_lookandfeel);
     trace_label_point.trace_point->setLookAndFeel(m_lookandfeel);
   }
+}
+
+const std::vector<TraceLabelPoint_f>& Trace::getTraceLabelPoints() const {
+  return m_trace_labelpoints;
+}
+
+std::vector<TraceLabelPoint_f>::iterator Trace::findTraceLabelPointIteratorFrom(
+    const juce::Component* trace_point_or_label) {
+  return std::find_if(m_trace_labelpoints.begin(), m_trace_labelpoints.end(),
+                      [&trace_point_or_label](const auto& tpl) {
+                        return tpl.trace_point.get() == trace_point_or_label ||
+                               tpl.trace_label.get() == trace_point_or_label;
+                      });
 }
 
 std::vector<TraceLabelPoint_f>::const_iterator
@@ -446,6 +449,13 @@ void TraceLabelPoint<ValueType>::setSelection(const bool selected) {
   this->selected = selected;
   this->updateVisibilityInternal();
 }
+
+template <class ValueType>
+bool TraceLabelPoint<ValueType>::isSelected() const {
+  return selected;
+}
+
+template struct TraceLabelPoint<float>;
 
 template <class ValueType>
 TraceLabelPoint<ValueType>::TraceLabelPoint(

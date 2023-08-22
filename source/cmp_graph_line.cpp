@@ -175,6 +175,14 @@ bool GraphLine::setXYValue(const juce::Point<float>& xy_value, size_t index) {
   return true;
 }
 
+void GraphLine::moveGraphPoint(const juce::Point<float>& d_graph_point,
+                               size_t graph_point_index) {
+  if (graph_point_index >= m_x_data.size()) return;
+
+  m_x_data[graph_point_index] += d_graph_point.getX();
+  m_y_data[graph_point_index] += d_graph_point.getY();
+}
+
 const std::vector<float>& GraphLine::getYValues() const noexcept {
   return m_y_data;
 }

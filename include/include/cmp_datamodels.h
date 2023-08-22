@@ -144,11 +144,13 @@ enum class UserInput : uint32_t {
 /** Enum to define a type of action that will occur for a input. */
 enum class UserInputAction : uint32_t {
   /** Tracepoint related actions. */
-  create_tracepoint,           /** Creates a tracepoint. */
-  move_tracepoint,             /** Move a tracepoint. */
-  move_tracepoint_label,       /** Move a tracepoint label. */
-  select_tracepoint,           /** Selecting a tracepoint. */
-  select_multiple_tracepoints, /** Selecting multiple tracepoints. */
+  create_tracepoint,                       /** Creates a tracepoint. */
+  move_tracepoint,                         /** Move a tracepoint. */
+  move_tracepoint_label,                   /** Move a tracepoint label. */
+  move_selected_trace_points,              /** Move a graph point. */
+  select_tracepoint,                       /** Selecting a tracepoint. */
+  select_tracepoints_within_selected_area, /** Selecting multiple tracepoints. */                                           
+  deselect_tracepoint,                     /** Deselecting a tracepoint. */
 
   /** Zoom related actions. */
   zoom_selected_area, /** Zoom in on selected area. */
@@ -162,7 +164,6 @@ enum class UserInputAction : uint32_t {
 
   /** Graph point related actions. */
   create_movable_graph_point, /** Create a movable graph point. */
-  move_movable_graph_point,   /** Move a graph point. */
   remove_movable_graph_point, /** Remove a graph point. */
 
   /** Move legend related actions. */

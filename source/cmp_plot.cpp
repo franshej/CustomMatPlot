@@ -239,10 +239,6 @@ void Plot::updateGridGraphsTrace() {
 }
 
 void cmp::Plot::updateTracePointsForNewGraphData() {
-  for (const auto& graph_line : m_graph_lines) {
-    m_trace->updateTracePointsAssociatedWith(graph_line.get());
-  }
-
   m_trace->updateTracePointsBounds();
 
   if (m_legend->isVisible()) {
@@ -702,10 +698,15 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
       break;
     }
     case UserInputAction::select_tracepoint: {
+      selectTracePoint(event);
       break;
     }
-    case UserInputAction::select_multiple_tracepoints: {
-      addTracePointsFromSelectedArea();
+    case UserInputAction::deselect_tracepoint: {
+      deselectTracePoint(event);
+      break;
+    }
+    case UserInputAction::select_tracepoints_within_selected_area: {
+      selectedTracePointsWithinSelectedArea();
       break;
     }
     case UserInputAction::select_area_start: {
@@ -733,8 +734,8 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
     case UserInputAction::create_movable_graph_point: {
       break;
     }
-    case UserInputAction::move_movable_graph_point: {
-      moveMovableGraphPoint(event);
+    case UserInputAction::move_selected_trace_points: {
+      moveSelectedTracePoints(event);
       break;
     }
     case UserInputAction::remove_movable_graph_point: {
@@ -746,30 +747,40 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
   }
 }
 
-void Plot::moveMovableGraphPoint(const juce::MouseEvent& event) {
-  const auto component_pos = event.eventComponent->getBounds().getPosition();
+void Plot::selectTracePoint(const juce::MouseEvent& event) {
+  m_trace->selectTracePoint(event.eventComponent, true);
+}
 
-  const auto mouse_pos =
-      (event.getPosition() + component_pos - m_graph_bounds.getPosition())
-          .toFloat();
+void Plot::deselectTracePoint(const juce::MouseEvent& event) {
+  m_trace->selectTracePoint(event.eventComponent, false);
+}
 
-  const auto data_position =
-      getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params);
+void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
+  const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
 
-  if (auto trace_point = m_trace->getTracePointFrom(event.eventComponent)) {
-    const auto graph_line = trace_point->associated_graph_line;
-    const auto data_point_index = trace_point->data_point_index;
+  const auto d_data_position =
+      getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params) -
+      getDataPointFromGraphCoordinate(m_prev_mouse_position,
+                                      m_common_graph_params);
+
+  for (const auto& trace_label_point : m_trace->getTraceLabelPoints()) {
+    if (!trace_label_point.isSelected()) continue;
+    const auto graph_line =
+        trace_label_point.trace_point->associated_graph_line;
+    const auto data_point_index =
+        trace_label_point.trace_point->data_point_index;
 
     for (const auto& graph : m_graph_lines) {
       if (graph.get() == graph_line) {
-        graph->setXYValue(data_position, data_point_index);
+        graph->moveGraphPoint(d_data_position, data_point_index);
         graph->updateXGraphPoints(m_common_graph_params);
         graph->updateYGraphPoints(m_common_graph_params);
-        updateTracePointsForNewGraphData();
         break;
       }
     }
   }
+  m_trace->updateTracePointsBounds();
+  m_prev_mouse_position = mouse_pos;
 
   repaint();
 }
@@ -802,7 +813,7 @@ void Plot::zoomOnSelectedRegion() {
   repaint();
 }
 
-void Plot::addTracePointsFromSelectedArea() {
+void Plot::selectedTracePointsWithinSelectedArea() {
   const auto selected_area =
       m_graph_area->getSelectedAreaBound<int>().toFloat();
 
@@ -840,8 +851,8 @@ void Plot::moveTracepoint(const juce::MouseEvent& event) {
   const auto [data_point_index, nearest_graph_line] =
       findNearestPoint(mouse_pos.toFloat(), associated_graph_line);
 
-  m_trace->setGraphPointFor(event.eventComponent, data_point_index,
-                            nearest_graph_line);
+  m_trace->setDataPointFor(event.eventComponent, data_point_index,
+                           nearest_graph_line);
 }
 
 void Plot::moveTracepointLabel(const juce::MouseEvent& event) {
@@ -863,11 +874,20 @@ void Plot::moveLegend(const juce::MouseEvent& event) {
 
 void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
+    m_prev_mouse_position = getMousePositionRelativeToGraphArea(event);
+
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
     if (m_graph_area.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
         mouseHandler(event,
                      lnf->getUserInputAction(UserInput::right_mouse_down));
+      }
+    }
+
+    if (m_trace->isComponentTracePoint(event.eventComponent)) {
+      if (!event.mods.isRightButtonDown()) {
+        mouseHandler(event, lnf->getUserInputAction(
+                                UserInput::left_mouse_down_tracepoint));
       }
     }
 
@@ -919,6 +939,13 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
       mouseHandler(event,
                    lnf->getUserInputAction(UserInput::left_mouse_drag_end));
     }
+
+    if (m_trace->isComponentTracePoint(event.eventComponent)) {
+      if (!event.mods.isRightButtonDown()) {
+        mouseHandler(event, lnf->getUserInputAction(
+                                UserInput::left_mouse_up_tracepoint));
+      }
+    }
   }
 }
 
@@ -962,4 +989,16 @@ void Plot::updateTracepointsForGraphData() {
       break;
   }
 }
+
+juce::Point<float> Plot::getMousePositionRelativeToGraphArea(
+    const juce::MouseEvent& event) const {
+  const auto component_pos = event.eventComponent->getBounds().getPosition();
+
+  const auto mouse_pos =
+      (event.getPosition() + component_pos - m_graph_bounds.getPosition())
+          .toFloat();
+
+  return mouse_pos;
+}
+
 }  // namespace cmp

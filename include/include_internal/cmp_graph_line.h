@@ -182,6 +182,15 @@ class GraphLine : public juce::Component {
    */
   void updateYGraphPoints(const CommonPlotParameterView& common_plot_params);
 
+  /** @brief move graph point in graphline
+   *
+   * @param d_graph_point the delta graph point.
+   * @param graph_point_index the graph point index.
+   * @return void.
+   */
+  void moveGraphPoint(const juce::Point<float>& d_graph_point,
+                      size_t graph_point_index);
+
   //==============================================================================
 
   /** @internal */
