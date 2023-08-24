@@ -802,6 +802,10 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   m_prev_mouse_position = mouse_pos;
 
   repaint();
+
+  if (m_graph_lines_changed_callback) {
+    m_graph_lines_changed_callback(createGraphLineDataViewList(m_graph_lines));
+  }
 }
 
 void Plot::resetZoom() {
@@ -1018,6 +1022,11 @@ juce::Point<float> Plot::getMousePositionRelativeToGraphArea(
           .toFloat();
 
   return mouse_pos;
+}
+
+void Plot::setGraphLineDataChangedCallback(
+    GraphLinesChangedCallback graph_lines_changed_callback) {
+  m_graph_lines_changed_callback = graph_lines_changed_callback;
 }
 
 }  // namespace cmp

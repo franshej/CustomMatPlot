@@ -129,6 +129,18 @@ class Plot : public juce::Component {
    */
   void setMovePointsType(const GraphPointMoveType move_points_type);
 
+  /** @brief Set GraphLinesChangedCallback.
+   *
+   * Set a callback function that is triggered when a graph line data is changed
+   * to get the new x/y-data.
+   *
+   * @see cmp::GraphLinesChangedCallback for more information.
+   * @param graph_lines_changed_callback the callback function.
+   * @return void.
+   */
+  void setGraphLineDataChangedCallback(
+      GraphLinesChangedCallback graph_lines_changed_callback);
+
   /** @brief Set the text for label on the X-axis
    *
    *  Set the text for label on the X-axis.
@@ -544,7 +556,8 @@ class Plot : public juce::Component {
   /** @internal */
   void mouseUp(const juce::MouseEvent& event) override;
   /** @internal */
-  juce::Point<float> getMousePositionRelativeToGraphArea(const juce::MouseEvent &event) const;
+  juce::Point<float> getMousePositionRelativeToGraphArea(
+      const juce::MouseEvent& event) const;
 
  private:
   /** @internal */
@@ -616,6 +629,7 @@ class Plot : public juce::Component {
 
   juce::ComponentDragger m_comp_dragger;
   juce::Point<float> m_prev_mouse_position{0.f, 0.f};
+  GraphLinesChangedCallback m_graph_lines_changed_callback = nullptr;
 
   /** Common plot parameters. */
   Scaling m_x_scaling, m_y_scaling;

@@ -99,6 +99,14 @@ class GraphLine : public juce::Component {
    */
   void setGraphAttribute(const GraphAttribute& graph_attribute);
 
+  /** @brief Get the graph attributes.
+   *
+   *  @see GraphAttribute.
+   *
+   *  @return the graph_attributes.
+   */
+  const GraphAttribute& getGraphAttribute() const noexcept;
+
   /** @brief Set the y-values for the graph-line
    *
    *  @param y_values vector of y-values.

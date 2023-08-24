@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <vector>
 #ifdef __cpp_constexpr
 #if __cpp_constexpr >= 201907L
 #define CONSTEXPR20 \
@@ -62,7 +63,6 @@ struct GridLine;
 struct IsLabelsSet;
 struct CommonPlotParameterView;
 struct GraphLineDataView;
-
 template <class ValueType>
 struct Lim;
 
@@ -70,6 +70,7 @@ struct Lim;
 
 typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
 typedef std::vector<juce::Point<float>> GraphPoints;
+typedef std::vector<GraphLineDataView> GraphLineDataViewList;
 typedef std::pair<std::string, juce::Rectangle<int>> Label;
 typedef std::vector<Label> LabelVector;
 typedef std::vector<std::string> StringVector;
@@ -77,6 +78,11 @@ typedef std::vector<juce::Colour> ColourVector;
 typedef std::vector<GraphAttribute> GraphAttributeList;
 typedef std::vector<std::unique_ptr<GraphSpread>> GraphSpreadList;
 typedef Lim<float> Lim_f;
+// Callback function for when a graph line is changed. E.g. when it is changed
+// when a graph point is moved. void GraphLinesChangedCallback(const
+// "GraphLineDataViewList &graph_line) { ... };""
+typedef std::function<void(const GraphLineDataViewList& graph_line)>
+    GraphLinesChangedCallback;
 
 /*============================================================================*/
 
@@ -149,7 +155,8 @@ enum class UserInputAction : uint32_t {
   move_tracepoint_label,                   /** Move a tracepoint label. */
   move_selected_trace_points,              /** Move a graph point. */
   select_tracepoint,                       /** Selecting a tracepoint. */
-  select_tracepoints_within_selected_area, /** Selecting multiple tracepoints. */                                           
+  select_tracepoints_within_selected_area, /** Selecting multiple tracepoints.
+                                            */
   deselect_tracepoint,                     /** Deselecting a tracepoint. */
 
   /** Zoom related actions. */
@@ -391,6 +398,26 @@ struct GraphAttribute {
 struct GraphSpreadIndex {
   std::size_t first_graph;
   std::size_t second_graph;
+};
+
+/** @brief A view of the data required to draw a graph_line++ */
+struct GraphLineDataView {
+  GraphLineDataView(const std::vector<float>& _x_data,
+                    const std::vector<float>& _y_data,
+                    const GraphPoints& _graph_points,
+                    const std::vector<std::size_t>& _graph_point_indices,
+                    const GraphAttribute& _graph_attribute);
+
+  GraphLineDataView(const GraphLine& graph_line);
+  GraphLineDataView(const std::vector<float>&&, const std::vector<float>&&,
+                    const GraphPoints&&,
+                    const std::vector<std::size_t>&&) =
+      delete;  // prevents rvalue binding
+
+  const std::vector<float>&x_data, &y_data;
+  const GraphPoints& graph_points;
+  const std::vector<std::size_t>& graph_point_indices;
+  const GraphAttribute& graph_attribute;
 };
 
 /*============================================================================*/

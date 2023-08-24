@@ -17,6 +17,28 @@
 
 namespace cmp {
 
+GraphLineDataView::GraphLineDataView(
+    const std::vector<float>& _x_data, const std::vector<float>& _y_data,
+    const GraphPoints& _graph_points,
+    const std::vector<std::size_t>& _graph_point_indices,
+    const GraphAttribute& _graph_attribute)
+    : x_data(_x_data),
+      y_data(_y_data),
+      graph_points(_graph_points),
+      graph_point_indices(_graph_point_indices),
+      graph_attribute(_graph_attribute) {}
+
+GraphLineDataView::GraphLineDataView(const GraphLine& graph_line)
+    : x_data(graph_line.getXValues()),
+      y_data(graph_line.getYValues()),
+      graph_points(graph_line.getGraphPoints()),
+      graph_point_indices(graph_line.getGraphPointIndices()),
+      graph_attribute(graph_line.getGraphAttribute()) {}
+
+const GraphAttribute& GraphLine::getGraphAttribute() const noexcept {
+  return m_graph_attributes;
+}
+
 void GraphLine::setColour(const juce::Colour graph_colour) {
   m_graph_attributes.graph_colour = graph_colour;
 }
@@ -111,9 +133,7 @@ juce::Point<float> GraphLine::getDataPointFromDataPointIndex(
 void GraphLine::resized(){};
 
 void GraphLine::paint(juce::Graphics& g) {
-  const GraphLineDataView graph_line_data(m_y_data, m_x_data, m_graph_points,
-                                          m_x_based_ds_indices,
-                                          m_graph_attributes);
+  const GraphLineDataView graph_line_data(*this);
 
   if (m_lookandfeel) {
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
