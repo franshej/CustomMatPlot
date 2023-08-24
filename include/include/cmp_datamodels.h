@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <vector>
 #ifdef __cpp_constexpr
 #if __cpp_constexpr >= 201907L
 #define CONSTEXPR20 \
@@ -62,7 +63,6 @@ struct GridLine;
 struct IsLabelsSet;
 struct CommonPlotParameterView;
 struct GraphLineDataView;
-
 template <class ValueType>
 struct Lim;
 
@@ -70,6 +70,7 @@ struct Lim;
 
 typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
 typedef std::vector<juce::Point<float>> GraphPoints;
+typedef std::vector<GraphLineDataView> GraphLineDataViewList;
 typedef std::pair<std::string, juce::Rectangle<int>> Label;
 typedef std::vector<Label> LabelVector;
 typedef std::vector<std::string> StringVector;
@@ -77,6 +78,11 @@ typedef std::vector<juce::Colour> ColourVector;
 typedef std::vector<GraphAttribute> GraphAttributeList;
 typedef std::vector<std::unique_ptr<GraphSpread>> GraphSpreadList;
 typedef Lim<float> Lim_f;
+// Callback function for when a graph line is changed. E.g. when it is changed
+// when a graph point is moved. void GraphLinesChangedCallback(const
+// "GraphLineDataViewList &graph_line) { ... };""
+typedef std::function<void(const GraphLineDataViewList& graph_line)>
+    GraphLinesChangedCallback;
 
 /*============================================================================*/
 
@@ -144,22 +150,28 @@ enum class UserInput : uint32_t {
 /** Enum to define a type of action that will occur for a input. */
 enum class UserInputAction : uint32_t {
   /** Tracepoint related actions. */
-  create_tracepoint,           /** Creates a tracepoint. */
-  move_tracepoint,             /** Move a tracepoint. */
-  move_tracepoint_label,       /** Move a tracepoint label. */
-  select_tracepoint,           /** Selecting a tracepoint. */
-  select_multiple_tracepoints, /** Selecting multiple tracepoints. */
+  create_tracepoint,                       /** Creates a tracepoint. */
+  move_tracepoint_to_closest_point,        /** Move a tracepoint to closest point to the mouse. */
+  move_tracepoint_label,                   /** Move a tracepoint label. */
+  move_selected_trace_points,              /** Move a graph point. */
+  select_tracepoint,                       /** Selecting a tracepoint. */
+  select_tracepoints_within_selected_area, /** Selecting multiple tracepoints.
+                                            */
+  deselect_tracepoint,                     /** Deselecting a tracepoint. */
 
   /** Zoom related actions. */
-  zoom_region_start_drag, /** Start of a zoom region when dragging. */
-  zoom_region_draw_drag,  /** Drawing of a zoom region when dragging. */
-  zoom_region_end_drag,   /** End of a zoom region when dragging. */
-  zoom_in,                /** Zoom in. */
-  zoom_out,               /** Zoom out. */
-  zoom_reset,             /** Reset the zoom. */
+  zoom_selected_area, /** Zoom in on selected area. */
+  zoom_in,            /** Zoom in. */
+  zoom_out,           /** Zoom out. */
+  zoom_reset,         /** Reset the zoom. */
+
+  /** Selection area related actions. */
+  select_area_start, /** Set start positon for selected area. */
+  select_area_draw,  /** Set end position of selected are and draw the area. */
 
   /** Graph point related actions. */
-  move_graph_point, /** Move a graph point. */
+  create_movable_graph_point, /** Create a movable graph point. */
+  remove_movable_graph_point, /** Remove a graph point. */
 
   /** Move legend related actions. */
   move_legend, /** Move a legend. */
@@ -176,6 +188,30 @@ enum class MouseDragState : uint32_t {
   none   /** No drag state. */
 };
 
+/** Enum to define when the tracepoint/Label should be visible or not. */
+enum class TracePointVisibilityType : uint32_t {
+  /** Tracepoint and label is not visible. */
+  not_visible,
+  /** Tracepoint is visible only when selected. Tracelabel is not visible. */
+  point_visible_when_selected,
+  /** Tracepoint and label are visible when selected. */
+  point_label_visible_when_selected,
+  /** Tracepoint is always visible. */
+  visible,
+};
+
+/** Enum to define how a graph point can be moved */
+enum class GraphPointMoveType : uint32_t {
+  /** Graph point can't be moved. */
+  none,
+  /** Graph point can be moved horizontally. */
+  horizontal,
+  /** Graph point can be moved vertically. */
+  vertical,
+  /** Graph point can be moved horizontally and vertically. */
+  horizontal_vertical,
+};
+
 /*============================================================================*/
 
 /** @brief A template struct that defines min and max. */
@@ -190,6 +226,13 @@ struct Lim {
   constexpr Lim<ValueType>& operator/=(const ValueType val) {
     min /= val;
     max /= val;
+
+    return *this;
+  }
+
+  constexpr Lim<ValueType>& operator=(const Lim<ValueType> rhs) {
+    min = rhs.min;
+    max = rhs.max;
 
     return *this;
   }
@@ -355,6 +398,26 @@ struct GraphAttribute {
 struct GraphSpreadIndex {
   std::size_t first_graph;
   std::size_t second_graph;
+};
+
+/** @brief A view of the data required to draw a graph_line++ */
+struct GraphLineDataView {
+  GraphLineDataView(const std::vector<float>& _x_data,
+                    const std::vector<float>& _y_data,
+                    const GraphPoints& _graph_points,
+                    const std::vector<std::size_t>& _graph_point_indices,
+                    const GraphAttribute& _graph_attribute);
+
+  GraphLineDataView(const GraphLine& graph_line);
+  GraphLineDataView(const std::vector<float>&&, const std::vector<float>&&,
+                    const GraphPoints&&,
+                    const std::vector<std::size_t>&&) =
+      delete;  // prevents rvalue binding
+
+  const std::vector<float>&x_data, &y_data;
+  const GraphPoints& graph_points;
+  const std::vector<std::size_t>& graph_point_indices;
+  const GraphAttribute& graph_attribute;
 };
 
 /*============================================================================*/

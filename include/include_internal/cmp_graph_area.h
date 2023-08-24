@@ -24,14 +24,25 @@
 
 namespace cmp {
 /**
- * \class GraphArea #TODO find a better name for this class. Maybe GraphOverlay, GraphSelectionArea?
- * \brief A component for drawing the graph selection on the graph area.
+ * \class GraphArea #TODO find a better name for this class. Maybe GraphOverlay,
+ * GraphSelectionArea? \brief A component for drawing the graph selection on the
+ * graph area.
  *
- * The idea is to use this component to draw the zoom area, selection area or move a trace
- * point.
+ * The idea is to use this component to draw the zoom area, selection area or
+ * move a trace point.
  */
 class GraphArea : public juce::Component {
  public:
+  /** @brief Constructor.
+   *
+   *  Constructor.
+   *
+   * @param common_plot_parameter_view the common plot parameters.
+   *  @return void.
+   */
+  GraphArea(const CommonPlotParameterView& common_plot_parameter_view) noexcept
+      : m_common_plot_params(&common_plot_parameter_view){};
+
   /** @brief Get the start postion.
    *
    *  Get the start postion.
@@ -83,6 +94,24 @@ class GraphArea : public juce::Component {
    */
   void setEndPosition(const juce::Point<int>& end_position) noexcept;
 
+  /** @brief Get data bound of selected area.
+   *
+   *  The data bound can be compare with the graph values.
+   *
+   *  @return rectangle of the selected area.
+   */
+  template <typename ValueType>
+  juce::Rectangle<ValueType> getDataBound() const noexcept;
+
+  /** @brief Get the selected area bound.
+   *
+   *  The selected area bound is the rectangle of the selected area.
+   *
+   *  @return rectangle of the selected area.
+   */
+  template <typename ValueType>
+  juce::Rectangle<ValueType> getSelectedAreaBound() const noexcept;
+
   /** @internal */
   void resized() override;
   /** @internal */
@@ -95,5 +124,7 @@ class GraphArea : public juce::Component {
 
   juce::Point<int> m_start_pos, m_end_pos;
   bool m_is_start_pos_set{false};
+
+  const CommonPlotParameterView* m_common_plot_params;
 };
 }  // namespace cmp

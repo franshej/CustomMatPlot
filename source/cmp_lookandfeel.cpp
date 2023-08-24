@@ -858,10 +858,12 @@ PlotLookAndFeel::getDefaultUserInputMapAction() const noexcept {
   // clang-format off
   action_map[UserInput::left_mouse_double] =            UserInputAction::create_tracepoint;
   action_map[UserInput::right_mouse_down] =             UserInputAction::zoom_reset;
-  action_map[UserInput::left_mouse_drag_start] =        UserInputAction::zoom_region_start_drag;
-  action_map[UserInput::left_mouse_drag_end] =          UserInputAction::zoom_region_end_drag;
-  action_map[UserInput::left_mouse_drag] =              UserInputAction::zoom_region_draw_drag;
-  action_map[UserInput::left_mouse_drag_tracepoint] =   UserInputAction::move_tracepoint;
+  action_map[UserInput::left_mouse_drag_start] =        UserInputAction::select_area_start;
+  action_map[UserInput::left_mouse_drag] =              UserInputAction::select_area_draw;
+  action_map[UserInput::left_mouse_drag_end] =          UserInputAction::zoom_selected_area;
+  action_map[UserInput::left_mouse_down_tracepoint] =   UserInputAction::select_tracepoint;
+  action_map[UserInput::left_mouse_up_tracepoint] =     UserInputAction::deselect_tracepoint;
+  action_map[UserInput::left_mouse_drag_tracepoint] =   UserInputAction::move_tracepoint_to_closest_point;
   action_map[UserInput::left_mouse_drag_legend] =       UserInputAction::move_legend;
   action_map[UserInput::left_mouse_drag_trace_label] =  UserInputAction::move_tracepoint_label;
   // clang-format on

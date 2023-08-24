@@ -7,6 +7,7 @@
 
 #include "cmp_graph_line.h"
 
+#include <cstddef>
 #include <mutex>
 #include <numeric>
 #include <stdexcept>
@@ -16,11 +17,33 @@
 
 namespace cmp {
 
+GraphLineDataView::GraphLineDataView(
+    const std::vector<float>& _x_data, const std::vector<float>& _y_data,
+    const GraphPoints& _graph_points,
+    const std::vector<std::size_t>& _graph_point_indices,
+    const GraphAttribute& _graph_attribute)
+    : x_data(_x_data),
+      y_data(_y_data),
+      graph_points(_graph_points),
+      graph_point_indices(_graph_point_indices),
+      graph_attribute(_graph_attribute) {}
+
+GraphLineDataView::GraphLineDataView(const GraphLine& graph_line)
+    : x_data(graph_line.getXValues()),
+      y_data(graph_line.getYValues()),
+      graph_points(graph_line.getGraphPoints()),
+      graph_point_indices(graph_line.getGraphPointIndices()),
+      graph_attribute(graph_line.getGraphAttribute()) {}
+
+const GraphAttribute& GraphLine::getGraphAttribute() const noexcept {
+  return m_graph_attributes;
+}
+
 void GraphLine::setColour(const juce::Colour graph_colour) {
   m_graph_attributes.graph_colour = graph_colour;
 }
 
-std::pair<juce::Point<float>, juce::Point<float>>
+std::tuple<juce::Point<float>, juce::Point<float>, size_t>
 GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
                                    bool check_only_distance_from_x) const {
   // No graph points.
@@ -28,6 +51,7 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
 
   auto closest_graph_point = juce::Point<float>();
   auto closest_data_point = juce::Point<float>();
+  auto closest_i = 0u;
 
   auto closest_distance = std::numeric_limits<float>::max();
   std::size_t i = 0u;
@@ -39,15 +63,19 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
     if (current_distance < closest_distance) {
       closest_distance = current_distance;
       closest_graph_point = graph_point;
-      closest_data_point = juce::Point<float>(
-          m_x_data[m_x_based_ds_indices[i]], m_y_data[m_x_based_ds_indices[i]]);
+      closest_i = i;
+      closest_data_point =
+          juce::Point<float>(m_x_data[m_xy_based_ds_indices[i]],
+                             m_y_data[m_xy_based_ds_indices[i]]);
     }
     i++;
   }
-  return {closest_graph_point, closest_data_point};
+
+  return {closest_graph_point, closest_data_point,
+          m_xy_based_ds_indices[closest_i]};
 }
 
-juce::Point<float> GraphLine::findClosestDataPointTo(
+std::pair<juce::Point<float>, size_t> GraphLine::findClosestDataPointTo(
     const juce::Point<float>& this_data_point, bool check_only_distance_from_x,
     bool only_visible_data_points) const {
   // No y_data empty.
@@ -83,19 +111,29 @@ juce::Point<float> GraphLine::findClosestDataPointTo(
   const auto closest_data_point =
       juce::Point<float>(m_x_data[nearest_i], m_y_data[nearest_i]);
 
-  return closest_data_point;
+  return {closest_data_point, nearest_i};
 }
 
 juce::Colour GraphLine::getColour() const noexcept {
   return m_graph_attributes.graph_colour.value();
 }
 
+juce::Point<float> GraphLine::getDataPointFromGraphPointIndex(
+    size_t graph_point_index) const {
+  return juce::Point<float>(m_x_data[m_xy_based_ds_indices[graph_point_index]],
+                            m_y_data[m_xy_based_ds_indices[graph_point_index]]);
+};
+
+juce::Point<float> GraphLine::getDataPointFromDataPointIndex(
+    size_t data_point_index) const {
+  return juce::Point<float>(m_x_data[data_point_index],
+                            m_y_data[data_point_index]);
+};
+
 void GraphLine::resized(){};
 
 void GraphLine::paint(juce::Graphics& g) {
-  const GraphLineDataView graph_line_data(m_y_data, m_x_data, m_graph_points,
-                                          m_x_based_ds_indices,
-                                          m_graph_attributes);
+  const GraphLineDataView graph_line_data(*this);
 
   if (m_lookandfeel) {
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
@@ -148,6 +186,23 @@ void GraphLine::setXValues(const std::vector<float>& x_data) {
   std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
 }
 
+bool GraphLine::setXYValue(const juce::Point<float>& xy_value, size_t index) {
+  if (index >= m_x_data.size()) return false;
+
+  m_x_data[index] = xy_value.getX();
+  m_y_data[index] = xy_value.getY();
+
+  return true;
+}
+
+void GraphLine::moveGraphPoint(const juce::Point<float>& d_graph_point,
+                               size_t graph_point_index) {
+  if (graph_point_index >= m_x_data.size()) return;
+
+  m_x_data[graph_point_index] += d_graph_point.getX();
+  m_y_data[graph_point_index] += d_graph_point.getY();
+}
+
 const std::vector<float>& GraphLine::getYValues() const noexcept {
   return m_y_data;
 }
@@ -158,6 +213,10 @@ const std::vector<float>& GraphLine::getXValues() const noexcept {
 
 const GraphPoints& GraphLine::getGraphPoints() const noexcept {
   return m_graph_points;
+}
+
+const std::vector<size_t>& GraphLine::getGraphPointIndices() const noexcept {
+  return m_xy_based_ds_indices;
 }
 
 void GraphLine::updateXGraphPoints(
@@ -223,7 +282,7 @@ void GraphLine::updateYGraphPointsIntern(
 
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
-    auto& graph_point_indices = m_x_based_ds_indices;
+    m_xy_based_ds_indices = m_x_based_ds_indices;
 
     switch (common_plot_params.downsampling_type) {
       case DownsamplingType::no_downsampling:
@@ -237,17 +296,15 @@ void GraphLine::updateYGraphPointsIntern(
             common_plot_params, m_x_based_ds_indices, m_y_data,
             m_xy_based_ds_indices);
 
-        graph_point_indices = m_xy_based_ds_indices;
-
         lnf->updateXGraphPoints(common_plot_params, m_x_data,
-                                graph_point_indices, m_graph_points);
+                                m_xy_based_ds_indices, m_graph_points);
         break;
 
       default:
         break;
     }
 
-    lnf->updateYGraphPoints(common_plot_params, m_y_data, graph_point_indices,
+    lnf->updateYGraphPoints(common_plot_params, m_y_data, m_xy_based_ds_indices,
                             m_graph_points);
   }
 }

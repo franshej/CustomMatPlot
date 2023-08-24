@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -70,29 +70,19 @@ struct IsLabelsSet {
   bool title_label{false};
 };
 
-/** @brief A view of the data required to draw a graph_line++ */
-struct GraphLineDataView {
-  GraphLineDataView(const std::vector<float>& x, const std::vector<float>& y,
-                    const GraphPoints& gp, const std::vector<std::size_t>& i,
-                    const GraphAttribute& ga)
-      : x_data{x},
-        y_data{y},
-        graph_points{gp},
-        graph_point_indices{i},
-        graph_attribute{ga} {};
-
-  GraphLineDataView(const std::vector<float>&&, const std::vector<float>&&,
-                    const GraphPoints&&,
-                    const std::vector<std::size_t>&&) =
-      delete;  // prevents rvalue binding
-
-  const std::vector<float>&x_data, &y_data;
-  const GraphPoints& graph_points;
-  const std::vector<std::size_t>& graph_point_indices;
-  const GraphAttribute& graph_attribute;
-};
-
 /*============================================================================*/
+
+static GraphLineDataViewList createGraphLineDataViewList(
+    const GraphLines& graph_lines) {
+  GraphLineDataViewList graph_line_data_view_list;
+  graph_line_data_view_list.reserve(graph_lines.size());
+
+  for (const auto& gl : graph_lines) {
+    graph_line_data_view_list.emplace_back(GraphLineDataView(*gl));
+  }
+
+  return graph_line_data_view_list;
+};
 
 template <class value_type>
 constexpr std::tuple<value_type, value_type, value_type, value_type>
@@ -171,8 +161,21 @@ constexpr float getYFromYCoordinate(const float y_pos,
   }
 }
 
+static juce::Point<float> getDataPointFromGraphCoordinate(
+    const juce::Point<float> pos,
+    const CommonPlotParameterView common_plot_params) noexcept {
+  const auto x = getXFromXCoordinate(
+      pos.getX(), common_plot_params.graph_bounds.toFloat(),
+      common_plot_params.x_lim, common_plot_params.x_scaling);
+  const auto y = getYFromYCoordinate(
+      pos.getY(), common_plot_params.graph_bounds.toFloat(),
+      common_plot_params.y_lim, common_plot_params.y_scaling);
+
+  return juce::Point<float>(x, y);
+}
+
 constexpr auto getXGraphValueLinear =
-    [](const float x, const float x_scale, const float x_offset) -> auto {
+    [](const float x, const float x_scale, const float x_offset) -> auto{
   return (x * x_scale) - x_offset;
 };
 

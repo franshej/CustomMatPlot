@@ -45,25 +45,43 @@ class GraphLine : public juce::Component {
    * @param this_graph_point the point on the graph.
    * @param check_only_distance_from_x check the absolut distance if false else
    * only the x distance.
-   * @return {closest point on graph, closest data point value}
+   * @return {closest point on graph, closest data point value, data point
+   * index}
    */
-  std::pair<juce::Point<float>, juce::Point<float>> findClosestGraphPointTo(
-      const juce::Point<float>& this_graph_point,
-      bool check_only_distance_from_x = false) const;
+  std::tuple<juce::Point<float>, juce::Point<float>, size_t>
+  findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
+                          bool check_only_distance_from_x = false) const;
 
-  /**@brief Find closest data point to this data point.
+  /** @brief Find closest data point to this data point.
    *
    * @param this_data_point the data point.
    * @param check_only_distance_from_x check the absolut distance if false else
    * only the x distance.
    * @param only_visible_data_points find the nearest visible data point if
    * true.
-   * @return closest data point value to this_data_point.
+   * @return closest data point value to this_data_point and the data point
+   * index.
    */
-  juce::Point<float> findClosestDataPointTo(
+  std::pair<juce::Point<float>, size_t> findClosestDataPointTo(
       const juce::Point<float>& this_data_point,
       bool check_only_distance_from_x = false,
       bool only_visible_data_points = true) const;
+
+  /** @brief Get data point for a graph point index.
+   *
+   *  @param graph_point_index the graph point index.
+   *  @return the data point.
+   */
+  juce::Point<float> getDataPointFromGraphPointIndex(
+      size_t graph_point_index) const;
+
+  /** @brief Get data point for a graph point index.
+   *
+   *  @param data_point_index the graph point index.
+   *  @return the data point.
+   */
+  juce::Point<float> getDataPointFromDataPointIndex(
+      size_t data_point_index) const;
 
   /** @brief Get the colour of the graph.
    *
@@ -81,6 +99,14 @@ class GraphLine : public juce::Component {
    */
   void setGraphAttribute(const GraphAttribute& graph_attribute);
 
+  /** @brief Get the graph attributes.
+   *
+   *  @see GraphAttribute.
+   *
+   *  @return the graph_attributes.
+   */
+  const GraphAttribute& getGraphAttribute() const noexcept;
+
   /** @brief Set the y-values for the graph-line
    *
    *  @param y_values vector of y-values.
@@ -94,6 +120,14 @@ class GraphLine : public juce::Component {
    *  @return void.
    */
   void setXValues(const std::vector<float>& x_values);
+
+  /** @brief Set a single x/y value for the graph-line
+   *
+   *  @param juce::Point<float> the x/y value.
+   *  @param index the index of the x/y value.
+   *  @return boolean if the index is valid.
+   */
+  bool setXYValue(const juce::Point<float>& xy_value, size_t index);
 
   /** @brief Get y-values
    *
@@ -118,6 +152,14 @@ class GraphLine : public juce::Component {
    *  @return const reference of the calculated graph points.
    */
   const GraphPoints& getGraphPoints() const noexcept;
+
+  /* @brief Get the graph point indices
+   *
+   *  Get a const reference of the calculated graph point indices.
+   *
+   *  @return const reference of the calculated graph point indices.
+   */
+  const std::vector<size_t>& getGraphPointIndices() const noexcept;
 
   /** @brief Set the colour of graph
    *
@@ -147,6 +189,15 @@ class GraphLine : public juce::Component {
    *  @return void.
    */
   void updateYGraphPoints(const CommonPlotParameterView& common_plot_params);
+
+  /** @brief move graph point in graphline
+   *
+   * @param d_graph_point the delta graph point.
+   * @param graph_point_index the graph point index.
+   * @return void.
+   */
+  void moveGraphPoint(const juce::Point<float>& d_graph_point,
+                      size_t graph_point_index);
 
   //==============================================================================
 
