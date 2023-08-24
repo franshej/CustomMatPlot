@@ -673,7 +673,8 @@ void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
   const auto [data_point_index, nearest_graph_line] =
       findNearestPoint(mouse_pos, nullptr);
 
-  m_trace->addOrRemoveTracePoint(nearest_graph_line, data_point_index);
+  m_trace->addOrRemoveTracePoint(nearest_graph_line, data_point_index,
+                                 TracePointVisibilityType::visible);
   m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 }
@@ -685,7 +686,7 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
       addOrRemoveTracePoint(event);
       break;
     }
-    case UserInputAction::move_tracepoint: {
+    case UserInputAction::move_tracepoint_to_closest_point: {
       moveTracepoint(event);
       break;
     }

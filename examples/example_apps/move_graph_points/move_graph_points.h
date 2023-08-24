@@ -9,9 +9,30 @@
 #include <juce_gui_extra/juce_gui_extra.h>
 
 #include "cmp_datamodels.h"
+#include "cmp_lookandfeel.h"
+
+using namespace cmp;
 
 namespace examples {
 class move_graph_points : public juce::Component {
+  // Custom lookandfeel class to override the mouse input actions.
+  class CustomLookAndFeel : public cmp::PlotLookAndFeel {
+    // Override the mouse input actions to move the graph points.
+    std::map<cmp::UserInput, cmp::UserInputAction> overrideUserInputMapAction(
+        std::map<cmp::UserInput, cmp::UserInputAction>
+            default_user_input_map_action) const noexcept override {
+      auto new_user_input_map_action = default_user_input_map_action;
+
+      new_user_input_map_action[UserInput::left_mouse_drag_end] =
+          UserInputAction::select_tracepoints_within_selected_area;
+      new_user_input_map_action[UserInput::left_mouse_drag_tracepoint] =
+          UserInputAction::move_selected_trace_points;
+      new_user_input_map_action[UserInput::left_mouse_double] = UserInputAction::none;
+
+      return new_user_input_map_action;
+    }
+  } custom_lnf;
+
   // Declare plot object.
   cmp::Plot m_plot;
 
@@ -45,7 +66,9 @@ class move_graph_points : public juce::Component {
     // Plot some values.
     m_plot.plot(
         {{1, 3, 7, 9, 13}, {9, 21, 4, 9, 32, 4, 5, 6, 7, 8, 9, 10, 11}});
-    
+
+    // Set the lookandfeel of the plot.
+    m_plot.setLookAndFeel(&custom_lnf);
   };
 
   void resized() override {

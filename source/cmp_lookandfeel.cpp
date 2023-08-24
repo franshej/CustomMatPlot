@@ -859,11 +859,11 @@ PlotLookAndFeel::getDefaultUserInputMapAction() const noexcept {
   action_map[UserInput::left_mouse_double] =            UserInputAction::create_tracepoint;
   action_map[UserInput::right_mouse_down] =             UserInputAction::zoom_reset;
   action_map[UserInput::left_mouse_drag_start] =        UserInputAction::select_area_start;
-  action_map[UserInput::left_mouse_drag_end] =          UserInputAction::select_tracepoints_within_selected_area;
   action_map[UserInput::left_mouse_drag] =              UserInputAction::select_area_draw;
+  action_map[UserInput::left_mouse_drag_end] =          UserInputAction::zoom_selected_area;
   action_map[UserInput::left_mouse_down_tracepoint] =   UserInputAction::select_tracepoint;
   action_map[UserInput::left_mouse_up_tracepoint] =     UserInputAction::deselect_tracepoint;
-  action_map[UserInput::left_mouse_drag_tracepoint] =   UserInputAction::move_selected_trace_points;
+  action_map[UserInput::left_mouse_drag_tracepoint] =   UserInputAction::move_tracepoint_to_closest_point;
   action_map[UserInput::left_mouse_drag_legend] =       UserInputAction::move_legend;
   action_map[UserInput::left_mouse_drag_trace_label] =  UserInputAction::move_tracepoint_label;
   // clang-format on

@@ -434,11 +434,11 @@ void TraceLabelPoint<ValueType>::updateVisibilityInternal() {
       trace_label->setVisible(selected);
       break;
     case TracePointVisibilityType::visible:
-      setComponentTransparency(*trace_point, !selected);
+      trace_point->setVisible(true);
       trace_label->setVisible(true);
       break;
     default:
-      setComponentTransparency(*trace_point, !selected);
+      trace_point->setVisible(true);
       trace_label->setVisible(true);
       break;
   }

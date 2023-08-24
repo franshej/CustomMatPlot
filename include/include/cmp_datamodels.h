@@ -151,7 +151,7 @@ enum class UserInput : uint32_t {
 enum class UserInputAction : uint32_t {
   /** Tracepoint related actions. */
   create_tracepoint,                       /** Creates a tracepoint. */
-  move_tracepoint,                         /** Move a tracepoint. */
+  move_tracepoint_to_closest_point,        /** Move a tracepoint to closest point to the mouse. */
   move_tracepoint_label,                   /** Move a tracepoint label. */
   move_selected_trace_points,              /** Move a graph point. */
   select_tracepoint,                       /** Selecting a tracepoint. */
