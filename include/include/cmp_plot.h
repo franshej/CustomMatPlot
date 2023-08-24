@@ -265,33 +265,33 @@ class Plot : public juce::Component {
    *  LookAndFeel::findColour
    */
   enum ColourIds : int {
-    background_colour,        /**< Colour of the background. */
-    grid_colour,              /**< Colour of the grids. */
-    x_grid_label_colour,      /**< Colour of the label for each x-grid line. */
-    y_grid_label_colour,      /**< Colour of the label for each y-grid line. */
-    frame_colour,             /**< Colour of the frame around the graph area. */
-    x_label_colour,           /**< Colour of the text on the x-axis. */
-    y_label_colour,           /**< Colour of the label on the y-axis. */
-    title_label_colour,       /**< Colour of the title label. */
-    trace_background_colour,  /**< Colour of the trace background colour. */
-    trace_label_frame_colour, /**< Colour of the trace label frame. */
-    trace_label_colour,       /**< Colour of the trace label. */
-    trace_point_colour,       /**< Colour of the trace point colour. */
-    trace_point_frame_colour, /**< Colour of the trace point frame colour. */
-    legend_label_colour,      /**< Colour of the legend label(s). */
-    legend_background_colour, /**< Colour of the legend background. */
-    zoom_frame_colour         /**< Colour of the dashed zoom rectangle. */
+    background_colour,        /** Colour of the background. */
+    grid_colour,              /** Colour of the grids. */
+    x_grid_label_colour,      /** Colour of the label for each x-grid line. */
+    y_grid_label_colour,      /** Colour of the label for each y-grid line. */
+    frame_colour,             /** Colour of the frame around the graph area. */
+    x_label_colour,           /** Colour of the text on the x-axis. */
+    y_label_colour,           /** Colour of the label on the y-axis. */
+    title_label_colour,       /** Colour of the title label. */
+    trace_background_colour,  /** Colour of the trace background colour. */
+    trace_label_frame_colour, /** Colour of the trace label frame. */
+    trace_label_colour,       /** Colour of the trace label. */
+    trace_point_colour,       /** Colour of the trace point colour. */
+    trace_point_frame_colour, /** Colour of the trace point frame colour. */
+    legend_label_colour,      /** Colour of the legend label(s). */
+    legend_background_colour, /** Colour of the legend background. */
+    zoom_frame_colour         /** Colour of the dashed zoom rectangle. */
   };
 
   /** @brief A set of colour IDs to use to change the colour of each plot
    * line.*/
   enum ColourIdsGraph : int {
-    first_graph_colour = (1u << 16u), /**< Colour of the first graph. */
-    second_graph_colour,              /**< Colour of the second graph. */
-    third_graph_colour,               /**< Colour of the third graph. */
-    fourth_graph_colour,              /**< Colour of the fourth graph. */
-    fifth_graph_colour,               /**< Colour of the fifth graph. */
-    sixth_graph_colour                /**< Colour of the sixth graph. */
+    first_graph_colour = (1u << 16u), /** Colour of the first graph. */
+    second_graph_colour,              /** Colour of the second graph. */
+    third_graph_colour,               /** Colour of the third graph. */
+    fourth_graph_colour,              /** Colour of the fourth graph. */
+    fifth_graph_colour,               /** Colour of the fifth graph. */
+    sixth_graph_colour                /** Colour of the sixth graph. */
   };
 
   /**
@@ -351,8 +351,8 @@ class Plot : public juce::Component {
     virtual void drawTracePoint(juce::Graphics& g,
                                 const juce::Rectangle<int>& bounds) = 0;
 
-    /** This method draws the area the user wants to zoom in on. */
-    virtual void drawZoomArea(
+    /** This method draws the selection area (e.g. zoom area). */
+    virtual void drawSelectionArea(
         juce::Graphics& g, juce::Point<int>& start_coordinates,
         const juce::Point<int>& end_coordinates,
         const juce::Rectangle<int>& graph_bounds) noexcept = 0;
@@ -448,6 +448,19 @@ class Plot : public juce::Component {
     virtual CONSTEXPR20 int getYGridLabelDistanceFromGraphBound(
         const int y_grid_label_width) const noexcept = 0;
 
+    /** Get defualt user input map action. */
+    virtual std::map<UserInput, UserInputAction> getDefaultUserInputMapAction()
+        const noexcept = 0;
+
+    /** Override the default user input map action. */
+    virtual std::map<UserInput, UserInputAction> overrideUserInputMapAction(
+        std::map<UserInput, UserInputAction> default_user_input_map_action)
+        const noexcept = 0;
+
+    /** Get the user input action for a given user input. */
+    virtual UserInputAction getUserInputAction(
+        UserInput user_input) const noexcept = 0;
+
     /** Defines the default colours */
     virtual void setDefaultPlotColours() noexcept = 0;
 
@@ -507,63 +520,92 @@ class Plot : public juce::Component {
   void lookAndFeelChanged() override;
   /** @internal */
   void mouseDrag(const juce::MouseEvent& event) override;
+  /** @internal mouse drag state. */
+  MouseDragState m_mouse_drag_state = MouseDragState::none;
   /** @internal */
   void mouseDown(const juce::MouseEvent& event) override;
   /** @internal */
   void mouseUp(const juce::MouseEvent& event) override;
 
  private:
+  /** @internal */
   template <bool is_point_data_point = false>
   std::pair<juce::Point<float>, const GraphLine*> findNearestPoint(
       juce::Point<float> point, const GraphLine* graphline = nullptr);
-
+  /** @internal */
   std::unique_ptr<LookAndFeelMethods> getDefaultLookAndFeel();
-
+  /** @internal */
   void resizeChilderns();
-
+  /** @internal */
   void resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel = nullptr);
-
+  /** @internal */
   void updateYData(const std::vector<std::vector<float>>& y_data,
                    const GraphAttributeList& graph_attribute_list);
+  /** @internal */
   void updateXData(const std::vector<std::vector<float>>& x_data);
-
+  /** @internal */
   void setAutoXScale();
+  /** @internal */
   void setAutoYScale();
-
+  /** @internal */
   void updateXLim(const Lim_f& new_x_lim);
+  /** @internal */
   void updateYLim(const Lim_f& new_y_lim);
-
+  /** @internal */
   void updateGridGraphsTrace();
+  /** @internal */
   void updateTracePointsForNewGraphData();
 
-  bool m_x_autoscale = true, m_y_autoscale = true;
+  /** User input related things  */
+  /** @internal */
+  void mouseHandler(const juce::MouseEvent& event,
+                    const UserInputAction user_input_action);
+  /** @internal */
+  void addOrRemoveTracePoint(const juce::MouseEvent& event);
+  /** @internal */
+  void resetZoom();
+  /** @internal */
+  void setStartPosSelectedRegion(const juce::Point<int>& start_position);
+  /** @internal */
+  void drawSelectedRegion(const juce::Point<int>& end_position);
+  /** @internal */
+  void zoomOnSelectedRegion();
+  /** @internal */
+  void moveTracepoint(const juce::MouseEvent& event);
+  /** @internal */
+  void moveTracepointLabel(const juce::MouseEvent& event);
+  /** @internal */
+  void moveLegend(const juce::MouseEvent& event);
+
+  juce::ComponentDragger m_comp_dragger;
 
   /** Common plot parameters. */
   Scaling m_x_scaling, m_y_scaling;
   DownsamplingType m_downsampling_type{DownsamplingType::xy_downsampling};
   juce::Rectangle<int> m_graph_bounds;
-  cmp::Lim<float> m_x_lim, m_y_lim, m_x_lim_default, m_y_lim_default;
-
+  cmp::Lim<float> m_x_lim, m_y_lim, m_x_lim_start, m_y_lim_start;
   CommonPlotParameterView m_common_graph_params;
 
+  /** Child components */
   GraphLines m_graph_lines;
   GraphSpreadList m_graph_spread_list;
   std::unique_ptr<Grid> m_grid;
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;
   std::unique_ptr<Legend> m_legend;
-  std::unique_ptr<Zoom> m_zoom;
+  std::unique_ptr<GraphArea> m_graph_area;
   std::unique_ptr<Trace> m_trace;
 
+  /** Look and feel */
   juce::LookAndFeel* m_lookandfeel;
   std::unique_ptr<LookAndFeelMethods> m_lookandfeel_default;
-
-  juce::ComponentDragger m_comp_dragger;
 
   friend const IsLabelsSet getIsLabelsAreSet(const Plot* plot) noexcept;
 
   friend const std::pair<int, int> getMaxGridLabelWidth(
       const Plot* plot) noexcept;
+
+  bool m_x_autoscale = true, m_y_autoscale = true;
 };
 
 /**
