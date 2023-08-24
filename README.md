@@ -38,20 +38,22 @@ Below is the feature list of CMP:
 - Custom stroke path.
 - Callback for every visible data point.
 - Callback for tace points.
-- Two different downsampler levels 
+- Two different downsampler levels.
+- Move points in the garph with mouse.
+- Customizable userinput mapping using lookandfeel class.
 
 ![Image](img/heart.png) 
 
 ## Requirements
 <a name="requirements"></a>
 
-- Compiler that supports C++20  (TODO: Make it support 17)
+- Compiler that supports C++17
 - CMake 3.12
 
 ## Controls
 <a name="controls"></a>
 
-The CMP compontent implements MouseEvents to interact with the plot using the mouse. Below is a list with the current added mouse commands:
+The CMP compontent implements MouseEvents to interact with the plot using the mouse. Below is a list with the default added mouse commands which can be overrided using a custom lookandfeel class (see "move_graph_points" example):
 
 1. Left click drag anywhere in the graph area to zoom into the plot. The zoom area is displayed as traced lined rectangle.
 2. Right click to zoom out to home.
@@ -60,6 +62,7 @@ The CMP compontent implements MouseEvents to interact with the plot using the mo
 5. Drag the trace point to move it along the graph-line.
 6. Move the trace point label by dragging it.
 7. Move the legend to by dragging it.
+8. Move graph points.
 8. [TODO] Panning
 
 ## LookAndFeel
