@@ -230,8 +230,8 @@ void Plot::updateGridGraphsTrace() {
     m_trace->updateTracePointsBounds();
 
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateXGraphPoints(m_common_graph_params);
-      graph_line->updateYGraphPoints(m_common_graph_params);
+      graph_line->updateXGraphPoints();
+      graph_line->updateYGraphPoints();
     }
   }
 
@@ -595,7 +595,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
     }
 
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateYGraphPoints(m_common_graph_params);
+      graph_line->updateYGraphPoints();
     }
   }
 }
@@ -646,9 +646,9 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
   }
 
   for (const auto& graph_line : m_graph_lines) {
-    graph_line->updateXGraphPoints(m_common_graph_params);
+    graph_line->updateXGraphPoints();
     if (trigger_y_data_update) UNLIKELY {
-        graph_line->updateYGraphPoints(m_common_graph_params);
+        graph_line->updateYGraphPoints();
       }
   }
 }
@@ -783,6 +783,7 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
     }
   }
 
+  std::map<GraphLine*, std::vector<size_t>> graph_line_data_point_map;
   for (const auto& trace_label_point : m_trace->getTraceLabelPoints()) {
     if (!trace_label_point.isSelected()) continue;
     const auto graph_line =
@@ -793,12 +794,17 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
     for (const auto& graph : m_graph_lines) {
       if (graph.get() == graph_line) {
         graph->moveGraphPoint(d_data_position, data_point_index);
-        graph->updateXGraphPoints(m_common_graph_params);
-        graph->updateYGraphPoints(m_common_graph_params);
+        graph_line_data_point_map[graph.get()].push_back(data_point_index);
         break;
       }
     }
   }
+
+  for (auto& [graph_line, indices_to_update] : graph_line_data_point_map) {
+    graph_line->updateXGraphPoints(indices_to_update);
+    graph_line->updateYGraphPoints(indices_to_update);
+  }
+
   m_trace->updateTracePointsBounds();
   m_prev_mouse_position = mouse_pos;
 

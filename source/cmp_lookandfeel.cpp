@@ -15,6 +15,7 @@
 #include "cmp_graph_line.h"
 #include "cmp_grid.h"
 #include "cmp_label.h"
+#include "juce_core/system/juce_PlatformDefs.h"
 
 /*============================================================================*/
 
@@ -687,6 +688,7 @@ void PlotLookAndFeel::drawSelectionArea(
 }
 
 void PlotLookAndFeel::updateXGraphPoints(
+    const std::vector<std::size_t>& update_only_these_indices,
     const CommonPlotParameterView& common_plot_parameter_view,
     const std::vector<float>& x_data,
     std::vector<std::size_t>& graph_points_indices,
@@ -696,6 +698,26 @@ void PlotLookAndFeel::updateXGraphPoints(
       common_plot_parameter_view.x_lim, common_plot_parameter_view.x_scaling);
 
   graph_points.resize(graph_points_indices.size());
+
+  if (!update_only_these_indices.empty()) {
+    if (graph_points_indices.size() != x_data.size()) {
+      jassertfalse;
+      // You are trying to update only some of the graph points, but the
+      // downsampling is requies to be off. Set the downsampling to
+      // no_downsampling.
+    }
+
+    if (common_plot_parameter_view.y_scaling == Scaling::linear) {
+      for (const auto i : update_only_these_indices)
+        graph_points[i].setX(
+            getXGraphValueLinear(x_data[i], x_scale, x_offset));
+    } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
+      for (const auto i : update_only_these_indices)
+        graph_points[i].setX(
+            getXGraphPointsLogarithmic(x_data[i], x_scale, x_offset));
+    }
+    return;
+  }
 
   std::size_t i{0u};
   if (common_plot_parameter_view.x_scaling == Scaling::linear) {
@@ -712,6 +734,7 @@ void PlotLookAndFeel::updateXGraphPoints(
 }
 
 void PlotLookAndFeel::updateYGraphPoints(
+    const std::vector<std::size_t>& update_only_these_indices,
     const CommonPlotParameterView& common_plot_parameter_view,
     const std::vector<float>& y_data,
     const std::vector<std::size_t>& graph_points_indices,
@@ -719,6 +742,26 @@ void PlotLookAndFeel::updateYGraphPoints(
   const auto [y_scale, y_offset] = getYScaleAndOffset(
       common_plot_parameter_view.graph_bounds.toFloat().getHeight(),
       common_plot_parameter_view.y_lim, common_plot_parameter_view.y_scaling);
+
+  if (!update_only_these_indices.empty()) {
+    if (graph_points_indices.size() != y_data.size()) {
+      jassertfalse;
+      // You are trying to update only some of the graph points, but the
+      // downsampling is requies to be off. Set the downsampling to
+      // no_downsampling.
+    }
+
+    if (common_plot_parameter_view.y_scaling == Scaling::linear) {
+      for (const auto i : update_only_these_indices)
+        graph_points[i].setY(
+            getYGraphValueLinear(y_data[i], y_scale, y_offset));
+    } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
+      for (const auto i : update_only_these_indices)
+        graph_points[i].setY(
+            getYGraphPointsLogarithmic(y_data[i], y_scale, y_offset));
+    }
+    return;
+  }
 
   std::size_t i = 0u;
 

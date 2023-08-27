@@ -92,7 +92,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   std::map<UserInput, UserInputAction> getDefaultUserInputMapAction()
       const noexcept override;
 
-  std::map<UserInput, UserInputAction> overrideUserInputMapAction(std::map<UserInput, UserInputAction> default_user_input_map_action)
+  std::map<UserInput, UserInputAction> overrideUserInputMapAction(
+      std::map<UserInput, UserInputAction> default_user_input_map_action)
       const noexcept override;
 
   UserInputAction getUserInputAction(
@@ -136,12 +137,14 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
       const juce::Rectangle<int> &graph_bounds) noexcept override;
 
   void updateXGraphPoints(
+      const std::vector<std::size_t> &update_only_these_indices,
       const CommonPlotParameterView &common_plot_parameter_view,
       const std::vector<float> &x_data,
       std::vector<std::size_t> &graph_points_indices,
       GraphPoints &graph_points) noexcept override;
 
   void updateYGraphPoints(
+      const std::vector<std::size_t> &update_only_these_indices,
       const CommonPlotParameterView &common_plot_parameter_view,
       const std::vector<float> &y_data,
       const std::vector<std::size_t> &graph_points_indices,
