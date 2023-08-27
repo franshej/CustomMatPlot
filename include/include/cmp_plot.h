@@ -562,6 +562,8 @@ class Plot : public juce::Component {
   /** @internal */
   juce::Point<float> getMousePositionRelativeToGraphArea(
       const juce::MouseEvent& event) const;
+  /** @internal */
+  void modifierKeysChanged(const juce::ModifierKeys& modifiers) override;
 
  private:
   /** @internal */
@@ -634,6 +636,7 @@ class Plot : public juce::Component {
   juce::ComponentDragger m_comp_dragger;
   juce::Point<float> m_prev_mouse_position{0.f, 0.f};
   GraphLinesChangedCallback m_graph_lines_changed_callback = nullptr;
+  const juce::ModifierKeys* m_modifiers = nullptr;
 
   /** Common plot parameters. */
   Scaling m_x_scaling, m_y_scaling;

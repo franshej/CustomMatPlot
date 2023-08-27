@@ -168,6 +168,8 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       onTraceValueChange(trace_point, prev_data, new_data);
     }
   };
+
+  this->setWantsKeyboardFocus(true);
 }
 
 void Plot::updateXLim(const Lim_f& new_x_lim) {
@@ -977,6 +979,10 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
       }
     }
   }
+}
+
+void Plot::modifierKeysChanged(const juce::ModifierKeys& modifiers) {
+  m_modifiers = &modifiers;
 }
 
 void Plot::setMovePointsType(const GraphPointMoveType move_points_type) {
