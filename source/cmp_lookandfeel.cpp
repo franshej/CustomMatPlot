@@ -899,16 +899,18 @@ PlotLookAndFeel::getDefaultUserInputMapAction() const noexcept {
   std::map<UserInput, UserInputAction> action_map;
 
   // clang-format off
-  action_map[UserInput::left_mouse_double] =            UserInputAction::create_tracepoint;
-  action_map[UserInput::right_mouse_down] =             UserInputAction::zoom_reset;
-  action_map[UserInput::left_mouse_drag_start] =        UserInputAction::select_area_start;
-  action_map[UserInput::left_mouse_drag] =              UserInputAction::select_area_draw;
-  action_map[UserInput::left_mouse_drag_end] =          UserInputAction::zoom_selected_area;
-  action_map[UserInput::left_mouse_down_tracepoint] =   UserInputAction::select_tracepoint;
-  action_map[UserInput::left_mouse_up_tracepoint] =     UserInputAction::deselect_tracepoint;
-  action_map[UserInput::left_mouse_drag_tracepoint] =   UserInputAction::move_tracepoint_to_closest_point;
-  action_map[UserInput::left_mouse_drag_legend] =       UserInputAction::move_legend;
-  action_map[UserInput::left_mouse_drag_trace_label] =  UserInputAction::move_tracepoint_label;
+  action_map[UserInput::left | UserInput::drag | UserInput::graph_area] =                   UserInputAction::select_area_draw;
+  action_map[UserInput::left | UserInput::drag | UserInput::down | UserInput::graph_area] = UserInputAction::select_area_start;
+  action_map[UserInput::left | UserInput::drag | UserInput::up | UserInput::graph_area] =   UserInputAction::zoom_selected_area;
+  action_map[UserInput::left | UserInput::drag | UserInput::tracepoint] =                   UserInputAction::move_tracepoint_to_closest_point;
+  action_map[UserInput::left | UserInput::drag | UserInput::legend] =                       UserInputAction::move_legend;
+  action_map[UserInput::left | UserInput::drag | UserInput::trace_label] =                  UserInputAction::move_tracepoint_label;
+  action_map[UserInput::left | UserInput::double_click | UserInput::graph_area] =           UserInputAction::create_tracepoint;
+
+  action_map[UserInput::left | UserInput::down | UserInput::tracepoint] = UserInputAction::select_tracepoint;
+  action_map[UserInput::left | UserInput::up | UserInput::tracepoint] =   UserInputAction::deselect_tracepoint;
+
+  action_map[UserInput::right | UserInput::drag | UserInput::graph_area] = UserInputAction::zoom_reset;
   // clang-format on
 
   return action_map;

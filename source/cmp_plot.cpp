@@ -168,6 +168,8 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       onTraceValueChange(trace_point, prev_data, new_data);
     }
   };
+
+  this->setWantsKeyboardFocus(true);
 }
 
 void Plot::updateXLim(const Lim_f& new_x_lim) {
@@ -909,15 +911,17 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
     if (m_selected_area.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
-        mouseHandler(event,
-                     lnf->getUserInputAction(UserInput::right_mouse_down));
+        mouseHandler(
+            event, lnf->getUserInputAction(UserInput::right | UserInput::drag |
+                                           UserInput::graph_area));
       }
     }
 
     if (m_trace->isComponentTracePoint(event.eventComponent)) {
       if (!event.mods.isRightButtonDown()) {
-        mouseHandler(event, lnf->getUserInputAction(
-                                UserInput::left_mouse_down_tracepoint));
+        mouseHandler(event,
+                     lnf->getUserInputAction(UserInput::left | UserInput::down |
+                                             UserInput::tracepoint));
       }
     }
 
@@ -926,8 +930,9 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
     }
 
     if (event.getNumberOfClicks() > 1) {
-      mouseHandler(event,
-                   lnf->getUserInputAction(UserInput::left_mouse_double));
+      mouseHandler(event, lnf->getUserInputAction(UserInput::left |
+                                                  UserInput::double_click |
+                                                  UserInput::graph_area));
     }
   }
 }
@@ -936,26 +941,32 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
   if (isVisible()) {
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
     if (m_legend.get() == event.eventComponent) {
-      m_comp_dragger.dragComponent(event.eventComponent, event, nullptr);
+      mouseHandler(event,
+                   lnf->getUserInputAction(UserInput::left | UserInput::drag |
+                                           UserInput::legend));
     } else if (m_selected_area.get() == event.eventComponent &&
                event.mouseWasDraggedSinceMouseDown() &&
                event.getNumberOfClicks() == 1) {
       if (m_mouse_drag_state == MouseDragState::start) {
-        mouseHandler(event,
-                     lnf->getUserInputAction(UserInput::left_mouse_drag_start));
+        mouseHandler(event, lnf->getUserInputAction(
+                                UserInput::left | UserInput::drag |
+                                UserInput::down | UserInput::graph_area));
         m_mouse_drag_state = MouseDragState::drag;
       } else {
         mouseHandler(event,
-                     lnf->getUserInputAction(UserInput::left_mouse_drag));
+                     lnf->getUserInputAction(UserInput::left | UserInput::drag |
+                                             UserInput::graph_area));
         m_mouse_drag_state = MouseDragState::drag;
       }
     } else if (m_trace->isComponentTracePoint(event.eventComponent) &&
                event.getNumberOfClicks() == 1) {
-      mouseHandler(event, lnf->getUserInputAction(
-                              UserInput::left_mouse_drag_tracepoint));
+      mouseHandler(event,
+                   lnf->getUserInputAction(UserInput::left | UserInput::drag |
+                                           UserInput::tracepoint));
     } else if (m_trace->isComponentTraceLabel(event.eventComponent)) {
-      mouseHandler(event, lnf->getUserInputAction(
-                              UserInput::left_mouse_drag_trace_label));
+      mouseHandler(event,
+                   lnf->getUserInputAction(UserInput::left | UserInput::drag |
+                                           UserInput::trace_label));
     }
   }
 }
@@ -966,17 +977,23 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
     if (m_selected_area.get() == event.eventComponent &&
         m_mouse_drag_state == MouseDragState::drag &&
         !event.mods.isRightButtonDown()) {
-      mouseHandler(event,
-                   lnf->getUserInputAction(UserInput::left_mouse_drag_end));
+      mouseHandler(event, lnf->getUserInputAction(
+                              UserInput::left | UserInput::drag |
+                              UserInput::up | UserInput::graph_area));
     }
 
     if (m_trace->isComponentTracePoint(event.eventComponent)) {
       if (!event.mods.isRightButtonDown()) {
-        mouseHandler(event, lnf->getUserInputAction(
-                                UserInput::left_mouse_up_tracepoint));
+        mouseHandler(event,
+                     lnf->getUserInputAction(UserInput::left | UserInput::up |
+                                             UserInput::tracepoint));
       }
     }
   }
+}
+
+void Plot::modifierKeysChanged(const juce::ModifierKeys& modifiers) {
+  m_modifiers = &modifiers;
 }
 
 void Plot::setMovePointsType(const GraphPointMoveType move_points_type) {

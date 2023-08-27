@@ -23,11 +23,14 @@ class move_graph_points : public juce::Component {
             default_user_input_map_action) const noexcept override {
       auto new_user_input_map_action = default_user_input_map_action;
 
-      new_user_input_map_action[UserInput::left_mouse_drag_end] =
+      new_user_input_map_action[UserInput::left | UserInput::drag |
+                                UserInput::up | UserInput::graph_area] =
           UserInputAction::select_tracepoints_within_selected_area;
-      new_user_input_map_action[UserInput::left_mouse_drag_tracepoint] =
+      new_user_input_map_action[UserInput::left | UserInput::drag |
+                                UserInput::tracepoint] =
           UserInputAction::move_selected_trace_points;
-      new_user_input_map_action[UserInput::left_mouse_double] = UserInputAction::none;
+      new_user_input_map_action[UserInput::left | UserInput::double_click] =
+          UserInputAction::none;
 
       return new_user_input_map_action;
     }
