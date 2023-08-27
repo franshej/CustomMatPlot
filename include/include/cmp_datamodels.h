@@ -105,56 +105,41 @@ enum class DownsamplingType : uint32_t {
                       than 'x_downsampling'. */
 };
 
-/** Enum to define the user input. */
-enum class UserInput : uint32_t {
-  /** User input related to the graph area. */
-  left_mouse_down,       /** Left mouse button is pressed. */
-  left_mouse_up,         /** Left mouse button is released. */
-  left_mouse_drag_start, /** Start of a left mouse button drag. */
-  left_mouse_drag_end,   /** End of a left mouse button drag. */
-  left_mouse_drag,       /** Left mouse button is dragged. */
-  left_mouse_double,     /** Left mouse button is double clicked. */
-  right_mouse_down,      /** Right mouse button is pressed. */
-  right_mouse_up,        /** Right mouse button is released. */
-  right_mouse_drag,      /** Right mouse button is dragged. */
-  middle_mouse_down,     /** Middle mouse button is pressed. */
-  middle_mouse_up,       /** Middle mouse button is released. */
-  middle_mouse_drag,     /** Middle mouse button is dragged. */
-  mouse_scroll_up,       /** Mouse wheel is scrolled up. */
-  mouse_scroll_down,     /** Mouse wheel is scrolled down. */
+enum class UserInput : uint64_t {
+  // Mouse button pressed
+  left = 0,
+  right = 1 << 1,
+  middle = 1 << 2,
 
-  /** Tracepoint related user input. */
-  left_mouse_down_tracepoint, /** Left mouse button is pressed on a tracepoint.
-                               */
-  left_mouse_up_tracepoint,   /** Left mouse button is released on a
-                               * tracepoint. */
-  left_mouse_drag_tracepoint, /** Left mouse button is dragged on a tracepoint.
-                               */
-  left_mouse_double_tracepoint, /** Left mouse button is double clicked on a
-                                 * tracepoint. */
+  // Type of press
+  up = 1 << 3,
+  down = 1 << 4,
+  drag = 1 << 5,
+  double_click = 1 << 6,
+  scroll_up = 1 << 7,
+  scroll_down = 1 << 8,
 
-  /** TraceLabel related user input. */
-  left_mouse_down_trace_label, /** Left mouse button is pressed on a trace
-                                * label. */
-  left_mouse_up_trace_label,   /** Left mouse button is released on a trace
-                                * label. */
-  left_mouse_drag_trace_label, /** Left mouse button is dragged on a trace
-                                * label. */
-
-  /** Legend related user input. */
-  left_mouse_down_legend, /** Left mouse button is pressed on a legend. */
-  left_mouse_up_legend,   /** Left mouse button is released on a legend. */
-  left_mouse_drag_legend, /** Left mouse button is dragged on a legend. */
+  // Event component
+  graph_area = 1 << 9,
+  legend = 1 << 10,
+  tracepoint = 1 << 11,
+  trace_label = 1 << 12,
 };
+
+constexpr enum UserInput operator|(const enum UserInput selfValue,
+                                   const enum UserInput inValue) {
+  return (enum UserInput)(uint64_t(selfValue) | uint64_t(inValue));
+}
 
 /** Enum to define a type of action that will occur for a input. */
 enum class UserInputAction : uint32_t {
   /** Tracepoint related actions. */
-  create_tracepoint,                       /** Creates a tracepoint. */
-  move_tracepoint_to_closest_point,        /** Move a tracepoint to closest point to the mouse. */
-  move_tracepoint_label,                   /** Move a tracepoint label. */
-  move_selected_trace_points,              /** Move a graph point. */
-  select_tracepoint,                       /** Selecting a tracepoint. */
+  create_tracepoint,                /** Creates a tracepoint. */
+  move_tracepoint_to_closest_point, /** Move a tracepoint to closest point to
+                                       the mouse. */
+  move_tracepoint_label,            /** Move a tracepoint label. */
+  move_selected_trace_points,       /** Move a graph point. */
+  select_tracepoint,                /** Selecting a tracepoint. */
   select_tracepoints_within_selected_area, /** Selecting multiple tracepoints.
                                             */
   deselect_tracepoint,                     /** Deselecting a tracepoint. */
