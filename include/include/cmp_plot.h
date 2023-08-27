@@ -508,6 +508,8 @@ class Plot : public juce::Component {
     /** Updates the x-coordinates of the graph points used when drawing a graph
      *  line. */
     virtual void updateXGraphPoints(
+        const std::vector<std::size_t>& update_only_these_indices,
+
         const CommonPlotParameterView& common_plot_parameter_view,
         const std::vector<float>& x_data,
         std::vector<std::size_t>& graph_points_indices,
@@ -516,6 +518,8 @@ class Plot : public juce::Component {
     /** Updates the y-coordinates of the graph points used when drawing a graph
      * line. */
     virtual void updateYGraphPoints(
+        const std::vector<std::size_t>& update_only_these_indices,
+
         const CommonPlotParameterView& common_plot_parameter_view,
         const std::vector<float>& y_data,
         const std::vector<std::size_t>& graph_points_indices,

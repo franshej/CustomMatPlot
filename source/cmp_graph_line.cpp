@@ -147,8 +147,8 @@ void GraphLine::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
     if (m_common_plot_params) {
-      updateXGraphPointsIntern(*m_common_plot_params);
-      updateYGraphPointsIntern(*m_common_plot_params);
+      updateXGraphPointsIntern({});
+      updateYGraphPointsIntern({});
     }
   } else {
     m_lookandfeel = nullptr;
@@ -220,33 +220,33 @@ const std::vector<size_t>& GraphLine::getGraphPointIndices() const noexcept {
 }
 
 void GraphLine::updateXGraphPoints(
-    const CommonPlotParameterView& common_plot_params) {
+    const std::vector<size_t>& update_only_these_indices) {
   // x_lim must be set to calculate the xdata.
-  jassert(common_plot_params.x_lim);
+  jassert(m_common_plot_params->x_lim);
 
   // x_data empty.
   jassert(!m_x_data.empty());
 
-  updateXGraphPointsIntern(common_plot_params);
+  updateXGraphPointsIntern(update_only_these_indices);
 }
 
 void GraphLine::updateYGraphPoints(
-    const CommonPlotParameterView& common_plot_params) {
+    const std::vector<size_t>& update_only_these_indices) {
   // x_lim must be set to calculate the xdata.
-  jassert(common_plot_params.y_lim);
+  jassert(m_common_plot_params->y_lim);
 
   // y_data empty.
   jassert(!m_y_data.empty());
 
-  updateYGraphPointsIntern(common_plot_params);
+  updateYGraphPointsIntern(update_only_these_indices);
 }
 
 void GraphLine::updateXGraphPointsIntern(
-    const CommonPlotParameterView common_plot_params) noexcept {
+    const std::vector<size_t>& update_only_these_indices) noexcept {
   if (m_lookandfeel) {
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
-    switch (common_plot_params.downsampling_type) {
+    switch (m_common_plot_params->downsampling_type) {
       case DownsamplingType::no_downsampling:
         m_x_based_ds_indices.resize(m_x_data.size());
 
@@ -254,14 +254,14 @@ void GraphLine::updateXGraphPointsIntern(
         break;
 
       case DownsamplingType::x_downsampling:
-        Downsampler<float>::calculateXBasedDSIdxs(common_plot_params, m_x_data,
-                                                  m_x_based_ds_indices);
+        Downsampler<float>::calculateXBasedDSIdxs(
+            *m_common_plot_params, m_x_data, m_x_based_ds_indices);
 
         break;
 
       case DownsamplingType::xy_downsampling:
-        Downsampler<float>::calculateXBasedDSIdxs(common_plot_params, m_x_data,
-                                                  m_x_based_ds_indices);
+        Downsampler<float>::calculateXBasedDSIdxs(
+            *m_common_plot_params, m_x_data, m_x_based_ds_indices);
         return;
         break;
 
@@ -270,13 +270,13 @@ void GraphLine::updateXGraphPointsIntern(
     }
 
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateXGraphPoints(common_plot_params, m_x_data, m_x_based_ds_indices,
-                            m_graph_points);
+    lnf->updateXGraphPoints(update_only_these_indices, *m_common_plot_params,
+                            m_x_data, m_x_based_ds_indices, m_graph_points);
   }
 }
 
 void GraphLine::updateYGraphPointsIntern(
-    const CommonPlotParameterView common_plot_params) noexcept {
+    const std::vector<size_t>& update_only_these_indices) noexcept {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
@@ -284,7 +284,7 @@ void GraphLine::updateYGraphPointsIntern(
 
     m_xy_based_ds_indices = m_x_based_ds_indices;
 
-    switch (common_plot_params.downsampling_type) {
+    switch (m_common_plot_params->downsampling_type) {
       case DownsamplingType::no_downsampling:
         break;
 
@@ -293,10 +293,11 @@ void GraphLine::updateYGraphPointsIntern(
 
       case DownsamplingType::xy_downsampling:
         Downsampler<float>::calculateXYBasedDSIdxs(
-            common_plot_params, m_x_based_ds_indices, m_y_data,
+            *m_common_plot_params, m_x_based_ds_indices, m_y_data,
             m_xy_based_ds_indices);
 
-        lnf->updateXGraphPoints(common_plot_params, m_x_data,
+        lnf->updateXGraphPoints(update_only_these_indices,
+                                *m_common_plot_params, m_x_data,
                                 m_xy_based_ds_indices, m_graph_points);
         break;
 
@@ -304,8 +305,8 @@ void GraphLine::updateYGraphPointsIntern(
         break;
     }
 
-    lnf->updateYGraphPoints(common_plot_params, m_y_data, m_xy_based_ds_indices,
-                            m_graph_points);
+    lnf->updateYGraphPoints(update_only_these_indices, *m_common_plot_params,
+                            m_y_data, m_xy_based_ds_indices, m_graph_points);
   }
 }
 

@@ -21,6 +21,8 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include <cstddef>
+
 #include "cmp_datamodels.h"
 #include "cmp_utils.h"
 
@@ -175,20 +177,22 @@ class GraphLine : public juce::Component {
    *  This function updates the graph points if any new parameter is set. Should
    *  be called after an parameter changed to update the graph.
    *
-   *  @param common_plot_params common plot parameters.
+   *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateXGraphPoints(const CommonPlotParameterView& common_plot_params);
+  void updateXGraphPoints(
+      const std::vector<size_t>& update_only_these_indices = {});
 
   /** @brief Update the y-value in the graph points.
    *
    *  This function updates the graph points if any new parameter is set. Should
    *  be called after an parameter changed to update the graph.
    *
-   *  @param common_plot_params common plot parameters.
+   *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateYGraphPoints(const CommonPlotParameterView& common_plot_params);
+  void updateYGraphPoints(
+      const std::vector<size_t>& update_only_these_indices = {});
 
   /** @brief move graph point in graphline
    *
@@ -210,9 +214,9 @@ class GraphLine : public juce::Component {
 
  private:
   void updateYGraphPointsIntern(
-      const CommonPlotParameterView common_plot_params) noexcept;
+      const std::vector<size_t>& update_only_these_indices) noexcept;
   void updateXGraphPointsIntern(
-      const CommonPlotParameterView common_plot_params) noexcept;
+      const std::vector<size_t>& update_only_these_indices) noexcept;
 
   juce::LookAndFeel* m_lookandfeel{nullptr};
 
