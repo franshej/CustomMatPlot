@@ -125,18 +125,23 @@ void Downsampler<FloatType>::calculateXBasedDSIdxs(
 
   std::size_t max_x_index{x_data.size() - 1u};
 
-  // If the graph has less than 10 values we simply plot all points even if
+  // If the graph has less than 100 values we simply plot all points even if
   // they are on top of each other.
-  if (x_data.size() < 10u) {
+  if (x_data.size() < 100u) {
     std::iota(x_based_ds_idxs.begin(), x_based_ds_idxs.end(), 0u);
     return;
   }
 
+  constexpr auto compute_all_points = true;
+  // If the graph is zoomed in we only plots some points.
   const auto start_x_index =
-      computeXStartIdx<decltype(x_lim.min)>(x_lim.min, x_data);
-
+      compute_all_points
+          ? size_t(0u)
+          : computeXStartIdx<decltype(x_lim.min)>(x_lim.min, x_data);
   const auto end_x_index =
-      computeXEndIdx<decltype(x_lim.max)>(x_lim.max, x_data);
+      compute_all_points
+          ? x_data.size() - 1u
+          : computeXEndIdx<decltype(x_lim.max)>(x_lim.max, x_data);
 
   x_based_ds_idxs.front() = start_x_index;
 
@@ -145,7 +150,6 @@ void Downsampler<FloatType>::calculateXBasedDSIdxs(
           start_x_index, end_x_index, common_params, x_data, x_based_ds_idxs);
 
   x_based_ds_idxs.resize(x_idxs_size_required);
-
   x_based_ds_idxs.back() = end_x_index;
 }
 
@@ -159,8 +163,8 @@ void Downsampler<FloatType>::calculateXYBasedDSIdxs(
 
   xy_based_ds_idxs.resize(y_data.size());
 
-  // If the graph has less than 10 values we simply plot all points.
-  if (xy_based_ds_idxs.size() < 10u) {
+  // If the graph has less than 100 values we simply plot all points.
+  if (xy_based_ds_idxs.size() < 100u) {
     xy_based_ds_idxs = x_based_ds_idxs;
   }
 
@@ -171,36 +175,33 @@ void Downsampler<FloatType>::calculateXYBasedDSIdxs(
     // We have reached the last x-based ds index. Let's add it.
     if (i + 1 == x_based_ds_idxs.end()) UNLIKELY {
         xy_based_ds_idxs[xy_i++] = *i;
-
         xy_size += 1;
-
         break;
       }
 
     // Add the current x-based ds index.
     xy_based_ds_idxs[xy_i++] = *i;
 
-    // Calculated the index diff between the current and the next x-based ds
-    // index.
-    const auto index_diff = *(i + 1) - *i;
+    // Calculated how many data values there is between the current and the next
+    // x-based ds index.
+    const auto num_data_values = *(i + 1) - *i;
 
-    if (index_diff == 2u) {
+    if (num_data_values == 2u) {
       xy_based_ds_idxs[xy_i++] = *i + 1;
 
       xy_size += 2;
-    } else if (index_diff == 3u) {
+    } else if (num_data_values == 3u) {
       xy_based_ds_idxs[xy_i++] = *i + 1;
       xy_based_ds_idxs[xy_i++] = *i + 2;
-
       xy_size += 3;
 
       // Let's find the min and max y-value that share the same x-pixel and get
       // their indices.
-    } else if (index_diff > 3u) {
+    } else if (num_data_values > 3u) {
       auto j = *i + 1;
 
       auto max_val = y_data[j];
-      auto min_val = y_data[j];
+      auto min_val = max_val;
       auto max_idx = j;
       auto min_idx = j;
       auto min_last = true;
@@ -210,15 +211,11 @@ void Downsampler<FloatType>::calculateXYBasedDSIdxs(
 
         if (y < min_val) {
           min_val = y;
-
           min_idx = j;
-
           min_last = true;
         } else if (y > max_val) {
           max_val = y;
-
           max_idx = j;
-
           min_last = false;
         }
       }
