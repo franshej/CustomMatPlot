@@ -509,7 +509,6 @@ class Plot : public juce::Component {
      *  line. */
     virtual void updateXGraphPoints(
         const std::vector<std::size_t>& update_only_these_indices,
-
         const CommonPlotParameterView& common_plot_parameter_view,
         const std::vector<float>& x_data,
         std::vector<std::size_t>& graph_points_indices,
@@ -590,7 +589,7 @@ class Plot : public juce::Component {
   /** @internal */
   void updateYLim(const Lim_f& new_y_lim);
   /** @internal */
-  void updateGridGraphsTrace();
+  void updateGridGraphPointsTrace();
   /** @internal */
   void updateTracePointsForNewGraphData();
   /** @internal */
@@ -600,9 +599,12 @@ class Plot : public juce::Component {
                              bool is_point_data_point);
   /** @internal */
   void updateTracepointsForGraphData();
-
   /** @internal */
   void setDownsamplingTypeInternal(const DownsamplingType downsampling_type);
+  /** @internal */
+  void moveXYLims(const juce::Point<float> &d_xy);
+  /** @internal */
+  void updateGridTrace();
 
   /** User input related things  */
   /** @internal */
@@ -632,6 +634,8 @@ class Plot : public juce::Component {
   void deselectTracePoint(const juce::MouseEvent& event);
   /** @internal */
   void moveSelectedTracePoints(const juce::MouseEvent& event);
+  /** @internal */
+  void panning(const juce::MouseEvent& event);
 
   juce::ComponentDragger m_comp_dragger;
   juce::Point<float> m_prev_mouse_position{0.f, 0.f};

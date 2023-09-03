@@ -172,26 +172,28 @@ class GraphLine : public juce::Component {
    */
   void setColour(const juce::Colour graph_colour);
 
-  /** @brief Update the x-value in the graph points.
+  /** @brief Update the graph points indices x-value in the graph points.
    *
    *  This function updates the graph points if any new parameter is set. Should
-   *  be called after an parameter changed to update the graph.
+   *  be called after an parameter changed to update the graph. However, call
+   *  updateXYGraphPoints() if the min/max x/y-limits are move equally.
    *
    *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateXGraphPoints(
+  void updateXIndicesAndGraphPoints(
       const std::vector<size_t>& update_only_these_indices = {});
 
-  /** @brief Update the y-value in the graph points.
+  /** @brief Update the graph points indices and y-value in the graph points.
    *
    *  This function updates the graph points if any new parameter is set. Should
-   *  be called after an parameter changed to update the graph.
+   *  be called after an parameter changed to update the graph. However, call
+   *  updateXYGraphPoints() if the min/max x/y-limits are move equally.
    *
    *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateYGraphPoints(
+  void updateYIndicesAndGraphPoints(
       const std::vector<size_t>& update_only_these_indices = {});
 
   /** @brief move graph point in graphline
@@ -203,6 +205,18 @@ class GraphLine : public juce::Component {
   void moveGraphPoint(const juce::Point<float>& d_graph_point,
                       size_t graph_point_index);
 
+  /** @brief Update the y/x-value in the graph points.
+   *
+   *  This function updates the graph points if any new parameter is set.
+   *
+   *  @note updateXIndicesAndGraphPoints() and updateYIndicesAndGraphPoints()
+   *  must have been called anytime before this function.
+   *
+   *  @param update_only_these_indices only update these indices.
+   *  @return void.
+   */
+  void updateXYGraphPoints();
+
   //==============================================================================
 
   /** @internal */
@@ -213,10 +227,10 @@ class GraphLine : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
-  void updateYGraphPointsIntern(
-      const std::vector<size_t>& update_only_these_indices) noexcept;
-  void updateXGraphPointsIntern(
-      const std::vector<size_t>& update_only_these_indices) noexcept;
+  void updateYIndicesAndGraphPointsIntern(
+      const std::vector<size_t>& update_only_these_indices);
+  void updateXIndicesAndGraphPointsIntern(
+      const std::vector<size_t>& update_only_these_indices);
 
   juce::LookAndFeel* m_lookandfeel{nullptr};
 

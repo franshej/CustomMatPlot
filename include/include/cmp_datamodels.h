@@ -107,23 +107,29 @@ enum class DownsamplingType : uint32_t {
 
 enum class UserInput : uint64_t {
   // Mouse button pressed
-  left = 0,
-  right = 1 << 1,
-  middle = 1 << 2,
+  left = 1UL,
+  right = 1UL << 1,
+  middle = 1UL << 2,
 
   // Type of press
-  up = 1 << 3,
-  down = 1 << 4,
-  drag = 1 << 5,
-  double_click = 1 << 6,
-  scroll_up = 1 << 7,
-  scroll_down = 1 << 8,
+  end = 1UL << 16,
+  start = 1UL << 17,
+  drag = 1UL << 18,
+  double_click = 1UL << 19,
+  scroll_up = 1UL << 20,
+  scroll_down = 1UL << 21,
+
+  // Keyboard button
+  shift = 1UL << 32,
+  ctrl = 1UL << 33,
+  alt = 1UL << 34,
 
   // Event component
-  graph_area = 1 << 9,
-  legend = 1 << 10,
-  tracepoint = 1 << 11,
-  trace_label = 1 << 12,
+  graph_area = 1UL << 46,
+  legend = 1UL << 47,
+  tracepoint = 1UL << 48,
+  trace_label = 1UL << 49,
+
 };
 
 constexpr enum UserInput operator|(const enum UserInput selfValue,
@@ -158,8 +164,11 @@ enum class UserInputAction : uint32_t {
   create_movable_graph_point, /** Create a movable graph point. */
   remove_movable_graph_point, /** Remove a graph point. */
 
-  /** Move legend related actions. */
+  /** Legend related actions. */
   move_legend, /** Move a legend. */
+
+  /** Panning */
+  panning, /** Panning. */
 
   /** No action */
   none /** No action. */
@@ -241,6 +250,20 @@ struct Lim {
 
     return max == zero || min == zero;
   }
+
+  constexpr Lim<ValueType> operator+(const ValueType val) {
+    this->min += val;
+    this->max += val;
+
+    return *this;
+  }
+
+  constexpr Lim<ValueType> operator+=(const ValueType val) {
+    this->min += val;
+    this->max += val;
+
+    return *this;
+  }
 };
 
 template <class ValueType>
@@ -250,6 +273,17 @@ constexpr Lim<ValueType> operator/(const Lim<ValueType>& rhs,
 
   new_lim.min = rhs.min / val;
   new_lim.max = rhs.max / val;
+
+  return new_lim;
+};
+
+template <class ValueType>
+constexpr Lim<ValueType> operator+(const Lim<ValueType>& rhs,
+                                   const ValueType val) {
+  Lim<ValueType> new_lim;
+
+  new_lim.min += val;
+  new_lim.max += val;
 
   return new_lim;
 };
