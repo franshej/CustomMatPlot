@@ -24,7 +24,7 @@ class move_graph_points : public juce::Component {
       auto new_user_input_map_action = default_user_input_map_action;
 
       new_user_input_map_action[UserInput::left | UserInput::drag |
-                                UserInput::up | UserInput::graph_area] =
+                                UserInput::end | UserInput::graph_area] =
           UserInputAction::select_tracepoints_within_selected_area;
       new_user_input_map_action[UserInput::left | UserInput::drag |
                                 UserInput::tracepoint] =

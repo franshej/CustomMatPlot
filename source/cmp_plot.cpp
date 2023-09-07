@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <string>
 
 #include "cmp_datamodels.h"
 #include "cmp_frame.h"
@@ -194,7 +195,7 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
     m_x_lim = new_x_lim;
 
     if (m_y_lim) {
-      updateGridGraphsTrace();
+      updateGridGraphPointsTrace();
     }
   }
 }
@@ -221,23 +222,40 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
     m_y_lim = new_y_lim;
 
     if (m_x_lim) {
-      updateGridGraphsTrace();
+      updateGridGraphPointsTrace();
     }
   }
 }
 
-void Plot::updateGridGraphsTrace() {
+void Plot::moveXYLims(const juce::Point<float>& d_xy) {
+  m_x_lim += d_xy.getX();
+  m_y_lim += d_xy.getY();
+  updateGridTrace();
+}
+
+void Plot::updateGridGraphPointsTrace() {
   if (!m_graph_bounds.isEmpty()) {
     m_grid->updateGrid();
     m_trace->updateTracePointsBounds();
 
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateXGraphPoints();
-      graph_line->updateYGraphPoints();
+      graph_line->updateXIndicesAndGraphPoints();
+      graph_line->updateYIndicesAndGraphPoints();
     }
   }
 
   addTracePointsForGraphData();
+}
+
+void Plot::updateGridTrace() {
+  if (!m_graph_bounds.isEmpty()) {
+    m_grid->updateGrid();
+    m_trace->updateTracePointsBounds();
+
+    for (const auto& graph_line : m_graph_lines) {
+      graph_line->updateXYGraphPoints();
+    }
+  }
 }
 
 void cmp::Plot::updateTracePointsForNewGraphData() {
@@ -369,7 +387,7 @@ void cmp::Plot::setDownsamplingTypeInternal(
   } else {
     m_downsampling_type = downsampling_type;
   }
-  updateGridGraphsTrace();
+  updateGridGraphPointsTrace();
 }
 
 template <class ValueType>
@@ -396,7 +414,7 @@ void Plot::setScaling(const Scaling x_scaling,
     resetLookAndFeelChildrens();
     m_lookandfeel_default.reset(nullptr);
     lookAndFeelChanged();
-    updateGridGraphsTrace();
+    updateGridGraphPointsTrace();
   }
 }
 
@@ -506,7 +524,7 @@ void Plot::resizeChilderns() {
         m_legend->setBounds(legend_bounds);
       }
 
-      updateGridGraphsTrace();
+      updateGridGraphPointsTrace();
     }
   }
 }
@@ -597,7 +615,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
     }
 
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateYGraphPoints();
+      graph_line->updateYIndicesAndGraphPoints();
     }
   }
 }
@@ -648,9 +666,9 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
   }
 
   for (const auto& graph_line : m_graph_lines) {
-    graph_line->updateXGraphPoints();
+    graph_line->updateXIndicesAndGraphPoints();
     if (trigger_y_data_update) UNLIKELY {
-        graph_line->updateYGraphPoints();
+        graph_line->updateYIndicesAndGraphPoints();
       }
   }
 }
@@ -741,6 +759,10 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
       moveSelectedTracePoints(event);
       break;
     }
+    case UserInputAction::panning: {
+      panning(event);
+      break;
+    }
     case UserInputAction::remove_movable_graph_point: {
       break;
     }
@@ -803,8 +825,8 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   }
 
   for (auto& [graph_line, indices_to_update] : graph_line_data_point_map) {
-    graph_line->updateXGraphPoints(indices_to_update);
-    graph_line->updateYGraphPoints(indices_to_update);
+    graph_line->updateXIndicesAndGraphPoints(indices_to_update);
+    graph_line->updateYIndicesAndGraphPoints(indices_to_update);
   }
 
   m_trace->updateTracePointsBounds();
@@ -820,7 +842,7 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
 void Plot::resetZoom() {
   updateXLim(m_x_lim_start);
   updateYLim(m_y_lim_start);
-  updateGridGraphsTrace();
+  updateGridGraphPointsTrace();
   repaint();
 }
 
@@ -842,10 +864,9 @@ void Plot::zoomOnSelectedRegion() {
 
   updateXLim({data_bound.getX(), data_bound.getX() + data_bound.getWidth()});
   updateYLim({data_bound.getY(), data_bound.getY() + data_bound.getHeight()});
-  updateGridGraphsTrace();
+  updateGridGraphPointsTrace();
 
   m_selected_area->reset();
-  m_mouse_drag_state = MouseDragState::none;
   repaint();
 }
 
@@ -866,7 +887,6 @@ void Plot::selectedTracePointsWithinSelectedArea() {
   m_trace->addAndMakeVisibleTo(this);
 
   m_selected_area->reset();
-  m_mouse_drag_state = MouseDragState::none;
   repaint();
 }
 
@@ -919,9 +939,9 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
 
     if (m_trace->isComponentTracePoint(event.eventComponent)) {
       if (!event.mods.isRightButtonDown()) {
-        mouseHandler(event,
-                     lnf->getUserInputAction(UserInput::left | UserInput::down |
-                                             UserInput::tracepoint));
+        mouseHandler(
+            event, lnf->getUserInputAction(UserInput::left | UserInput::start |
+                                           UserInput::tracepoint));
       }
     }
 
@@ -947,10 +967,14 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
     } else if (m_selected_area.get() == event.eventComponent &&
                event.mouseWasDraggedSinceMouseDown() &&
                event.getNumberOfClicks() == 1) {
-      if (m_mouse_drag_state == MouseDragState::start) {
+      if (m_modifiers && m_modifiers->isCommandDown()) {
         mouseHandler(event, lnf->getUserInputAction(
                                 UserInput::left | UserInput::drag |
-                                UserInput::down | UserInput::graph_area));
+                                UserInput::ctrl | UserInput::graph_area));
+      } else if (m_mouse_drag_state == MouseDragState::start) {
+        mouseHandler(event, lnf->getUserInputAction(
+                                UserInput::left | UserInput::drag |
+                                UserInput::start | UserInput::graph_area));
         m_mouse_drag_state = MouseDragState::drag;
       } else {
         mouseHandler(event,
@@ -975,17 +999,20 @@ void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
     const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
     if (m_selected_area.get() == event.eventComponent &&
-        m_mouse_drag_state == MouseDragState::drag &&
-        !event.mods.isRightButtonDown()) {
-      mouseHandler(event, lnf->getUserInputAction(
-                              UserInput::left | UserInput::drag |
-                              UserInput::up | UserInput::graph_area));
+        m_mouse_drag_state == MouseDragState::drag) {
+      if (!event.mods.isRightButtonDown()) {
+        mouseHandler(event, lnf->getUserInputAction(
+                                UserInput::left | UserInput::drag |
+                                UserInput::end | UserInput::graph_area));
+      }
+
+      m_mouse_drag_state = MouseDragState::none;
     }
 
     if (m_trace->isComponentTracePoint(event.eventComponent)) {
       if (!event.mods.isRightButtonDown()) {
         mouseHandler(event,
-                     lnf->getUserInputAction(UserInput::left | UserInput::up |
+                     lnf->getUserInputAction(UserInput::left | UserInput::end |
                                              UserInput::tracepoint));
       }
     }
@@ -1051,6 +1078,27 @@ juce::Point<float> Plot::getMousePositionRelativeToGraphArea(
 void Plot::setGraphLineDataChangedCallback(
     GraphLinesChangedCallback graph_lines_changed_callback) {
   m_graph_lines_changed_callback = graph_lines_changed_callback;
+}
+
+void Plot::panning(const juce::MouseEvent& event) {
+  if (m_x_scaling == Scaling::logarithmic ||
+      m_y_scaling == Scaling::logarithmic)
+    UNLIKELY {
+      jassertfalse;  // Panning is not implemented for logarithmic scaling.
+      // TODO: Implement panning for logarithmic scaling.
+      return;
+    }
+
+  const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
+
+  const auto d_data_position =
+      getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params) -
+      getDataPointFromGraphCoordinate(m_prev_mouse_position,
+                                      m_common_graph_params);
+  m_prev_mouse_position = mouse_pos;
+
+  moveXYLims(-d_data_position);
+  repaint();
 }
 
 }  // namespace cmp
