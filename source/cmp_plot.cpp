@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <string>
 
 #include "cmp_datamodels.h"
 #include "cmp_frame.h"
@@ -966,7 +967,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
     } else if (m_selected_area.get() == event.eventComponent &&
                event.mouseWasDraggedSinceMouseDown() &&
                event.getNumberOfClicks() == 1) {
-      if (m_modifiers->isCommandDown() || m_modifiers->isCtrlDown()) {
+      if (m_modifiers && m_modifiers->isCommandDown()) {
         mouseHandler(event, lnf->getUserInputAction(
                                 UserInput::left | UserInput::drag |
                                 UserInput::ctrl | UserInput::graph_area));
@@ -1080,7 +1081,16 @@ void Plot::setGraphLineDataChangedCallback(
 }
 
 void Plot::panning(const juce::MouseEvent& event) {
+  if (m_x_scaling == Scaling::logarithmic ||
+      m_y_scaling == Scaling::logarithmic)
+    UNLIKELY {
+      jassertfalse;  // Panning is not implemented for logarithmic scaling.
+      // TODO: Implement panning for logarithmic scaling.
+      return;
+    }
+
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
+
   const auto d_data_position =
       getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params) -
       getDataPointFromGraphCoordinate(m_prev_mouse_position,
