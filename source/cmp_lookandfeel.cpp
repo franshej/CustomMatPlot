@@ -493,9 +493,9 @@ void PlotLookAndFeel::drawGridLine(juce::Graphics& g, const GridLine& grid_line,
   constexpr auto margin = 8.f;
   const auto y_and_len = grid_line.length + grid_line.position.getY();
   const auto x_and_len = grid_line.length + grid_line.position.getX();
+  g.setColour(findColour(Plot::grid_colour));
 
   switch (grid_line.direction) {
-    g.setColour(findColour(Plot::grid_colour));
     case GridLine::Direction::vertical:
 
       if (grid_on) {
