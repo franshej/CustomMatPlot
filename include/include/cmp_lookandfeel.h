@@ -179,4 +179,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   bool isXAxisLabelsBelowGraph() const noexcept override;
 };  // class PlotLookAndFeel
 
+class PlotLookAndFeelTimeline : public PlotLookAndFeel {
+
+};
+
 }  // namespace cmp
