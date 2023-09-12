@@ -30,10 +30,6 @@ class lookandfeel_timeline : public juce::Component {
 
     // Plot some values.
     m_plot.plot({{1, 3, 7, 9, 13}});
-
-    m_look_and_feel.setColour(cmp::Plot::grid_colour, juce::Colours::pink);
-    m_look_and_feel.setColour(cmp::Plot::x_grid_label_colour,
-                               juce::Colours::pink);
   };
 
   void resized() override {
