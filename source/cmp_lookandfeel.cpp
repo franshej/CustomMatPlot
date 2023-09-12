@@ -783,13 +783,14 @@ void PlotLookAndFeel::updateYGraphPoints(
 void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
     const juce::Rectangle<int>& bounds,
     const CommonPlotParameterView& common_plot_parameter_view,
-    const bool tiny_grids, std::vector<float>& x_ticks) noexcept {
+    const GridType grid_type, std::vector<float>& x_ticks) noexcept {
   static std::vector<float> previous_ticks;
 
   x_ticks.clear();
 
   const auto width = bounds.getWidth();
   const auto height = bounds.getHeight();
+  const auto tiny_grids = grid_type == GridType::small_grid;
 
   const auto addVerticalTicksLinear = [&]() {
     std::size_t num_vertical_lines = 5u;
@@ -832,13 +833,14 @@ void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
 void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
     const juce::Rectangle<int>& bounds,
     const CommonPlotParameterView& common_plot_parameter_view,
-    const bool tiny_grids, std::vector<float>& y_ticks) noexcept {
+    const GridType grid_type, std::vector<float>& y_ticks) noexcept {
   static std::vector<float> previous_ticks;
 
   y_ticks.clear();
 
   const auto width = bounds.getWidth();
   const auto height = bounds.getHeight();
+  const auto tiny_grids = grid_type == GridType::small_grid;
 
   const auto addHorizontalTicksLinear = [&]() {
     std::size_t num_horizontal_lines = 3u;
@@ -1296,8 +1298,8 @@ void PlotLookAndFeelTimeline::updateGridLabels(
             getLabelWidthAndHeight(font, label);
 
         const auto bound = juce::Rectangle<int>(
-            x + getMarginSmall(),
-            int(position.y) - label_height / 2, label_width, label_height);
+            x + getMarginSmall(), int(position.y) - label_height / 2,
+            label_width, label_height);
 
         checkInterectionWithLastLabelAndAdd(y_last_label_bound,
                                             y_axis_labels_out, label, bound);
@@ -1308,11 +1310,13 @@ void PlotLookAndFeelTimeline::updateGridLabels(
   }
 }
 
-bool PlotLookAndFeelTimeline::isXAxisLabelsBelowGraph() const noexcept { return false; }
+bool PlotLookAndFeelTimeline::isXAxisLabelsBelowGraph() const noexcept {
+  return false;
+}
 
 void PlotLookAndFeelTimeline::drawGridLabels(juce::Graphics& g,
-                                     const LabelVector& x_axis_labels,
-                                     const LabelVector& y_axis_labels) {
+                                             const LabelVector& x_axis_labels,
+                                             const LabelVector& y_axis_labels) {
   g.setColour(findColour(Plot::x_grid_label_colour));
   g.setFont(getGridLabelFont());
   for (const auto& x_axis_text : x_axis_labels) {

@@ -97,7 +97,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
     const auto graph_bounds =
-        juce::Rectangle<int>(m_config_params.grid_area).toFloat();
+        juce::Rectangle<int>(m_common_plot_params->graph_bounds).toFloat();
 
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
@@ -214,7 +214,7 @@ void Grid::paint(juce::Graphics &g) {
     lnf->drawGridLabels(g, m_x_axis_labels, m_y_axis_labels);
 
     for (const auto &grid_line : m_grid_lines) {
-      lnf->drawGridLine(g, grid_line, m_config_params.grid_on);
+      lnf->drawGridLine(g, grid_line, m_grid_type > GridType::none);
     }
   }
 }
@@ -238,14 +238,7 @@ void Grid::updateGrid() { updateGridInternal(); }
 
 void Grid::resized() {}
 
-void Grid::setGridBounds(const juce::Rectangle<int> &grid_area) {
-  m_config_params.grid_area = grid_area;
-}
-
-void Grid::setGridON(const bool grid_on, const bool tiny_grids_on) {
-  m_config_params.grid_on = grid_on;
-  m_config_params.tiny_grid_on = tiny_grids_on;
-}
+void Grid::setGridType(const GridType grid_type) { m_grid_type = grid_type; }
 
 void Grid::setXTicks(const std::vector<float> &x_ticks) {
   m_custom_x_ticks = x_ticks;
@@ -265,11 +258,9 @@ void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
     if (auto *lnf =
             static_cast<cmp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
       lnf->updateVerticalGridLineTicksAuto(getBounds(), *m_common_plot_params,
-                                           m_config_params.tiny_grid_on,
-                                           x_ticks);
+                                           m_grid_type, x_ticks);
       lnf->updateHorizontalGridLineTicksAuto(getBounds(), *m_common_plot_params,
-                                             m_config_params.tiny_grid_on,
-                                             y_ticks);
+                                             m_grid_type, y_ticks);
     }
   }
 }

@@ -227,15 +227,14 @@ class Plot : public juce::Component {
    */
   void setYTicks(const std::vector<float>& y_ticks);
 
-  /** @brief Turn on grids
+  /** @brief Enables grid or tiny grid
    *
-   *  Turn on grids and tiny grids.
+   *  Turn on grids or tiny grids. @see GridType in cmp:datamodels.h.
    *
-   *  @param grid_on grids is drawn if true.
-   *  @param tiny_grid_on tiny grids is drawn if true.
+   *  @param grid_type typ of grid to be drawn.
    *  @return void.
    */
-  void gridON(const bool grid_on, const bool tiny_grid_on);
+  void setGridType(const GridType grid_type);
 
   /** @brief Clear tracepoints
    *
@@ -497,13 +496,13 @@ class Plot : public juce::Component {
     virtual void updateVerticalGridLineTicksAuto(
         const juce::Rectangle<int>& bounds,
         const CommonPlotParameterView& common_plot_parameter_view,
-        const bool tiny_grids, std::vector<float>& x_ticks) noexcept = 0;
+        const GridType grid_type, std::vector<float>& x_ticks) noexcept = 0;
 
     /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
         const juce::Rectangle<int>& bounds,
         const CommonPlotParameterView& common_plot_parameter_view,
-        const bool tiny_grids, std::vector<float>& y_ticks) noexcept = 0;
+        const GridType grid_type, std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-coordinates of the graph points used when drawing a graph
      *  line. */
@@ -602,7 +601,7 @@ class Plot : public juce::Component {
   /** @internal */
   void setDownsamplingTypeInternal(const DownsamplingType downsampling_type);
   /** @internal */
-  void moveXYLims(const juce::Point<float> &d_xy);
+  void moveXYLims(const juce::Point<float>& d_xy);
   /** @internal */
   void updateGridTrace();
 

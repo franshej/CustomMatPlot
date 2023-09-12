@@ -153,12 +153,12 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   void updateVerticalGridLineTicksAuto(
       const juce::Rectangle<int> &bounds,
       const CommonPlotParameterView &common_plot_parameter_view,
-      const bool tiny_grids, std::vector<float> &x_ticks) noexcept override;
+      const GridType grid_type, std::vector<float> &x_ticks) noexcept override;
 
   void updateHorizontalGridLineTicksAuto(
       const juce::Rectangle<int> &bounds,
       const CommonPlotParameterView &common_plot_parameter_view,
-      const bool tiny_grids, std::vector<float> &y_ticks) noexcept override;
+      const GridType grid_type, std::vector<float> &y_ticks) noexcept override;
 
   juce::Font getGridLabelFont() const noexcept override;
 
