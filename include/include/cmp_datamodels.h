@@ -206,6 +206,16 @@ enum class GraphPointMoveType : uint32_t {
   horizontal_vertical,
 };
 
+/** Enum to define if grid should be drawn or if the grid should be small */
+enum class GridType : uint32_t {
+  /** No grid is drawn. */
+  none,
+  /** Grid is drawn. */
+  grid,
+  /** Grid is drawn but with a smaller grid spacing. */
+  small_grid,
+};
+
 /*============================================================================*/
 
 /** @brief A template struct that defines min and max. */

@@ -65,9 +65,9 @@
 
 #define Y_LIM(MIN, MAX) GET_PLOT->yLim(MIN, MAX);
 
-#define GRID_ON GET_PLOT->gridON(true, false);
+#define GRID_ON GET_PLOT->setGridType(cmp::GridType::grid);
 
-#define TINY_GRID_ON GET_PLOT->gridON(true, true);
+#define TINY_GRID_ON GET_PLOT->setGridType(cmp::GridType::small_grid);
 
 #define X_LABEL(TEXT) GET_PLOT->setXLabel(TEXT);
 

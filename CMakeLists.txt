@@ -4,6 +4,10 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(CMP_BUILD_TESTS OFF CACHE BOOL "Build tests?")
+set(CMP_BUILD_EXAMPLES OFF CACHE BOOL "Build examples? requires a compiler supporting c++20.")
+set(CMP_EXTRAS OFF CACHE BOOL "Build with extras?")
+
 # Get the latest version
 execute_process(
     COMMAND git describe --tags --abbrev=0
@@ -43,11 +47,19 @@ set(PUBLIC_HEADERS include/include/cmp_plot.h
                    include/include/cmp_lookandfeel.h
                    include/include/cmp_datamodels.h)
 
+set(INCLUDE_DIR include/include)
+
+if(CMP_EXTRAS)
+   set(PUBLIC_HEADER ${PUBLIC_HEADER} extras/include/cmp_extras.hpp)
+   set(SOURCE ${SOURCE} extras/source/cmp_extras.cpp)
+   set(INCLUDE_DIR ${INCLUDE_DIR} extras/include)
+endif()
+
 add_library(${PROJECT_NAME}
             STATIC
             ${SOURCE})
 
-target_include_directories(${PROJECT_NAME} PUBLIC "include/include"
+target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDE_DIR}
                                            PRIVATE "include/include_internal")
 
 target_include_directories(${PROJECT_NAME} PUBLIC 
@@ -58,9 +70,6 @@ target_link_libraries(${PROJECT_NAME}
 
 
 add_subdirectory(externals)
-
-set(CMP_BUILD_TESTS OFF CACHE BOOL "Build tests?")
-set(CMP_BUILD_EXAMPLES OFF CACHE BOOL "Build examples? requires a compiler supporting c++20.")
 
 if(CMP_BUILD_EXAMPLES)
     add_subdirectory(examples)

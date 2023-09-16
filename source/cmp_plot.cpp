@@ -477,8 +477,8 @@ void Plot::setTracePointInternal(
   m_trace->addAndMakeVisibleTo(this);
 }
 
-void Plot::gridON(const bool grid_on, const bool tiny_grid_on) {
-  m_grid->setGridON(grid_on, tiny_grid_on);
+void Plot::setGridType(const GridType grid_type) {
+  m_grid->setGridType(grid_type);
 }
 
 void Plot::clearTracePoints() noexcept { m_trace->clear(); }
@@ -492,7 +492,6 @@ void Plot::resizeChilderns() {
       m_graph_bounds = graph_bound;
 
       if (m_grid) {
-        m_grid->setGridBounds(graph_bound);
         m_grid->setBounds(plot_bound);
       }
 

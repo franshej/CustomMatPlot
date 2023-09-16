@@ -25,27 +25,6 @@
 #include "cmp_utils.h"
 
 namespace cmp {
-// TODO: Remove this parameters stuff.
-/**
- * A Parameter struct
- * Containing parameters for grid bounds and limits of the grids.
- */
-struct GridConfigParams {
-  /**
-   * The bounds of where the grids will be drawn.
-   */
-  juce::Rectangle<int> grid_area;
-
-  /**
-   * Set to true if grid should be visable.
-   */
-  bool grid_on;
-
-  /**
-   * Set to true if tiny grids should be used.
-   */
-  bool tiny_grid_on;
-};
 
 /**
  * Grid class implementation of grid component
@@ -75,16 +54,14 @@ class Grid : public juce::Component {
    */
   void setGridBounds(const juce::Rectangle<int>& grid_area);
 
-  /** @brief Display grids
+  /** @brief Enables grid or tiny grid
    *
-   *  Grids will be shown if grid_on is set to true. Grid labels will be shown
-   *  in either case. Default is false.
+   *  Turn on grids or tiny grids. @see GridType in cmp:datamodels.h.
    *
-   *  @param grid_on set to true to show grids
-   *  @param tiny_grid_on set to true to show tiny grids
+   *  @param grid_type typ of grid to be drawn.
    *  @return void.
    */
-  void setGridON(const bool grid_on, const bool tiny_grids_on);
+  void setGridType(const GridType grid_type);
 
   /** @brief Override the x-ticks
    *
@@ -174,16 +151,17 @@ class Grid : public juce::Component {
                     const GridLine::Direction direction);
 
   std::vector<GridLine> m_grid_lines;
-  std::vector<float> m_custom_x_ticks, m_custom_y_ticks;
+  std::vector<float> m_custom_x_ticks, m_custom_y_ticks, m_x_prev_ticks,
+      m_y_prev_ticks;
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::size_t m_max_width_x, m_max_width_y;
   std::size_t m_num_last_x_labels, m_last_num_y_labels;
   std::size_t m_longest_x_axis_label_length_last_cb_triggerd{0};
   std::size_t m_longest_y_axis_label_length_last_cb_triggerd{0};
   std::vector<juce::Path> m_grid_path;
+  GridType m_grid_type = GridType::none;
 
   juce::LookAndFeel* m_lookandfeel;
-  GridConfigParams m_config_params;
   const CommonPlotParameterView* m_common_plot_params{nullptr};
 
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_labels,
