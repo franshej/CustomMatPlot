@@ -249,7 +249,7 @@ void Plot::updateGridGraphPointsTrace() {
 
 void Plot::updateGridTrace() {
   if (!m_graph_bounds.isEmpty()) {
-    m_grid->updateGrid();
+    m_grid->updateGrid(true);
     m_trace->updateTracePointsBounds();
 
     for (const auto& graph_line : m_graph_lines) {

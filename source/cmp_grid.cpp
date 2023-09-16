@@ -27,11 +27,16 @@ void Grid::createLabels() {
   }
 }
 
-void Grid::updateGridInternal() {
+void Grid::updateGridInternal(const bool use_cached_grids) {
   if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
     // width and height must be larger than zero.
     jassertfalse;
     return;
+  }
+
+  if (!use_cached_grids) {
+    m_x_prev_ticks.clear();
+    m_y_prev_ticks.clear();
   }
 
   std::vector<float> x_auto_ticks, y_auto_ticks;
@@ -223,7 +228,7 @@ void Grid::lookAndFeelChanged() {
   if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
     if (getBounds().getWidth() > 0 && getBounds().getHeight() > 0) {
-      updateGridInternal();
+      updateGridInternal(false);
     }
   } else {
     m_lookandfeel = nullptr;
@@ -234,7 +239,9 @@ void Grid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
 }
 
-void Grid::updateGrid() { updateGridInternal(); }
+void Grid::updateGrid(const bool use_cached_grids) {
+  updateGridInternal(use_cached_grids);
+}
 
 void Grid::resized() {}
 
