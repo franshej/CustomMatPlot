@@ -337,7 +337,7 @@ const auto getMaximumLabelWidth =
 
 /*============================================================================*/
 /*==========================From lnf.cpp======================================*/
-/*============================================================================*/ 
+/*============================================================================*/
 
 static const std::string getNextCustomLabel(
     std::vector<std::string>::reverse_iterator& custom_labels_it,
@@ -369,8 +369,8 @@ static std::vector<float> getLinearTicks_V2(
     const std::vector<float>& previous_ticks) {
   if (!lim) return {};
 
-  if (!(previous_ticks.empty() || previous_ticks.front() > lim.min ||
-        previous_ticks.back() < lim.max)) {
+  if (!previous_ticks.empty() && previous_ticks.front() < lim.min &&
+      previous_ticks.back() > lim.max) {
     return previous_ticks;
   }
 
