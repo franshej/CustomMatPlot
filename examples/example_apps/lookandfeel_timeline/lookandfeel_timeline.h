@@ -5,6 +5,7 @@
  * https://opensource.org/licenses/MIT
  */
 
+#include "cmp_datamodels.h"
 #include <cmp_lookandfeel.h>
 #include <cmp_plot.h>
 #include <juce_gui_extra/juce_gui_extra.h>
@@ -30,6 +31,8 @@ class lookandfeel_timeline : public juce::Component {
 
     // Plot some values.
     m_plot.plot({{1, 3, 7, 9, 13}});
+
+    m_plot.setGridType(GridType::small_grid);
   };
 
   void resized() override {

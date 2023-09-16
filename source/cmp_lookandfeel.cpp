@@ -7,6 +7,7 @@
 
 #include "cmp_lookandfeel.h"
 
+#include <cmath>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -40,6 +41,39 @@ static std::vector<float> getLinearTicks(
 
   const auto diff = (lim.max - lim.min) / float(num_ticks);
   cmp::iota_delta(ticks.begin(), ticks.end(), lim.min + diff / 2.0f, diff);
+
+  return ticks;
+};
+
+static std::vector<float> getLinearTicks_V2(
+    const std::size_t num_ticks_per_power, const cmp::Lim_f lim,
+    const std::vector<float>& previous_ticks) {
+  if (!lim) return {};
+  std::vector<float> ticks;
+  const auto delta_min_max = lim.max - lim.min;
+  const auto max_distance = delta_min_max / num_ticks_per_power;
+  const auto log_max_distance = log10(max_distance);
+  const auto log_max_distance_floor = std::floor(log_max_distance);
+  const auto base_value = pow(10.f, log_max_distance_floor);
+  const auto multiplier = std::floor(max_distance / base_value);
+  const auto delta = base_value * multiplier;
+
+  const auto log_lim_min_floor = std::floor(log10(abs(lim.min)));
+  const auto base_value_min = pow(10.f, log_lim_min_floor);
+  const auto multiplier_min = std::floor(lim.min / base_value_min);
+  const auto lim_min_round = base_value_min * multiplier_min;
+  // TODO: Fix so it dosen't jump when it's close to 0
+
+  auto loops = 0u;
+  for (float i = lim_min_round; i <= lim.max; i += delta) {
+    ticks.push_back(i);
+    ++loops;
+    if (loops > 100) {
+      jassertfalse;
+      // TODO: Fix so the dosen't get stuck in an infinite loop.
+      break;
+    }
+  }
 
   return ticks;
 };
@@ -803,8 +837,8 @@ void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
     num_vertical_lines =
         std::size_t(tiny_grids ? num_vertical_lines * 1.5 : num_vertical_lines);
 
-    x_ticks = getLinearTicks(num_vertical_lines,
-                             common_plot_parameter_view.x_lim, previous_ticks);
+    x_ticks = getLinearTicks_V2(
+        num_vertical_lines, common_plot_parameter_view.x_lim, previous_ticks);
   };
 
   const auto addVerticalTicksLogarithmic = [&]() {
@@ -852,8 +886,8 @@ void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
     num_horizontal_lines = tiny_grids ? std::size_t(num_horizontal_lines * 1.5)
                                       : num_horizontal_lines;
 
-    y_ticks = getLinearTicks(num_horizontal_lines,
-                             common_plot_parameter_view.y_lim, previous_ticks);
+    y_ticks = getLinearTicks_V2(
+        num_horizontal_lines, common_plot_parameter_view.y_lim, previous_ticks);
   };
 
   const auto addHorizontalTicksLogarithmic = [&]() {
@@ -1328,6 +1362,56 @@ void PlotLookAndFeelTimeline::drawGridLabels(juce::Graphics& g,
     g.drawText(y_axis_text.first, y_axis_text.second,
                juce::Justification::centredLeft);
   }
+}
+
+void PlotLookAndFeelTimeline::updateVerticalGridLineTicksAuto(
+    const juce::Rectangle<int>& bounds,
+    const CommonPlotParameterView& common_plot_parameter_view,
+    const GridType grid_type, std::vector<float>& x_ticks) noexcept {
+  static std::vector<float> previous_ticks;
+
+  x_ticks.clear();
+
+  const auto width = bounds.getWidth();
+  const auto height = bounds.getHeight();
+  const auto tiny_grids = grid_type == GridType::small_grid;
+
+  const auto addVerticalTicksLinear = [&]() {
+    std::size_t num_vertical_lines = 5u;
+    if (width > 435u) {
+      num_vertical_lines = 15u;
+    } else if (width <= 435u && width > 175u) {
+      num_vertical_lines = 7u;
+    }
+
+    num_vertical_lines =
+        std::size_t(tiny_grids ? num_vertical_lines * 1.5 : num_vertical_lines);
+
+    x_ticks = getLinearTicks_V2(
+        num_vertical_lines, common_plot_parameter_view.x_lim, previous_ticks);
+  };
+
+  const auto addVerticalTicksLogarithmic = [&]() {
+    std::size_t num_ticks_per_power = 3u;
+    if (width > 435u) {
+      num_ticks_per_power = 10u;
+    } else if (width <= 435u && width > 175u) {
+      num_ticks_per_power = 5u;
+    }
+    num_ticks_per_power = std::size_t(tiny_grids ? num_ticks_per_power * 1.5
+                                                 : num_ticks_per_power);
+
+    x_ticks = getLogarithmicTicks(
+        num_ticks_per_power, common_plot_parameter_view.x_lim, previous_ticks);
+  };
+
+  if (common_plot_parameter_view.x_scaling == Scaling::linear) {
+    addVerticalTicksLinear();
+  } else if (common_plot_parameter_view.x_scaling == Scaling::logarithmic) {
+    addVerticalTicksLogarithmic();
+  }
+
+  previous_ticks = x_ticks;
 }
 
 }  // namespace cmp

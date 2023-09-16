@@ -198,6 +198,11 @@ class PlotLookAndFeelTimeline : public PlotLookAndFeel {
 
   void drawGridLabels(juce::Graphics &g, const LabelVector &x_axis_labels,
                       const LabelVector &y_axis_labels) override;
+
+  void updateVerticalGridLineTicksAuto(
+      const juce::Rectangle<int> &bounds,
+      const CommonPlotParameterView &common_plot_parameter_view,
+      const GridType grid_type, std::vector<float> &x_ticks) noexcept override;
 };
 
 }  // namespace cmp
