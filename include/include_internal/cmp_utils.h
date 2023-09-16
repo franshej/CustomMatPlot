@@ -336,6 +336,154 @@ const auto getMaximumLabelWidth =
 };
 
 /*============================================================================*/
+/*==========================From lnf.cpp======================================*/
+/*============================================================================*/ 
+
+static const std::string getNextCustomLabel(
+    std::vector<std::string>::reverse_iterator& custom_labels_it,
+    const std::vector<std::string>::reverse_iterator& rend) {
+  const auto retval = custom_labels_it++;
+
+  if (retval != rend) {
+    const auto val = *(retval);
+
+    return val;
+  }
+
+  throw std::out_of_range("custom_labels_it is out of range.");
+}
+
+static std::vector<float> getLinearTicks(
+    const std::size_t num_ticks, const cmp::Lim_f lim,
+    const std::vector<float> previous_ticks) {
+  std::vector<float> ticks(num_ticks);
+
+  const auto diff = (lim.max - lim.min) / float(num_ticks);
+  cmp::iota_delta(ticks.begin(), ticks.end(), lim.min + diff / 2.0f, diff);
+
+  return ticks;
+};
+
+static std::vector<float> getLinearTicks_V2(
+    const std::size_t num_ticks_per_power, const cmp::Lim_f lim,
+    const std::vector<float>& previous_ticks) {
+  if (!lim) return {};
+
+  if (!(previous_ticks.empty() || previous_ticks.front() > lim.min ||
+        previous_ticks.back() < lim.max)) {
+    return previous_ticks;
+  }
+
+  const auto delta_min_max = lim.max - lim.min;
+  const auto max_distance = delta_min_max / num_ticks_per_power;
+  const auto log_max_distance = log10(max_distance);
+  const auto log_max_distance_floor = std::floor(log_max_distance);
+  const auto base_value = pow(10.f, log_max_distance_floor);
+  auto multiplier = std::floor(max_distance / base_value);
+  multiplier = multiplier == 0 ? 1 : multiplier;
+  const auto delta = base_value * multiplier;
+  std::vector<float> ticks;
+
+  const auto log_lim_min_floor = std::floor(log10(abs(lim.min)));
+  const auto base_value_min = pow(10.f, log_lim_min_floor);
+  auto multiplier_min = std::floor(lim.min / base_value_min);
+  multiplier_min = multiplier_min == 0 ? 1 : multiplier_min;
+  auto lim_min_round = base_value_min * multiplier_min;
+
+  if (lim_min_round < lim.min - delta) {
+    const auto div = lim.min - delta - lim_min_round;
+    const auto div_round = std::round(div / delta);
+    lim_min_round += div_round * delta;
+  }
+
+  for (float i = lim_min_round - delta * num_ticks_per_power;
+       i <= lim.max + delta * num_ticks_per_power; i += delta) {
+    ticks.push_back(i);
+  }
+
+  return ticks;
+};
+
+static std::pair<float, float> getFirstAndEndFromPreviousTicks(
+    const std::vector<float>& previous_ticks, const cmp::Lim_f lim) {
+  auto start_value = 0.0f;
+  {
+    auto it = previous_ticks.begin();
+    for (; it != previous_ticks.end(); ++it) {
+      if (*it > lim.min) {
+        if (it != previous_ticks.begin() && (it - 1) != previous_ticks.end()) {
+          start_value = *(it - 1);
+        } else {
+          start_value = *it;
+        }
+        break;
+      }
+    }
+  }
+
+  auto end_value = 0.0f;
+  {
+    auto it = previous_ticks.rbegin();
+    for (; it != previous_ticks.rend(); ++it) {
+      if (*it < lim.max) {
+        if (it != previous_ticks.rbegin() &&
+            (it - 1) != previous_ticks.rend()) {
+          end_value = *(it - 1);
+        } else {
+          end_value = *it;
+        }
+        break;
+      }
+    }
+  }
+
+  return {start_value, end_value};
+}
+
+static std::vector<float> getLogarithmicTicks(
+    const std::size_t num_ticks_per_power, const cmp::Lim_f lim,
+    const std::vector<float>& previous_ticks) {
+  if (!lim) return {};
+
+  const auto min_power = log10(lim.min);
+  const auto max_power = log10(lim.max);
+
+  const auto min_power_floor = std::floor(min_power);
+  const auto max_power_ceil = std::ceil(max_power);
+
+  std::vector<float> ticks;
+
+  if (std::abs(max_power - min_power) < 1.0f && !previous_ticks.empty()) {
+    ticks.resize(num_ticks_per_power);
+
+    const auto [start_value, end_value] =
+        getFirstAndEndFromPreviousTicks(previous_ticks, lim);
+
+    auto delta = (end_value - start_value) / num_ticks_per_power;
+    cmp::iota_delta(ticks.begin(), ticks.end(), lim.min, delta);
+
+    return ticks;
+  }
+
+  for (float curr_power = min_power_floor; curr_power < max_power_ceil;
+       ++curr_power) {
+    const auto curr_pos_base = pow(10.f, curr_power);
+
+    const auto delta =
+        pow(10.f, curr_power + 1.f) / static_cast<float>(num_ticks_per_power);
+
+    for (float i = 0; i < num_ticks_per_power; ++i) {
+      const auto tick =
+          floor((curr_pos_base + i * delta) / curr_pos_base) * curr_pos_base;
+
+      ticks.push_back(tick);
+    }
+  }
+
+  return ticks;
+};
+
+/*============================================================================*/
 
 template <class T>
 class ParamBase {

@@ -6,7 +6,7 @@
  */
 
 #include "cmp_datamodels.h"
-#include <cmp_lookandfeel.h>
+#include <cmp_extras.hpp>
 #include <cmp_plot.h>
 #include <juce_gui_extra/juce_gui_extra.h>
 
