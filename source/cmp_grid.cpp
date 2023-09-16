@@ -258,9 +258,13 @@ void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
     if (auto *lnf =
             static_cast<cmp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
       lnf->updateVerticalGridLineTicksAuto(getBounds(), *m_common_plot_params,
-                                           m_grid_type, x_ticks);
+                                           m_grid_type, m_x_prev_ticks,
+                                           x_ticks);
       lnf->updateHorizontalGridLineTicksAuto(getBounds(), *m_common_plot_params,
-                                             m_grid_type, y_ticks);
+                                             m_grid_type, m_y_prev_ticks,
+                                             y_ticks);
+      m_x_prev_ticks = x_ticks;
+      m_y_prev_ticks = y_ticks;
     }
   }
 }

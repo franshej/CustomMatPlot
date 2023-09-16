@@ -496,13 +496,15 @@ class Plot : public juce::Component {
     virtual void updateVerticalGridLineTicksAuto(
         const juce::Rectangle<int>& bounds,
         const CommonPlotParameterView& common_plot_parameter_view,
-        const GridType grid_type, std::vector<float>& x_ticks) noexcept = 0;
+        const GridType grid_type, const std::vector<float>& previous_ticks,
+        std::vector<float>& x_ticks) noexcept = 0;
 
     /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
         const juce::Rectangle<int>& bounds,
         const CommonPlotParameterView& common_plot_parameter_view,
-        const GridType grid_type, std::vector<float>& y_ticks) noexcept = 0;
+        const GridType grid_type, const std::vector<float>& previous_ticks,
+        std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-coordinates of the graph points used when drawing a graph
      *  line. */

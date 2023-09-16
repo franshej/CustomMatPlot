@@ -151,7 +151,8 @@ class Grid : public juce::Component {
                     const GridLine::Direction direction);
 
   std::vector<GridLine> m_grid_lines;
-  std::vector<float> m_custom_x_ticks, m_custom_y_ticks;
+  std::vector<float> m_custom_x_ticks, m_custom_y_ticks, m_x_prev_ticks,
+      m_y_prev_ticks;
   std::vector<std::string> m_custom_x_labels, m_custom_y_labels;
   std::size_t m_max_width_x, m_max_width_y;
   std::size_t m_num_last_x_labels, m_last_num_y_labels;

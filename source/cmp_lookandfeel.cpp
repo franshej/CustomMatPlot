@@ -49,30 +49,37 @@ static std::vector<float> getLinearTicks_V2(
     const std::size_t num_ticks_per_power, const cmp::Lim_f lim,
     const std::vector<float>& previous_ticks) {
   if (!lim) return {};
-  std::vector<float> ticks;
+
+  if (!(previous_ticks.empty() || previous_ticks.front() > lim.min ||
+        previous_ticks.back() < lim.max)) {
+    return previous_ticks;
+  }
+
   const auto delta_min_max = lim.max - lim.min;
   const auto max_distance = delta_min_max / num_ticks_per_power;
   const auto log_max_distance = log10(max_distance);
   const auto log_max_distance_floor = std::floor(log_max_distance);
   const auto base_value = pow(10.f, log_max_distance_floor);
-  const auto multiplier = std::floor(max_distance / base_value);
+  auto multiplier = std::floor(max_distance / base_value);
+  multiplier = multiplier == 0 ? 1 : multiplier;
   const auto delta = base_value * multiplier;
+  std::vector<float> ticks;
 
   const auto log_lim_min_floor = std::floor(log10(abs(lim.min)));
   const auto base_value_min = pow(10.f, log_lim_min_floor);
-  const auto multiplier_min = std::floor(lim.min / base_value_min);
-  const auto lim_min_round = base_value_min * multiplier_min;
-  // TODO: Fix so it dosen't jump when it's close to 0
+  auto multiplier_min = std::floor(lim.min / base_value_min);
+  multiplier_min = multiplier_min == 0 ? 1 : multiplier_min;
+  auto lim_min_round = base_value_min * multiplier_min;
 
-  auto loops = 0u;
-  for (float i = lim_min_round; i <= lim.max; i += delta) {
+  if (lim_min_round < lim.min - delta) {
+    const auto div = lim.min - delta - lim_min_round;
+    const auto div_round = std::round(div / delta);
+    lim_min_round += div_round * delta;
+  }
+
+  for (float i = lim_min_round - delta * num_ticks_per_power;
+       i <= lim.max + delta * num_ticks_per_power; i += delta) {
     ticks.push_back(i);
-    ++loops;
-    if (loops > 100) {
-      jassertfalse;
-      // TODO: Fix so the dosen't get stuck in an infinite loop.
-      break;
-    }
   }
 
   return ticks;
@@ -817,9 +824,8 @@ void PlotLookAndFeel::updateYGraphPoints(
 void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
     const juce::Rectangle<int>& bounds,
     const CommonPlotParameterView& common_plot_parameter_view,
-    const GridType grid_type, std::vector<float>& x_ticks) noexcept {
-  static std::vector<float> previous_ticks;
-
+    const GridType grid_type, const std::vector<float>& previous_ticks,
+    std::vector<float>& x_ticks) noexcept {
   x_ticks.clear();
 
   const auto width = bounds.getWidth();
@@ -860,16 +866,13 @@ void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
   } else if (common_plot_parameter_view.x_scaling == Scaling::logarithmic) {
     addVerticalTicksLogarithmic();
   }
-
-  previous_ticks = x_ticks;
 }
 
 void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
     const juce::Rectangle<int>& bounds,
     const CommonPlotParameterView& common_plot_parameter_view,
-    const GridType grid_type, std::vector<float>& y_ticks) noexcept {
-  static std::vector<float> previous_ticks;
-
+    const GridType grid_type, const std::vector<float>& previous_ticks,
+    std::vector<float>& y_ticks) noexcept {
   y_ticks.clear();
 
   const auto width = bounds.getWidth();
@@ -909,8 +912,6 @@ void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
   } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
     addHorizontalTicksLogarithmic();
   }
-
-  previous_ticks = y_ticks;
 }
 
 juce::Font PlotLookAndFeel::getGridLabelFont() const noexcept {
@@ -1367,9 +1368,8 @@ void PlotLookAndFeelTimeline::drawGridLabels(juce::Graphics& g,
 void PlotLookAndFeelTimeline::updateVerticalGridLineTicksAuto(
     const juce::Rectangle<int>& bounds,
     const CommonPlotParameterView& common_plot_parameter_view,
-    const GridType grid_type, std::vector<float>& x_ticks) noexcept {
-  static std::vector<float> previous_ticks;
-
+    const GridType grid_type, const std::vector<float>& previous_ticks,
+    std::vector<float>& x_ticks) noexcept {
   x_ticks.clear();
 
   const auto width = bounds.getWidth();
@@ -1410,8 +1410,6 @@ void PlotLookAndFeelTimeline::updateVerticalGridLineTicksAuto(
   } else if (common_plot_parameter_view.x_scaling == Scaling::logarithmic) {
     addVerticalTicksLogarithmic();
   }
-
-  previous_ticks = x_ticks;
 }
 
 }  // namespace cmp
