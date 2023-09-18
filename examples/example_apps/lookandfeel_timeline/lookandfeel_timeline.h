@@ -30,7 +30,11 @@ class lookandfeel_timeline : public juce::Component {
     addAndMakeVisible(m_plot);
 
     // Plot some values.
-    m_plot.plot({{1, 3, 7, 9, 13}});
+    m_plot.plot({{0, 3, 7, 9, 2.5}},{{-100, 20, 40, 50, 220}});
+
+    // Setting x/y limes.
+    m_plot.xLim(-10.f, 200.f);
+    m_plot.yLim(-10.f, 10.f);
 
     m_plot.setGridType(GridType::grid_translucent);
   };

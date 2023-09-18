@@ -1,4 +1,5 @@
 #include "cmp_extras.hpp"
+
 #include "cmp_utils.h"
 
 namespace cmp {
@@ -196,6 +197,50 @@ void PlotLookAndFeelTimeline::drawGridLabels(juce::Graphics& g,
   for (const auto& y_axis_text : y_axis_labels) {
     g.drawText(y_axis_text.first, y_axis_text.second,
                juce::Justification::centredLeft);
+  }
+}
+
+juce::Font PlotLookAndFeelTimeline::getGridLabelFont() const noexcept {
+  return juce::Font("Arial Rounded MT", 10.f, juce::Font::plain);
+}
+
+void PlotLookAndFeelTimeline::updateVerticalGridLineTicksAuto(
+    const juce::Rectangle<int>& bounds,
+    const CommonPlotParameterView& common_plot_parameter_view,
+    const GridType grid_type, const std::vector<float>& previous_ticks,
+    std::vector<float>& x_ticks) noexcept {
+  x_ticks.clear();
+
+  const auto x_min = common_plot_parameter_view.x_lim.min;
+  const auto x_max = common_plot_parameter_view.x_lim.max;
+
+  const auto dx = x_max - x_min > 100.f ? 10.f : 5.f;
+
+  const auto start_value = floor(x_min / dx) * dx;
+  const auto end_value = ceil(x_max / dx) * dx;
+
+  for (auto x = start_value; x <= end_value; x += dx) {
+    x_ticks.push_back(x);
+  }
+}
+
+void PlotLookAndFeelTimeline::updateHorizontalGridLineTicksAuto(
+    const juce::Rectangle<int>& bounds,
+    const CommonPlotParameterView& common_plot_parameter_view,
+    const GridType grid_type, const std::vector<float>& previous_ticks,
+    std::vector<float>& y_ticks) noexcept {
+  y_ticks.clear();
+
+  const auto y_min = common_plot_parameter_view.y_lim.min;
+  const auto y_max = common_plot_parameter_view.y_lim.max;
+
+  const auto dy = y_max - y_min > 100.f ? 10.f : 5.f;
+
+  const auto start_value = floor(y_min / dy) * dy;
+  const auto end_value = ceil(y_max / dy) * dy;
+
+  for (auto y = start_value; y <= end_value; y += dy) {
+    y_ticks.push_back(y);
   }
 }
 
