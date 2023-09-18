@@ -26,15 +26,20 @@ class PlotLookAndFeelTimeline : public PlotLookAndFeel {
   juce::Font getGridLabelFont() const noexcept override;
 
   void updateVerticalGridLineTicksAuto(
-    const juce::Rectangle<int>& bounds,
-    const CommonPlotParameterView& common_plot_parameter_view,
-    const GridType grid_type, const std::vector<float>& previous_ticks,
-    std::vector<float>& x_ticks) noexcept override;
+      const juce::Rectangle<int> &bounds,
+      const CommonPlotParameterView &common_plot_parameter_view,
+      const GridType grid_type, const std::vector<float> &previous_ticks,
+      std::vector<float> &x_ticks) noexcept override;
 
   void updateHorizontalGridLineTicksAuto(
-    const juce::Rectangle<int>& bounds,
-    const CommonPlotParameterView& common_plot_parameter_view,
-    const GridType grid_type, const std::vector<float>& previous_ticks,
-    std::vector<float>& y_ticks) noexcept override;
+      const juce::Rectangle<int> &bounds,
+      const CommonPlotParameterView &common_plot_parameter_view,
+      const GridType grid_type, const std::vector<float> &previous_ticks,
+      std::vector<float> &y_ticks) noexcept override;
+
+  std::size_t getMarginSmall() const noexcept override;
+
+  void drawBackground(juce::Graphics &g,
+                      const juce::Rectangle<int> &bounds) override;
 };
 }  // namespace cmp

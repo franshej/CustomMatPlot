@@ -21,7 +21,7 @@ juce::Rectangle<int> PlotLookAndFeelTimeline::getGraphBounds(
     const auto [x_grid_label_width, y_grid_label_width] =
         getMaxGridLabelWidth(plot);
 
-    auto top = getMargin() + getMarginSmall();
+    auto top = getMarginSmall() * 2 + getGridLabelFont().getHeight();
 
     const auto is_x_axis_label_below_graph = isXAxisLabelsBelowGraph();
     auto bottom =
@@ -148,7 +148,8 @@ void PlotLookAndFeelTimeline::updateGridLabels(
             is_x_axis_label_below_graph
                 ? common_plot_params.graph_bounds.getBottom() +
                       getXGridLabelDistanceFromGraphBound()
-                : common_plot_params.graph_bounds.getTopLeft().y - label_height;
+                : common_plot_params.graph_bounds.getTopLeft().y -
+                      label_height - getMarginSmall() / 2;
 
         const auto bound =
             juce::Rectangle<int>(int(position.x) - label_width / 2, bound_y,
@@ -201,7 +202,7 @@ void PlotLookAndFeelTimeline::drawGridLabels(juce::Graphics& g,
 }
 
 juce::Font PlotLookAndFeelTimeline::getGridLabelFont() const noexcept {
-  return juce::Font("Arial Rounded MT", 10.f, juce::Font::plain);
+  return juce::Font("Arial Rounded MT", 7.f, juce::Font::plain);
 }
 
 void PlotLookAndFeelTimeline::updateVerticalGridLineTicksAuto(
@@ -244,4 +245,10 @@ void PlotLookAndFeelTimeline::updateHorizontalGridLineTicksAuto(
   }
 }
 
+std::size_t PlotLookAndFeelTimeline::getMarginSmall() const noexcept {
+  return 2u;
+}
+
+void PlotLookAndFeelTimeline::drawBackground(
+    juce::Graphics& g, const juce::Rectangle<int>& bounds) {}
 }  // namespace cmp
