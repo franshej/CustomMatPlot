@@ -67,7 +67,7 @@
 
 #define GRID_ON GET_PLOT->setGridType(cmp::GridType::grid);
 
-#define TINY_GRID_ON GET_PLOT->setGridType(cmp::GridType::small_grid);
+#define TINY_GRID_ON GET_PLOT->setGridType(cmp::GridType::tiny_grid);
 
 #define X_LABEL(TEXT) GET_PLOT->setXLabel(TEXT);
 

@@ -108,7 +108,7 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   void drawFrame(juce::Graphics &g, const juce::Rectangle<int> bounds) override;
 
   void drawGridLine(juce::Graphics &g, const GridLine &grid_line,
-                    const bool grid_on) override;
+                    const GridType grid_type) override;
 
   void drawLegend(juce::Graphics &g, std::vector<LegendLabel> legend_info,
                   const juce::Rectangle<int> &bounds) override;

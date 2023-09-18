@@ -13,10 +13,10 @@
 #include <vector>
 
 #include "cmp_datamodels.h"
-#include "cmp_utils.h"
 #include "cmp_graph_line.h"
 #include "cmp_grid.h"
 #include "cmp_label.h"
+#include "cmp_utils.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 
 namespace cmp {
@@ -40,7 +40,9 @@ void PlotLookAndFeel::setDefaultPlotColours() noexcept {
   setColour(Plot::frame_colour, juce::Colour(0xffcacfd2));
   setColour(Plot::zoom_frame_colour, juce::Colour(0xff99A3A4));
 
-  setColour(Plot::grid_colour, juce::Colour(0xff99A3A4));
+  setColour(Plot::grid_colour, juce::Colour(0x7F99A3A4));
+  setColour(Plot::transluent_grid_colour, juce::Colour(0x4099A3A4));
+
   setColour(Plot::x_grid_label_colour, juce::Colour(0xffaab7b8));
   setColour(Plot::y_grid_label_colour, juce::Colour(0xffaab7b8));
 
@@ -383,16 +385,19 @@ void PlotLookAndFeel::drawFrame(juce::Graphics& g,
 }
 
 void PlotLookAndFeel::drawGridLine(juce::Graphics& g, const GridLine& grid_line,
-                                   const bool grid_on) {
+                                   const GridType grid_type) {
   const auto margin = getMarginSmall();
   const auto y_and_len = grid_line.length + grid_line.position.getY();
   const auto x_and_len = grid_line.length + grid_line.position.getX();
-  g.setColour(findColour(Plot::grid_colour));
+
+  if (grid_line.type == GridLine::Type::translucent)
+    g.setColour(findColour(Plot::transluent_grid_colour));
+  else if (grid_line.type == GridLine::Type::normal)
+    g.setColour(findColour(Plot::grid_colour));
 
   switch (grid_line.direction) {
     case GridLine::Direction::vertical:
-
-      if (grid_on) {
+      if (grid_type > GridType::none) {
         g.drawVerticalLine(int(grid_line.position.getX()),
                            float(grid_line.position.getY()), y_and_len);
       } else {
@@ -403,11 +408,9 @@ void PlotLookAndFeel::drawGridLine(juce::Graphics& g, const GridLine& grid_line,
         g.drawVerticalLine(int(grid_line.position.getX()), y_and_len - margin,
                            y_and_len);
       }
-
       break;
     case GridLine::Direction::horizontal:
-
-      if (grid_on) {
+      if (grid_type > GridType::none) {
         g.drawHorizontalLine(int(grid_line.position.getY()),
                              float(grid_line.position.getX()), x_and_len);
       } else {
@@ -683,7 +686,7 @@ void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
 
   const auto width = bounds.getWidth();
   const auto height = bounds.getHeight();
-  const auto tiny_grids = grid_type == GridType::small_grid;
+  const auto tiny_grids = grid_type == GridType::tiny_grid;
 
   const auto addVerticalTicksLinear = [&]() {
     std::size_t num_vertical_lines = 5u;
@@ -730,7 +733,7 @@ void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
 
   const auto width = bounds.getWidth();
   const auto height = bounds.getHeight();
-  const auto tiny_grids = grid_type == GridType::small_grid;
+  const auto tiny_grids = grid_type == GridType::tiny_grid;
 
   const auto addHorizontalTicksLinear = [&]() {
     std::size_t num_horizontal_lines = 3u;

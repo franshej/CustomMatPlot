@@ -143,13 +143,11 @@ class Grid : public juce::Component {
    */
   void createAutoGridTicks(std::vector<float>& x_ticks,
                            std::vector<float>& y_ticks);
-
   void createLabels();
-
   void updateGridInternal(const bool use_cached_grids);
-
   void addGridLines(const std::vector<float>& ticks,
                     const GridLine::Direction direction);
+  void addTranslucentGridLines();
 
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks, m_x_prev_ticks,
@@ -160,7 +158,7 @@ class Grid : public juce::Component {
   std::size_t m_longest_x_axis_label_length_last_cb_triggerd{0};
   std::size_t m_longest_y_axis_label_length_last_cb_triggerd{0};
   std::vector<juce::Path> m_grid_path;
-  GridType m_grid_type = GridType::none;
+  GridType m_grid_type = GridType::grid_translucent;
 
   juce::LookAndFeel* m_lookandfeel;
   const CommonPlotParameterView* m_common_plot_params{nullptr};

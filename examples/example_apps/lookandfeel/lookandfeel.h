@@ -24,7 +24,7 @@ class CustomLookAndFeel : public cmp::PlotLookAndFeel {
                  const juce::Rectangle<int> bound) override{};
 
   void drawGridLine(juce::Graphics& g, const cmp::GridLine& grid_line,
-                    const bool grid_on) override{};
+                    const cmp::GridType grid_on) override{};
 };
 
 class lookandfeel : public juce::Component {
