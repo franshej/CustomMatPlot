@@ -18,6 +18,17 @@ namespace cmp {
 
 /*============================================================================*/
 
+static juce::Rectangle<float> getMarginGridBound(
+    const juce::Rectangle<float> &bound) noexcept {
+  constexpr auto safe_marging_offset_px = 1.0f;
+  const auto x = bound.getX();
+  const auto y = bound.getY();
+  const auto w = bound.getWidth() + safe_marging_offset_px;
+  const auto h = bound.getHeight() + safe_marging_offset_px;
+
+  return {x, y, w, h};
+}
+
 void Grid::createLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
@@ -55,8 +66,11 @@ void Grid::updateGridInternal(const bool use_cached_grids) {
 
   addGridLines(x_ticks, GridLine::Direction::vertical);
   addGridLines(y_ticks, GridLine::Direction::horizontal);
-
   createLabels();
+
+  if (m_grid_type >= GridType::grid_translucent) {
+    addTranslucentGridLines();
+  }
 
   if (onGridLabelLengthChanged && m_lookandfeel) {
     const auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
@@ -116,19 +130,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
     };
 
     const auto [scale, offset] = getScaleOffset();
-
-    constexpr auto safe_marging_offset_px = 1.0f;
-
-    const auto safe_margin =
-        [](const juce::Rectangle<float> &bounds,
-           const float scale_factor) -> juce::Rectangle<float> {
-      const auto x = bounds.getX();
-      const auto y = bounds.getY();
-      const auto w = bounds.getWidth() + safe_marging_offset_px;
-      const auto h = bounds.getHeight() + safe_marging_offset_px;
-
-      return {x, y, w, h};
-    }(graph_bounds, safe_marging_offset_px);
+    const auto margin_grid_bound = getMarginGridBound(graph_bounds);
 
     switch (direction) {
       case GridLine::Direction::vertical:
@@ -142,7 +144,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
                        : getXGraphPointsLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
 
-          if (!safe_margin.contains(grid_line.position)) {
+          if (!margin_grid_bound.contains(grid_line.position)) {
             continue;
           }
 
@@ -165,7 +167,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
                              ? getYGraphValueLinear(t, scale, offset)
                              : getYGraphPointsLogarithmic(t, scale, offset)))};
 
-          if (!safe_margin.contains(grid_line.position)) {
+          if (!margin_grid_bound.contains(grid_line.position)) {
             continue;
           }
 
@@ -183,6 +185,70 @@ void Grid::addGridLines(const std::vector<float> &ticks,
         break;
     }
   }
+}
+
+void Grid::addTranslucentGridLines() {
+  auto getTranslucentGridLine =
+      [](const auto *prev_grid_line, const auto *grid_line,
+         const bool is_minor_grid_line_in_front = true) {
+        auto translucent_gridline = *prev_grid_line;
+        auto sign = is_minor_grid_line_in_front ? 1 : -1;
+        translucent_gridline.type = GridLine::Type::translucent;
+        if (grid_line->direction == GridLine::Direction::vertical) {
+          translucent_gridline.position.x +=
+              sign * (grid_line->position.x - prev_grid_line->position.x) / 2;
+        } else {
+          translucent_gridline.position.y +=
+              sign * (grid_line->position.y - prev_grid_line->position.y) / 2;
+        }
+
+        return translucent_gridline;
+      };
+
+  std::vector<GridLine> translucent_gridlines;
+  const GridLine *prev_gridline = nullptr;
+  for (auto grid_line = m_grid_lines.begin(); grid_line != m_grid_lines.end();
+       ++grid_line) {
+    auto addGridWithinBound = [&](const GridLine &grid_line) {
+      const auto margin_grid_bound =
+          getMarginGridBound(m_common_plot_params->graph_bounds.toFloat());
+      if (margin_grid_bound.contains(grid_line.position)) {
+        translucent_gridlines.emplace_back(grid_line);
+      }
+    };
+
+    GridLine translucent_grid_line;
+    const auto next_it = std::next(grid_line, 1);
+    if (!prev_gridline && next_it != m_grid_lines.end() &&
+        next_it->direction == grid_line->direction)
+      UNLIKELY {
+        translucent_grid_line =
+            getTranslucentGridLine(&(*grid_line), &(*next_it), false);
+      }
+    else if (next_it == m_grid_lines.end() ||
+             (next_it->direction != grid_line->direction) &&
+                 prev_gridline->direction == grid_line->direction)
+      UNLIKELY {
+        translucent_grid_line =
+            getTranslucentGridLine(&(*grid_line), prev_gridline, false);
+        addGridWithinBound(translucent_grid_line);
+        translucent_grid_line =
+            getTranslucentGridLine(prev_gridline, &(*grid_line));
+      }
+    else if (prev_gridline->direction == grid_line->direction) {
+      translucent_grid_line =
+          getTranslucentGridLine(prev_gridline, &(*grid_line));
+    } else if (prev_gridline->direction != grid_line->direction &&
+               next_it->direction == grid_line->direction) {
+      translucent_grid_line =
+          getTranslucentGridLine(&(*grid_line), &(*next_it), false);
+    }
+    prev_gridline = &(*grid_line);
+    addGridWithinBound(translucent_grid_line);
+  }
+
+  m_grid_lines.insert(m_grid_lines.end(), translucent_gridlines.begin(),
+                      translucent_gridlines.end());
 }
 
 const std::pair<int, int> Grid::getMaxGridLabelWidth() const noexcept {
@@ -219,7 +285,7 @@ void Grid::paint(juce::Graphics &g) {
     lnf->drawGridLabels(g, m_x_axis_labels, m_y_axis_labels);
 
     for (const auto &grid_line : m_grid_lines) {
-      lnf->drawGridLine(g, grid_line, m_grid_type > GridType::none);
+      lnf->drawGridLine(g, grid_line, m_grid_type);
     }
   }
 }

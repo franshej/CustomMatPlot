@@ -61,6 +61,9 @@ struct GridLine {
 
   /** The length of the gridline. */
   float length;
+
+  /** Type of grid line. */
+  enum class Type { normal, translucent } type{Type::normal};
 };
 
 /** @brief A struct that defines if a axis labels has been set or not. */

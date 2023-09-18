@@ -213,7 +213,11 @@ enum class GridType : uint32_t {
   /** Grid is drawn. */
   grid,
   /** Grid is drawn but with a smaller grid spacing. */
-  small_grid,
+  tiny_grid,
+  /** Grid drawn with translucent lines between. */
+  grid_translucent,
+  /** Tiny grid drawn with translucent lines between. */
+  tiny_grid_translucent,
 };
 
 /*============================================================================*/

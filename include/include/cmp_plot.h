@@ -295,6 +295,7 @@ class Plot : public juce::Component {
   enum ColourIds : int {
     background_colour,        /** Colour of the background. */
     grid_colour,              /** Colour of the grids. */
+    transluent_grid_colour,   /** Colour of the transulent grids. */
     x_grid_label_colour,      /** Colour of the label for each x-grid line. */
     y_grid_label_colour,      /** Colour of the label for each y-grid line. */
     frame_colour,             /** Colour of the frame around the graph area. */
@@ -350,7 +351,7 @@ class Plot : public juce::Component {
 
     /** This method draws either a vertical or horizontal gridline. */
     virtual void drawGridLine(juce::Graphics& g, const GridLine& grid_line,
-                              const bool grid_on) = 0;
+                              const GridType grid_type) = 0;
 
     /** This method draws the legend. */
     virtual void drawLegend(juce::Graphics& g,

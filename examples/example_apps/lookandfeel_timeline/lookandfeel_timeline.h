@@ -32,7 +32,7 @@ class lookandfeel_timeline : public juce::Component {
     // Plot some values.
     m_plot.plot({{1, 3, 7, 9, 13}});
 
-    m_plot.setGridType(GridType::small_grid);
+    m_plot.setGridType(GridType::grid_translucent);
   };
 
   void resized() override {
