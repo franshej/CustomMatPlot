@@ -225,9 +225,12 @@ void Grid::addTranslucentGridLines() {
         translucent_grid_line =
             getTranslucentGridLine(&(*grid_line), &(*next_it), false);
       }
-    else if (next_it == m_grid_lines.end() ||
-             (next_it->direction != grid_line->direction) &&
-                 prev_gridline->direction == grid_line->direction)
+    else if (!prev_gridline) {
+      prev_gridline = &(*grid_line);
+      continue;
+    } else if (next_it == m_grid_lines.end() ||
+               (next_it->direction != grid_line->direction) &&
+                   prev_gridline->direction == grid_line->direction)
       UNLIKELY {
         translucent_grid_line =
             getTranslucentGridLine(&(*grid_line), prev_gridline, false);
