@@ -53,6 +53,7 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
 
   juce::Point<float> closest_data_point, current_point, current_data_point;
   size_t data_point_index{0};
+  size_t closest_data_point_index{0};
 
   const auto graph_line_exsists =
       std::find_if(m_graph_lines.begin(), m_graph_lines.end(),
@@ -64,6 +65,7 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
 
   if (!nearest_graph_line) {
     for (const auto& graph_line : m_graph_lines) {
+      auto current_data_point_index = size_t{0};
       if constexpr (is_point_data_point) {
         const auto [data_point, data_point_index_temp] =
             graph_line->findClosestDataPointTo(point, false, false);
@@ -76,7 +78,7 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
 
         current_point = current_graph_point;
         current_data_point = data_point;
-        data_point_index = data_point_index_temp;
+        current_data_point_index = data_point_index_temp;
       }
 
       if (point.getDistanceFrom(current_point) <
@@ -84,6 +86,7 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
         closest_point = current_point;
         closest_data_point = current_data_point;
         nearest_graph_line = graph_line.get();
+        data_point_index = current_data_point_index;
       }
     }
   } else if (graph_line_exsists) {
@@ -685,12 +688,10 @@ void Plot::setLegend(const StringVector& graph_descriptions) {
 void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
   const auto component_pos = event.eventComponent->getBounds().getPosition();
 
-  const auto mouse_pos =
-      (event.getPosition() + component_pos - m_graph_bounds.getPosition())
-          .toFloat();
+  const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
 
   const auto [data_point_index, nearest_graph_line] =
-      findNearestPoint(mouse_pos, nullptr);
+      findNearestPoint<false>(mouse_pos, nullptr);
 
   m_trace->addOrRemoveTracePoint(nearest_graph_line, data_point_index,
                                  TracePointVisibilityType::visible);
@@ -1065,13 +1066,17 @@ void Plot::updateTracepointsForGraphData() {
 
 juce::Point<float> Plot::getMousePositionRelativeToGraphArea(
     const juce::MouseEvent& event) const {
-  const auto component_pos = event.eventComponent->getBounds().getPosition();
+  if (event.eventComponent != m_selected_area.get()) {
+    const auto component_pos = event.eventComponent->getBounds().getPosition();
 
-  const auto mouse_pos =
-      (event.getPosition() + component_pos - m_graph_bounds.getPosition())
-          .toFloat();
+    const auto mouse_pos =
+        (event.getPosition() + component_pos - m_graph_bounds.getPosition())
+            .toFloat();
 
-  return mouse_pos;
+    return mouse_pos;
+  }
+
+  return event.getPosition().toFloat();
 }
 
 void Plot::setGraphLineDataChangedCallback(
@@ -1090,10 +1095,12 @@ void Plot::panning(const juce::MouseEvent& event) {
 
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
 
-  const auto d_data_position =
-      getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params) -
-      getDataPointFromGraphCoordinate(m_prev_mouse_position,
-                                      m_common_graph_params);
+  const auto current_pos =
+      getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params);
+  const auto prev_pos = getDataPointFromGraphCoordinate(m_prev_mouse_position,
+                                                        m_common_graph_params);
+
+  const auto d_data_position = current_pos - prev_pos;
   m_prev_mouse_position = mouse_pos;
 
   moveXYLims(-d_data_position);
