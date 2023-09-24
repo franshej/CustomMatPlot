@@ -387,11 +387,14 @@ static std::vector<float> getLinearTicks_V2(
   const auto delta = base_value * multiplier;
   std::vector<float> ticks;
 
-  const auto log_lim_min_floor = std::floor(log10(abs(lim.min)));
-  const auto base_value_min = pow(10.f, log_lim_min_floor);
-  auto multiplier_min = std::floor(lim.min / base_value_min);
-  multiplier_min = multiplier_min == 0 ? 1 : multiplier_min;
-  auto lim_min_round = base_value_min * multiplier_min;
+  auto lim_min_round = lim.min;
+  if (lim.min != 0) {
+    const auto log_lim_min_floor = std::floor(log10(abs(lim.min)));
+    const auto base_value_min = pow(10.f, log_lim_min_floor);
+    auto multiplier_min = std::floor(lim.min / base_value_min);
+    multiplier_min = multiplier_min == 0 ? 1 : multiplier_min;
+    lim_min_round = base_value_min * multiplier_min;
+  }
 
   if (lim_min_round < lim.min - delta) {
     const auto div = lim.min - delta - lim_min_round;

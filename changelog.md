@@ -1,3 +1,9 @@
+## 1.2.1 (2023-09-24)
+
+### Fixed
+- Zero lims.
+- Add tracepoint.
+
 ## 1.2.0 (2023-09-16)
 
 ### Added
