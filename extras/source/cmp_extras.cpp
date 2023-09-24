@@ -169,7 +169,7 @@ void PlotLookAndFeelTimeline::updateGridLabels(
             getLabelWidthAndHeight(font, label);
 
         const auto bound = juce::Rectangle<int>(
-            x + getMarginSmall(), int(position.y) - label_height / 2,
+            x + getMarginSmall() * 2, int(position.y) - label_height / 2,
             label_width, label_height);
 
         checkInterectionWithLastLabelAndAdd(y_last_label_bound,
@@ -202,7 +202,7 @@ void PlotLookAndFeelTimeline::drawGridLabels(juce::Graphics& g,
 }
 
 juce::Font PlotLookAndFeelTimeline::getGridLabelFont() const noexcept {
-  return juce::Font("Arial Rounded MT", 7.f, juce::Font::plain);
+  return juce::Font("Arial Rounded MT", 10.f, juce::Font::plain);
 }
 
 void PlotLookAndFeelTimeline::updateVerticalGridLineTicksAuto(

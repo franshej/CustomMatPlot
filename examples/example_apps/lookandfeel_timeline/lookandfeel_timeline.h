@@ -21,7 +21,7 @@ class lookandfeel_timeline : public juce::Component {
 
  public:
   lookandfeel_timeline() : m_plot{cmp::Plot()} {
-    setSize(1200, 800);
+    setSize(1200, 200);
 
     // Set the look and feel of the plot object.
     m_plot.setLookAndFeel(&m_look_and_feel);
