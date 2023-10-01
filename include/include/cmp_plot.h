@@ -493,6 +493,10 @@ class Plot : public juce::Component {
     /** Defines the default colours */
     virtual void setDefaultPlotColours() noexcept = 0;
 
+    /** Override the default colours here or use the setCoulour function on the
+     * lnf object. */
+    virtual void overridePlotColours() noexcept = 0;
+
     /** Updates the x-ticks with auto generated ticks. */
     virtual void updateVerticalGridLineTicksAuto(
         const juce::Rectangle<int>& bounds,

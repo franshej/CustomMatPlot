@@ -8,6 +8,10 @@ namespace cmp {
 ///////////////////////// PlotLookAndFeelTimeline //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+PlotLookAndFeelTimeline::PlotLookAndFeelTimeline() : PlotLookAndFeel() {
+  overridePlotColours();
+}
+
 juce::Rectangle<int> PlotLookAndFeelTimeline::getGraphBounds(
     const juce::Rectangle<int> bounds,
     const juce::Component* const plot_comp) const noexcept {
@@ -251,4 +255,9 @@ std::size_t PlotLookAndFeelTimeline::getMarginSmall() const noexcept {
 
 void PlotLookAndFeelTimeline::drawBackground(
     juce::Graphics& g, const juce::Rectangle<int>& bounds) {}
+
+void PlotLookAndFeelTimeline::overridePlotColours() noexcept {
+  setColour(Plot::grid_colour, juce::Colour(0xff181818));
+  setColour(Plot::transluent_grid_colour, juce::Colour(0xff252525));
+}
 }  // namespace cmp

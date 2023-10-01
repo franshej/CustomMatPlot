@@ -4,6 +4,11 @@
 
 namespace cmp {
 class PlotLookAndFeelTimeline : public PlotLookAndFeel {
+ public:
+  PlotLookAndFeelTimeline();
+
+  void overridePlotColours() noexcept override;
+
   juce::Rectangle<int> getGraphBounds(
       const juce::Rectangle<int> bounds,
       const juce::Component *const plot_comp) const noexcept override;

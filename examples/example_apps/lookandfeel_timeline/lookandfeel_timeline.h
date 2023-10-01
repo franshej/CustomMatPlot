@@ -39,6 +39,11 @@ class lookandfeel_timeline : public juce::Component {
     m_plot.setGridType(GridType::grid_translucent);
   };
 
+  ~lookandfeel_timeline() override {
+    // Set the look and feel of the plot object to nullptr.
+    m_plot.setLookAndFeel(nullptr);
+  };
+
   void resized() override {
     // Set the bounds of the plot to fill the whole window.
     m_plot.setBounds(getBounds());

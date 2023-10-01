@@ -33,7 +33,9 @@ const std::pair<int, int> getMaxGridLabelWidth(const cmp::Plot* plot) noexcept {
 
 /*============================================================================*/
 
-PlotLookAndFeel::PlotLookAndFeel() { setDefaultPlotColours(); }
+PlotLookAndFeel::PlotLookAndFeel() {
+  setDefaultPlotColours();
+}
 
 void PlotLookAndFeel::setDefaultPlotColours() noexcept {
   setColour(Plot::background_colour, juce::Colour(0xff2C3E50));
@@ -66,6 +68,8 @@ void PlotLookAndFeel::setDefaultPlotColours() noexcept {
   setColour(Plot::trace_point_colour, juce::Colour(0xffec7063));
   setColour(Plot::trace_point_frame_colour, juce::Colour(0xff566573));
 }
+
+void PlotLookAndFeel::overridePlotColours() noexcept {}
 
 void PlotLookAndFeel::drawBackground(juce::Graphics& g,
                                      const juce::Rectangle<int>& bound) {
