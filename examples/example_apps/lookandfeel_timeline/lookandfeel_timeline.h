@@ -21,7 +21,7 @@ class lookandfeel_timeline : public juce::Component {
 
  public:
   lookandfeel_timeline() : m_plot{cmp::Plot()} {
-    setSize(1200, 800);
+    setSize(1200, 200);
 
     // Set the look and feel of the plot object.
     m_plot.setLookAndFeel(&m_look_and_feel);
@@ -37,6 +37,11 @@ class lookandfeel_timeline : public juce::Component {
     m_plot.yLim(-10.f, 10.f);
 
     m_plot.setGridType(GridType::grid_translucent);
+  };
+
+  ~lookandfeel_timeline() override {
+    // Set the look and feel of the plot object to nullptr.
+    m_plot.setLookAndFeel(nullptr);
   };
 
   void resized() override {

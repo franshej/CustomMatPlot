@@ -285,11 +285,10 @@ const std::pair<int, int> Grid::getMaxGridLabelWidth() const noexcept {
 void Grid::paint(juce::Graphics &g) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->drawGridLabels(g, m_x_axis_labels, m_y_axis_labels);
-
     for (const auto &grid_line : m_grid_lines) {
       lnf->drawGridLine(g, grid_line, m_grid_type);
     }
+    lnf->drawGridLabels(g, m_x_axis_labels, m_y_axis_labels);
   }
 }
 

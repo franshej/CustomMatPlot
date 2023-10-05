@@ -8,6 +8,10 @@ namespace cmp {
 ///////////////////////// PlotLookAndFeelTimeline //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+PlotLookAndFeelTimeline::PlotLookAndFeelTimeline() : PlotLookAndFeel() {
+  overridePlotColours();
+}
+
 juce::Rectangle<int> PlotLookAndFeelTimeline::getGraphBounds(
     const juce::Rectangle<int> bounds,
     const juce::Component* const plot_comp) const noexcept {
@@ -169,7 +173,7 @@ void PlotLookAndFeelTimeline::updateGridLabels(
             getLabelWidthAndHeight(font, label);
 
         const auto bound = juce::Rectangle<int>(
-            x + getMarginSmall(), int(position.y) - label_height / 2,
+            x + getMarginSmall() * 2, int(position.y) - label_height / 2,
             label_width, label_height);
 
         checkInterectionWithLastLabelAndAdd(y_last_label_bound,
@@ -202,7 +206,7 @@ void PlotLookAndFeelTimeline::drawGridLabels(juce::Graphics& g,
 }
 
 juce::Font PlotLookAndFeelTimeline::getGridLabelFont() const noexcept {
-  return juce::Font("Arial Rounded MT", 7.f, juce::Font::plain);
+  return juce::Font("Arial Rounded MT", 10.f, juce::Font::plain);
 }
 
 void PlotLookAndFeelTimeline::updateVerticalGridLineTicksAuto(
@@ -251,4 +255,9 @@ std::size_t PlotLookAndFeelTimeline::getMarginSmall() const noexcept {
 
 void PlotLookAndFeelTimeline::drawBackground(
     juce::Graphics& g, const juce::Rectangle<int>& bounds) {}
+
+void PlotLookAndFeelTimeline::overridePlotColours() noexcept {
+  setColour(Plot::grid_colour, juce::Colour(0xff181818));
+  setColour(Plot::transluent_grid_colour, juce::Colour(0xff252525));
+}
 }  // namespace cmp
