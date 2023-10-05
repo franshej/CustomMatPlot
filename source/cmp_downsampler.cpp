@@ -93,7 +93,7 @@ static auto calculateXIdxsBetweenStartEnd(
           (std::signbit(last_x_diff) != std::signbit(current_x_diff));
       last_x_diff = current_x_diff;
 
-      if (force_add_x || (abs(last_added_x - x_data[i])) > inverse_x_scale) {
+      if (force_add_x || (std::abs(last_added_x - x_data[i])) > inverse_x_scale) {
         last_added_x = x_data[i];
         x_based_ds_idxs[graph_point_index++] = i;
       }
@@ -101,7 +101,7 @@ static auto calculateXIdxsBetweenStartEnd(
   } else if (common_params.x_scaling == Scaling::logarithmic) {
     for (auto x = x_data.begin() + start_x_idx; x != x_data.begin() + end_x_idx;
          ++x) {
-      if (log10(abs(*x / last_added_x)) > inverse_x_scale) {
+      if (std::log10(std::abs(*x / last_added_x)) > inverse_x_scale) {
         last_added_x = *x;
         x_based_ds_idxs[graph_point_index++] = current_index;
       }

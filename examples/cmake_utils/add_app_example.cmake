@@ -23,7 +23,6 @@ target_compile_definitions(${EXAMPLE_NAME}_example_app PRIVATE
 
 target_link_libraries(${EXAMPLE_NAME}_example_app PRIVATE
     juce::juce_gui_extra
-    cmp_plot
-    example_utils)
+    cmp_plot)
 
 endfunction()
