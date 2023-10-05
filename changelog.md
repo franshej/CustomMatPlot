@@ -1,5 +1,8 @@
 ## Next version
 
+### Fixed
+- x auto zoom disable when zoomed in.
+
 ### Added
 - Colour override function for lookandfeel.
 
