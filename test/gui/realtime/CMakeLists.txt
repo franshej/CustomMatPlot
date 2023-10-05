@@ -13,5 +13,4 @@ target_compile_definitions(real_time_test_app PRIVATE
 
 target_link_libraries(real_time_test_app PRIVATE
     juce::juce_gui_extra
-    cmp_plot
-    test_utils)
+    cmp_plot)
