@@ -1,3 +1,8 @@
+## Next version
+
+### Added
+- Colour override function for lookandfeel.
+
 ## 1.2.1 (2023-09-24)
 
 ### Fixed
