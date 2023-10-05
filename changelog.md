@@ -1,7 +1,8 @@
-## Next version
+## 1.2.2 (2023-10-5)
 
 ### Fixed
 - x auto zoom disable when zoomed in.
+- Fix NaN caused by non-std math functions.
 
 ### Added
 - Colour override function for lookandfeel.
