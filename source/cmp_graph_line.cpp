@@ -58,7 +58,7 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
   for (const auto& graph_point : m_graph_points) {
     const auto current_distance =
         check_only_distance_from_x
-            ? abs(graph_point.getX() - this_graph_point.getX())
+            ? std::abs(graph_point.getX() - this_graph_point.getX())
             : graph_point.getDistanceSquaredFrom(this_graph_point);
     if (current_distance < closest_distance) {
       closest_distance = current_distance;
@@ -100,7 +100,7 @@ std::pair<juce::Point<float>, size_t> GraphLine::findClosestDataPointTo(
 
   for (const auto i : *indices) {
     const auto x = m_x_data[i];
-    const auto current_x_dist = abs(x - this_data_point.getX());
+    const auto current_x_dist = std::abs(x - this_data_point.getX());
 
     if (current_x_dist < nearest_x_dist) {
       nearest_x_dist = current_x_dist;

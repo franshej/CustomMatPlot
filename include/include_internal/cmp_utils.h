@@ -117,8 +117,8 @@ constexpr float getXFromXCoordinate(const float x_pos,
   };
 
   const auto coordinateToXLog = [&]() {
-    return powf(10, ((x_pos - bounds.getX()) / bounds.getWidth()) *
-                        log10(x_lim.max / x_lim.min)) *
+    return std::pow(10, ((x_pos - bounds.getX()) / bounds.getWidth()) *
+                        std::log10(x_lim.max / x_lim.min)) *
            x_lim.min;
   };
 
@@ -146,9 +146,9 @@ constexpr float getYFromYCoordinate(const float y_pos,
   };
 
   const auto coordinateToYLog = [&]() {
-    return powf(10, ((bounds.getHeight() - (y_pos - bounds.getY())) /
+    return std::pow(10, ((bounds.getHeight() - (y_pos - bounds.getY())) /
                      bounds.getHeight()) *
-                        log10(y_lim.max / y_lim.min)) *
+                        std::log10(y_lim.max / y_lim.min)) *
            y_lim.min;
   };
   switch (y_scaling) {
@@ -189,12 +189,12 @@ constexpr auto getYGraphValueLinear = [](const float y, const float y_scale,
 
 constexpr auto getXGraphPointsLogarithmic =
     [](const float x, const float x_scale_log, const float x_offset) -> float {
-  return (x_scale_log * log10(x)) - x_offset;
+  return (x_scale_log * std::log10(x)) - x_offset;
 };
 
 constexpr auto getYGraphPointsLogarithmic =
     [](const float y, const float y_scale_log, const float y_offset) -> float {
-  return y_offset - (y_scale_log * log10(y));
+  return y_offset - (y_scale_log * std::log10(y));
 };
 
 constexpr auto getXScaleAndOffset =
@@ -208,8 +208,8 @@ constexpr auto getXScaleAndOffset =
       x_offset = x_lim.min * x_scale;
       break;
     case Scaling::logarithmic:
-      x_scale = width / log10(x_lim.max / x_lim.min);
-      x_offset = x_scale * log10(x_lim.min);
+      x_scale = width / std::log10(x_lim.max / x_lim.min);
+      x_offset = x_scale * std::log10(x_lim.min);
       break;
     default:
       break;
@@ -229,8 +229,8 @@ constexpr auto getYScaleAndOffset =
       y_offset = height + (y_lim.min * y_scale);
       break;
     case Scaling::logarithmic:
-      y_scale = height / log10(y_lim.max / y_lim.min);
-      y_offset = height + y_scale * log10(y_lim.min);
+      y_scale = height / std::log10(y_lim.max / y_lim.min);
+      y_offset = height + y_scale * std::log10(y_lim.min);
       break;
     default:
       break;
@@ -254,11 +254,11 @@ template <class ValueType>
                 "Type must be either float or double");
   auto lims = is_x ? common_plot_params.x_lim : common_plot_params.y_lim;
 
-  const auto max_exp = lims.max != 0 ? std::log10(abs(lims.max)) : 0;
-  const auto min_exp = lims.min != 0 ? std::log10(abs(lims.min)) : 0;
+  const auto max_exp = lims.max != 0 ? std::log10(std::abs(lims.max)) : 0;
+  const auto min_exp = lims.min != 0 ? std::log10(std::abs(lims.min)) : 0;
 
-  const auto max_abs_exp = std::ceil(abs(max_exp));
-  const auto min_abs_exp = std::ceil(abs(min_exp));
+  const auto max_abs_exp = std::ceil(std::abs(max_exp));
+  const auto min_abs_exp = std::ceil(std::abs(min_exp));
 
   const auto exp_diff = max_exp - min_exp;
 
@@ -379,9 +379,9 @@ static std::vector<float> getLinearTicks_V2(
 
   const auto delta_min_max = lim.max - lim.min;
   const auto max_distance = delta_min_max / num_ticks_per_power;
-  const auto log_max_distance = log10(max_distance);
+  const auto log_max_distance = std::log10(max_distance);
   const auto log_max_distance_floor = std::floor(log_max_distance);
-  const auto base_value = pow(10.f, log_max_distance_floor);
+  const auto base_value = std::pow(10.f, log_max_distance_floor);
   auto multiplier = std::floor(max_distance / base_value);
   multiplier = multiplier == 0 ? 1 : multiplier;
   const auto delta = base_value * multiplier;
@@ -389,8 +389,8 @@ static std::vector<float> getLinearTicks_V2(
 
   auto lim_min_round = lim.min;
   if (lim.min != 0) {
-    const auto log_lim_min_floor = std::floor(log10(abs(lim.min)));
-    const auto base_value_min = pow(10.f, log_lim_min_floor);
+    const auto log_lim_min_floor = std::floor(std::log10(std::abs(lim.min)));
+    const auto base_value_min = std::pow(10.f, log_lim_min_floor);
     auto multiplier_min = std::floor(lim.min / base_value_min);
     multiplier_min = multiplier_min == 0 ? 1 : multiplier_min;
     lim_min_round = base_value_min * multiplier_min;
@@ -451,8 +451,8 @@ static std::vector<float> getLogarithmicTicks(
     const std::vector<float>& previous_ticks) {
   if (!lim) return {};
 
-  const auto min_power = log10(lim.min);
-  const auto max_power = log10(lim.max);
+  const auto min_power = std::log10(lim.min);
+  const auto max_power = std::log10(lim.max);
 
   const auto min_power_floor = std::floor(min_power);
   const auto max_power_ceil = std::ceil(max_power);
@@ -473,10 +473,10 @@ static std::vector<float> getLogarithmicTicks(
 
   for (float curr_power = min_power_floor; curr_power < max_power_ceil;
        ++curr_power) {
-    const auto curr_pos_base = pow(10.f, curr_power);
+    const auto curr_pos_base = std::pow(10.f, curr_power);
 
     const auto delta =
-        pow(10.f, curr_power + 1.f) / static_cast<float>(num_ticks_per_power);
+        std::pow(10.f, curr_power + 1.f) / static_cast<float>(num_ticks_per_power);
 
     for (float i = 0; i < num_ticks_per_power; ++i) {
       const auto tick =
