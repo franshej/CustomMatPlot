@@ -663,7 +663,7 @@ void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
     i++;
   }
 
-  if (m_x_autoscale) {
+  if (m_x_autoscale && !m_x_lim) {
     setAutoXScale();
   }
 
