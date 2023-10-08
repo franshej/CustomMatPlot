@@ -1,7 +1,8 @@
-## Next release
+## ### 1.2.3 (2023-10-8)
 
 ### Fixed
-- ctrl, shift and alt key were not detected on Windows
+- ctrl, shift and alt key were not detected on Windows.
+- Crash on updating plot with different data set.
 
 ## 1.2.2 (2023-10-5)
 
