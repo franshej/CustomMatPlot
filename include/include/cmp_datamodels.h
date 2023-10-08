@@ -120,15 +120,15 @@ enum class UserInput : uint64_t {
   scroll_down = 1UL << 21,
 
   // Keyboard button
-  shift = 1UL << 32,
-  ctrl = 1UL << 33,
-  alt = 1UL << 34,
+  shift = 1ULL << 32,
+  ctrl = 1ULL << 33,
+  alt = 1ULL << 34,
 
   // Event component
-  graph_area = 1UL << 46,
-  legend = 1UL << 47,
-  tracepoint = 1UL << 48,
-  trace_label = 1UL << 49,
+  graph_area = 1ULL << 46,
+  legend = 1ULL << 47,
+  tracepoint = 1ULL << 48,
+  trace_label = 1ULL << 49,
 
 };
 

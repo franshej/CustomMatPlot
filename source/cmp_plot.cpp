@@ -314,11 +314,59 @@ void Plot::yLim(const float min, const float max) {
   m_y_autoscale = false;
 }
 
+std::vector<std::vector<float>> Plot::generateXdataRamp(
+    const std::vector<std::vector<float>>& y_data) {
+  auto generateRamp = [&] {
+    std::vector<std::vector<float>> x_data(y_data.size());
+    auto x_graph_it = std::begin(x_data);
+    for (const auto& y_graph : y_data) {
+      (*x_graph_it).resize(y_graph.size());
+      std::iota(x_graph_it->begin(), x_graph_it->end(), 1.0f);
+      ++x_graph_it;
+    }
+    return x_data;
+  };
+
+  if (m_graph_lines.size() != y_data.size()) {
+    return generateRamp();
+  }
+
+  auto it_y_data = y_data.begin();
+  for (const auto& graph_line : m_graph_lines) {
+    if (it_y_data == y_data.end() ||
+        graph_line->getXValues().size() != it_y_data->size()) {
+      return generateRamp();
+    }
+    ++it_y_data;
+  }
+  return {};
+}
+
+void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
+                        const std::vector<std::vector<float>>& x_data,
+                        const GraphAttributeList& graph_attributes) {
+  updateYData(y_data, graph_attributes);
+
+  if (!x_data.empty()) {
+    updateXData(x_data);
+  } else {
+    const auto gen_x_data = generateXdataRamp(y_data);
+
+    if (!gen_x_data.empty()) {
+      updateXData(gen_x_data);
+    }
+  }
+
+  for (const auto& graph_line : m_graph_lines) {
+    graph_line->updateXIndicesAndGraphPoints();
+    graph_line->updateYIndicesAndGraphPoints();
+  }
+}
+
 void Plot::plot(const std::vector<std::vector<float>>& y_data,
                 const std::vector<std::vector<float>>& x_data,
                 const GraphAttributeList& graph_attributes) {
-  updateYData(y_data, graph_attributes);
-  updateXData(x_data);
+  plotInternal(y_data, x_data, graph_attributes);
 
   updateTracePointsForNewGraphData();
 
@@ -326,11 +374,7 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
 }
 
 void Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
-  updateYData(y_data, {});
-
-  if (m_graph_lines[0]->getXValues().empty()) UNLIKELY {
-      updateXData({});
-    }
+  plotInternal(y_data, {}, {});
 
   updateTracePointsForNewGraphData();
 
@@ -595,10 +639,9 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
         }
       }
 
-    std::size_t i = 0u;
+    auto y_data_it = y_data.begin();
     for (const auto& graph_line : m_graph_lines) {
-      graph_line->setYValues(y_data[i]);
-      i++;
+      graph_line->setYValues(*y_data_it++);
     }
 
     if (m_y_autoscale && !m_y_lim) UNLIKELY {
@@ -615,63 +658,20 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
         ++it_gal;
       }
     }
-
-    for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateYIndicesAndGraphPoints();
-    }
   }
 }
 
 void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
-  std::vector<std::vector<float>> x_data_gen;
-  const auto* data = &x_data;
-
-  if (x_data.size() != m_graph_lines.size()) {
-    x_data_gen.resize(m_graph_lines.size());
-
-    data = &x_data_gen;
-  }
-
-  bool trigger_y_data_update = false;
-
-  std::size_t i = 0u;
+  // There is a bug in the code if this assert happens.
+  jassert(x_data.size() == m_graph_lines.size());
+  
+  auto x_data_it = x_data.begin();
   for (const auto& graph : m_graph_lines) {
-    const auto y_graph_length = graph->getYValues().size();
-    const auto x_graph_length = (*data)[i].size();
-    std::vector<float> x_data_auto;
-
-    const auto* current_x_data = &(*data)[i];
-
-    if (x_graph_length == std::size_t(0u)) UNLIKELY {
-        x_data_auto.resize(y_graph_length);
-
-        std::iota(x_data_auto.begin(), x_data_auto.end(), 1.0f);
-
-        current_x_data = &x_data_auto;
-
-        trigger_y_data_update = true;
-      }
-    else if (y_graph_length != x_graph_length) {
-      throw std::invalid_argument(
-          "Invalid vector length.\nLength of y vector at index " +
-          std::to_string(i) + " is " + std::to_string(y_graph_length) +
-          "\nLength of x vector at index " + std::to_string(i) + " is " +
-          std::to_string(y_graph_length));
-    }
-
-    graph->setXValues(*current_x_data);
-    i++;
+    graph->setXValues(*x_data_it++);
   }
 
   if (m_x_autoscale && !m_x_lim) {
     setAutoXScale();
-  }
-
-  for (const auto& graph_line : m_graph_lines) {
-    graph_line->updateXIndicesAndGraphPoints();
-    if (trigger_y_data_update) UNLIKELY {
-        graph_line->updateYIndicesAndGraphPoints();
-      }
   }
 }
 
