@@ -171,34 +171,33 @@ void Downsampler<FloatType>::calculateXYBasedDSIdxs(
   auto xy_i = 0u;
   auto xy_size = 0u;
 
-  for (auto i = x_based_ds_idxs.begin();; ++i) {
+  for (auto i_it = x_based_ds_idxs.begin();; ++i_it) {
     // We have reached the last x-based ds index. Let's add it.
-    if (i + 1 == x_based_ds_idxs.end()) UNLIKELY {
-        xy_based_ds_idxs[xy_i++] = *i;
+    if (std::next(i_it) == x_based_ds_idxs.end()) UNLIKELY {
+        xy_based_ds_idxs[xy_i++] = *i_it;
         xy_size += 1;
         break;
       }
 
     // Add the current x-based ds index.
-    xy_based_ds_idxs[xy_i++] = *i;
+    xy_based_ds_idxs[xy_i++] = *i_it;
 
     // Calculated how many data values there is between the current and the next
     // x-based ds index.
-    const auto num_data_values = *(i + 1) - *i;
+    const auto num_data_values = *std::next(i_it) - *i_it;
 
     if (num_data_values == 2u) {
-      xy_based_ds_idxs[xy_i++] = *i + 1;
-
+      xy_based_ds_idxs[xy_i++] = *std::next(i_it);
       xy_size += 2;
     } else if (num_data_values == 3u) {
-      xy_based_ds_idxs[xy_i++] = *i + 1;
-      xy_based_ds_idxs[xy_i++] = *i + 2;
+      xy_based_ds_idxs[xy_i++] = *std::next(i_it);
+      xy_based_ds_idxs[xy_i++] = *std::next(i_it, 2);
       xy_size += 3;
 
       // Let's find the min and max y-value that share the same x-pixel and get
       // their indices.
     } else if (num_data_values > 3u) {
-      auto j = *i + 1;
+      auto j = *std::next(i_it);
 
       auto max_val = y_data[j];
       auto min_val = max_val;
@@ -206,7 +205,7 @@ void Downsampler<FloatType>::calculateXYBasedDSIdxs(
       auto min_idx = j;
       auto min_last = true;
 
-      for (; j < *(i + 1); ++j) {
+      for (; j < *std::next(i_it); ++j) {
         auto y = y_data[j];
 
         if (y < min_val) {

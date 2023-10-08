@@ -125,7 +125,7 @@ class TestHandler : public juce::Component {
   }
 
   std::vector<std::shared_ptr<cmp::PlotLookAndFeel>> lnf;
-  static inline std::map<std::string, std::shared_ptr<node>> head;
+  static inline std::unordered_map<std::string, std::shared_ptr<node>> head;
 
  private:
   std::string m_category;
