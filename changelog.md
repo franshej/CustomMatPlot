@@ -1,3 +1,8 @@
+## Next release
+
+### Fixed
+- ctrl, shift and alt key were not detected on Windows
+
 ## 1.2.2 (2023-10-5)
 
 ### Fixed
