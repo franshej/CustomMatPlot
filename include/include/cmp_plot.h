@@ -595,7 +595,7 @@ class Plot : public juce::Component {
   /** @internal */
   void updateYLim(const Lim_f& new_y_lim);
   /** @internal */
-  void updateGridGraphPointsTrace();
+  void updateGridGraphLinesAndTrace();
   /** @internal */
   void updateTracePointsForNewGraphData();
   /** @internal */
@@ -617,7 +617,9 @@ class Plot : public juce::Component {
   /** @internal */
   void moveXYLims(const juce::Point<float>& d_xy);
   /** @internal */
-  void updateGridTrace();
+  void updateGridAndTracepoints();
+  /** @internal */
+  void updateGraphLines();
 
   /** User input related things  */
   /** @internal */
@@ -683,7 +685,7 @@ class Plot : public juce::Component {
 
   /** Other variables */
   GraphPointMoveType m_graph_point_move_type{GraphPointMoveType::none};
-  bool m_x_autoscale = true, m_y_autoscale = true;
+  bool m_x_autoscale = true, m_y_autoscale = true, is_panning_or_zoomed = false;
 };
 
 /**

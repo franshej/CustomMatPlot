@@ -197,8 +197,8 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
   if (new_x_lim && new_x_lim != m_x_lim) {
     m_x_lim = new_x_lim;
 
-    if (m_y_lim) {
-      updateGridGraphPointsTrace();
+    if (m_y_lim && !m_x_autoscale) {
+      updateGridGraphLinesAndTrace();
     }
   }
 }
@@ -224,8 +224,8 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
   if (new_y_lim && m_y_lim != new_y_lim) {
     m_y_lim = new_y_lim;
 
-    if (m_x_lim) {
-      updateGridGraphPointsTrace();
+    if (m_x_lim && !m_y_autoscale) {
+      updateGridGraphLinesAndTrace();
     }
   }
 }
@@ -233,24 +233,28 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
 void Plot::moveXYLims(const juce::Point<float>& d_xy) {
   m_x_lim += d_xy.getX();
   m_y_lim += d_xy.getY();
-  updateGridTrace();
+  is_panning_or_zoomed = true;
+  updateGridAndTracepoints();
 }
 
-void Plot::updateGridGraphPointsTrace() {
+void Plot::updateGraphLines() {
+  for (const auto& graph_line : m_graph_lines) {
+    graph_line->updateXIndicesAndGraphPoints();
+    graph_line->updateYIndicesAndGraphPoints();
+  }
+}
+
+void Plot::updateGridGraphLinesAndTrace() {
   if (!m_graph_bounds.isEmpty()) {
     m_grid->updateGrid();
     m_trace->updateTracePointsBounds();
-
-    for (const auto& graph_line : m_graph_lines) {
-      graph_line->updateXIndicesAndGraphPoints();
-      graph_line->updateYIndicesAndGraphPoints();
-    }
+    updateGraphLines();
   }
 
   addTracePointsForGraphData();
 }
 
-void Plot::updateGridTrace() {
+void Plot::updateGridAndTracepoints() {
   if (!m_graph_bounds.isEmpty()) {
     m_grid->updateGrid(true);
     m_trace->updateTracePointsBounds();
@@ -357,10 +361,7 @@ void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
     }
   }
 
-  for (const auto& graph_line : m_graph_lines) {
-    graph_line->updateXIndicesAndGraphPoints();
-    graph_line->updateYIndicesAndGraphPoints();
-  }
+  updateGridGraphLinesAndTrace();
 }
 
 void Plot::plot(const std::vector<std::vector<float>>& y_data,
@@ -434,7 +435,7 @@ void cmp::Plot::setDownsamplingTypeInternal(
   } else {
     m_downsampling_type = downsampling_type;
   }
-  updateGridGraphPointsTrace();
+  updateGridGraphLinesAndTrace();
 }
 
 template <class ValueType>
@@ -461,7 +462,7 @@ void Plot::setScaling(const Scaling x_scaling,
     resetLookAndFeelChildrens();
     m_lookandfeel_default.reset(nullptr);
     lookAndFeelChanged();
-    updateGridGraphPointsTrace();
+    updateGridGraphLinesAndTrace();
   }
 }
 
@@ -570,7 +571,7 @@ void Plot::resizeChilderns() {
         m_legend->setBounds(legend_bounds);
       }
 
-      updateGridGraphPointsTrace();
+      updateGridGraphLinesAndTrace();
     }
   }
 }
@@ -644,7 +645,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
       graph_line->setYValues(*y_data_it++);
     }
 
-    if (m_y_autoscale && !m_y_lim) UNLIKELY {
+    if (m_y_autoscale && !is_panning_or_zoomed) UNLIKELY {
         setAutoYScale();
       }
 
@@ -664,13 +665,13 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
 void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
   // There is a bug in the code if this assert happens.
   jassert(x_data.size() == m_graph_lines.size());
-  
+
   auto x_data_it = x_data.begin();
   for (const auto& graph : m_graph_lines) {
     graph->setXValues(*x_data_it++);
   }
 
-  if (m_x_autoscale && !m_x_lim) {
+  if (m_x_autoscale && !is_panning_or_zoomed) {
     setAutoXScale();
   }
 }
@@ -840,9 +841,10 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
 }
 
 void Plot::resetZoom() {
+  is_panning_or_zoomed = false;
   updateXLim(m_x_lim_start);
   updateYLim(m_y_lim_start);
-  updateGridGraphPointsTrace();
+  updateGridGraphLinesAndTrace();
   repaint();
 }
 
@@ -860,11 +862,12 @@ void Plot::drawSelectedRegion(const juce::Point<int>& end_position) {
 }
 
 void Plot::zoomOnSelectedRegion() {
+  is_panning_or_zoomed = true;
   const auto data_bound = m_selected_area->getDataBound<float>();
 
   updateXLim({data_bound.getX(), data_bound.getX() + data_bound.getWidth()});
   updateYLim({data_bound.getY(), data_bound.getY() + data_bound.getHeight()});
-  updateGridGraphPointsTrace();
+  updateGridGraphLinesAndTrace();
 
   m_selected_area->reset();
   repaint();
@@ -1094,16 +1097,15 @@ void Plot::panning(const juce::MouseEvent& event) {
     }
 
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
-
   const auto current_pos =
       getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params);
   const auto prev_pos = getDataPointFromGraphCoordinate(m_prev_mouse_position,
                                                         m_common_graph_params);
-
   const auto d_data_position = current_pos - prev_pos;
   m_prev_mouse_position = mouse_pos;
 
   moveXYLims(-d_data_position);
+  updateGraphLines();
   repaint();
 }
 

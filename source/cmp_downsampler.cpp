@@ -132,7 +132,7 @@ void Downsampler<FloatType>::calculateXBasedDSIdxs(
     return;
   }
 
-  constexpr auto compute_all_points = true;
+  constexpr auto compute_all_points = false;
   // If the graph is zoomed in we only plots some points.
   const auto start_x_index =
       compute_all_points
