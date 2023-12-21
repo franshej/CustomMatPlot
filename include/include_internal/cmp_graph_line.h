@@ -217,6 +217,23 @@ class GraphLine : public juce::Component {
    */
   void updateXYGraphPoints();
 
+  /** @brief Set GraphLine type
+   *
+   * Set the type of GraphLine. @see GraphLineType.
+   *
+   * @param graph_line_type the type of GraphLine.
+   * @return void.
+   */
+  void setGraphLineType(const GraphLineType graph_line_type);
+
+  /** @brief Get GraphLine type
+   *
+   * Get the type of GraphLine. @see GraphLineType.
+   *
+   * @return the type of GraphLine.
+   */
+  GraphLineType getGraphLineType() const noexcept;
+
   //==============================================================================
 
   /** @internal */
@@ -232,14 +249,28 @@ class GraphLine : public juce::Component {
   void updateXIndicesAndGraphPointsIntern(
       const std::vector<size_t>& update_only_these_indices);
 
-  juce::LookAndFeel* m_lookandfeel{nullptr};
-
   std::vector<float> m_x_data, m_y_data;
-  GraphPoints m_graph_points;
   std::vector<std::size_t> m_x_based_ds_indices, m_xy_based_ds_indices;
-  const CommonPlotParameterView* m_common_plot_params{nullptr};
+  GraphPoints m_graph_points;
+  GraphLineType m_graph_line_type{GraphLineType::normal};
 
+  const CommonPlotParameterView* m_common_plot_params{nullptr};
+  juce::LookAndFeel* m_lookandfeel{nullptr};
   GraphAttribute m_graph_attributes;
+};
+
+/**
+ *  \struct GraphLineList
+ *  \brief a class to hold a list of graph lines.
+ */
+struct GraphLineList : public std::vector<std::unique_ptr<GraphLine>> {
+  /** @brief Get the number of graph lines for a specific type.
+   *
+   * @tparam t_graph_line_type the type of graph line.
+   * @return the number of graph lines.
+   */
+  template <GraphLineType t_graph_line_type>
+  size_t size() const noexcept;
 };
 
 /**

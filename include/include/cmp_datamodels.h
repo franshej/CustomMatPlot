@@ -60,6 +60,7 @@ struct Marker;
 struct GraphSpread;
 struct GraphSpreadIndex;
 struct GridLine;
+struct GraphLineList;
 struct IsLabelsSet;
 struct CommonPlotParameterView;
 struct GraphLineDataView;
@@ -204,6 +205,16 @@ enum class GraphPointMoveType : uint32_t {
   vertical,
   /** Graph point can be moved horizontally and vertically. */
   horizontal_vertical,
+};
+
+/** Enum to define what type of GraphLine. */
+enum class GraphLineType : uint32_t {
+  /** GraphLine is a normal graph line. */
+  normal,
+  /** GraphLine is a horizontal line. */
+  horizontal,
+  /** GraphLine is a vertical line. */
+  vertical,
 };
 
 /** Enum to define if grid should be drawn or if the grid should be small */

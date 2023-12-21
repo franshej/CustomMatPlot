@@ -47,4 +47,15 @@ class PlotLookAndFeelTimeline : public PlotLookAndFeel {
   void drawBackground(juce::Graphics &g,
                       const juce::Rectangle<int> &bounds) override;
 };
+
+class TerrenceLookAndFeel : public cmp::PlotLookAndFeelTimeline {
+ public:
+  TerrenceLookAndFeel() { overridePlotColours(); };
+
+  void overridePlotColours() noexcept override {
+    setColour(Plot::grid_colour, juce::Colour(0xff181818));
+    setColour(Plot::transluent_grid_colour, juce::Colour(0xff252525));
+    // Override more colurs...
+  };
+};
 }  // namespace cmp

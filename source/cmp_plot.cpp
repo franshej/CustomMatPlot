@@ -8,6 +8,7 @@
 #include "cmp_plot.h"
 
 #include <cstddef>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -56,15 +57,15 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
   size_t closest_data_point_index{0};
 
   const auto graph_line_exsists =
-      std::find_if(m_graph_lines.begin(), m_graph_lines.end(),
+      std::find_if(m_graph_lines->begin(), m_graph_lines->end(),
                    [&graphline](const auto& gl) {
                      return gl.get() == graphline;
-                   }) != m_graph_lines.end();
+                   }) != m_graph_lines->end();
 
   const GraphLine* nearest_graph_line{graph_line_exsists ? graphline : nullptr};
 
   if (!nearest_graph_line) {
-    for (const auto& graph_line : m_graph_lines) {
+    for (const auto& graph_line : *m_graph_lines) {
       auto current_data_point_index = size_t{0};
       if constexpr (is_point_data_point) {
         const auto [data_point, data_point_index_temp] =
@@ -114,7 +115,7 @@ void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
   m_selected_area->setLookAndFeel(lookandfeel);
   m_trace->setLookAndFeel(lookandfeel);
 
-  for (const auto& graph_line : m_graph_lines) {
+  for (const auto& graph_line : *m_graph_lines) {
     graph_line->setLookAndFeel(lookandfeel);
   }
 
@@ -136,6 +137,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_y_lim_start({0, 0}),
       m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
                             m_y_scaling, m_downsampling_type),
+      m_graph_lines(std::make_unique<GraphLineList>()),
       m_plot_label(std::make_unique<PlotLabel>()),
       m_frame(std::make_unique<Frame>()),
       m_legend(std::make_unique<Legend>()),
@@ -154,7 +156,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   m_grid->toBack();
 
   m_grid->onGridLabelLengthChanged = [this](cmp::Grid* grid) {
-    this->resizeChilderns();
+    this->resizeChildrens();
   };
 
   m_legend->onNumberOfDescriptionsChanged = [this](const auto& desc) {
@@ -238,7 +240,7 @@ void Plot::moveXYLims(const juce::Point<float>& d_xy) {
 }
 
 void Plot::updateGraphLines() {
-  for (const auto& graph_line : m_graph_lines) {
+  for (const auto& graph_line : *m_graph_lines) {
     graph_line->updateXIndicesAndGraphPoints();
     graph_line->updateYIndicesAndGraphPoints();
   }
@@ -259,7 +261,7 @@ void Plot::updateGridAndTracepoints() {
     m_grid->updateGrid(true);
     m_trace->updateTracePointsBounds();
 
-    for (const auto& graph_line : m_graph_lines) {
+    for (const auto& graph_line : *m_graph_lines) {
       graph_line->updateXYGraphPoints();
     }
   }
@@ -269,7 +271,7 @@ void cmp::Plot::updateTracePointsForNewGraphData() {
   m_trace->updateTracePointsBounds();
 
   if (m_legend->isVisible()) {
-    m_legend->updateLegends(m_graph_lines);
+    m_legend->updateLegends(*m_graph_lines);
   }
 }
 
@@ -291,7 +293,7 @@ static auto getLimOffset(const ValueType min, const ValueType max,
 }
 
 void Plot::setAutoXScale() {
-  const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, true);
+  const auto [min, max] = findMinMaxValuesInGraphLines(*m_graph_lines, true);
 
   m_x_lim_start = getLimOffset<decltype(min)>(min, max, m_x_scaling);
 
@@ -299,7 +301,7 @@ void Plot::setAutoXScale() {
 }
 
 void Plot::setAutoYScale() {
-  const auto [min, max] = findMinMaxValuesInGraphLines(m_graph_lines, false);
+  const auto [min, max] = findMinMaxValuesInGraphLines(*m_graph_lines, false);
 
   m_y_lim_start = getLimOffset<decltype(min)>(min, max, m_y_scaling);
 
@@ -331,12 +333,12 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
     return x_data;
   };
 
-  if (m_graph_lines.size() != y_data.size()) {
+  if (m_graph_lines->size() != y_data.size()) {
     return generateRamp();
   }
 
   auto it_y_data = y_data.begin();
-  for (const auto& graph_line : m_graph_lines) {
+  for (const auto& graph_line : *m_graph_lines) {
     if (it_y_data == y_data.end() ||
         graph_line->getXValues().size() != it_y_data->size()) {
       return generateRamp();
@@ -346,18 +348,36 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
   return {};
 }
 
+void Plot::plotVerticalLines(const std::vector<float>& x_coordinates,
+                             const GraphAttributeList& graph_attributes) {
+  if (x_coordinates.empty()) return;
+  std::vector<std::vector<float>> y_data(x_coordinates.size());
+  std::vector<std::vector<float>> x_data = std::vector<std::vector<float>>(x_coordinates.size());
+
+  auto x_data_it = x_data.begin();
+  for (auto& y_graph : y_data) {
+    y_graph = *x_data_it++;
+  }
+
+  plotInternal(y_data,
+               x_data,
+               graph_attributes,
+               GraphLineType::vertical);
+}
+
 void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
                         const std::vector<std::vector<float>>& x_data,
-                        const GraphAttributeList& graph_attributes) {
-  updateYData(y_data, graph_attributes);
+                        const GraphAttributeList& graph_attributes,
+                        const GraphLineType graph_line_type) {
+  updateGraphLineYData(y_data, graph_attributes);
 
   if (!x_data.empty()) {
-    updateXData(x_data);
+    updateGraphLineXData(x_data);
   } else {
     const auto gen_x_data = generateXdataRamp(y_data);
 
     if (!gen_x_data.empty()) {
-      updateXData(gen_x_data);
+      updateGraphLineXData(gen_x_data);
     }
   }
 
@@ -390,11 +410,11 @@ void Plot::fillBetween(
 
   for (const auto& spread_index : graph_spread_indices) {
     if (std::max(spread_index.first_graph, spread_index.second_graph) >=
-        m_graph_lines.size()) {
+        m_graph_lines->size()) {
       throw std::range_error("Spread index out of range.");
     }
-    const auto first_graph = m_graph_lines[spread_index.first_graph].get();
-    const auto second_graph = m_graph_lines[spread_index.second_graph].get();
+    const auto first_graph = (*m_graph_lines)[spread_index.first_graph].get();
+    const auto second_graph = (*m_graph_lines)[spread_index.second_graph].get();
 
     auto it_colour = fill_area_colours.begin();
 
@@ -469,7 +489,7 @@ void Plot::setScaling(const Scaling x_scaling,
 void Plot::setXLabel(const std::string& x_label) {
   m_plot_label->setXLabel(x_label);
 
-  resizeChilderns();
+  resizeChildrens();
 }
 
 void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
@@ -499,13 +519,13 @@ void Plot::setYTicks(const std::vector<float>& y_ticks) {
 void Plot::setYLabel(const std::string& y_label) {
   m_plot_label->setYLabel(y_label);
 
-  resizeChilderns();
+  resizeChildrens();
 }
 
 void Plot::setTitle(const std::string& title) {
   m_plot_label->setTitle(title);
 
-  resizeChilderns();
+  resizeChildrens();
 }
 
 void Plot::setTracePoint(const juce::Point<float>& trace_point_coordinate) {
@@ -531,7 +551,7 @@ void Plot::setGridType(const GridType grid_type) {
 
 void Plot::clearTracePoints() noexcept { m_trace->clear(); }
 
-void Plot::resizeChilderns() {
+void Plot::resizeChildrens() {
   if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
     const auto plot_bound = lnf->getPlotBounds(getBounds());
     const auto graph_bound = lnf->getGraphBounds(getBounds(), this);
@@ -554,7 +574,7 @@ void Plot::resizeChilderns() {
       if (m_frame) m_frame->setBounds(frame_bound);
       if (m_selected_area) m_selected_area->setBounds(graph_bound);
 
-      for (const auto& graph_line : m_graph_lines) {
+      for (const auto& graph_line : *m_graph_lines) {
         graph_line->setBounds(graph_bound);
       }
 
@@ -576,7 +596,7 @@ void Plot::resizeChilderns() {
   }
 }
 
-void Plot::resized() { resizeChilderns(); }
+void Plot::resized() { resizeChildrens(); }
 
 void Plot::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
@@ -594,7 +614,7 @@ void Plot::parentHierarchyChanged() {
 void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
   resetLookAndFeelChildrens();
   this->juce::Component::setLookAndFeel(look_and_feel);
-  resizeChilderns();
+  resizeChildrens();
 }
 
 std::unique_ptr<Plot::LookAndFeelMethods> Plot::getDefaultLookAndFeel() {
@@ -615,33 +635,40 @@ void Plot::lookAndFeelChanged() {
   resetLookAndFeelChildrens(m_lookandfeel);
 }
 
-void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
-                       const GraphAttributeList& graph_attribute_list) {
+void Plot::addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
+                                const size_t graph_line_index) {
+  auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+  const auto colour_id = lnf->getColourFromGraphID(graph_line_index);
+  const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
+  graph_line = std::make_unique<GraphLine>(m_common_graph_params);
+  graph_line->setColour(graph_colour);
+  graph_line->setLookAndFeel(m_lookandfeel);
+  graph_line->setBounds(m_graph_bounds);
+  addAndMakeVisible(graph_line.get());
+  graph_line->toBehind(m_selected_area.get());
+}
+
+void Plot::updateGraphLineYData(
+    const std::vector<std::vector<float>>& y_data,
+    const GraphAttributeList& graph_attribute_list) {
   if (!y_data.empty()) {
-    if (y_data.size() != m_graph_lines.size()) UNLIKELY {
-        m_graph_lines.resize(y_data.size());
-        std::size_t i = 0u;
-        for (auto& graph_line : m_graph_lines) {
+    if (y_data.size() != m_graph_lines->size<GraphLineType::normal>()) UNLIKELY {
+        m_graph_lines->resize(y_data.size());
+        std::size_t graph_line_index = 0u;
+        for (auto& graph_line : *m_graph_lines) {
           if (!graph_line && m_lookandfeel) {
-            auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
-
-            const auto colour_id = lnf->getColourFromGraphID(i);
-            const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
-
-            graph_line = std::make_unique<GraphLine>(m_common_graph_params);
-            graph_line->setColour(graph_colour);
-            graph_line->setLookAndFeel(m_lookandfeel);
-            graph_line->setBounds(m_graph_bounds);
-
-            addAndMakeVisible(graph_line.get());
-            graph_line->toBehind(m_selected_area.get());
-            i++;
+            addGraphLineInternal(graph_line, graph_line_index);
+            graph_line_index++;
           }
         }
       }
 
     auto y_data_it = y_data.begin();
-    for (const auto& graph_line : m_graph_lines) {
+    for (const auto& graph_line : *m_graph_lines) {
+      if (y_data_it == y_data.end())
+        throw std::range_error(
+            "Y_data out of range, internal error, please create an issue on "
+            "Github with a test case that triggers this error.");
       graph_line->setYValues(*y_data_it++);
     }
 
@@ -651,7 +678,7 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
 
     if (!graph_attribute_list.empty()) {
       auto it_gal = graph_attribute_list.begin();
-      for (const auto& graph_line : m_graph_lines) {
+      for (const auto& graph_line : *m_graph_lines) {
         if (it_gal != graph_attribute_list.end()) {
           graph_line->setGraphAttribute(*it_gal);
         }
@@ -662,12 +689,12 @@ void Plot::updateYData(const std::vector<std::vector<float>>& y_data,
   }
 }
 
-void Plot::updateXData(const std::vector<std::vector<float>>& x_data) {
+void Plot::updateGraphLineXData(const std::vector<std::vector<float>>& x_data) {
   // There is a bug in the code if this assert happens.
-  jassert(x_data.size() == m_graph_lines.size());
+  jassert(x_data.size() == m_graph_lines->size());
 
   auto x_data_it = x_data.begin();
-  for (const auto& graph : m_graph_lines) {
+  for (const auto& graph : *m_graph_lines) {
     graph->setXValues(*x_data_it++);
   }
 
@@ -682,7 +709,7 @@ void Plot::setLegend(const StringVector& graph_descriptions) {
 
     m_legend->setVisible(true);
     m_legend->setLegend(graph_descriptions);
-    m_legend->updateLegends(m_graph_lines);
+    m_legend->updateLegends(*m_graph_lines);
   }
 }
 
@@ -816,7 +843,7 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
     const auto data_point_index =
         trace_label_point.trace_point->data_point_index;
 
-    for (const auto& graph : m_graph_lines) {
+    for (const auto& graph : *m_graph_lines) {
       if (graph.get() == graph_line) {
         graph->moveGraphPoint(d_data_position, data_point_index);
         graph_line_data_point_map[graph.get()].push_back(data_point_index);
@@ -836,7 +863,7 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   repaint();
 
   if (m_graph_lines_changed_callback) {
-    m_graph_lines_changed_callback(createGraphLineDataViewList(m_graph_lines));
+    m_graph_lines_changed_callback(createGraphLineDataViewList(*m_graph_lines));
   }
 }
 
@@ -1035,7 +1062,7 @@ void Plot::addTracePointsForGraphData() {
   if (m_graph_point_move_type == GraphPointMoveType::none) return;
   m_trace->clear();
 
-  for (const auto& graph_line : m_graph_lines) {
+  for (const auto& graph_line : *m_graph_lines) {
     const auto& y_values = graph_line->getYValues();
     size_t data_point_index = 0;
 

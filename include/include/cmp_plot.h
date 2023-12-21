@@ -77,6 +77,30 @@ class Plot : public juce::Component {
             const std::vector<std::vector<float>>& x_data = {},
             const GraphAttributeList& graph_attribute_list = {});
 
+  /** @brief Draw horizontal line.
+   *
+   * Draw a horizontal line at the given y-value. It is also possible to move
+   * the whole line by dragging anywhere on it.
+   *
+   * @param y_value the y-value of the horizontal line.
+   * @param graph_attribute the graph attribute of the horizontal line.
+   * @return void.
+   */
+  // void plotHorizontalLine(const float y_value,
+  //                         const GraphAttribute& graph_attribute = {});
+
+  /** @brief Draw vertical line.
+  *
+  * Draw vertical line(s) at the given x-value. It is also possible to move the
+  * whole line by dragging anywhere on it.
+  *
+  @param x_value the x-value of the vertical line.
+  @param graph_attribute the graph attribute of the vertical line.
+  @return void.
+  */
+  void plotVerticalLines(const std::vector<float>& x_coordinates,
+                         const GraphAttributeList& graph_attributes = {});
+
   /** @brief Realtime plot.
    *
    * This plot function will only update the y-data in the graphs and only
@@ -578,14 +602,17 @@ class Plot : public juce::Component {
   /** @internal */
   std::unique_ptr<LookAndFeelMethods> getDefaultLookAndFeel();
   /** @internal */
-  void resizeChilderns();
+  void addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
+                            const size_t graph_line_index);
+  /** @internal */
+  void resizeChildrens();
   /** @internal */
   void resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel = nullptr);
   /** @internal */
-  void updateYData(const std::vector<std::vector<float>>& y_data,
-                   const GraphAttributeList& graph_attribute_list);
+  void updateGraphLineYData(const std::vector<std::vector<float>>& y_data,
+                            const GraphAttributeList& graph_attribute_list);
   /** @internal */
-  void updateXData(const std::vector<std::vector<float>>& x_data);
+  void updateGraphLineXData(const std::vector<std::vector<float>>& x_data);
   /** @internal */
   void setAutoXScale();
   /** @internal */
@@ -606,7 +633,8 @@ class Plot : public juce::Component {
   /** @internal */
   void plotInternal(const std::vector<std::vector<float>>& y_data,
                     const std::vector<std::vector<float>>& x_data,
-                    const GraphAttributeList& graph_attributes);
+                    const GraphAttributeList& graph_attributes,
+                    const GraphLineType graph_line_type);
   /** @internal */
   std::vector<std::vector<float>> generateXdataRamp(
       const std::vector<std::vector<float>>& y_data);
@@ -665,8 +693,8 @@ class Plot : public juce::Component {
   CommonPlotParameterView m_common_graph_params;
 
   /** Child components */
-  GraphLines m_graph_lines;
   GraphSpreadList m_graph_spread_list;
+  std::unique_ptr<GraphLineList> m_graph_lines;
   std::unique_ptr<Grid> m_grid;
   std::unique_ptr<PlotLabel> m_plot_label;
   std::unique_ptr<Frame> m_frame;

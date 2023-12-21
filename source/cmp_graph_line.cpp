@@ -12,6 +12,7 @@
 #include <numeric>
 #include <stdexcept>
 
+#include "cmp_datamodels.h"
 #include "cmp_downsampler.h"
 #include "cmp_plot.h"
 
@@ -311,6 +312,46 @@ void GraphLine::updateXYGraphPoints() {
   lnf->updateYGraphPoints({}, *m_common_plot_params, m_y_data,
                           m_xy_based_ds_indices, m_graph_points);
 }
+
+void GraphLine::setGraphLineType(const GraphLineType graph_line_type) {
+  m_graph_line_type = graph_line_type;
+}
+
+GraphLineType GraphLine::getGraphLineType() const noexcept {
+  return m_graph_line_type;
+}
+
+/************************************************************************************/
+/*********************************GraphLineList**************************************/
+/************************************************************************************/
+
+size_t size_from_graph_line_type(const auto GraphLineList,
+                                 const GraphLineType graph_line_type) {
+  return std::count_if(GraphLineList.begin(), GraphLineList.end(),
+                       [graph_line_type](const auto& graph_line) {
+                         return graph_line->getGraphLineType() ==
+                                graph_line_type;
+                       });
+}
+
+template <>
+size_t GraphLineList::size<GraphLineType::normal>() const noexcept {
+  return size_from_graph_line_type(*this, GraphLineType::normal);
+}
+
+template <>
+size_t GraphLineList::size<GraphLineType::vertical>() const noexcept {
+  return size_from_graph_line_type(*this, GraphLineType::vertical);
+}
+
+template <>
+size_t GraphLineList::size<GraphLineType::horizontal>() const noexcept {
+  return size_from_graph_line_type(*this, GraphLineType::horizontal);
+}
+
+/************************************************************************************/
+/*********************************GraphSpread****************************************/
+/************************************************************************************/
 
 void GraphSpread::resized() {}
 
