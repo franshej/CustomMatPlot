@@ -264,6 +264,7 @@ class GraphLine : public juce::Component {
  *  \brief a class to hold a list of graph lines.
  */
 struct GraphLineList : public std::vector<std::unique_ptr<GraphLine>> {
+    
   /** @brief Get the number of graph lines for a specific type.
    *
    * @tparam t_graph_line_type the type of graph line.
@@ -271,6 +272,15 @@ struct GraphLineList : public std::vector<std::unique_ptr<GraphLine>> {
    */
   template <GraphLineType t_graph_line_type>
   size_t size() const noexcept;
+
+  /** @brief Resize the number of graph lines for a specific type.
+   * 
+   * @tparam t_graph_line_type the type of graph line.
+   * @param new_size the new size of the graph line list.
+   * @return void.
+   */
+  template <GraphLineType t_graph_line_type>
+  void resize(size_t new_size);
 };
 
 /**

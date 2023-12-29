@@ -325,13 +325,19 @@ GraphLineType GraphLine::getGraphLineType() const noexcept {
 /*********************************GraphLineList**************************************/
 /************************************************************************************/
 
-size_t size_from_graph_line_type(const auto GraphLineList,
+size_t size_from_graph_line_type(const GraphLineList& GraphLineList,
                                  const GraphLineType graph_line_type) {
   return std::count_if(GraphLineList.begin(), GraphLineList.end(),
                        [graph_line_type](const auto& graph_line) {
                          return graph_line->getGraphLineType() ==
                                 graph_line_type;
                        });
+}
+
+template <>
+size_t GraphLineList::size<GraphLineType::any>() const noexcept {
+  // Explicitly Call size of parent class.
+  return std::vector<std::unique_ptr<GraphLine>>::size();
 }
 
 template <>
@@ -348,6 +354,36 @@ template <>
 size_t GraphLineList::size<GraphLineType::horizontal>() const noexcept {
   return size_from_graph_line_type(*this, GraphLineType::horizontal);
 }
+
+template <GraphLineType t_graph_line_type>
+void GraphLineList::resize(size_t new_size){
+  const auto current_size = size<t_graph_line_type>();
+
+  if (current_size == new_size) return;
+
+  if (current_size > new_size) {
+    // sort the graph lines by type. nullptrs are sorted to the end.
+    std::sort(begin(), end(), [](const auto& lhs, const auto& rhs) {
+      if (!lhs) return false;
+      if (!rhs) return true;
+      return lhs->getGraphLineType() < rhs->getGraphLineType();
+    });
+
+    const auto num_to_erase = current_size - new_size;
+    const auto erase_begin = std::find_if(
+        begin(), end(), [](const auto& graph_line) {
+          return graph_line->getGraphLineType() == t_graph_line_type;
+        });
+
+    erase(erase_begin, erase_begin + num_to_erase);
+  } else {
+    std::vector<std::unique_ptr<GraphLine>>::resize(new_size);
+  }
+}
+
+template void GraphLineList::resize<GraphLineType::normal>(size_t new_size);
+template void GraphLineList::resize<GraphLineType::vertical>(size_t new_size);
+template void GraphLineList::resize<GraphLineType::horizontal>(size_t new_size);
 
 /************************************************************************************/
 /*********************************GraphSpread****************************************/

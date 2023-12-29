@@ -609,6 +609,7 @@ class Plot : public juce::Component {
   /** @internal */
   void resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel = nullptr);
   /** @internal */
+  template <GraphLineType t_graph_line_type>
   void updateGraphLineYData(const std::vector<std::vector<float>>& y_data,
                             const GraphAttributeList& graph_attribute_list);
   /** @internal */
@@ -631,10 +632,10 @@ class Plot : public juce::Component {
   void setTracePointInternal(const juce::Point<float>& trace_point_coordinate,
                              bool is_point_data_point);
   /** @internal */
+  template <GraphLineType t_graph_line_type>
   void plotInternal(const std::vector<std::vector<float>>& y_data,
                     const std::vector<std::vector<float>>& x_data,
-                    const GraphAttributeList& graph_attributes,
-                    const GraphLineType graph_line_type);
+                    const GraphAttributeList& graph_attributes);
   /** @internal */
   std::vector<std::vector<float>> generateXdataRamp(
       const std::vector<std::vector<float>>& y_data);

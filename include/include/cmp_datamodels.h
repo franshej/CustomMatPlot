@@ -209,6 +209,8 @@ enum class GraphPointMoveType : uint32_t {
 
 /** Enum to define what type of GraphLine. */
 enum class GraphLineType : uint32_t {
+  /** GraphLine is any type. */
+  any,
   /** GraphLine is a normal graph line. */
   normal,
   /** GraphLine is a horizontal line. */

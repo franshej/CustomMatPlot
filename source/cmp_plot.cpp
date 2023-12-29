@@ -333,7 +333,7 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
     return x_data;
   };
 
-  if (m_graph_lines->size() != y_data.size()) {
+  if (m_graph_lines->size<GraphLineType::any>() != y_data.size()) {
     return generateRamp();
   }
 
@@ -359,21 +359,21 @@ void Plot::plotVerticalLines(const std::vector<float>& x_coordinates,
     y_graph = *x_data_it++;
   }
 
-  plotInternal(y_data,
+  plotInternal<GraphLineType::vertical>(y_data,
                x_data,
-               graph_attributes,
-               GraphLineType::vertical);
+               graph_attributes);
 }
 
+template <GraphLineType t_graph_line_type>
 void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
                         const std::vector<std::vector<float>>& x_data,
-                        const GraphAttributeList& graph_attributes,
-                        const GraphLineType graph_line_type) {
-  updateGraphLineYData(y_data, graph_attributes);
+                        const GraphAttributeList& graph_attributes) {
+  updateGraphLineYData<t_graph_line_type>(y_data, graph_attributes);
 
   if (!x_data.empty()) {
     updateGraphLineXData(x_data);
   } else {
+    // Fix this for other types of lines
     const auto gen_x_data = generateXdataRamp(y_data);
 
     if (!gen_x_data.empty()) {
@@ -387,7 +387,7 @@ void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
 void Plot::plot(const std::vector<std::vector<float>>& y_data,
                 const std::vector<std::vector<float>>& x_data,
                 const GraphAttributeList& graph_attributes) {
-  plotInternal(y_data, x_data, graph_attributes);
+  plotInternal<GraphLineType::normal>(y_data, x_data, graph_attributes);
 
   updateTracePointsForNewGraphData();
 
@@ -395,7 +395,7 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
 }
 
 void Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
-  plotInternal(y_data, {}, {});
+  plotInternal<GraphLineType::normal>(y_data, {}, {});
 
   updateTracePointsForNewGraphData();
 
@@ -410,7 +410,7 @@ void Plot::fillBetween(
 
   for (const auto& spread_index : graph_spread_indices) {
     if (std::max(spread_index.first_graph, spread_index.second_graph) >=
-        m_graph_lines->size()) {
+        m_graph_lines->size<GraphLineType::any>()) {
       throw std::range_error("Spread index out of range.");
     }
     const auto first_graph = (*m_graph_lines)[spread_index.first_graph].get();
@@ -638,60 +638,67 @@ void Plot::lookAndFeelChanged() {
 void Plot::addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
                                 const size_t graph_line_index) {
   auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+  graph_line = std::make_unique<GraphLine>(m_common_graph_params);
   const auto colour_id = lnf->getColourFromGraphID(graph_line_index);
   const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
-  graph_line = std::make_unique<GraphLine>(m_common_graph_params);
+
   graph_line->setColour(graph_colour);
   graph_line->setLookAndFeel(m_lookandfeel);
   graph_line->setBounds(m_graph_bounds);
+
   addAndMakeVisible(graph_line.get());
   graph_line->toBehind(m_selected_area.get());
 }
 
+template <GraphLineType t_graph_line_type>
 void Plot::updateGraphLineYData(
     const std::vector<std::vector<float>>& y_data,
     const GraphAttributeList& graph_attribute_list) {
-  if (!y_data.empty()) {
-    if (y_data.size() != m_graph_lines->size<GraphLineType::normal>()) UNLIKELY {
-        m_graph_lines->resize(y_data.size());
-        std::size_t graph_line_index = 0u;
-        for (auto& graph_line : *m_graph_lines) {
-          if (!graph_line && m_lookandfeel) {
-            addGraphLineInternal(graph_line, graph_line_index);
-            graph_line_index++;
-          }
-        }
-      }
+  if (y_data.empty()) return;
 
-    auto y_data_it = y_data.begin();
-    for (const auto& graph_line : *m_graph_lines) {
-      if (y_data_it == y_data.end())
-        throw std::range_error(
-            "Y_data out of range, internal error, please create an issue on "
-            "Github with a test case that triggers this error.");
-      graph_line->setYValues(*y_data_it++);
+  if (y_data.size() != m_graph_lines->size<t_graph_line_type>()) UNLIKELY {
+      m_graph_lines->resize<t_graph_line_type>(y_data.size());
+      std::size_t graph_line_index = 0u;
+      for (auto& graph_line : *m_graph_lines) {
+        if (graph_line == nullptr) {
+          addGraphLineInternal(graph_line, graph_line_index);
+        }
+        graph_line_index++;
+      }
     }
 
-    if (m_y_autoscale && !is_panning_or_zoomed) UNLIKELY {
-        setAutoYScale();
-      }
+  auto y_data_it = y_data.begin();
+  for (const auto& graph_line : *m_graph_lines) {
+    if (y_data_it == y_data.end())
+      throw std::range_error(
+          "Y_data out of range, internal error, please create an issue on "
+          "Github with a test case that triggers this error.");
+    if (graph_line->getGraphLineType() == t_graph_line_type)
+      graph_line->setYValues(*y_data_it++);
+  }
 
-    if (!graph_attribute_list.empty()) {
-      auto it_gal = graph_attribute_list.begin();
-      for (const auto& graph_line : *m_graph_lines) {
-        if (it_gal != graph_attribute_list.end()) {
-          graph_line->setGraphAttribute(*it_gal);
-        }
+  if (m_y_autoscale && !is_panning_or_zoomed) UNLIKELY {
+      setAutoYScale();
+    }
 
-        ++it_gal;
+  if (!graph_attribute_list.empty()) {
+    auto it_gal = graph_attribute_list.begin();
+    for (const auto& graph_line : *m_graph_lines) {
+      if (it_gal != graph_attribute_list.end() &&
+          graph_line->getGraphLineType() == t_graph_line_type) {
+        graph_line->setGraphAttribute(*it_gal++);
       }
     }
   }
 }
 
+template void Plot::updateGraphLineYData<GraphLineType::normal>(
+    const std::vector<std::vector<float>>& y_data,
+    const GraphAttributeList& graph_attribute_list);
+
 void Plot::updateGraphLineXData(const std::vector<std::vector<float>>& x_data) {
   // There is a bug in the code if this assert happens.
-  jassert(x_data.size() == m_graph_lines->size());
+  jassert(x_data.size() == m_graph_lines->size<GraphLineType::any>());
 
   auto x_data_it = x_data.begin();
   for (const auto& graph : *m_graph_lines) {
