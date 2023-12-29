@@ -602,6 +602,7 @@ class Plot : public juce::Component {
   /** @internal */
   std::unique_ptr<LookAndFeelMethods> getDefaultLookAndFeel();
   /** @internal */
+  template <GraphLineType t_graph_line_type>
   void addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
                             const size_t graph_line_index);
   /** @internal */

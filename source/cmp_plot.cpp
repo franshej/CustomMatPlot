@@ -635,6 +635,7 @@ void Plot::lookAndFeelChanged() {
   resetLookAndFeelChildrens(m_lookandfeel);
 }
 
+template <GraphLineType t_graph_line_type>
 void Plot::addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
                                 const size_t graph_line_index) {
   auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
@@ -645,6 +646,7 @@ void Plot::addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
   graph_line->setColour(graph_colour);
   graph_line->setLookAndFeel(m_lookandfeel);
   graph_line->setBounds(m_graph_bounds);
+  graph_line->setGraphLineType(t_graph_line_type);
 
   addAndMakeVisible(graph_line.get());
   graph_line->toBehind(m_selected_area.get());
@@ -661,7 +663,7 @@ void Plot::updateGraphLineYData(
       std::size_t graph_line_index = 0u;
       for (auto& graph_line : *m_graph_lines) {
         if (graph_line == nullptr) {
-          addGraphLineInternal(graph_line, graph_line_index);
+          addGraphLineInternal<t_graph_line_type>(graph_line, graph_line_index);
         }
         graph_line_index++;
       }
