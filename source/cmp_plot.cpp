@@ -46,6 +46,16 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
   return {min_value, max_value};
 }
 
+template <class ValueType>
+static Lim<ValueType> createLimsIfTheSame(
+    const Lim<ValueType>& lims) noexcept {
+  if (lims.min == lims.max) {
+    const auto one = ValueType(1);
+    return {lims.min - one, lims.max + one};
+  }
+  return lims;
+}
+
 template <bool is_point_data_point>
 std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
     juce::Point<float> point, const GraphLine* graphline) {
@@ -296,6 +306,7 @@ void Plot::setAutoXScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(*m_graph_lines, true);
 
   m_x_lim_start = getLimOffset<decltype(min)>(min, max, m_x_scaling);
+  m_x_lim_start = createLimsIfTheSame(m_x_lim_start);
 
   updateXLim(m_x_lim_start);
 }
@@ -304,6 +315,7 @@ void Plot::setAutoYScale() {
   const auto [min, max] = findMinMaxValuesInGraphLines(*m_graph_lines, false);
 
   m_y_lim_start = getLimOffset<decltype(min)>(min, max, m_y_scaling);
+  m_y_lim_start = createLimsIfTheSame(m_y_lim_start);
 
   updateYLim(m_y_lim_start);
 }
@@ -352,11 +364,17 @@ void Plot::plotVerticalLines(const std::vector<float>& x_coordinates,
                              const GraphAttributeList& graph_attributes) {
   if (x_coordinates.empty()) return;
   std::vector<std::vector<float>> y_data(x_coordinates.size());
-  std::vector<std::vector<float>> x_data = std::vector<std::vector<float>>(x_coordinates.size());
+  std::vector<std::vector<float>> x_data(x_coordinates.size());
 
   auto x_data_it = x_data.begin();
-  for (auto& y_graph : y_data) {
-    y_graph = *x_data_it++;
+  for (auto& x: x_coordinates) {
+    *x_data_it++ = {x, x};
+  }
+
+  for (auto& y: y_data) {
+    y.resize(2);
+    y[0] = -1.f;
+    y[1] = 1.f;
   }
 
   plotInternal<GraphLineType::vertical>(y_data,
