@@ -628,7 +628,7 @@ class Plot : public juce::Component {
   /** @internal */
   void updateTracePointsForNewGraphData();
   /** @internal */
-  void addTracePointsForGraphData();
+  void addSelectableTracePointsForGraphData();
   /** @internal */
   void setTracePointInternal(const juce::Point<float>& trace_point_coordinate,
                              bool is_point_data_point);

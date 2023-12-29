@@ -263,7 +263,7 @@ void Plot::updateGridGraphLinesAndTrace() {
     updateGraphLines();
   }
 
-  addTracePointsForGraphData();
+  addSelectableTracePointsForGraphData();
 }
 
 void Plot::updateGridAndTracepoints() {
@@ -1085,7 +1085,7 @@ void Plot::setMovePointsType(const GraphPointMoveType move_points_type) {
   updateTracepointsForGraphData();
 }
 
-void Plot::addTracePointsForGraphData() {
+void Plot::addSelectableTracePointsForGraphData() {
   if (m_graph_point_move_type == GraphPointMoveType::none) return;
   m_trace->clear();
 
