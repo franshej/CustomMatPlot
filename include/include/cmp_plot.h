@@ -626,7 +626,7 @@ class Plot : public juce::Component {
   /** @internal */
   void updateGridGraphLinesAndTrace();
   /** @internal */
-  void updateTracePointsForNewGraphData();
+  void updateTracePointsAndLegends();
   /** @internal */
   void addSelectableTracePointsForGraphData();
   /** @internal */
@@ -647,7 +647,7 @@ class Plot : public juce::Component {
   /** @internal */
   void moveXYLims(const juce::Point<float>& d_xy);
   /** @internal */
-  void updateGridAndTracepoints();
+  void updateGridAndTracepointsAndGraphLines();
   /** @internal */
   void updateGraphLines();
 

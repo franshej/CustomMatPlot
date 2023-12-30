@@ -246,10 +246,13 @@ void Plot::moveXYLims(const juce::Point<float>& d_xy) {
   m_x_lim += d_xy.getX();
   m_y_lim += d_xy.getY();
   is_panning_or_zoomed = true;
-  updateGridAndTracepoints();
+  updateGridAndTracepointsAndGraphLines();
 }
 
 void Plot::updateGraphLines() {
+  m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical>(m_y_lim);
+  m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal>(m_y_lim);
+
   for (const auto& graph_line : *m_graph_lines) {
     graph_line->updateXIndicesAndGraphPoints();
     graph_line->updateYIndicesAndGraphPoints();
@@ -266,7 +269,7 @@ void Plot::updateGridGraphLinesAndTrace() {
   addSelectableTracePointsForGraphData();
 }
 
-void Plot::updateGridAndTracepoints() {
+void Plot::updateGridAndTracepointsAndGraphLines() {
   if (!m_graph_bounds.isEmpty()) {
     m_grid->updateGrid(true);
     m_trace->updateTracePointsBounds();
@@ -277,7 +280,7 @@ void Plot::updateGridAndTracepoints() {
   }
 }
 
-void cmp::Plot::updateTracePointsForNewGraphData() {
+void cmp::Plot::updateTracePointsAndLegends() {
   m_trace->updateTracePointsBounds();
 
   if (m_legend->isVisible()) {
@@ -360,26 +363,28 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
   return {};
 }
 
+template <typename ValueType>
+static std::pair<std::vector<std::vector<ValueType>>, std::vector<std::vector<ValueType>>> 
+prepareDataForVerticalOrHorizontalLines(const std::vector<ValueType>& coordinates, Lim<ValueType> limits) {
+  if (coordinates.empty()) return {{}, {}};
+
+  std::vector<std::vector<ValueType>> lines_start_end(coordinates.size(), {limits.min, limits.max});
+  std::vector<std::vector<ValueType>> line_coordinates(coordinates.size());
+
+  auto line_coordinate_it = line_coordinates.begin();
+  for (auto& x: coordinates) {
+    *line_coordinate_it++ = {x, x};
+  }
+
+  return {lines_start_end, line_coordinates};
+}
+
 void Plot::plotVerticalLines(const std::vector<float>& x_coordinates,
                              const GraphAttributeList& graph_attributes) {
-  if (x_coordinates.empty()) return;
-  std::vector<std::vector<float>> y_data(x_coordinates.size());
-  std::vector<std::vector<float>> x_data(x_coordinates.size());
+  auto [y_data, x_data] = prepareDataForVerticalOrHorizontalLines<float>(x_coordinates, m_y_lim);
+  if (y_data.empty() || x_data.empty()) return;
 
-  auto x_data_it = x_data.begin();
-  for (auto& x: x_coordinates) {
-    *x_data_it++ = {x, x};
-  }
-
-  for (auto& y: y_data) {
-    y.resize(2);
-    y[0] = -1.f;
-    y[1] = 1.f;
-  }
-
-  plotInternal<GraphLineType::vertical>(y_data,
-               x_data,
-               graph_attributes);
+  plotInternal<GraphLineType::vertical>(y_data, x_data, graph_attributes);
 }
 
 template <GraphLineType t_graph_line_type>
@@ -407,7 +412,7 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
                 const GraphAttributeList& graph_attributes) {
   plotInternal<GraphLineType::normal>(y_data, x_data, graph_attributes);
 
-  updateTracePointsForNewGraphData();
+  updateTracePointsAndLegends();
 
   repaint();
 }
@@ -415,7 +420,7 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
 void Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
   plotInternal<GraphLineType::normal>(y_data, {}, {});
 
-  updateTracePointsForNewGraphData();
+  updateTracePointsAndLegends();
 
   repaint(m_graph_bounds);
 }
@@ -664,7 +669,7 @@ void Plot::addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
   graph_line->setColour(graph_colour);
   graph_line->setLookAndFeel(m_lookandfeel);
   graph_line->setBounds(m_graph_bounds);
-  graph_line->setGraphLineType(t_graph_line_type);
+  graph_line->setType(t_graph_line_type);
 
   addAndMakeVisible(graph_line.get());
   graph_line->toBehind(m_selected_area.get());
@@ -693,7 +698,7 @@ void Plot::updateGraphLineYData(
       throw std::range_error(
           "Y_data out of range, internal error, please create an issue on "
           "Github with a test case that triggers this error.");
-    if (graph_line->getGraphLineType() == t_graph_line_type)
+    if (graph_line->getType() == t_graph_line_type)
       graph_line->setYValues(*y_data_it++);
   }
 
@@ -705,7 +710,7 @@ void Plot::updateGraphLineYData(
     auto it_gal = graph_attribute_list.begin();
     for (const auto& graph_line : *m_graph_lines) {
       if (it_gal != graph_attribute_list.end() &&
-          graph_line->getGraphLineType() == t_graph_line_type) {
+          graph_line->getType() == t_graph_line_type) {
         graph_line->setGraphAttribute(*it_gal++);
       }
     }

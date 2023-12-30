@@ -313,11 +313,11 @@ void GraphLine::updateXYGraphPoints() {
                           m_xy_based_ds_indices, m_graph_points);
 }
 
-void GraphLine::setGraphLineType(const GraphLineType graph_line_type) {
+void GraphLine::setType(const GraphLineType graph_line_type) {
   m_graph_line_type = graph_line_type;
 }
 
-GraphLineType GraphLine::getGraphLineType() const noexcept {
+GraphLineType GraphLine::getType() const noexcept {
   return m_graph_line_type;
 }
 
@@ -329,7 +329,7 @@ size_t size_from_graph_line_type(const GraphLineList& GraphLineList,
                                  const GraphLineType graph_line_type) {
   return std::count_if(GraphLineList.begin(), GraphLineList.end(),
                        [graph_line_type](const auto& graph_line) {
-                         return graph_line->getGraphLineType() ==
+                         return graph_line->getType() ==
                                 graph_line_type;
                        });
 }
@@ -366,13 +366,13 @@ void GraphLineList::resize(size_t new_size){
     std::sort(begin(), end(), [](const auto& lhs, const auto& rhs) {
       if (!lhs) return false;
       if (!rhs) return true;
-      return lhs->getGraphLineType() < rhs->getGraphLineType();
+      return lhs->getType() < rhs->getType();
     });
 
     const auto num_to_erase = current_size - new_size;
     const auto erase_begin = std::find_if(
         begin(), end(), [](const auto& graph_line) {
-          return graph_line->getGraphLineType() == t_graph_line_type;
+          return graph_line->getType() == t_graph_line_type;
         });
 
     erase(erase_begin, erase_begin + num_to_erase);
@@ -384,6 +384,35 @@ void GraphLineList::resize(size_t new_size){
 template void GraphLineList::resize<GraphLineType::normal>(size_t new_size);
 template void GraphLineList::resize<GraphLineType::vertical>(size_t new_size);
 template void GraphLineList::resize<GraphLineType::horizontal>(size_t new_size);
+
+template <GraphLineType t_graph_line_type, typename ValueType>
+void GraphLineList::setLimitsForVerticalOrHorizontalLines(const Lim<ValueType>& x_or_y_limit) {
+  static_assert(t_graph_line_type == GraphLineType::vertical || t_graph_line_type == GraphLineType::horizontal,
+                "GraphLineType must be either vertical or horizontal");
+
+  for (auto& graph_line : getGraphLinesOfType<t_graph_line_type>()) {
+    if constexpr (t_graph_line_type == GraphLineType::vertical)
+      graph_line->setYValues({x_or_y_limit.min, x_or_y_limit.max});
+    else if constexpr (t_graph_line_type == GraphLineType::horizontal)
+      graph_line->setXValues({x_or_y_limit.min, x_or_y_limit.max});
+  }
+}
+
+template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical, float>(const Lim<float>& x_or_y_limit);
+template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical, double>(const Lim<double>& x_or_y_limit);
+template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal, float>(const Lim<float>& x_or_y_limit);
+template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal, double>(const Lim<double>& x_or_y_limit);
+
+template <GraphLineType t_graph_line_type>
+std::vector<GraphLine*> GraphLineList::getGraphLinesOfType(){
+    std::vector<GraphLine*> result;
+    for (auto &line : *this) {
+        if (line->getType() == t_graph_line_type) {
+            result.push_back(line.get());
+        }
+    }
+    return result;
+}
 
 /************************************************************************************/
 /*********************************GraphSpread****************************************/

@@ -224,7 +224,7 @@ class GraphLine : public juce::Component {
    * @param graph_line_type the type of GraphLine.
    * @return void.
    */
-  void setGraphLineType(const GraphLineType graph_line_type);
+  void setType(const GraphLineType graph_line_type);
 
   /** @brief Get GraphLine type
    *
@@ -232,7 +232,7 @@ class GraphLine : public juce::Component {
    *
    * @return the type of GraphLine.
    */
-  GraphLineType getGraphLineType() const noexcept;
+  GraphLineType getType() const noexcept;
 
   //==============================================================================
 
@@ -264,7 +264,7 @@ class GraphLine : public juce::Component {
  *  \brief a class to hold a list of graph lines.
  */
 struct GraphLineList : public std::vector<std::unique_ptr<GraphLine>> {
-    
+
   /** @brief Get the number of graph lines for a specific type.
    *
    * @tparam t_graph_line_type the type of graph line.
@@ -281,6 +281,22 @@ struct GraphLineList : public std::vector<std::unique_ptr<GraphLine>> {
    */
   template <GraphLineType t_graph_line_type>
   void resize(size_t new_size);
+
+  /** @brief Set x- or y-limits for vertical and horizontal lines.
+   * 
+   * Set the y limit for vertical lines and x limit for horizontal lines.
+   * 
+   * @tparam t_graph_line_type the type of graph line.
+   * @param x_or_y_limit x- or y-limit.
+   * @return void.
+   */
+    template <GraphLineType t_graph_line_type, typename ValueType>
+    void setLimitsForVerticalOrHorizontalLines(const Lim<ValueType>& x_or_y_limit);
+
+    private:
+    /** @internal */
+    template <GraphLineType t_graph_line_type>
+    std::vector<GraphLine*> getGraphLinesOfType();
 };
 
 /**
