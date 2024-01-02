@@ -1,3 +1,12 @@
+## Next version
+
+### Fixed
+- xy-downsamling issue missing points.
+
+### Added
+- Draw vertical line.
+- Different types of lines: vertical, horizonal and normal.
+
 ## ### 1.2.3 (2023-10-8)
 
 ### Fixed
