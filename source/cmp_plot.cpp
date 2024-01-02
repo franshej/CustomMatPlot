@@ -335,34 +335,6 @@ void Plot::yLim(const float min, const float max) {
   m_y_autoscale = false;
 }
 
-std::vector<std::vector<float>> Plot::generateXdataRamp(
-    const std::vector<std::vector<float>>& y_data) {
-  auto generateRamp = [&] {
-    std::vector<std::vector<float>> x_data(y_data.size());
-    auto x_graph_it = std::begin(x_data);
-    for (const auto& y_graph : y_data) {
-      (*x_graph_it).resize(y_graph.size());
-      std::iota(x_graph_it->begin(), x_graph_it->end(), 1.0f);
-      ++x_graph_it;
-    }
-    return x_data;
-  };
-
-  if (m_graph_lines->size<GraphLineType::any>() != y_data.size()) {
-    return generateRamp();
-  }
-
-  auto it_y_data = y_data.begin();
-  for (const auto& graph_line : *m_graph_lines) {
-    if (it_y_data == y_data.end() ||
-        graph_line->getXValues().size() != it_y_data->size()) {
-      return generateRamp();
-    }
-    ++it_y_data;
-  }
-  return {};
-}
-
 template <typename ValueType>
 static std::pair<std::vector<std::vector<ValueType>>, std::vector<std::vector<ValueType>>> 
 prepareDataForVerticalOrHorizontalLines(const std::vector<ValueType>& coordinates, Lim<ValueType> limits) {
@@ -394,17 +366,33 @@ void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
   updateGraphLineYData<t_graph_line_type>(y_data, graph_attributes);
 
   if (!x_data.empty()) {
-    updateGraphLineXData(x_data);
+    updateGraphLineXData<t_graph_line_type>(x_data);
   } else {
     // Fix this for other types of lines
     const auto gen_x_data = generateXdataRamp(y_data);
 
     if (!gen_x_data.empty()) {
-      updateGraphLineXData(gen_x_data);
+      updateGraphLineXData<t_graph_line_type>(gen_x_data);
     }
   }
 
   updateGridGraphLinesAndTrace();
+}
+
+std::vector<std::vector<float>> Plot::generateXdataRamp(
+    const std::vector<std::vector<float>>& y_data) {
+  auto generateRamp = [&] {
+    std::vector<std::vector<float>> x_data(y_data.size());
+    auto x_graph_it = std::begin(x_data);
+    for (const auto& y_graph : y_data) {
+      (*x_graph_it).resize(y_graph.size());
+      std::iota(x_graph_it->begin(), x_graph_it->end(), 1.0f);
+      ++x_graph_it;
+    }
+    return x_data;
+  };
+
+  return generateRamp();
 }
 
 void Plot::plot(const std::vector<std::vector<float>>& y_data,
@@ -694,12 +682,14 @@ void Plot::updateGraphLineYData(
 
   auto y_data_it = y_data.begin();
   for (const auto& graph_line : *m_graph_lines) {
-    if (y_data_it == y_data.end())
-      throw std::range_error(
-          "Y_data out of range, internal error, please create an issue on "
-          "Github with a test case that triggers this error.");
-    if (graph_line->getType() == t_graph_line_type)
-      graph_line->setYValues(*y_data_it++);
+    if (graph_line->getType() == t_graph_line_type){
+          if (y_data_it == y_data.end())
+            throw std::range_error(
+                "Y_data out of range, internal error, please create an issue "
+                "on "
+                "Github with a test case that triggers this error.");
+          graph_line->setYValues(*y_data_it++);
+    }
   }
 
   if (m_y_autoscale && !is_panning_or_zoomed) UNLIKELY {
@@ -721,13 +711,19 @@ template void Plot::updateGraphLineYData<GraphLineType::normal>(
     const std::vector<std::vector<float>>& y_data,
     const GraphAttributeList& graph_attribute_list);
 
+template <GraphLineType t_graph_line_type>
 void Plot::updateGraphLineXData(const std::vector<std::vector<float>>& x_data) {
   // There is a bug in the code if this assert happens.
-  jassert(x_data.size() == m_graph_lines->size<GraphLineType::any>());
+  jassert(x_data.size() == m_graph_lines->size<t_graph_line_type>());
+  if(x_data.size() != m_graph_lines->size<t_graph_line_type>()){
+    int i =  m_graph_lines->size<t_graph_line_type>();
+    ++i;
+  }
 
   auto x_data_it = x_data.begin();
   for (const auto& graph : *m_graph_lines) {
-    graph->setXValues(*x_data_it++);
+    if (graph->getType() == t_graph_line_type)
+      graph->setXValues(*x_data_it++);
   }
 
   if (m_x_autoscale && !is_panning_or_zoomed) {

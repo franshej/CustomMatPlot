@@ -614,6 +614,7 @@ class Plot : public juce::Component {
   void updateGraphLineYData(const std::vector<std::vector<float>>& y_data,
                             const GraphAttributeList& graph_attribute_list);
   /** @internal */
+  template <GraphLineType t_graph_line_type>
   void updateGraphLineXData(const std::vector<std::vector<float>>& x_data);
   /** @internal */
   void setAutoXScale();

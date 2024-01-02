@@ -598,8 +598,17 @@ TEST(heart, non_real_time) {
 
 TEST(test_vertical_line, non_real_time) {
   ADD_PLOT;
+  {
+    GET_PLOT->plotVerticalLines({5.0f});
+  }
 
-  std::vector<float> y_test_data(10);
-  std::iota(y_test_data.begin(), y_test_data.end(), 0);
-  GET_PLOT->plotVerticalLines({1.0f});
+  {
+    std::vector<float> y_test_data(10);
+    std::iota(y_test_data.begin(), y_test_data.end(), 0);
+    PLOT_Y({y_test_data});
+  }
+
+  {
+    GET_PLOT->plotVerticalLines({10.0f});
+  }
 }

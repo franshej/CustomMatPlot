@@ -356,12 +356,12 @@ size_t GraphLineList::size<GraphLineType::horizontal>() const noexcept {
 }
 
 template <GraphLineType t_graph_line_type>
-void GraphLineList::resize(size_t new_size){
+void GraphLineList::resize(size_t new_size_of_type){
   const auto current_size = size<t_graph_line_type>();
 
-  if (current_size == new_size) return;
+  if (current_size == new_size_of_type) return;
 
-  if (current_size > new_size) {
+  if (current_size > new_size_of_type) {
     // sort the graph lines by type. nullptrs are sorted to the end.
     std::sort(begin(), end(), [](const auto& lhs, const auto& rhs) {
       if (!lhs) return false;
@@ -369,7 +369,7 @@ void GraphLineList::resize(size_t new_size){
       return lhs->getType() < rhs->getType();
     });
 
-    const auto num_to_erase = current_size - new_size;
+    const auto num_to_erase = current_size - new_size_of_type;
     const auto erase_begin = std::find_if(
         begin(), end(), [](const auto& graph_line) {
           return graph_line->getType() == t_graph_line_type;
@@ -377,13 +377,14 @@ void GraphLineList::resize(size_t new_size){
 
     erase(erase_begin, erase_begin + num_to_erase);
   } else {
+    const auto new_size =  size<GraphLineType::any>() - current_size + new_size_of_type;
     std::vector<std::unique_ptr<GraphLine>>::resize(new_size);
   }
 }
 
-template void GraphLineList::resize<GraphLineType::normal>(size_t new_size);
-template void GraphLineList::resize<GraphLineType::vertical>(size_t new_size);
-template void GraphLineList::resize<GraphLineType::horizontal>(size_t new_size);
+template void GraphLineList::resize<GraphLineType::normal>(size_t new_size_of_type);
+template void GraphLineList::resize<GraphLineType::vertical>(size_t new_size_of_type);
+template void GraphLineList::resize<GraphLineType::horizontal>(size_t new_size_of_type);
 
 template <GraphLineType t_graph_line_type, typename ValueType>
 void GraphLineList::setLimitsForVerticalOrHorizontalLines(const Lim<ValueType>& x_or_y_limit) {
