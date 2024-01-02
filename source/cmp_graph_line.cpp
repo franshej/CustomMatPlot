@@ -7,20 +7,44 @@
 
 #include "cmp_graph_line.h"
 
+#include <cstddef>
 #include <mutex>
 #include <numeric>
 #include <stdexcept>
 
+#include "cmp_datamodels.h"
 #include "cmp_downsampler.h"
 #include "cmp_plot.h"
 
 namespace cmp {
 
+GraphLineDataView::GraphLineDataView(
+    const std::vector<float>& _x_data, const std::vector<float>& _y_data,
+    const GraphPoints& _graph_points,
+    const std::vector<std::size_t>& _graph_point_indices,
+    const GraphAttribute& _graph_attribute)
+    : x_data(_x_data),
+      y_data(_y_data),
+      graph_points(_graph_points),
+      graph_point_indices(_graph_point_indices),
+      graph_attribute(_graph_attribute) {}
+
+GraphLineDataView::GraphLineDataView(const GraphLine& graph_line)
+    : x_data(graph_line.getXValues()),
+      y_data(graph_line.getYValues()),
+      graph_points(graph_line.getGraphPoints()),
+      graph_point_indices(graph_line.getGraphPointIndices()),
+      graph_attribute(graph_line.getGraphAttribute()) {}
+
+const GraphAttribute& GraphLine::getGraphAttribute() const noexcept {
+  return m_graph_attributes;
+}
+
 void GraphLine::setColour(const juce::Colour graph_colour) {
   m_graph_attributes.graph_colour = graph_colour;
 }
 
-std::pair<juce::Point<float>, juce::Point<float>>
+std::tuple<juce::Point<float>, juce::Point<float>, size_t>
 GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
                                    bool check_only_distance_from_x) const {
   // No graph points.
@@ -28,26 +52,31 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
 
   auto closest_graph_point = juce::Point<float>();
   auto closest_data_point = juce::Point<float>();
+  auto closest_i = 0u;
 
   auto closest_distance = std::numeric_limits<float>::max();
   std::size_t i = 0u;
   for (const auto& graph_point : m_graph_points) {
     const auto current_distance =
         check_only_distance_from_x
-            ? abs(graph_point.getX() - this_graph_point.getX())
+            ? std::abs(graph_point.getX() - this_graph_point.getX())
             : graph_point.getDistanceSquaredFrom(this_graph_point);
     if (current_distance < closest_distance) {
       closest_distance = current_distance;
       closest_graph_point = graph_point;
-      closest_data_point = juce::Point<float>(
-          m_x_data[m_x_based_ds_indices[i]], m_y_data[m_x_based_ds_indices[i]]);
+      closest_i = i;
+      closest_data_point =
+          juce::Point<float>(m_x_data[m_xy_based_ds_indices[i]],
+                             m_y_data[m_xy_based_ds_indices[i]]);
     }
     i++;
   }
-  return {closest_graph_point, closest_data_point};
+
+  return {closest_graph_point, closest_data_point,
+          m_xy_based_ds_indices[closest_i]};
 }
 
-juce::Point<float> GraphLine::findClosestDataPointTo(
+std::pair<juce::Point<float>, size_t> GraphLine::findClosestDataPointTo(
     const juce::Point<float>& this_data_point, bool check_only_distance_from_x,
     bool only_visible_data_points) const {
   // No y_data empty.
@@ -72,7 +101,7 @@ juce::Point<float> GraphLine::findClosestDataPointTo(
 
   for (const auto i : *indices) {
     const auto x = m_x_data[i];
-    const auto current_x_dist = abs(x - this_data_point.getX());
+    const auto current_x_dist = std::abs(x - this_data_point.getX());
 
     if (current_x_dist < nearest_x_dist) {
       nearest_x_dist = current_x_dist;
@@ -83,19 +112,29 @@ juce::Point<float> GraphLine::findClosestDataPointTo(
   const auto closest_data_point =
       juce::Point<float>(m_x_data[nearest_i], m_y_data[nearest_i]);
 
-  return closest_data_point;
+  return {closest_data_point, nearest_i};
 }
 
 juce::Colour GraphLine::getColour() const noexcept {
   return m_graph_attributes.graph_colour.value();
 }
 
+juce::Point<float> GraphLine::getDataPointFromGraphPointIndex(
+    size_t graph_point_index) const {
+  return juce::Point<float>(m_x_data[m_xy_based_ds_indices[graph_point_index]],
+                            m_y_data[m_xy_based_ds_indices[graph_point_index]]);
+};
+
+juce::Point<float> GraphLine::getDataPointFromDataPointIndex(
+    size_t data_point_index) const {
+  return juce::Point<float>(m_x_data[data_point_index],
+                            m_y_data[data_point_index]);
+};
+
 void GraphLine::resized(){};
 
 void GraphLine::paint(juce::Graphics& g) {
-  const GraphLineDataView graph_line_data(m_y_data, m_x_data, m_graph_points,
-                                          m_x_based_ds_indices,
-                                          m_graph_attributes);
+  const GraphLineDataView graph_line_data(*this);
 
   if (m_lookandfeel) {
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
@@ -109,8 +148,8 @@ void GraphLine::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
     if (m_common_plot_params) {
-      updateXGraphPointsIntern(*m_common_plot_params);
-      updateYGraphPointsIntern(*m_common_plot_params);
+      updateXIndicesAndGraphPointsIntern({});
+      updateYIndicesAndGraphPointsIntern({});
     }
   } else {
     m_lookandfeel = nullptr;
@@ -148,6 +187,23 @@ void GraphLine::setXValues(const std::vector<float>& x_data) {
   std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
 }
 
+bool GraphLine::setXYValue(const juce::Point<float>& xy_value, size_t index) {
+  if (index >= m_x_data.size()) return false;
+
+  m_x_data[index] = xy_value.getX();
+  m_y_data[index] = xy_value.getY();
+
+  return true;
+}
+
+void GraphLine::moveGraphPoint(const juce::Point<float>& d_graph_point,
+                               size_t graph_point_index) {
+  if (graph_point_index >= m_x_data.size()) return;
+
+  m_x_data[graph_point_index] += d_graph_point.getX();
+  m_y_data[graph_point_index] += d_graph_point.getY();
+}
+
 const std::vector<float>& GraphLine::getYValues() const noexcept {
   return m_y_data;
 }
@@ -160,97 +216,208 @@ const GraphPoints& GraphLine::getGraphPoints() const noexcept {
   return m_graph_points;
 }
 
-void GraphLine::updateXGraphPoints(
-    const CommonPlotParameterView& common_plot_params) {
+const std::vector<size_t>& GraphLine::getGraphPointIndices() const noexcept {
+  return m_xy_based_ds_indices;
+}
+
+void GraphLine::updateXIndicesAndGraphPoints(
+    const std::vector<size_t>& update_only_these_indices) {
   // x_lim must be set to calculate the xdata.
-  jassert(common_plot_params.x_lim);
+  jassert(m_common_plot_params->x_lim);
 
   // x_data empty.
   jassert(!m_x_data.empty());
 
-  updateXGraphPointsIntern(common_plot_params);
+  updateXIndicesAndGraphPointsIntern(update_only_these_indices);
 }
 
-void GraphLine::updateYGraphPoints(
-    const CommonPlotParameterView& common_plot_params) {
+void GraphLine::updateYIndicesAndGraphPoints(
+    const std::vector<size_t>& update_only_these_indices) {
   // x_lim must be set to calculate the xdata.
-  jassert(common_plot_params.y_lim);
+  jassert(m_common_plot_params->y_lim);
 
   // y_data empty.
   jassert(!m_y_data.empty());
 
-  updateYGraphPointsIntern(common_plot_params);
+  updateYIndicesAndGraphPointsIntern(update_only_these_indices);
 }
 
-void GraphLine::updateXGraphPointsIntern(
-    const CommonPlotParameterView common_plot_params) noexcept {
-  if (m_lookandfeel) {
-    const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
+void GraphLine::updateXIndicesAndGraphPointsIntern(
+    const std::vector<size_t>& update_only_these_indices) {
+  const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
-    switch (common_plot_params.downsampling_type) {
-      case DownsamplingType::no_downsampling:
-        m_x_based_ds_indices.resize(m_x_data.size());
+  switch (m_common_plot_params->downsampling_type) {
+    case DownsamplingType::no_downsampling:
+      m_x_based_ds_indices.resize(m_x_data.size());
 
-        std::iota(m_x_based_ds_indices.begin(), m_x_based_ds_indices.end(), 0u);
-        break;
+      std::iota(m_x_based_ds_indices.begin(), m_x_based_ds_indices.end(), 0u);
+      break;
 
-      case DownsamplingType::x_downsampling:
-        Downsampler<float>::calculateXBasedDSIdxs(common_plot_params, m_x_data,
-                                                  m_x_based_ds_indices);
+    case DownsamplingType::x_downsampling:
+      Downsampler<float>::calculateXBasedDSIdxs(*m_common_plot_params, m_x_data,
+                                                m_x_based_ds_indices);
 
-        break;
+      break;
 
-      case DownsamplingType::xy_downsampling:
-        Downsampler<float>::calculateXBasedDSIdxs(common_plot_params, m_x_data,
-                                                  m_x_based_ds_indices);
-        return;
-        break;
+    case DownsamplingType::xy_downsampling:
+      Downsampler<float>::calculateXBasedDSIdxs(*m_common_plot_params, m_x_data,
+                                                m_x_based_ds_indices);
+      return;
+      break;
 
-      default:
-        break;
-    }
+    default:
+      break;
+  }
 
-    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->updateXGraphPoints(common_plot_params, m_x_data, m_x_based_ds_indices,
-                            m_graph_points);
+  auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+  lnf->updateXGraphPoints(update_only_these_indices, *m_common_plot_params,
+                          m_x_data, m_x_based_ds_indices, m_graph_points);
+}
+
+void GraphLine::updateYIndicesAndGraphPointsIntern(
+    const std::vector<size_t>& update_only_these_indices) {
+  auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+  const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
+
+  m_xy_based_ds_indices = m_x_based_ds_indices;
+
+  switch (m_common_plot_params->downsampling_type) {
+    case DownsamplingType::no_downsampling:
+      break;
+
+    case DownsamplingType::x_downsampling:
+      break;
+
+    case DownsamplingType::xy_downsampling:
+      Downsampler<float>::calculateXYBasedIdxs(*m_common_plot_params,
+                                                 m_x_based_ds_indices, m_y_data,
+                                                 m_xy_based_ds_indices);
+
+      lnf->updateXGraphPoints(update_only_these_indices, *m_common_plot_params,
+                              m_x_data, m_xy_based_ds_indices, m_graph_points);
+      break;
+
+    default:
+      break;
+  }
+
+  lnf->updateYGraphPoints(update_only_these_indices, *m_common_plot_params,
+                          m_y_data, m_xy_based_ds_indices, m_graph_points);
+}
+
+void GraphLine::updateXYGraphPoints() {
+  auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+  lnf->updateXGraphPoints({}, *m_common_plot_params, m_x_data,
+                          m_xy_based_ds_indices, m_graph_points);
+  lnf->updateYGraphPoints({}, *m_common_plot_params, m_y_data,
+                          m_xy_based_ds_indices, m_graph_points);
+}
+
+void GraphLine::setType(const GraphLineType graph_line_type) {
+  m_graph_line_type = graph_line_type;
+}
+
+GraphLineType GraphLine::getType() const noexcept {
+  return m_graph_line_type;
+}
+
+/************************************************************************************/
+/*********************************GraphLineList**************************************/
+/************************************************************************************/
+
+size_t size_from_graph_line_type(const GraphLineList& GraphLineList,
+                                 const GraphLineType graph_line_type) {
+  return std::count_if(GraphLineList.begin(), GraphLineList.end(),
+                       [graph_line_type](const auto& graph_line) {
+                         return graph_line->getType() ==
+                                graph_line_type;
+                       });
+}
+
+template <>
+size_t GraphLineList::size<GraphLineType::any>() const noexcept {
+  // Explicitly Call size of parent class.
+  return std::vector<std::unique_ptr<GraphLine>>::size();
+}
+
+template <>
+size_t GraphLineList::size<GraphLineType::normal>() const noexcept {
+  return size_from_graph_line_type(*this, GraphLineType::normal);
+}
+
+template <>
+size_t GraphLineList::size<GraphLineType::vertical>() const noexcept {
+  return size_from_graph_line_type(*this, GraphLineType::vertical);
+}
+
+template <>
+size_t GraphLineList::size<GraphLineType::horizontal>() const noexcept {
+  return size_from_graph_line_type(*this, GraphLineType::horizontal);
+}
+
+template <GraphLineType t_graph_line_type>
+void GraphLineList::resize(size_t new_size_of_type){
+  const auto current_size = size<t_graph_line_type>();
+
+  if (current_size == new_size_of_type) return;
+
+  if (current_size > new_size_of_type) {
+    // sort the graph lines by type. nullptrs are sorted to the end.
+    std::sort(begin(), end(), [](const auto& lhs, const auto& rhs) {
+      if (!lhs) return false;
+      if (!rhs) return true;
+      return lhs->getType() < rhs->getType();
+    });
+
+    const auto num_to_erase = current_size - new_size_of_type;
+    const auto erase_begin = std::find_if(
+        begin(), end(), [](const auto& graph_line) {
+          return graph_line->getType() == t_graph_line_type;
+        });
+
+    erase(erase_begin, erase_begin + num_to_erase);
+  } else {
+    const auto new_size =  size<GraphLineType::any>() - current_size + new_size_of_type;
+    std::vector<std::unique_ptr<GraphLine>>::resize(new_size);
   }
 }
 
-void GraphLine::updateYGraphPointsIntern(
-    const CommonPlotParameterView common_plot_params) noexcept {
-  if (m_lookandfeel) {
-    auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+template void GraphLineList::resize<GraphLineType::normal>(size_t new_size_of_type);
+template void GraphLineList::resize<GraphLineType::vertical>(size_t new_size_of_type);
+template void GraphLineList::resize<GraphLineType::horizontal>(size_t new_size_of_type);
 
-    const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
+template <GraphLineType t_graph_line_type, typename ValueType>
+void GraphLineList::setLimitsForVerticalOrHorizontalLines(const Lim<ValueType>& x_or_y_limit) {
+  static_assert(t_graph_line_type == GraphLineType::vertical || t_graph_line_type == GraphLineType::horizontal,
+                "GraphLineType must be either vertical or horizontal");
 
-    auto& graph_point_indices = m_x_based_ds_indices;
-
-    switch (common_plot_params.downsampling_type) {
-      case DownsamplingType::no_downsampling:
-        break;
-
-      case DownsamplingType::x_downsampling:
-        break;
-
-      case DownsamplingType::xy_downsampling:
-        Downsampler<float>::calculateXYBasedDSIdxs(
-            common_plot_params, m_x_based_ds_indices, m_y_data,
-            m_xy_based_ds_indices);
-
-        graph_point_indices = m_xy_based_ds_indices;
-
-        lnf->updateXGraphPoints(common_plot_params, m_x_data,
-                                graph_point_indices, m_graph_points);
-        break;
-
-      default:
-        break;
-    }
-
-    lnf->updateYGraphPoints(common_plot_params, m_y_data, graph_point_indices,
-                            m_graph_points);
+  for (auto& graph_line : getGraphLinesOfType<t_graph_line_type>()) {
+    if constexpr (t_graph_line_type == GraphLineType::vertical)
+      graph_line->setYValues({x_or_y_limit.min, x_or_y_limit.max});
+    else if constexpr (t_graph_line_type == GraphLineType::horizontal)
+      graph_line->setXValues({x_or_y_limit.min, x_or_y_limit.max});
   }
 }
+
+template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical, float>(const Lim<float>& x_or_y_limit);
+template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical, double>(const Lim<double>& x_or_y_limit);
+template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal, float>(const Lim<float>& x_or_y_limit);
+template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal, double>(const Lim<double>& x_or_y_limit);
+
+template <GraphLineType t_graph_line_type>
+std::vector<GraphLine*> GraphLineList::getGraphLinesOfType(){
+    std::vector<GraphLine*> result;
+    for (auto &line : *this) {
+        if (line->getType() == t_graph_line_type) {
+            result.push_back(line.get());
+        }
+    }
+    return result;
+}
+
+/************************************************************************************/
+/*********************************GraphSpread****************************************/
+/************************************************************************************/
 
 void GraphSpread::resized() {}
 

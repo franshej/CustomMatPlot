@@ -1,0 +1,1 @@
+add_app_example(move_graph_points)

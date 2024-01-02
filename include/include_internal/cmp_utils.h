@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -61,6 +61,9 @@ struct GridLine {
 
   /** The length of the gridline. */
   float length;
+
+  /** Type of grid line. */
+  enum class Type { normal, translucent } type{Type::normal};
 };
 
 /** @brief A struct that defines if a axis labels has been set or not. */
@@ -70,29 +73,19 @@ struct IsLabelsSet {
   bool title_label{false};
 };
 
-/** @brief A view of the data required to draw a graph_line++ */
-struct GraphLineDataView {
-  GraphLineDataView(const std::vector<float>& x, const std::vector<float>& y,
-                    const GraphPoints& gp, const std::vector<std::size_t>& i,
-                    const GraphAttribute& ga)
-      : x_data{x},
-        y_data{y},
-        graph_points{gp},
-        graph_point_indices{i},
-        graph_attribute{ga} {};
-
-  GraphLineDataView(const std::vector<float>&&, const std::vector<float>&&,
-                    const GraphPoints&&,
-                    const std::vector<std::size_t>&&) =
-      delete;  // prevents rvalue binding
-
-  const std::vector<float>&x_data, &y_data;
-  const GraphPoints& graph_points;
-  const std::vector<std::size_t>& graph_point_indices;
-  const GraphAttribute& graph_attribute;
-};
-
 /*============================================================================*/
+
+static GraphLineDataViewList createGraphLineDataViewList(
+    const GraphLines& graph_lines) {
+  GraphLineDataViewList graph_line_data_view_list;
+  graph_line_data_view_list.reserve(graph_lines.size());
+
+  for (const auto& gl : graph_lines) {
+    graph_line_data_view_list.emplace_back(GraphLineDataView(*gl));
+  }
+
+  return graph_line_data_view_list;
+};
 
 template <class value_type>
 constexpr std::tuple<value_type, value_type, value_type, value_type>
@@ -124,8 +117,8 @@ constexpr float getXFromXCoordinate(const float x_pos,
   };
 
   const auto coordinateToXLog = [&]() {
-    return powf(10, ((x_pos - bounds.getX()) / bounds.getWidth()) *
-                        log10(x_lim.max / x_lim.min)) *
+    return std::pow(10, ((x_pos - bounds.getX()) / bounds.getWidth()) *
+                        std::log10(x_lim.max / x_lim.min)) *
            x_lim.min;
   };
 
@@ -153,9 +146,9 @@ constexpr float getYFromYCoordinate(const float y_pos,
   };
 
   const auto coordinateToYLog = [&]() {
-    return powf(10, ((bounds.getHeight() - (y_pos - bounds.getY())) /
+    return std::pow(10, ((bounds.getHeight() - (y_pos - bounds.getY())) /
                      bounds.getHeight()) *
-                        log10(y_lim.max / y_lim.min)) *
+                        std::log10(y_lim.max / y_lim.min)) *
            y_lim.min;
   };
   switch (y_scaling) {
@@ -171,8 +164,21 @@ constexpr float getYFromYCoordinate(const float y_pos,
   }
 }
 
+static juce::Point<float> getDataPointFromGraphCoordinate(
+    const juce::Point<float> pos,
+    const CommonPlotParameterView common_plot_params) noexcept {
+  const auto x = getXFromXCoordinate(
+      pos.getX(), common_plot_params.graph_bounds.toFloat(),
+      common_plot_params.x_lim, common_plot_params.x_scaling);
+  const auto y = getYFromYCoordinate(
+      pos.getY(), common_plot_params.graph_bounds.toFloat(),
+      common_plot_params.y_lim, common_plot_params.y_scaling);
+
+  return juce::Point<float>(x, y);
+}
+
 constexpr auto getXGraphValueLinear =
-    [](const float x, const float x_scale, const float x_offset) -> auto {
+    [](const float x, const float x_scale, const float x_offset) -> auto{
   return (x * x_scale) - x_offset;
 };
 
@@ -183,12 +189,12 @@ constexpr auto getYGraphValueLinear = [](const float y, const float y_scale,
 
 constexpr auto getXGraphPointsLogarithmic =
     [](const float x, const float x_scale_log, const float x_offset) -> float {
-  return (x_scale_log * log10(x)) - x_offset;
+  return (x_scale_log * std::log10(x)) - x_offset;
 };
 
 constexpr auto getYGraphPointsLogarithmic =
     [](const float y, const float y_scale_log, const float y_offset) -> float {
-  return y_offset - (y_scale_log * log10(y));
+  return y_offset - (y_scale_log * std::log10(y));
 };
 
 constexpr auto getXScaleAndOffset =
@@ -202,8 +208,8 @@ constexpr auto getXScaleAndOffset =
       x_offset = x_lim.min * x_scale;
       break;
     case Scaling::logarithmic:
-      x_scale = width / log10(x_lim.max / x_lim.min);
-      x_offset = x_scale * log10(x_lim.min);
+      x_scale = width / std::log10(x_lim.max / x_lim.min);
+      x_offset = x_scale * std::log10(x_lim.min);
       break;
     default:
       break;
@@ -223,8 +229,8 @@ constexpr auto getYScaleAndOffset =
       y_offset = height + (y_lim.min * y_scale);
       break;
     case Scaling::logarithmic:
-      y_scale = height / log10(y_lim.max / y_lim.min);
-      y_offset = height + y_scale * log10(y_lim.min);
+      y_scale = height / std::log10(y_lim.max / y_lim.min);
+      y_offset = height + y_scale * std::log10(y_lim.min);
       break;
     default:
       break;
@@ -248,11 +254,11 @@ template <class ValueType>
                 "Type must be either float or double");
   auto lims = is_x ? common_plot_params.x_lim : common_plot_params.y_lim;
 
-  const auto max_exp = lims.max != 0 ? std::log10(abs(lims.max)) : 0;
-  const auto min_exp = lims.min != 0 ? std::log10(abs(lims.min)) : 0;
+  const auto max_exp = lims.max != 0 ? std::log10(std::abs(lims.max)) : 0;
+  const auto min_exp = lims.min != 0 ? std::log10(std::abs(lims.min)) : 0;
 
-  const auto max_abs_exp = std::ceil(abs(max_exp));
-  const auto min_abs_exp = std::ceil(abs(min_exp));
+  const auto max_abs_exp = std::ceil(std::abs(max_exp));
+  const auto min_abs_exp = std::ceil(std::abs(min_exp));
 
   const auto exp_diff = max_exp - min_exp;
 
@@ -330,6 +336,157 @@ const auto getMaximumLabelWidth =
   const auto max_text = convertFloatToString<decltype(num2)>(
       num2, 2u, maximum_allowed_characters);
   return std::max(font.getStringWidth(min_text), font.getStringWidth(max_text));
+};
+
+/*============================================================================*/
+/*==========================From lnf.cpp======================================*/
+/*============================================================================*/
+
+static const std::string getNextCustomLabel(
+    std::vector<std::string>::reverse_iterator& custom_labels_it,
+    const std::vector<std::string>::reverse_iterator& rend) {
+  const auto retval = custom_labels_it++;
+
+  if (retval != rend) {
+    const auto val = *(retval);
+
+    return val;
+  }
+
+  throw std::out_of_range("custom_labels_it is out of range.");
+}
+
+static std::vector<float> getLinearTicks(
+    const std::size_t num_ticks, const cmp::Lim_f lim,
+    const std::vector<float> previous_ticks) {
+  std::vector<float> ticks(num_ticks);
+
+  const auto diff = (lim.max - lim.min) / float(num_ticks);
+  cmp::iota_delta(ticks.begin(), ticks.end(), lim.min + diff / 2.0f, diff);
+
+  return ticks;
+};
+
+static std::vector<float> getLinearTicks_V2(
+    const std::size_t num_ticks_per_power, const cmp::Lim_f lim,
+    const std::vector<float>& previous_ticks) {
+  if (!lim) return {};
+
+  if (!previous_ticks.empty() && previous_ticks.front() < lim.min &&
+      previous_ticks.back() > lim.max) {
+    return previous_ticks;
+  }
+
+  const auto delta_min_max = lim.max - lim.min;
+  const auto max_distance = delta_min_max / num_ticks_per_power;
+  const auto log_max_distance = std::log10(max_distance);
+  const auto log_max_distance_floor = std::floor(log_max_distance);
+  const auto base_value = std::pow(10.f, log_max_distance_floor);
+  auto multiplier = std::floor(max_distance / base_value);
+  multiplier = multiplier == 0 ? 1 : multiplier;
+  const auto delta = base_value * multiplier;
+  std::vector<float> ticks;
+
+  auto lim_min_round = lim.min;
+  if (lim.min != 0) {
+    const auto log_lim_min_floor = std::floor(std::log10(std::abs(lim.min)));
+    const auto base_value_min = std::pow(10.f, log_lim_min_floor);
+    auto multiplier_min = std::floor(lim.min / base_value_min);
+    multiplier_min = multiplier_min == 0 ? 1 : multiplier_min;
+    lim_min_round = base_value_min * multiplier_min;
+  }
+
+  if (lim_min_round < lim.min - delta) {
+    const auto div = lim.min - delta - lim_min_round;
+    const auto div_round = std::round(div / delta);
+    lim_min_round += div_round * delta;
+  }
+
+  for (float i = lim_min_round - delta * num_ticks_per_power;
+       i <= lim.max + delta * num_ticks_per_power; i += delta) {
+    ticks.push_back(i);
+  }
+
+  return ticks;
+};
+
+static std::pair<float, float> getFirstAndEndFromPreviousTicks(
+    const std::vector<float>& previous_ticks, const cmp::Lim_f lim) {
+  auto start_value = 0.0f;
+  {
+    auto it = previous_ticks.begin();
+    for (; it != previous_ticks.end(); ++it) {
+      if (*it > lim.min) {
+        if (it != previous_ticks.begin() && (it - 1) != previous_ticks.end()) {
+          start_value = *(it - 1);
+        } else {
+          start_value = *it;
+        }
+        break;
+      }
+    }
+  }
+
+  auto end_value = 0.0f;
+  {
+    auto it = previous_ticks.rbegin();
+    for (; it != previous_ticks.rend(); ++it) {
+      if (*it < lim.max) {
+        if (it != previous_ticks.rbegin() &&
+            (it - 1) != previous_ticks.rend()) {
+          end_value = *(it - 1);
+        } else {
+          end_value = *it;
+        }
+        break;
+      }
+    }
+  }
+
+  return {start_value, end_value};
+}
+
+static std::vector<float> getLogarithmicTicks(
+    const std::size_t num_ticks_per_power, const cmp::Lim_f lim,
+    const std::vector<float>& previous_ticks) {
+  if (!lim) return {};
+
+  const auto min_power = std::log10(lim.min);
+  const auto max_power = std::log10(lim.max);
+
+  const auto min_power_floor = std::floor(min_power);
+  const auto max_power_ceil = std::ceil(max_power);
+
+  std::vector<float> ticks;
+
+  if (std::abs(max_power - min_power) < 1.0f && !previous_ticks.empty()) {
+    ticks.resize(num_ticks_per_power);
+
+    const auto [start_value, end_value] =
+        getFirstAndEndFromPreviousTicks(previous_ticks, lim);
+
+    auto delta = (end_value - start_value) / num_ticks_per_power;
+    cmp::iota_delta(ticks.begin(), ticks.end(), lim.min, delta);
+
+    return ticks;
+  }
+
+  for (float curr_power = min_power_floor; curr_power < max_power_ceil;
+       ++curr_power) {
+    const auto curr_pos_base = std::pow(10.f, curr_power);
+
+    const auto delta =
+        std::pow(10.f, curr_power + 1.f) / static_cast<float>(num_ticks_per_power);
+
+    for (float i = 0; i < num_ticks_per_power; ++i) {
+      const auto tick =
+          floor((curr_pos_base + i * delta) / curr_pos_base) * curr_pos_base;
+
+      ticks.push_back(tick);
+    }
+  }
+
+  return ticks;
 };
 
 /*============================================================================*/

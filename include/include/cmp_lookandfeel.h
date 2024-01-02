@@ -29,6 +29,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
 
   void setDefaultPlotColours() noexcept override;
 
+  void overridePlotColours() noexcept override;
+
   void drawBackground(juce::Graphics &g,
                       const juce::Rectangle<int> &bound) override;
 
@@ -89,6 +91,16 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   int getYGridLabelDistanceFromGraphBound(
       const int y_grid_label_width) const noexcept override;
 
+  std::map<UserInput, UserInputAction> getDefaultUserInputMapAction()
+      const noexcept override;
+
+  std::map<UserInput, UserInputAction> overrideUserInputMapAction(
+      std::map<UserInput, UserInputAction> default_user_input_map_action)
+      const noexcept override;
+
+  UserInputAction getUserInputAction(
+      UserInput user_input) const noexcept override;
+
   void drawGraphLine(juce::Graphics &g,
                      const GraphLineDataView graph_line_data) override;
 
@@ -98,7 +110,7 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   void drawFrame(juce::Graphics &g, const juce::Rectangle<int> bounds) override;
 
   void drawGridLine(juce::Graphics &g, const GridLine &grid_line,
-                    const bool grid_on) override;
+                    const GridType grid_type) override;
 
   void drawLegend(juce::Graphics &g, std::vector<LegendLabel> legend_info,
                   const juce::Rectangle<int> &bounds) override;
@@ -121,17 +133,20 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   void drawTracePoint(juce::Graphics &g,
                       const juce::Rectangle<int> &bounds) override;
 
-  void drawZoomArea(juce::Graphics &g, juce::Point<int> &start_coordinates,
-                    const juce::Point<int> &end_coordinates,
-                    const juce::Rectangle<int> &graph_bounds) noexcept override;
+  void drawSelectionArea(
+      juce::Graphics &g, juce::Point<int> &start_coordinates,
+      const juce::Point<int> &end_coordinates,
+      const juce::Rectangle<int> &graph_bounds) noexcept override;
 
   void updateXGraphPoints(
+      const std::vector<std::size_t> &update_only_these_indices,
       const CommonPlotParameterView &common_plot_parameter_view,
       const std::vector<float> &x_data,
       std::vector<std::size_t> &graph_points_indices,
       GraphPoints &graph_points) noexcept override;
 
   void updateYGraphPoints(
+      const std::vector<std::size_t> &update_only_these_indices,
       const CommonPlotParameterView &common_plot_parameter_view,
       const std::vector<float> &y_data,
       const std::vector<std::size_t> &graph_points_indices,
@@ -140,12 +155,14 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   void updateVerticalGridLineTicksAuto(
       const juce::Rectangle<int> &bounds,
       const CommonPlotParameterView &common_plot_parameter_view,
-      const bool tiny_grids, std::vector<float> &x_ticks) noexcept override;
+      const GridType grid_type, const std::vector<float> &previous_ticks,
+      std::vector<float> &x_ticks) noexcept override;
 
   void updateHorizontalGridLineTicksAuto(
       const juce::Rectangle<int> &bounds,
       const CommonPlotParameterView &common_plot_parameter_view,
-      const bool tiny_grids, std::vector<float> &y_ticks) noexcept override;
+      const GridType grid_type, const std::vector<float> &previous_ticks,
+      std::vector<float> &y_ticks) noexcept override;
 
   juce::Font getGridLabelFont() const noexcept override;
 

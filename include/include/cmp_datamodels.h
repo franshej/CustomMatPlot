@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <vector>
 #ifdef __cpp_constexpr
 #if __cpp_constexpr >= 201907L
 #define CONSTEXPR20 \
@@ -50,7 +51,7 @@ class Frame;
 class PlotLabel;
 class Legend;
 class Trace;
-class Zoom;
+class GraphArea;
 class PlotLookAndFeel;
 
 struct LegendLabel;
@@ -59,10 +60,10 @@ struct Marker;
 struct GraphSpread;
 struct GraphSpreadIndex;
 struct GridLine;
+struct GraphLineList;
 struct IsLabelsSet;
 struct CommonPlotParameterView;
 struct GraphLineDataView;
-
 template <class ValueType>
 struct Lim;
 
@@ -70,6 +71,7 @@ struct Lim;
 
 typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
 typedef std::vector<juce::Point<float>> GraphPoints;
+typedef std::vector<GraphLineDataView> GraphLineDataViewList;
 typedef std::pair<std::string, juce::Rectangle<int>> Label;
 typedef std::vector<Label> LabelVector;
 typedef std::vector<std::string> StringVector;
@@ -77,26 +79,158 @@ typedef std::vector<juce::Colour> ColourVector;
 typedef std::vector<GraphAttribute> GraphAttributeList;
 typedef std::vector<std::unique_ptr<GraphSpread>> GraphSpreadList;
 typedef Lim<float> Lim_f;
+// Callback function for when a graph line is changed. E.g. when it is changed
+// when a graph point is moved. void GraphLinesChangedCallback(const
+// "GraphLineDataViewList &graph_line) { ... };""
+typedef std::function<void(const GraphLineDataViewList& graph_line)>
+    GraphLinesChangedCallback;
 
 /*============================================================================*/
 
-/**< Enum to define the scaling of an axis. */
+/** Enum to define the scaling of an axis. */
 enum class Scaling : uint32_t {
-  linear,     /**< Linear scaling of the graph line. */
-  logarithmic /**< Logarithmic scaling of the graph line. */
+  linear,     /** Linear scaling of the graph line. */
+  logarithmic /** Logarithmic scaling of the graph line. */
 };
 
-/**< Enum to define the type of downsampling. */
+/** Enum to define the type of downsampling. */
 enum class DownsamplingType : uint32_t {
-  no_downsampling, /**< No downsampling. Slow when plotting alot of values. */
-  x_downsampling,  /**< Downsampling only based on the x-values, makes sure that
+  no_downsampling, /** No downsampling. Slow when plotting alot of values. */
+  x_downsampling,  /** Downsampling only based on the x-values, makes sure that
                     there is only one plotted value per x-pixel value. Fastest,
                     but will discard x-values that are located with the same
                     x-pixel value near each other. Recommended for real-time
                     plotting. */
-  xy_downsampling, /**< Same resolution as 'no_downsampling' but skips x- &
-                      y-values that do not need to be plotted. It's quicker than
-                      'no_downsampling' but slower than 'x_downsampling'. */
+  xy_downsampling, /** Skips x- & y-values that shares the same pixel on the
+                      screen. It's quicker than 'no_downsampling' but slower
+                      than 'x_downsampling'. */
+};
+
+enum class UserInput : uint64_t {
+  // Mouse button pressed
+  left = 1UL,
+  right = 1UL << 1,
+  middle = 1UL << 2,
+
+  // Type of press
+  end = 1UL << 16,
+  start = 1UL << 17,
+  drag = 1UL << 18,
+  double_click = 1UL << 19,
+  scroll_up = 1UL << 20,
+  scroll_down = 1UL << 21,
+
+  // Keyboard button
+  shift = 1ULL << 32,
+  ctrl = 1ULL << 33,
+  alt = 1ULL << 34,
+
+  // Event component
+  graph_area = 1ULL << 46,
+  legend = 1ULL << 47,
+  tracepoint = 1ULL << 48,
+  trace_label = 1ULL << 49,
+
+};
+
+constexpr enum UserInput operator|(const enum UserInput selfValue,
+                                   const enum UserInput inValue) {
+  return (enum UserInput)(uint64_t(selfValue) | uint64_t(inValue));
+}
+
+/** Enum to define a type of action that will occur for a input. */
+enum class UserInputAction : uint32_t {
+  /** Tracepoint related actions. */
+  create_tracepoint,                /** Creates a tracepoint. */
+  move_tracepoint_to_closest_point, /** Move a tracepoint to closest point to
+                                       the mouse. */
+  move_tracepoint_label,            /** Move a tracepoint label. */
+  move_selected_trace_points,       /** Move a graph point. */
+  select_tracepoint,                /** Selecting a tracepoint. */
+  select_tracepoints_within_selected_area, /** Selecting multiple tracepoints.
+                                            */
+  deselect_tracepoint,                     /** Deselecting a tracepoint. */
+
+  /** Zoom related actions. */
+  zoom_selected_area, /** Zoom in on selected area. */
+  zoom_in,            /** Zoom in. */
+  zoom_out,           /** Zoom out. */
+  zoom_reset,         /** Reset the zoom. */
+
+  /** Selection area related actions. */
+  select_area_start, /** Set start positon for selected area. */
+  select_area_draw,  /** Set end position of selected are and draw the area. */
+
+  /** Graph point related actions. */
+  create_movable_graph_point, /** Create a movable graph point. */
+  remove_movable_graph_point, /** Remove a graph point. */
+
+  /** Legend related actions. */
+  move_legend, /** Move a legend. */
+
+  /** Panning */
+  panning, /** Panning. */
+
+  /** No action */
+  none /** No action. */
+};
+
+/** Enum to define if the mouse has just start currently dragging or does not
+ * drag. */
+enum class MouseDragState : uint32_t {
+  start, /** Start of a mouse drag. */
+  drag,  /** Mouse is currently dragging. */
+  none   /** No drag state. */
+};
+
+/** Enum to define when the tracepoint/Label should be visible or not. */
+enum class TracePointVisibilityType : uint32_t {
+  /** Tracepoint and label is not visible. */
+  not_visible,
+  /** Tracepoint is visible only when selected. Tracelabel is not visible. */
+  point_visible_when_selected,
+  /** Tracepoint and label are visible when selected. */
+  point_label_visible_when_selected,
+  /** Tracepoint is always visible. */
+  visible,
+};
+
+/** Enum to define how a graph point can be moved */
+enum class GraphPointMoveType : uint32_t {
+  /** Graph point can't be moved. */
+  none,
+  /** Graph point can be moved horizontally. */
+  horizontal,
+  /** Graph point can be moved vertically. */
+  vertical,
+  /** Graph point can be moved horizontally and vertically. */
+  horizontal_vertical,
+};
+
+/** Enum to define what type of GraphLine. */
+enum class GraphLineType : uint32_t {
+  /** GraphLine is any type. */
+  any,
+  /** GraphLine is a normal graph line. */
+  normal,
+  /** GraphLine is a horizontal line. */
+  horizontal,
+  /** GraphLine is a vertical line. */
+  vertical,
+};
+
+/** Enum to define if grid should be drawn or if the grid should be small */
+enum class GridType : uint32_t {
+  /** No grid is drawn. */
+  none,
+  /** Grid is drawn. */
+  grid,
+  /** Grid is drawn but with a smaller grid spacing. */
+  tiny_grid,
+  /** Grid drawn with translucent lines between. */
+  grid_translucent,
+  /** Tiny grid drawn with translucent lines between. */
+  tiny_grid_translucent,
 };
 
 /*============================================================================*/
@@ -113,6 +247,13 @@ struct Lim {
   constexpr Lim<ValueType>& operator/=(const ValueType val) {
     min /= val;
     max /= val;
+
+    return *this;
+  }
+
+  constexpr Lim<ValueType>& operator=(const Lim<ValueType> rhs) {
+    min = rhs.min;
+    max = rhs.max;
 
     return *this;
   }
@@ -136,6 +277,20 @@ struct Lim {
 
     return max == zero || min == zero;
   }
+
+  constexpr Lim<ValueType> operator+(const ValueType val) {
+    this->min += val;
+    this->max += val;
+
+    return *this;
+  }
+
+  constexpr Lim<ValueType> operator+=(const ValueType val) {
+    this->min += val;
+    this->max += val;
+
+    return *this;
+  }
 };
 
 template <class ValueType>
@@ -146,7 +301,18 @@ constexpr Lim<ValueType> operator/(const Lim<ValueType>& rhs,
   new_lim.min = rhs.min / val;
   new_lim.max = rhs.max / val;
 
-  return move(new_lim);
+  return new_lim;
+};
+
+template <class ValueType>
+constexpr Lim<ValueType> operator+(const Lim<ValueType>& rhs,
+                                   const ValueType val) {
+  Lim<ValueType> new_lim;
+
+  new_lim.min += val;
+  new_lim.max += val;
+
+  return new_lim;
 };
 
 /** @brief A struct that defines min and max using float. */
@@ -278,6 +444,111 @@ struct GraphAttribute {
 struct GraphSpreadIndex {
   std::size_t first_graph;
   std::size_t second_graph;
+};
+
+/** @brief A view of the data required to draw a graph_line++ */
+struct GraphLineDataView {
+  GraphLineDataView(const std::vector<float>& _x_data,
+                    const std::vector<float>& _y_data,
+                    const GraphPoints& _graph_points,
+                    const std::vector<std::size_t>& _graph_point_indices,
+                    const GraphAttribute& _graph_attribute);
+
+  GraphLineDataView(const GraphLine& graph_line);
+  GraphLineDataView(const std::vector<float>&&, const std::vector<float>&&,
+                    const GraphPoints&&,
+                    const std::vector<std::size_t>&&) =
+      delete;  // prevents rvalue binding
+
+  const std::vector<float>&x_data, &y_data;
+  const GraphPoints& graph_points;
+  const std::vector<std::size_t>& graph_point_indices;
+  const GraphAttribute& graph_attribute;
+};
+
+/**
+ * @brief A struct that defines a vector with fast push_back.
+ *
+ * This struct is used to speed up the downsampling process.
+ * The push_back_fast method is about 20x - 30x faster than
+ * std::vector::push_back.
+ *
+ * Example usage:
+ * @code{.cpp}
+ * std::vector<int> v;
+ * fast_vector<int> fv(v, 50'000);
+ *
+ * for (int i = 0; i < 50'000; i++)
+ *     fv.push_back(i);
+ * @endcode
+ *
+ * @warning This will only work if the vector is resized with a large size
+ * before resized to the correct size with resize_with_fast_push_back_size.
+ *
+ * @tparam T The type of elements stored in the vector.
+ */
+template <typename T>
+struct fast_vector {
+  /**
+   * @brief Constructs a new fast vector object.
+   *
+   * This constructor initializes the vector with the given vector and resizes
+   * it to the specified size.
+   *
+   * @param v The vector to initialize with.
+   * @param size The size to resize the vector to.
+   */
+  constexpr fast_vector(std::vector<T>& v, std::size_t size) : vec(v) {
+    vec.resize(size);
+  }
+
+  /**
+   * @brief Destroys the fast vector object.
+   *
+   * Before the object is destroyed, the vector is resized using the
+   * resize_with_fast_push_back_size function.
+   */
+  ~fast_vector() { resize_with_fast_push_back_size(); }
+
+  /**
+   * @brief Fast push_back for the vector.
+   * @warning This will only work if the vector has a size already.
+   * @param elem The element to be added to the vector.
+   */
+  constexpr void push_back(const T elem) noexcept { vec[index++] = elem; }
+
+  /**
+   * @brief push_back for the vector if the element is not in back of the vector.
+   * @warning This will only work if the vector has a size already.
+   * @param elem The element to be added to the vector.
+   */
+  constexpr void push_back_if_not_in_back(const T elem) noexcept {
+    if (vec.back() != elem) vec[index++] = elem;
+  }
+
+  fast_vector& operator=(const std::vector<T>& v) {
+    vec = v;
+    index = vec.size();
+    return *this;
+  }
+
+  /**
+   * @brief Resize the vector efficiently after using push_back.
+   */
+  constexpr void resize_with_fast_push_back_size() noexcept {
+    vec.resize(index);
+    index = 0u;
+  }
+
+  /**
+   * @brief Get a const reference to the vector.
+   * @return const std::vector<T>& A const reference to the vector. 
+   */
+  constexpr const std::vector<T>& get() const noexcept { return vec; }
+
+ private:
+  std::size_t index = 0u;  ///< Index used for fast push_back.
+  std::vector<T>& vec;     ///< Reference to the vector.
 };
 
 /*============================================================================*/

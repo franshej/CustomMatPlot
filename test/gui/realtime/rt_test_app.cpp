@@ -50,7 +50,7 @@ public:
                               DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new TestHandler("real_time"), true);
+            setContentOwned(&m_test_handler, true);
 
            #if JUCE_IOS || JUCE_ANDROID
             setFullScreen (true);
@@ -68,7 +68,8 @@ public:
         }
 
     private:
-        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
+        JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainWindow)
+        TestHandler m_test_handler{TestHandler("real_time")};
     };
 
 private:

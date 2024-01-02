@@ -10,6 +10,27 @@
 
 #define PI2 6.28318530718
 
+
+TEST(random_amount_y_data, real_time) {
+  ADD_PLOT;
+  ADD_TIMER(1000);
+
+  GET_TIMER_CB = [=](const int dt_ms) {
+    static std::vector<std::vector<float>> y_test_data;
+    size_t points_count = 2 + (size_t)(((float)rand() / RAND_MAX) * 1000.0);
+    size_t curve_count = 1 + (size_t)(((float)rand() / RAND_MAX) * 10.0);
+
+    y_test_data.resize(curve_count);
+    for (size_t i = 0; i < curve_count; ++i) {
+      y_test_data[i].resize(points_count);
+      for (size_t j = 0; j < points_count; ++j) {
+        y_test_data[i][j] = (float)rand() / RAND_MAX;
+      }
+    }
+    PLOT_Y({y_test_data});
+  };
+}
+
 TEST(random_y_values, real_time) {
   ADD_PLOT;
   ADD_TIMER(1000);
@@ -74,4 +95,27 @@ TEST(spread, real_time) {
   FILL_BETWEEN(spread_indices);
 
   GET_TIMER_CB = [=](const int dt_ms) { REALTIMEPLOT(getYData()); };
+}
+
+TEST(random_yx_values, real_time) {
+  ADD_PLOT;
+  ADD_TIMER(1000);
+
+  GET_TIMER_CB = [=](const int dt_ms) {
+    static std::vector<std::vector<float>> x_test_data, y_test_data;
+    size_t points_count = 2 + (size_t)(((float)rand() / RAND_MAX) * 1000.0);
+    size_t curve_count = 1 + (size_t)(((float)rand() / RAND_MAX) * 10.0);
+
+    x_test_data.resize(curve_count);
+    y_test_data.resize(curve_count);
+    for (size_t i = 0; i < curve_count; ++i) {
+      x_test_data[i].resize(points_count);
+      y_test_data[i].resize(points_count);
+      for (size_t j = 0; j < points_count; ++j) {
+        x_test_data[i][j] = (float)j;  // Linear curve
+        y_test_data[i][j] = (float)rand() / RAND_MAX;
+      }
+    }
+    PLOT_XY({y_test_data}, {x_test_data});
+  };
 }
