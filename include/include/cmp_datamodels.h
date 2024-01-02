@@ -466,6 +466,91 @@ struct GraphLineDataView {
   const GraphAttribute& graph_attribute;
 };
 
+/**
+ * @brief A struct that defines a vector with fast push_back.
+ *
+ * This struct is used to speed up the downsampling process.
+ * The push_back_fast method is about 20x - 30x faster than
+ * std::vector::push_back.
+ *
+ * Example usage:
+ * @code{.cpp}
+ * std::vector<int> v;
+ * fast_vector<int> fv(v, 50'000);
+ *
+ * for (int i = 0; i < 50'000; i++)
+ *     fv.push_back(i);
+ * @endcode
+ *
+ * @warning This will only work if the vector is resized with a large size
+ * before resized to the correct size with resize_with_fast_push_back_size.
+ *
+ * @tparam T The type of elements stored in the vector.
+ */
+template <typename T>
+struct fast_vector {
+  /**
+   * @brief Constructs a new fast vector object.
+   *
+   * This constructor initializes the vector with the given vector and resizes
+   * it to the specified size.
+   *
+   * @param v The vector to initialize with.
+   * @param size The size to resize the vector to.
+   */
+  constexpr fast_vector(std::vector<T>& v, std::size_t size) : vec(v) {
+    vec.resize(size);
+  }
+
+  /**
+   * @brief Destroys the fast vector object.
+   *
+   * Before the object is destroyed, the vector is resized using the
+   * resize_with_fast_push_back_size function.
+   */
+  ~fast_vector() { resize_with_fast_push_back_size(); }
+
+  /**
+   * @brief Fast push_back for the vector.
+   * @warning This will only work if the vector has a size already.
+   * @param elem The element to be added to the vector.
+   */
+  constexpr void push_back(const T elem) noexcept { vec[index++] = elem; }
+
+  /**
+   * @brief push_back for the vector if the element is not in back of the vector.
+   * @warning This will only work if the vector has a size already.
+   * @param elem The element to be added to the vector.
+   */
+  constexpr void push_back_if_not_in_back(const T elem) noexcept {
+    if (vec.back() != elem) vec[index++] = elem;
+  }
+
+  fast_vector& operator=(const std::vector<T>& v) {
+    vec = v;
+    index = vec.size();
+    return *this;
+  }
+
+  /**
+   * @brief Resize the vector efficiently after using push_back.
+   */
+  constexpr void resize_with_fast_push_back_size() noexcept {
+    vec.resize(index);
+    index = 0u;
+  }
+
+  /**
+   * @brief Get a const reference to the vector.
+   * @return const std::vector<T>& A const reference to the vector. 
+   */
+  constexpr const std::vector<T>& get() const noexcept { return vec; }
+
+ private:
+  std::size_t index = 0u;  ///< Index used for fast push_back.
+  std::vector<T>& vec;     ///< Reference to the vector.
+};
+
 /*============================================================================*/
 
 template <class ForwardIt, class ValueType>

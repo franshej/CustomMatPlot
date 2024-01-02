@@ -289,7 +289,7 @@ void GraphLine::updateYIndicesAndGraphPointsIntern(
       break;
 
     case DownsamplingType::xy_downsampling:
-      Downsampler<float>::calculateXYBasedDSIdxs(*m_common_plot_params,
+      Downsampler<float>::calculateXYBasedIdxs(*m_common_plot_params,
                                                  m_x_based_ds_indices, m_y_data,
                                                  m_xy_based_ds_indices);
 
