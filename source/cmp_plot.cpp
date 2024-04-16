@@ -192,19 +192,18 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
   if (new_x_lim.min > new_x_lim.max) UNLIKELY
   throw std::invalid_argument("Min value must be lower than max value.");
 
-  if ((abs(new_x_lim.max - new_x_lim.min) <
-       std::numeric_limits<float>::epsilon()))
-    UNLIKELY {
-      m_x_lim.min = new_x_lim.min - 1;
-      m_x_lim.max = new_x_lim.max + 1;
-    }
+  UNLIKELY if ((abs(new_x_lim.max - new_x_lim.min) <
+                std::numeric_limits<float>::epsilon())) {
+    m_x_lim.min = new_x_lim.min - 1;
+    m_x_lim.max = new_x_lim.max + 1;
+  }
 
-  if (m_x_scaling == Scaling::logarithmic && new_x_lim.isMinOrMaxZero())
-    UNLIKELY {
-      throw std::invalid_argument(
-          "The min/max x-value is zero or 'xLim' has been called with a zero "
-          "value. 10log(0) = -inf");
-    }
+  UNLIKELY if (m_x_scaling == Scaling::logarithmic &&
+               new_x_lim.isMinOrMaxZero()) {
+    throw std::invalid_argument(
+        "The min/max x-value is zero or 'xLim' has been called with a zero "
+        "value. 10log(0) = -inf");
+  }
 
   if (new_x_lim && new_x_lim != m_x_lim) {
     m_x_lim = new_x_lim;
@@ -219,15 +218,15 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
   if (new_y_lim.min > new_y_lim.max) UNLIKELY
   throw std::invalid_argument("Min value must be lower than max value.");
 
-  if (abs(new_y_lim.max - new_y_lim.min) <
+  UNLIKELY if (abs(new_y_lim.max - new_y_lim.min) <
       std::numeric_limits<float>::epsilon())
-    UNLIKELY {
+     {
       m_y_lim.min = new_y_lim.min - 1;
       m_y_lim.max = new_y_lim.max + 1;
     }
 
-  if (m_y_scaling == Scaling::logarithmic && new_y_lim.isMinOrMaxZero())
-    UNLIKELY {
+  UNLIKELY if (m_y_scaling == Scaling::logarithmic && new_y_lim.isMinOrMaxZero())
+     {
       throw std::invalid_argument(
           "The min/max y-value is zero or 'yLim' has been called with a zero "
           "value. 10log(0) = -inf");
@@ -618,7 +617,10 @@ void Plot::paint(juce::Graphics& g) {
 }
 
 void Plot::parentHierarchyChanged() {
-  getParentComponent()->addMouseListener(this, true);
+  auto *parentComponent = getParentComponent();
+  if (parentComponent) {
+    parentComponent->addMouseListener(this, true);
+  }
   lookAndFeelChanged();
 }
 
@@ -669,16 +671,16 @@ void Plot::updateGraphLineYData(
     const GraphAttributeList& graph_attribute_list) {
   if (y_data.empty()) return;
 
-  if (y_data.size() != m_graph_lines->size<t_graph_line_type>()) UNLIKELY {
-      m_graph_lines->resize<t_graph_line_type>(y_data.size());
-      std::size_t graph_line_index = 0u;
-      for (auto& graph_line : *m_graph_lines) {
-        if (graph_line == nullptr) {
-          addGraphLineInternal<t_graph_line_type>(graph_line, graph_line_index);
-        }
-        graph_line_index++;
+  UNLIKELY if (y_data.size() != m_graph_lines->size<t_graph_line_type>()) {
+    m_graph_lines->resize<t_graph_line_type>(y_data.size());
+    std::size_t graph_line_index = 0u;
+    for (auto &graph_line : *m_graph_lines) {
+      if (graph_line == nullptr) {
+        addGraphLineInternal<t_graph_line_type>(graph_line, graph_line_index);
       }
+      graph_line_index++;
     }
+  }
 
   auto y_data_it = y_data.begin();
   for (const auto& graph_line : *m_graph_lines) {
@@ -692,9 +694,7 @@ void Plot::updateGraphLineYData(
     }
   }
 
-  if (m_y_autoscale && !is_panning_or_zoomed) UNLIKELY {
-      setAutoYScale();
-    }
+  UNLIKELY if (m_y_autoscale && !is_panning_or_zoomed) { setAutoYScale(); }
 
   if (!graph_attribute_list.empty()) {
     auto it_gal = graph_attribute_list.begin();
@@ -1143,13 +1143,12 @@ void Plot::setGraphLineDataChangedCallback(
 }
 
 void Plot::panning(const juce::MouseEvent& event) {
-  if (m_x_scaling == Scaling::logarithmic ||
-      m_y_scaling == Scaling::logarithmic)
-    UNLIKELY {
-      jassertfalse;  // Panning is not implemented for logarithmic scaling.
-      // TODO: Implement panning for logarithmic scaling.
-      return;
-    }
+  UNLIKELY if (m_x_scaling == Scaling::logarithmic ||
+               m_y_scaling == Scaling::logarithmic) {
+    jassertfalse; // Panning is not implemented for logarithmic scaling.
+    // TODO: Implement panning for logarithmic scaling.
+    return;
+  }
 
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
   const auto current_pos =
