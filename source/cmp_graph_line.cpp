@@ -391,11 +391,14 @@ void GraphLineList::setLimitsForVerticalOrHorizontalLines(const Lim<ValueType>& 
   static_assert(t_graph_line_type == GraphLineType::vertical || t_graph_line_type == GraphLineType::horizontal,
                 "GraphLineType must be either vertical or horizontal");
 
+  const auto min = static_cast<float>(x_or_y_limit.min);
+  const auto max = static_cast<float>(x_or_y_limit.max);
+
   for (auto& graph_line : getGraphLinesOfType<t_graph_line_type>()) {
     if constexpr (t_graph_line_type == GraphLineType::vertical)
-      graph_line->setYValues({x_or_y_limit.min, x_or_y_limit.max});
+      graph_line->setYValues({min, max});
     else if constexpr (t_graph_line_type == GraphLineType::horizontal)
-      graph_line->setXValues({x_or_y_limit.min, x_or_y_limit.max});
+      graph_line->setXValues({min, max});
   }
 }
 

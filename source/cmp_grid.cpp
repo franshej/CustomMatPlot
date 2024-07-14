@@ -219,30 +219,30 @@ void Grid::addTranslucentGridLines() {
 
     GridLine translucent_grid_line;
     const auto next_it = std::next(grid_line, 1);
-    if (!prev_gridline && next_it != m_grid_lines.end() &&
-        next_it->direction == grid_line->direction)
-      UNLIKELY {
-        translucent_grid_line =
-            getTranslucentGridLine(&(*grid_line), &(*next_it), false);
-      }
+    UNLIKELY if (!prev_gridline && next_it != m_grid_lines.end() &&
+                 next_it->direction == grid_line->direction) {
+      translucent_grid_line =
+          getTranslucentGridLine(&(*grid_line), &(*next_it), false);
+    }
     else if (!prev_gridline) {
       prev_gridline = &(*grid_line);
       continue;
-    } else if (next_it == m_grid_lines.end() ||
-               (next_it->direction != grid_line->direction) &&
-                   prev_gridline->direction == grid_line->direction)
-      UNLIKELY {
-        translucent_grid_line =
-            getTranslucentGridLine(&(*grid_line), prev_gridline, false);
-        addGridWithinBound(translucent_grid_line);
-        translucent_grid_line =
-            getTranslucentGridLine(prev_gridline, &(*grid_line));
-      }
+    }
+    else UNLIKELY if (next_it == m_grid_lines.end() ||
+                      (next_it->direction != grid_line->direction) &&
+                          prev_gridline->direction == grid_line->direction) {
+      translucent_grid_line =
+          getTranslucentGridLine(&(*grid_line), prev_gridline, false);
+      addGridWithinBound(translucent_grid_line);
+      translucent_grid_line =
+          getTranslucentGridLine(prev_gridline, &(*grid_line));
+    }
     else if (prev_gridline->direction == grid_line->direction) {
       translucent_grid_line =
           getTranslucentGridLine(prev_gridline, &(*grid_line));
-    } else if (prev_gridline->direction != grid_line->direction &&
-               next_it->direction == grid_line->direction) {
+    }
+    else if (prev_gridline->direction != grid_line->direction &&
+             next_it->direction == grid_line->direction) {
       translucent_grid_line =
           getTranslucentGridLine(&(*grid_line), &(*next_it), false);
     }

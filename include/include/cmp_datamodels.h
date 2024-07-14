@@ -18,16 +18,6 @@
 #endif
 #endif
 
-#ifdef __cpp_impl_three_way_comparison
-#if (__cpp_impl_three_way_comparison >= 201907L)
-#include <compare>
-
-#define THREE_WAY_COMP true
-#else
-#define THREE_WAY_COMP false
-#endif
-#endif
-
 #ifdef __has_cpp_attribute
 #if (__has_cpp_attribute(unlikely))
 #define UNLIKELY [[unlikely]]
