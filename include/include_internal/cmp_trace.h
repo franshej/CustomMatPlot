@@ -42,17 +42,9 @@ struct TracePoint : public juce::Component {
                       const GraphLine* graph_line)
       : data_point_index(data_point_index), associated_graph_line(graph_line){};
 
-#if THREE_WAY_COMP
-  /** Spaceship */
-  constexpr bool operator<=>(const TracePoint<ValueType>& rhs) {
-    return this->getPosition() <=> rhs.getPosition();
-  }
-#else
-  /** No spaceship  :( */
   constexpr bool operator==(const TracePoint<ValueType>& rhs) {
     return this->getPosition() == rhs.getPosition();
   }
-#endif
 
   /** Compare with other data point. */
   constexpr bool operator==(const juce::Point<ValueType>& other_data_point) {
