@@ -328,15 +328,6 @@ template <class ValueType>
   return {value_text_out, factor_text};
 }
 
-const auto getMaximumLabelWidth =
-    [](const auto num1, const auto num2, const juce::Font& font,
-       const std::size_t maximum_allowed_characters) -> const int {
-  const auto min_text = convertFloatToString<decltype(num1)>(
-      num1, 2u, maximum_allowed_characters);
-  const auto max_text = convertFloatToString<decltype(num2)>(
-      num2, 2u, maximum_allowed_characters);
-  return std::max(font.getStringWidth(min_text), font.getStringWidth(max_text));
-};
 
 /*============================================================================*/
 /*==========================From lnf.cpp======================================*/

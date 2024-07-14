@@ -172,10 +172,10 @@ void Downsampler<FloatType>::calculateXYBasedIdxs(
 
   for (auto i_it = x_based_idxs_out.begin();; ++i_it) {
     // We have reached the last x-based ds index. Let's add it.
-    if (std::next(i_it) == x_based_idxs_out.end()) UNLIKELY {
-        xy_based_idxs.push_back(*i_it);
-        break;
-      }
+    UNLIKELY if (std::next(i_it) == x_based_idxs_out.end()) {
+      xy_based_idxs.push_back(*i_it);
+      break;
+    }
 
     // Calculated how many data values that share the same pixel coloumn.
     const auto num_data_sharing_same_pixel_col = *std::next(i_it) - *i_it;
