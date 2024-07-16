@@ -10,7 +10,7 @@ If you want to contribute to CustomMatPlot and make it better, your help is very
 - Add the original repository as a remote called `upstream`.
 - Create a new branch from the `master` branch.
 - Implement your feature or fix the issue.
-- Use Github Copilot, ChatGPT, or your favorite linter to check for code smells, architecture issues, or bad logic.
+- Use Github Copilot, ChatGPT, or your favorite llvm to check for code smells, architecture issues, or bad logic.
 - Format your Cpp code with `ClangFormat` style: `Google`.
 - Create a test for your fix, if possible (currently, only manual tests are available).
 - Push your branch to your fork on Github, which is the remote `origin`.

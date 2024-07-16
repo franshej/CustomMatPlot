@@ -1,0 +1,1 @@
+add_app_example(move_pixel_points)

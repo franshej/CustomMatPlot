@@ -60,7 +60,7 @@ struct Lim;
 /*============================================================================*/
 
 typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
-typedef std::vector<juce::Point<float>> GraphPoints;
+typedef std::vector<juce::Point<float>> PixelPoints;
 typedef std::vector<GraphLineDataView> GraphLineDataViewList;
 typedef std::pair<std::string, juce::Rectangle<int>> Label;
 typedef std::vector<Label> LabelVector;
@@ -70,7 +70,7 @@ typedef std::vector<GraphAttribute> GraphAttributeList;
 typedef std::vector<std::unique_ptr<GraphSpread>> GraphSpreadList;
 typedef Lim<float> Lim_f;
 // Callback function for when a graph line is changed. E.g. when it is changed
-// when a graph point is moved. void GraphLinesChangedCallback(const
+// when a pixel point is moved. void GraphLinesChangedCallback(const
 // "GraphLineDataViewList &graph_line) { ... };""
 typedef std::function<void(const GraphLineDataViewList& graph_line)>
     GraphLinesChangedCallback;
@@ -135,7 +135,7 @@ enum class UserInputAction : uint32_t {
   move_tracepoint_to_closest_point, /** Move a tracepoint to closest point to
                                        the mouse. */
   move_tracepoint_label,            /** Move a tracepoint label. */
-  move_selected_trace_points,       /** Move a graph point. */
+  move_selected_trace_points,       /** Move a pixel point. */
   select_tracepoint,                /** Selecting a tracepoint. */
   select_tracepoints_within_selected_area, /** Selecting multiple tracepoints.
                                             */
@@ -151,9 +151,9 @@ enum class UserInputAction : uint32_t {
   select_area_start, /** Set start positon for selected area. */
   select_area_draw,  /** Set end position of selected are and draw the area. */
 
-  /** Graph point related actions. */
-  create_movable_graph_point, /** Create a movable graph point. */
-  remove_movable_graph_point, /** Remove a graph point. */
+  /** Pixel point related actions. */
+  create_movable_pixel_point, /** Create a movable pixel point. */
+  remove_movable_pixel_point, /** Remove a pixel point. */
 
   /** Legend related actions. */
   move_legend, /** Move a legend. */
@@ -185,15 +185,15 @@ enum class TracePointVisibilityType : uint32_t {
   visible,
 };
 
-/** Enum to define how a graph point can be moved */
-enum class GraphPointMoveType : uint32_t {
-  /** Graph point can't be moved. */
+/** Enum to define how a pixel point can be moved */
+enum class PixelPointMoveType : uint32_t {
+  /** Pixel point can't be moved. */
   none,
-  /** Graph point can be moved horizontally. */
+  /** Pixel point can be moved horizontally. */
   horizontal,
-  /** Graph point can be moved vertically. */
+  /** Pixel point can be moved vertically. */
   vertical,
-  /** Graph point can be moved horizontally and vertically. */
+  /** Pixel point can be moved horizontally and vertically. */
   horizontal_vertical,
 };
 
@@ -419,14 +419,14 @@ struct GraphAttribute {
    * and 1.0 (opaque). */
   std::optional<float> graph_line_opacity;
 
-  /** The type of marker drawn on each graph point. */
+  /** The type of marker drawn on each pixel point. */
   std::optional<cmp::Marker> marker;
 
-  /** Callback function which is triggerd for every plotted graph_point. E.g.
-   * Can be used to do custom plot markers for each graph_point.*/
+  /** Callback function which is triggerd for every plotted pixel_point. E.g.
+   * Can be used to do custom plot markers for each pixel_point.*/
   std::function<void(juce::Graphics& g, juce::Point<float> data_point,
-                     juce::Point<float> graph_point)>
-      on_graph_point_paint{nullptr};
+                     juce::Point<float> pixel_point)>
+      on_pixel_point_paint{nullptr};
 };
 
 /** @brief A struct that defines between which two graph_lines the area is
@@ -440,19 +440,19 @@ struct GraphSpreadIndex {
 struct GraphLineDataView {
   GraphLineDataView(const std::vector<float>& _x_data,
                     const std::vector<float>& _y_data,
-                    const GraphPoints& _graph_points,
-                    const std::vector<std::size_t>& _graph_point_indices,
+                    const PixelPoints& _pixel_points,
+                    const std::vector<std::size_t>& _pixel_point_indices,
                     const GraphAttribute& _graph_attribute);
 
   GraphLineDataView(const GraphLine& graph_line);
   GraphLineDataView(const std::vector<float>&&, const std::vector<float>&&,
-                    const GraphPoints&&,
+                    const PixelPoints&&,
                     const std::vector<std::size_t>&&) =
       delete;  // prevents rvalue binding
 
   const std::vector<float>&x_data, &y_data;
-  const GraphPoints& graph_points;
-  const std::vector<std::size_t>& graph_point_indices;
+  const PixelPoints& pixel_points;
+  const std::vector<std::size_t>& pixel_point_indices;
   const GraphAttribute& graph_attribute;
 };
 

@@ -141,7 +141,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
               graph_bounds.getX() +
                   (m_common_plot_params->x_scaling == Scaling::linear
                        ? getXGraphValueLinear(t, scale, offset)
-                       : getXGraphPointsLogarithmic(t, scale, offset)),
+                       : getXPixelPointsLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
 
           if (!margin_grid_bound.contains(grid_line.position)) {
@@ -165,7 +165,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
               std::ceil(graph_bounds.getY() +
                         (m_common_plot_params->y_scaling == Scaling::linear
                              ? getYGraphValueLinear(t, scale, offset)
-                             : getYGraphPointsLogarithmic(t, scale, offset)))};
+                             : getYPixelPointsLogarithmic(t, scale, offset)))};
 
           if (!margin_grid_bound.contains(grid_line.position)) {
             continue;

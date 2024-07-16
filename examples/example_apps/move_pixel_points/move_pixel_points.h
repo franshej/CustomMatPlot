@@ -14,10 +14,10 @@
 using namespace cmp;
 
 namespace examples {
-class move_graph_points : public juce::Component {
+class move_pixel_points : public juce::Component {
   // Custom lookandfeel class to override the mouse input actions.
   class CustomLookAndFeel : public cmp::PlotLookAndFeel {
-    // Override the mouse input actions to move the graph points.
+    // Override the mouse input actions to move the pixel points.
     std::map<cmp::UserInput, cmp::UserInputAction> overrideUserInputMapAction(
         std::map<cmp::UserInput, cmp::UserInputAction>
             default_user_input_map_action) const noexcept override {
@@ -40,14 +40,14 @@ class move_graph_points : public juce::Component {
   cmp::Plot m_plot;
 
  public:
-  move_graph_points() : m_plot{cmp::Plot()} {
+  move_pixel_points() : m_plot{cmp::Plot()} {
     setSize(1200, 800);
 
     // Add the plot object as a child component.
     addAndMakeVisible(m_plot);
 
-    // Set the graph point move type to vertical.
-    m_plot.setMovePointsType(cmp::GraphPointMoveType::vertical);
+    // Set the pixel point move type to vertical.
+    m_plot.setMovePointsType(cmp::PixelPointMoveType::vertical);
 
     // Write the y data from the graph lines to the terminal.
     m_plot.setGraphLineDataChangedCallback(
