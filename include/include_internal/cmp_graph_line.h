@@ -42,16 +42,16 @@ class GraphLine : public juce::Component {
   GraphLine(const CommonPlotParameterView& common_plot_parameter_view)
       : m_common_plot_params(&common_plot_parameter_view){};
 
-  /** @brief Find closest point on graph from graph point.
+  /** @brief Find closest point on graph from pixel point.
    *
-   * @param this_graph_point the point on the graph.
+   * @param this_pixel_point the point on the graph.
    * @param check_only_distance_from_x check the absolut distance if false else
    * only the x distance.
    * @return {closest point on graph, closest data point value, data point
    * index}
    */
   std::tuple<juce::Point<float>, juce::Point<float>, size_t>
-  findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
+  findClosestPixelPointTo(const juce::Point<float>& this_pixel_point,
                           bool check_only_distance_from_x = false) const;
 
   /** @brief Find closest data point to this data point.
@@ -69,17 +69,17 @@ class GraphLine : public juce::Component {
       bool check_only_distance_from_x = false,
       bool only_visible_data_points = true) const;
 
-  /** @brief Get data point for a graph point index.
+  /** @brief Get data point for a pixel point index.
    *
-   *  @param graph_point_index the graph point index.
+   *  @param pixel_point_index the pixel point index.
    *  @return the data point.
    */
-  juce::Point<float> getDataPointFromGraphPointIndex(
-      size_t graph_point_index) const;
+  juce::Point<float> getDataPointFromPixelPointIndex(
+      size_t pixel_point_index) const;
 
-  /** @brief Get data point for a graph point index.
+  /** @brief Get data point for a pixel point index.
    *
-   *  @param data_point_index the graph point index.
+   *  @param data_point_index the pixel point index.
    *  @return the data point.
    */
   juce::Point<float> getDataPointFromDataPointIndex(
@@ -147,21 +147,21 @@ class GraphLine : public juce::Component {
    */
   const std::vector<float>& getXValues() const noexcept;
 
-  /** @brief Get the graph points
+  /** @brief Get the pixel points
    *
-   *  Get a const reference of the calculated graph points.
+   *  Get a const reference of the calculated pixel points.
    *
-   *  @return const reference of the calculated graph points.
+   *  @return const reference of the calculated pixel points.
    */
-  const GraphPoints& getGraphPoints() const noexcept;
+  const PixelPoints& getPixelPoints() const noexcept;
 
-  /* @brief Get the graph point indices
+  /* @brief Get the pixel point indices
    *
-   *  Get a const reference of the calculated graph point indices.
+   *  Get a const reference of the calculated pixel point indices.
    *
-   *  @return const reference of the calculated graph point indices.
+   *  @return const reference of the calculated pixel point indices.
    */
-  const std::vector<size_t>& getGraphPointIndices() const noexcept;
+  const std::vector<size_t>& getPixelPointIndices() const noexcept;
 
   /** @brief Set the colour of graph
    *
@@ -172,50 +172,50 @@ class GraphLine : public juce::Component {
    */
   void setColour(const juce::Colour graph_colour);
 
-  /** @brief Update the graph points indices x-value in the graph points.
+  /** @brief Update the pixel points indices x-value in the pixel points.
    *
-   *  This function updates the graph points if any new parameter is set. Should
+   *  This function updates the pixel points if any new parameter is set. Should
    *  be called after an parameter changed to update the graph. However, call
-   *  updateXYGraphPoints() if the min/max x/y-limits are move equally.
+   *  updateXYPixelPoints() if the min/max x/y-limits are move equally.
    *
    *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateXIndicesAndGraphPoints(
+  void updateXIndicesAndPixelPoints(
       const std::vector<size_t>& update_only_these_indices = {});
 
-  /** @brief Update the graph points indices and y-value in the graph points.
+  /** @brief Update the pixel points indices and y-value in the pixel points.
    *
-   *  This function updates the graph points if any new parameter is set. Should
+   *  This function updates the pixel points if any new parameter is set. Should
    *  be called after an parameter changed to update the graph. However, call
-   *  updateXYGraphPoints() if the min/max x/y-limits are move equally.
+   *  updateXYPixelPoints() if the min/max x/y-limits are move equally.
    *
    *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateYIndicesAndGraphPoints(
+  void updateYIndicesAndPixelPoints(
       const std::vector<size_t>& update_only_these_indices = {});
 
-  /** @brief move graph point in graphline
+  /** @brief move pixel point in graphline
    *
-   * @param d_graph_point the delta graph point.
-   * @param graph_point_index the graph point index.
+   * @param d_pixel_point the delta pixel point.
+   * @param pixel_point_index the pixel point index.
    * @return void.
    */
-  void moveGraphPoint(const juce::Point<float>& d_graph_point,
-                      size_t graph_point_index);
+  void movePixelPoint(const juce::Point<float>& d_pixel_point,
+                      size_t pixel_point_index);
 
-  /** @brief Update the y/x-value in the graph points.
+  /** @brief Update the y/x-value in the pixel points.
    *
-   *  This function updates the graph points if any new parameter is set.
+   *  This function updates the pixel points if any new parameter is set.
    *
-   *  @note updateXIndicesAndGraphPoints() and updateYIndicesAndGraphPoints()
+   *  @note updateXIndicesAndPixelPoints() and updateYIndicesAndPixelPoints()
    *  must have been called anytime before this function.
    *
    *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateXYGraphPoints();
+  void updateXYPixelPoints();
 
   /** @brief Set GraphLine type
    *
@@ -244,14 +244,14 @@ class GraphLine : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
-  void updateYIndicesAndGraphPointsIntern(
+  void updateYIndicesAndPixelPointsIntern(
       const std::vector<size_t>& update_only_these_indices);
-  void updateXIndicesAndGraphPointsIntern(
+  void updateXIndicesAndPixelPointsIntern(
       const std::vector<size_t>& update_only_these_indices);
 
   std::vector<float> m_x_data, m_y_data;
   std::vector<std::size_t> m_x_based_ds_indices, m_xy_based_ds_indices;
-  GraphPoints m_graph_points;
+  PixelPoints m_pixel_points;
   GraphLineType m_graph_line_type{GraphLineType::normal};
 
   const CommonPlotParameterView* m_common_plot_params{nullptr};

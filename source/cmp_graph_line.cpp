@@ -20,20 +20,20 @@ namespace cmp {
 
 GraphLineDataView::GraphLineDataView(
     const std::vector<float>& _x_data, const std::vector<float>& _y_data,
-    const GraphPoints& _graph_points,
-    const std::vector<std::size_t>& _graph_point_indices,
+    const PixelPoints& _pixel_points,
+    const std::vector<std::size_t>& _pixel_point_indices,
     const GraphAttribute& _graph_attribute)
     : x_data(_x_data),
       y_data(_y_data),
-      graph_points(_graph_points),
-      graph_point_indices(_graph_point_indices),
+      pixel_points(_pixel_points),
+      pixel_point_indices(_pixel_point_indices),
       graph_attribute(_graph_attribute) {}
 
 GraphLineDataView::GraphLineDataView(const GraphLine& graph_line)
     : x_data(graph_line.getXValues()),
       y_data(graph_line.getYValues()),
-      graph_points(graph_line.getGraphPoints()),
-      graph_point_indices(graph_line.getGraphPointIndices()),
+      pixel_points(graph_line.getPixelPoints()),
+      pixel_point_indices(graph_line.getPixelPointIndices()),
       graph_attribute(graph_line.getGraphAttribute()) {}
 
 const GraphAttribute& GraphLine::getGraphAttribute() const noexcept {
@@ -45,25 +45,25 @@ void GraphLine::setColour(const juce::Colour graph_colour) {
 }
 
 std::tuple<juce::Point<float>, juce::Point<float>, size_t>
-GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
+GraphLine::findClosestPixelPointTo(const juce::Point<float>& this_pixel_point,
                                    bool check_only_distance_from_x) const {
-  // No graph points.
-  jassert(!m_graph_points.empty());
+  // No pixel points.
+  jassert(!m_pixel_points.empty());
 
-  auto closest_graph_point = juce::Point<float>();
+  auto closest_pixel_point = juce::Point<float>();
   auto closest_data_point = juce::Point<float>();
   auto closest_i = 0u;
 
   auto closest_distance = std::numeric_limits<float>::max();
   std::size_t i = 0u;
-  for (const auto& graph_point : m_graph_points) {
+  for (const auto& pixel_point : m_pixel_points) {
     const auto current_distance =
         check_only_distance_from_x
-            ? std::abs(graph_point.getX() - this_graph_point.getX())
-            : graph_point.getDistanceSquaredFrom(this_graph_point);
+            ? std::abs(pixel_point.getX() - this_pixel_point.getX())
+            : pixel_point.getDistanceSquaredFrom(this_pixel_point);
     if (current_distance < closest_distance) {
       closest_distance = current_distance;
-      closest_graph_point = graph_point;
+      closest_pixel_point = pixel_point;
       closest_i = i;
       closest_data_point =
           juce::Point<float>(m_x_data[m_xy_based_ds_indices[i]],
@@ -72,7 +72,7 @@ GraphLine::findClosestGraphPointTo(const juce::Point<float>& this_graph_point,
     i++;
   }
 
-  return {closest_graph_point, closest_data_point,
+  return {closest_pixel_point, closest_data_point,
           m_xy_based_ds_indices[closest_i]};
 }
 
@@ -119,10 +119,10 @@ juce::Colour GraphLine::getColour() const noexcept {
   return m_graph_attributes.graph_colour.value();
 }
 
-juce::Point<float> GraphLine::getDataPointFromGraphPointIndex(
-    size_t graph_point_index) const {
-  return juce::Point<float>(m_x_data[m_xy_based_ds_indices[graph_point_index]],
-                            m_y_data[m_xy_based_ds_indices[graph_point_index]]);
+juce::Point<float> GraphLine::getDataPointFromPixelPointIndex(
+    size_t pixel_point_index) const {
+  return juce::Point<float>(m_x_data[m_xy_based_ds_indices[pixel_point_index]],
+                            m_y_data[m_xy_based_ds_indices[pixel_point_index]]);
 };
 
 juce::Point<float> GraphLine::getDataPointFromDataPointIndex(
@@ -148,8 +148,8 @@ void GraphLine::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
     if (m_common_plot_params) {
-      updateXIndicesAndGraphPointsIntern({});
-      updateYIndicesAndGraphPointsIntern({});
+      updateXIndicesAndPixelPointsIntern({});
+      updateYIndicesAndPixelPointsIntern({});
     }
   } else {
     m_lookandfeel = nullptr;
@@ -166,9 +166,9 @@ void GraphLine::setGraphAttribute(const GraphAttribute& graph_attribute) {
   if (graph_attribute.graph_line_opacity)
     m_graph_attributes.graph_line_opacity = graph_attribute.graph_line_opacity;
 
-  if (graph_attribute.on_graph_point_paint)
-    m_graph_attributes.on_graph_point_paint =
-        graph_attribute.on_graph_point_paint;
+  if (graph_attribute.on_pixel_point_paint)
+    m_graph_attributes.on_pixel_point_paint =
+        graph_attribute.on_pixel_point_paint;
 
   if (graph_attribute.path_stroke_type)
     m_graph_attributes.path_stroke_type = graph_attribute.path_stroke_type;
@@ -196,12 +196,12 @@ bool GraphLine::setXYValue(const juce::Point<float>& xy_value, size_t index) {
   return true;
 }
 
-void GraphLine::moveGraphPoint(const juce::Point<float>& d_graph_point,
-                               size_t graph_point_index) {
-  if (graph_point_index >= m_x_data.size()) return;
+void GraphLine::movePixelPoint(const juce::Point<float>& d_pixel_point,
+                               size_t pixel_point_index) {
+  if (pixel_point_index >= m_x_data.size()) return;
 
-  m_x_data[graph_point_index] += d_graph_point.getX();
-  m_y_data[graph_point_index] += d_graph_point.getY();
+  m_x_data[pixel_point_index] += d_pixel_point.getX();
+  m_y_data[pixel_point_index] += d_pixel_point.getY();
 }
 
 const std::vector<float>& GraphLine::getYValues() const noexcept {
@@ -212,15 +212,15 @@ const std::vector<float>& GraphLine::getXValues() const noexcept {
   return m_x_data;
 }
 
-const GraphPoints& GraphLine::getGraphPoints() const noexcept {
-  return m_graph_points;
+const PixelPoints& GraphLine::getPixelPoints() const noexcept {
+  return m_pixel_points;
 }
 
-const std::vector<size_t>& GraphLine::getGraphPointIndices() const noexcept {
+const std::vector<size_t>& GraphLine::getPixelPointIndices() const noexcept {
   return m_xy_based_ds_indices;
 }
 
-void GraphLine::updateXIndicesAndGraphPoints(
+void GraphLine::updateXIndicesAndPixelPoints(
     const std::vector<size_t>& update_only_these_indices) {
   // x_lim must be set to calculate the xdata.
   jassert(m_common_plot_params->x_lim);
@@ -228,10 +228,10 @@ void GraphLine::updateXIndicesAndGraphPoints(
   // x_data empty.
   jassert(!m_x_data.empty());
 
-  updateXIndicesAndGraphPointsIntern(update_only_these_indices);
+  updateXIndicesAndPixelPointsIntern(update_only_these_indices);
 }
 
-void GraphLine::updateYIndicesAndGraphPoints(
+void GraphLine::updateYIndicesAndPixelPoints(
     const std::vector<size_t>& update_only_these_indices) {
   // x_lim must be set to calculate the xdata.
   jassert(m_common_plot_params->y_lim);
@@ -239,10 +239,10 @@ void GraphLine::updateYIndicesAndGraphPoints(
   // y_data empty.
   jassert(!m_y_data.empty());
 
-  updateYIndicesAndGraphPointsIntern(update_only_these_indices);
+  updateYIndicesAndPixelPointsIntern(update_only_these_indices);
 }
 
-void GraphLine::updateXIndicesAndGraphPointsIntern(
+void GraphLine::updateXIndicesAndPixelPointsIntern(
     const std::vector<size_t>& update_only_these_indices) {
   const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
@@ -270,11 +270,11 @@ void GraphLine::updateXIndicesAndGraphPointsIntern(
   }
 
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-  lnf->updateXGraphPoints(update_only_these_indices, *m_common_plot_params,
-                          m_x_data, m_x_based_ds_indices, m_graph_points);
+  lnf->updateXPixelPoints(update_only_these_indices, *m_common_plot_params,
+                          m_x_data, m_x_based_ds_indices, m_pixel_points);
 }
 
-void GraphLine::updateYIndicesAndGraphPointsIntern(
+void GraphLine::updateYIndicesAndPixelPointsIntern(
     const std::vector<size_t>& update_only_these_indices) {
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
   const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
@@ -293,24 +293,24 @@ void GraphLine::updateYIndicesAndGraphPointsIntern(
                                                  m_x_based_ds_indices, m_y_data,
                                                  m_xy_based_ds_indices);
 
-      lnf->updateXGraphPoints(update_only_these_indices, *m_common_plot_params,
-                              m_x_data, m_xy_based_ds_indices, m_graph_points);
+      lnf->updateXPixelPoints(update_only_these_indices, *m_common_plot_params,
+                              m_x_data, m_xy_based_ds_indices, m_pixel_points);
       break;
 
     default:
       break;
   }
 
-  lnf->updateYGraphPoints(update_only_these_indices, *m_common_plot_params,
-                          m_y_data, m_xy_based_ds_indices, m_graph_points);
+  lnf->updateYPixelPoints(update_only_these_indices, *m_common_plot_params,
+                          m_y_data, m_xy_based_ds_indices, m_pixel_points);
 }
 
-void GraphLine::updateXYGraphPoints() {
+void GraphLine::updateXYPixelPoints() {
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-  lnf->updateXGraphPoints({}, *m_common_plot_params, m_x_data,
-                          m_xy_based_ds_indices, m_graph_points);
-  lnf->updateYGraphPoints({}, *m_common_plot_params, m_y_data,
-                          m_xy_based_ds_indices, m_graph_points);
+  lnf->updateXPixelPoints({}, *m_common_plot_params, m_x_data,
+                          m_xy_based_ds_indices, m_pixel_points);
+  lnf->updateYPixelPoints({}, *m_common_plot_params, m_y_data,
+                          m_xy_based_ds_indices, m_pixel_points);
 }
 
 void GraphLine::setType(const GraphLineType graph_line_type) {

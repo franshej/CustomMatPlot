@@ -80,7 +80,7 @@ static auto calculateXIdxsBetweenStartEnd(
 
   float last_added_x = x_data[start_x_idx];
   std::size_t current_index = start_x_idx;
-  std::size_t graph_point_index{1u};
+  std::size_t pixel_point_index{1u};
   const auto inverse_x_scale = 1.0f / x_scale;
   auto last_x_diff = 0.f;
 
@@ -95,7 +95,7 @@ static auto calculateXIdxsBetweenStartEnd(
 
       if (force_add_x || (std::abs(last_added_x - x_data[i])) > inverse_x_scale) {
         last_added_x = x_data[i];
-        x_based_idxs_out[graph_point_index++] = i;
+        x_based_idxs_out[pixel_point_index++] = i;
       }
     }
   } else if (common_params.x_scaling == Scaling::logarithmic) {
@@ -103,13 +103,13 @@ static auto calculateXIdxsBetweenStartEnd(
          ++x) {
       if (std::log10(std::abs(*x / last_added_x)) > inverse_x_scale) {
         last_added_x = *x;
-        x_based_idxs_out[graph_point_index++] = current_index;
+        x_based_idxs_out[pixel_point_index++] = current_index;
       }
       current_index++;
     }
   }
 
-  const auto x_idxs_size_required = graph_point_index + 1;
+  const auto x_idxs_size_required = pixel_point_index + 1;
   return x_idxs_size_required;
 }
 

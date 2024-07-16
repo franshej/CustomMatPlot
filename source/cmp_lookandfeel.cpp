@@ -283,12 +283,12 @@ juce::Point<int> PlotLookAndFeel::getTracePointPositionFrom(
   if (common_plot_params.x_scaling == Scaling::linear) {
     x = getXGraphValueLinear(graph_values.getX(), x_scale, x_offset);
   } else {
-    x = getXGraphPointsLogarithmic(graph_values.getX(), x_scale, x_offset);
+    x = getXPixelPointsLogarithmic(graph_values.getX(), x_scale, x_offset);
   }
   if (common_plot_params.y_scaling == Scaling::linear) {
     y = getYGraphValueLinear(graph_values.getY(), y_scale, y_offset);
   } else {
-    y = getYGraphPointsLogarithmic(graph_values.getY(), y_scale, y_offset);
+    y = getYPixelPointsLogarithmic(graph_values.getY(), y_scale, y_offset);
   }
 
   return juce::Point<float>(x, y).toInt();
@@ -304,15 +304,15 @@ void PlotLookAndFeel::drawGraphLine(juce::Graphics& g,
                                  juce::PathStrokeType::JointStyle::mitered,
                                  juce::PathStrokeType::EndCapStyle::rounded);
 
-  const auto& graph_points = graph_line_data.graph_points;
+  const auto& pixel_points = graph_line_data.pixel_points;
   const auto& dashed_lengths = graph_line_data.graph_attribute.dashed_lengths;
   const auto& marker = graph_line_data.graph_attribute.marker;
   auto graph_colour = graph_line_data.graph_attribute.graph_colour.value();
 
-  if (graph_points.size() > 1) {
-    graph_path.startNewSubPath(graph_points[0]);
+  if (pixel_points.size() > 1) {
+    graph_path.startNewSubPath(pixel_points[0]);
     std::for_each(
-        graph_points.begin() + 1, graph_points.end(),
+        pixel_points.begin() + 1, pixel_points.end(),
         [&](const juce::Point<float>& point) { graph_path.lineTo(point); });
 
     if (dashed_lengths) {
@@ -329,7 +329,7 @@ void PlotLookAndFeel::drawGraphLine(juce::Graphics& g,
       const auto marker_path =
           Marker::getMarkerPathFrom(marker.value(), marker_length);
 
-      for (const auto& point : graph_points) {
+      for (const auto& point : pixel_points) {
         auto path = marker_path;
 
         path.applyTransform(
@@ -476,16 +476,16 @@ void PlotLookAndFeel::drawSpread(juce::Graphics& g,
                                  const juce::Colour& spread_colour) {
   juce::Path path;
 
-  if (!first_graph->getGraphPoints().empty()) {
-    const auto& first_graph_points = first_graph->getGraphPoints();
-    const auto& second_graph_points = second_graph->getGraphPoints();
+  if (!first_graph->getPixelPoints().empty()) {
+    const auto& first_pixel_points = first_graph->getPixelPoints();
+    const auto& second_pixel_points = second_graph->getPixelPoints();
 
-    path.startNewSubPath(first_graph_points[0]);
+    path.startNewSubPath(first_pixel_points[0]);
 
-    std::for_each(first_graph_points.begin() + 1, first_graph_points.end(),
+    std::for_each(first_pixel_points.begin() + 1, first_pixel_points.end(),
                   [&](const auto point) { path.lineTo(point); });
 
-    std::for_each(second_graph_points.rbegin(), second_graph_points.rend(),
+    std::for_each(second_pixel_points.rbegin(), second_pixel_points.rend(),
                   [&](const auto point) { path.lineTo(point); });
 
     path.closeSubPath();
@@ -588,78 +588,78 @@ void PlotLookAndFeel::drawSelectionArea(
   g.strokePath(path, pathStrokType);
 }
 
-void PlotLookAndFeel::updateXGraphPoints(
+void PlotLookAndFeel::updateXPixelPoints(
     const std::vector<std::size_t>& update_only_these_indices,
     const CommonPlotParameterView& common_plot_parameter_view,
     const std::vector<float>& x_data,
-    std::vector<std::size_t>& graph_points_indices,
-    GraphPoints& graph_points) noexcept {
+    std::vector<std::size_t>& pixel_points_indices,
+    PixelPoints& pixel_points) noexcept {
   const auto [x_scale, x_offset] = getXScaleAndOffset(
       float(common_plot_parameter_view.graph_bounds.getWidth()),
       common_plot_parameter_view.x_lim, common_plot_parameter_view.x_scaling);
 
-  graph_points.resize(graph_points_indices.size());
+  pixel_points.resize(pixel_points_indices.size());
 
   if (!update_only_these_indices.empty()) {
-    if (graph_points_indices.size() != x_data.size()) {
+    if (pixel_points_indices.size() != x_data.size()) {
       jassertfalse;
-      // You are trying to update only some of the graph points, but the
+      // You are trying to update only some of the pixel points, but the
       // downsampling is requies to be off. Set the downsampling to
       // no_downsampling.
     }
 
     if (common_plot_parameter_view.y_scaling == Scaling::linear) {
       for (const auto i : update_only_these_indices)
-        graph_points[i].setX(
+        pixel_points[i].setX(
             getXGraphValueLinear(x_data[i], x_scale, x_offset));
     } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
       for (const auto i : update_only_these_indices)
-        graph_points[i].setX(
-            getXGraphPointsLogarithmic(x_data[i], x_scale, x_offset));
+        pixel_points[i].setX(
+            getXPixelPointsLogarithmic(x_data[i], x_scale, x_offset));
     }
     return;
   }
 
   std::size_t i{0u};
   if (common_plot_parameter_view.x_scaling == Scaling::linear) {
-    for (const auto i_x : graph_points_indices) {
-      graph_points[i++].setX(
+    for (const auto i_x : pixel_points_indices) {
+      pixel_points[i++].setX(
           getXGraphValueLinear(x_data[i_x], x_scale, x_offset));
     }
   } else if (common_plot_parameter_view.x_scaling == Scaling::logarithmic) {
-    for (const auto i_x : graph_points_indices) {
-      graph_points[i++].setX(
-          getXGraphPointsLogarithmic(x_data[i_x], x_scale, x_offset));
+    for (const auto i_x : pixel_points_indices) {
+      pixel_points[i++].setX(
+          getXPixelPointsLogarithmic(x_data[i_x], x_scale, x_offset));
     }
   }
 }
 
-void PlotLookAndFeel::updateYGraphPoints(
+void PlotLookAndFeel::updateYPixelPoints(
     const std::vector<std::size_t>& update_only_these_indices,
     const CommonPlotParameterView& common_plot_parameter_view,
     const std::vector<float>& y_data,
-    const std::vector<std::size_t>& graph_points_indices,
-    GraphPoints& graph_points) noexcept {
+    const std::vector<std::size_t>& pixel_points_indices,
+    PixelPoints& pixel_points) noexcept {
   const auto [y_scale, y_offset] = getYScaleAndOffset(
       common_plot_parameter_view.graph_bounds.toFloat().getHeight(),
       common_plot_parameter_view.y_lim, common_plot_parameter_view.y_scaling);
 
   if (!update_only_these_indices.empty()) {
-    if (graph_points_indices.size() != y_data.size()) {
+    if (pixel_points_indices.size() != y_data.size()) {
       jassertfalse;
-      // You are trying to update only some of the graph points, but the
+      // You are trying to update only some of the pixel points, but the
       // downsampling is requies to be off. Set the downsampling to
       // no_downsampling.
     }
 
     if (common_plot_parameter_view.y_scaling == Scaling::linear) {
       for (const auto i : update_only_these_indices)
-        graph_points[i].setY(
+        pixel_points[i].setY(
             getYGraphValueLinear(y_data[i], y_scale, y_offset));
     } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
       for (const auto i : update_only_these_indices)
-        graph_points[i].setY(
-            getYGraphPointsLogarithmic(y_data[i], y_scale, y_offset));
+        pixel_points[i].setY(
+            getYPixelPointsLogarithmic(y_data[i], y_scale, y_offset));
     }
     return;
   }
@@ -667,15 +667,15 @@ void PlotLookAndFeel::updateYGraphPoints(
   std::size_t i = 0u;
 
   if (common_plot_parameter_view.y_scaling == Scaling::linear) {
-    for (const auto i_y : graph_points_indices) {
-      graph_points[i].setY(
+    for (const auto i_y : pixel_points_indices) {
+      pixel_points[i].setY(
           getYGraphValueLinear(y_data[i_y], y_scale, y_offset));
       i++;
     }
   } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
-    for (const auto i_y : graph_points_indices) {
-      graph_points[i].setY(
-          getYGraphPointsLogarithmic(y_data[i_y], y_scale, y_offset));
+    for (const auto i_y : pixel_points_indices) {
+      pixel_points[i].setY(
+          getYPixelPointsLogarithmic(y_data[i_y], y_scale, y_offset));
       i++;
     }
   }

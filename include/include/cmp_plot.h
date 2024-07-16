@@ -133,25 +133,25 @@ class Plot : public juce::Component {
    * default is DownsamplingType::xy_downsampling.
    * @note The downsampling type will be set to
    * DownsamplingType::no_downsampling if move_point_type >
-   * GraphPointMoveType::none.
+   * PixelPointMoveType::none.
    *
    * @param downsampling_type the type of downsampling.
    */
   void setDownsamplingType(const DownsamplingType downsampling_type);
 
-  /** @brief Set if it should be possible to move graph points and in which
+  /** @brief Set if it should be possible to move pixel points and in which
    * direction(s).
    *
    * @note The downsampling type will be set to
    * DownsamplingType::no_downsampling if move_point_type >
-   * GraphPointMoveType::none.
-   * @see cmp::GraphPointMoveType for the different types, default is
-   * GraphPointMoveType::none.
+   * PixelPointMoveType::none.
+   * @see cmp::PixelPointMoveType for the different types, default is
+   * PixelPointMoveType::none.
    *
-   * @param move_points_type the type of graph point movement.
+   * @param move_points_type the type of pixel point movement.
    * @return void.
    */
-  void setMovePointsType(const GraphPointMoveType move_points_type);
+  void setMovePointsType(const PixelPointMoveType move_points_type);
 
   /** @brief Set GraphLinesChangedCallback.
    *
@@ -535,24 +535,24 @@ class Plot : public juce::Component {
         const GridType grid_type, const std::vector<float>& previous_ticks,
         std::vector<float>& y_ticks) noexcept = 0;
 
-    /** Updates the x-coordinates of the graph points used when drawing a graph
+    /** Updates the x-coordinates of the pixel points used when drawing a graph
      *  line. */
-    virtual void updateXGraphPoints(
+    virtual void updateXPixelPoints(
         const std::vector<std::size_t>& update_only_these_indices,
         const CommonPlotParameterView& common_plot_parameter_view,
         const std::vector<float>& x_data,
-        std::vector<std::size_t>& graph_points_indices,
-        GraphPoints& graph_points) noexcept = 0;
+        std::vector<std::size_t>& pixel_points_indices,
+        PixelPoints& pixel_points) noexcept = 0;
 
-    /** Updates the y-coordinates of the graph points used when drawing a graph
+    /** Updates the y-coordinates of the pixel points used when drawing a graph
      * line. */
-    virtual void updateYGraphPoints(
+    virtual void updateYPixelPoints(
         const std::vector<std::size_t>& update_only_these_indices,
 
         const CommonPlotParameterView& common_plot_parameter_view,
         const std::vector<float>& y_data,
-        const std::vector<std::size_t>& graph_points_indices,
-        GraphPoints& graph_points) noexcept = 0;
+        const std::vector<std::size_t>& pixel_points_indices,
+        PixelPoints& pixel_points) noexcept = 0;
 
     /** Updates both the vertical and horizontal grid labels. */
     virtual void updateGridLabels(
@@ -715,7 +715,7 @@ class Plot : public juce::Component {
       const Plot* plot) noexcept;
 
   /** Other variables */
-  GraphPointMoveType m_graph_point_move_type{GraphPointMoveType::none};
+  PixelPointMoveType m_pixel_point_move_type{PixelPointMoveType::none};
   bool m_x_autoscale = true, m_y_autoscale = true, is_panning_or_zoomed = false;
 };
 

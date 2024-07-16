@@ -187,12 +187,12 @@ constexpr auto getYGraphValueLinear = [](const float y, const float y_scale,
   return y_offset - (y * y_scale);
 };
 
-constexpr auto getXGraphPointsLogarithmic =
+constexpr auto getXPixelPointsLogarithmic =
     [](const float x, const float x_scale_log, const float x_offset) -> float {
   return (x_scale_log * std::log10(x)) - x_offset;
 };
 
-constexpr auto getYGraphPointsLogarithmic =
+constexpr auto getYPixelPointsLogarithmic =
     [](const float y, const float y_scale_log, const float y_offset) -> float {
   return y_offset - (y_scale_log * std::log10(y));
 };

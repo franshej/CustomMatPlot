@@ -215,12 +215,12 @@ class Trace {
    * calling 'updateTracePointsBounds' to display the trace-point.
    *
    * @param graph_line pointer to a graph line.
-   * @param graph_point_index the index of the graph point that is associated
+   * @param pixel_point_index the index of the pixel point that is associated
    * with this tracepoint
    * @return void.
    */
   void addOrRemoveTracePoint(
-      const GraphLine* graph_line, const size_t graph_point_index,
+      const GraphLine* graph_line, const size_t pixel_point_index,
       const TracePointVisibilityType trace_point_visibility =
           TracePointVisibilityType::visible);
 
@@ -230,13 +230,13 @@ class Trace {
    * calling 'updateTracePointsBounds' to display the trace-point.
    *
    * @param graph_line pointer to a graph line.
-   * @param graph_point_index the index of the graph point that is associated
+   * @param pixel_point_index the index of the pixel point that is associated
    * with this tracepoint
    * @param trace_point_visibility the visibility of the tracepoint.
    * @return void.
    */
   void addTracePoint(const GraphLine* graph_line,
-                     const size_t graph_point_index,
+                     const size_t pixel_point_index,
                      const TracePointVisibilityType trace_point_visibility);
 
   /** @brief Get tracepoint from juce::component.
@@ -282,17 +282,17 @@ class Trace {
    */
   void setLookAndFeel(juce::LookAndFeel* lnf);
 
-  /** @brief Set the graph point for a tracepoint.
+  /** @brief Set the pixel point for a tracepoint.
    *
    * @param tracepoint the tracepoint which data value will be set.
-   * @param graph_point_index the index of the graph point that is associated
+   * @param pixel_point_index the index of the pixel point that is associated
    * with this tracepoint
-   * @param graph_line the graph line that the graph point belongs to.
+   * @param graph_line the graph line that the pixel point belongs to.
    *
    * @return true if the value was changed.
    */
   bool setDataPointFor(juce::Component* trace_point,
-                       const size_t graph_point_index,
+                       const size_t pixel_point_index,
                        const GraphLine* graph_line);
 
   /** @brief Set the coner position of a single tracelabel.
@@ -345,12 +345,12 @@ class Trace {
 
   /** @internal */
   void addSingleTracePointAndLabelInternal(
-      const GraphLine* graph_line, const size_t graph_point_index,
+      const GraphLine* graph_line, const size_t pixel_point_index,
       const TracePointVisibilityType trace_point_visibility);
 
   /** @internal */
   void removeSingleTracePointAndLabel(const GraphLine* graph_line,
-                                      const size_t graph_point_index);
+                                      const size_t pixel_point_index);
 
   /** @internal */
   void updateSingleTraceLabelTextsAndBoundsInternal(
@@ -361,7 +361,7 @@ class Trace {
 
   /** @internal */
   bool doesTracePointExist(const GraphLine* graph_line,
-                           const size_t graph_point_index) const;
+                           const size_t pixel_point_index) const;
 
   /** @internal */
   std::vector<TraceLabelPoint_f>::const_iterator

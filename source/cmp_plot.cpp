@@ -84,10 +84,10 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
         current_data_point = current_point = data_point;
         data_point_index = data_point_index_temp;
       } else {
-        const auto [current_graph_point, data_point, data_point_index_temp] =
-            graph_line->findClosestGraphPointTo(point);
+        const auto [current_pixel_point, data_point, data_point_index_temp] =
+            graph_line->findClosestPixelPointTo(point);
 
-        current_point = current_graph_point;
+        current_point = current_pixel_point;
         current_data_point = data_point;
         current_data_point_index = data_point_index_temp;
       }
@@ -107,9 +107,9 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
       return {data_point_index_temp, nearest_graph_line};
     }
 
-    const auto [graph_point, data_point, data_point_index_temp] =
-        nearest_graph_line->findClosestGraphPointTo(point);
-    closest_point = graph_point;
+    const auto [pixel_point, data_point, data_point_index_temp] =
+        nearest_graph_line->findClosestPixelPointTo(point);
+    closest_point = pixel_point;
     closest_data_point = data_point;
     data_point_index = data_point_index_temp;
   }
@@ -253,8 +253,8 @@ void Plot::updateGraphLines() {
   m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal>(m_y_lim);
 
   for (const auto& graph_line : *m_graph_lines) {
-    graph_line->updateXIndicesAndGraphPoints();
-    graph_line->updateYIndicesAndGraphPoints();
+    graph_line->updateXIndicesAndPixelPoints();
+    graph_line->updateYIndicesAndPixelPoints();
   }
 }
 
@@ -274,7 +274,7 @@ void Plot::updateGridAndTracepointsAndGraphLines() {
     m_trace->updateTracePointsBounds();
 
     for (const auto& graph_line : *m_graph_lines) {
-      graph_line->updateXYGraphPoints();
+      graph_line->updateXYPixelPoints();
     }
   }
 }
@@ -456,12 +456,12 @@ void cmp::Plot::setDownsamplingType(const DownsamplingType downsampling_type) {
 void cmp::Plot::setDownsamplingTypeInternal(
     const DownsamplingType downsampling_type) {
   if (downsampling_type > DownsamplingType::no_downsampling &&
-      m_graph_point_move_type > GraphPointMoveType::none) {
+      m_pixel_point_move_type > PixelPointMoveType::none) {
     jassertfalse;  // You can't change the downsampling type if you configured
-                   // it possible to move the graph points. Call
-                   // 'setGraphPointMoveType()' with a value of
-                   // 'GraphPointMoveType::none' first.
-    m_graph_point_move_type = GraphPointMoveType::none;
+                   // it possible to move the pixel points. Call
+                   // 'setPixelPointMoveType()' with a value of
+                   // 'PixelPointMoveType::none' first.
+    m_pixel_point_move_type = PixelPointMoveType::none;
   } else {
     m_downsampling_type = downsampling_type;
   }
@@ -808,7 +808,7 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
       resetZoom();
       break;
     }
-    case UserInputAction::create_movable_graph_point: {
+    case UserInputAction::create_movable_pixel_point: {
       break;
     }
     case UserInputAction::move_selected_trace_points: {
@@ -819,7 +819,7 @@ void Plot::mouseHandler(const juce::MouseEvent& event,
       panning(event);
       break;
     }
-    case UserInputAction::remove_movable_graph_point: {
+    case UserInputAction::remove_movable_pixel_point: {
       break;
     }
     default: {
@@ -846,16 +846,16 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
       getDataPointFromGraphCoordinate(m_prev_mouse_position,
                                       m_common_graph_params);
 
-  switch (m_graph_point_move_type) {
-    case GraphPointMoveType::horizontal: {
+  switch (m_pixel_point_move_type) {
+    case PixelPointMoveType::horizontal: {
       d_data_position.setY(0.f);
       break;
     }
-    case GraphPointMoveType::vertical: {
+    case PixelPointMoveType::vertical: {
       d_data_position.setX(0.f);
       break;
     }
-    case GraphPointMoveType::horizontal_vertical: {
+    case PixelPointMoveType::horizontal_vertical: {
       break;
     }
     default: {
@@ -873,7 +873,7 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
 
     for (const auto& graph : *m_graph_lines) {
       if (graph.get() == graph_line) {
-        graph->moveGraphPoint(d_data_position, data_point_index);
+        graph->movePixelPoint(d_data_position, data_point_index);
         graph_line_data_point_map[graph.get()].push_back(data_point_index);
         break;
       }
@@ -881,8 +881,8 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   }
 
   for (auto& [graph_line, indices_to_update] : graph_line_data_point_map) {
-    graph_line->updateXIndicesAndGraphPoints(indices_to_update);
-    graph_line->updateYIndicesAndGraphPoints(indices_to_update);
+    graph_line->updateXIndicesAndPixelPoints(indices_to_update);
+    graph_line->updateYIndicesAndPixelPoints(indices_to_update);
   }
 
   m_trace->updateTracePointsBounds();
@@ -1081,13 +1081,13 @@ void Plot::modifierKeysChanged(const juce::ModifierKeys& modifiers) {
   m_modifiers = &modifiers;
 }
 
-void Plot::setMovePointsType(const GraphPointMoveType move_points_type) {
-  m_graph_point_move_type = move_points_type;
+void Plot::setMovePointsType(const PixelPointMoveType move_points_type) {
+  m_pixel_point_move_type = move_points_type;
   updateTracepointsForGraphData();
 }
 
 void Plot::addSelectableTracePointsForGraphData() {
-  if (m_graph_point_move_type == GraphPointMoveType::none) return;
+  if (m_pixel_point_move_type == PixelPointMoveType::none) return;
   m_trace->clear();
 
   for (const auto& graph_line : *m_graph_lines) {
@@ -1106,17 +1106,17 @@ void Plot::addSelectableTracePointsForGraphData() {
 }
 
 void Plot::updateTracepointsForGraphData() {
-  switch (m_graph_point_move_type) {
-    case GraphPointMoveType::none:
+  switch (m_pixel_point_move_type) {
+    case PixelPointMoveType::none:
       return;
       break;
-    case GraphPointMoveType::horizontal:
+    case PixelPointMoveType::horizontal:
       this->setDownsamplingTypeInternal(DownsamplingType::no_downsampling);
       break;
-    case GraphPointMoveType::vertical:
+    case PixelPointMoveType::vertical:
       this->setDownsamplingTypeInternal(DownsamplingType::no_downsampling);
       break;
-    case GraphPointMoveType::horizontal_vertical:
+    case PixelPointMoveType::horizontal_vertical:
       this->setDownsamplingTypeInternal(DownsamplingType::no_downsampling);
       break;
   }

@@ -53,7 +53,7 @@ Below is the feature list of CMP:
 ## Controls
 <a name="controls"></a>
 
-The CMP compontent implements MouseEvents to interact with the plot using the mouse. Below is a list with the default added mouse commands which can be overrided using a custom lookandfeel class (see "move_graph_points" example):
+The CMP compontent implements MouseEvents to interact with the plot using the mouse. Below is a list with the default added mouse commands which can be overrided using a custom lookandfeel class (see "move_pixel_points" example):
 
 1. Left click drag anywhere in the graph area to zoom into the plot. The zoom area is displayed as traced lined rectangle.
 2. Right click to zoom out to home.
@@ -62,7 +62,7 @@ The CMP compontent implements MouseEvents to interact with the plot using the mo
 5. Drag the trace point to move it along the graph-line.
 6. Move the trace point label by dragging it.
 7. Move the legend to by dragging it.
-8. Move graph points.
+8. Move pixel points.
 8. Panning for linear scaling
 9. #TODO: Panning for logarithmic scaling
 

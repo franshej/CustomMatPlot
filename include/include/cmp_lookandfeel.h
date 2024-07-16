@@ -138,19 +138,19 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
       const juce::Point<int> &end_coordinates,
       const juce::Rectangle<int> &graph_bounds) noexcept override;
 
-  void updateXGraphPoints(
+  void updateXPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
       const CommonPlotParameterView &common_plot_parameter_view,
       const std::vector<float> &x_data,
-      std::vector<std::size_t> &graph_points_indices,
-      GraphPoints &graph_points) noexcept override;
+      std::vector<std::size_t> &pixel_points_indices,
+      PixelPoints &pixel_points) noexcept override;
 
-  void updateYGraphPoints(
+  void updateYPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
       const CommonPlotParameterView &common_plot_parameter_view,
       const std::vector<float> &y_data,
-      const std::vector<std::size_t> &graph_points_indices,
-      GraphPoints &graph_points) noexcept override;
+      const std::vector<std::size_t> &pixel_points_indices,
+      PixelPoints &pixel_points) noexcept override;
 
   void updateVerticalGridLineTicksAuto(
       const juce::Rectangle<int> &bounds,
