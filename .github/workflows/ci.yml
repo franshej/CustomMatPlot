@@ -1,0 +1,15 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up CMake
+      uses: lukka/get-cmake@v2
+      with:
+        cmakeVersion: '3.18.4'
+    - name: Build
+      run: cmake -S . -B build && cmake --build build
