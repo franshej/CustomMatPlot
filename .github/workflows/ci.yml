@@ -11,7 +11,7 @@ jobs:
         submodules: true
         fetch-depth: 0
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev
+      run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev
     - name: Install CMake
       uses: jwlawson/actions-setup-cmake@v1
       with:
