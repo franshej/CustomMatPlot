@@ -436,7 +436,7 @@ struct GraphSpreadIndex {
   std::size_t second_graph;
 };
 
-/** @brief A view of the data required to draw a graph_line++ */
+/** @brief A view of the data required to draw a graph_line */
 struct GraphLineDataView {
   GraphLineDataView(const std::vector<float>& _x_data,
                     const std::vector<float>& _y_data,
