@@ -231,17 +231,17 @@ PlotLookAndFeel::getTraceXYLabelBounds(const std::string_view x_text,
   const auto margin = getMarginSmall();
   const auto font = getTraceFont();
 
-  const auto width_X = 2 * margin + font.getStringWidth(x_text.data());
-  const auto width_Y = 2 * margin + font.getStringWidth(y_text.data());
-  const auto height_XY = font.getHeight();
-  const auto x_coord_XY = margin;
-  const auto y_coord_X = margin;
-  const auto y_coord_Y = 2 * margin + font.getHeight();
+  const auto width_x_label = 2 * margin + font.getStringWidth(x_text.data());
+  const auto width_y_label = 2 * margin + font.getStringWidth(y_text.data());
+  const auto font_height = font.getHeight();
+  const auto x_pos = margin;
+  const auto y_pos_for_x_label = margin;
+  const auto y_pos_for_y_label = 2 * margin + font.getHeight();
 
   const auto x_label_bounds = juce::Rectangle<int>(
-      int(x_coord_XY), int(y_coord_X), int(width_X), int(height_XY));
+      int(x_pos), int(y_pos_for_x_label), int(width_x_label), int(font_height));
   const auto y_label_bounds = juce::Rectangle<int>(
-      int(x_coord_XY), int(y_coord_Y), int(width_Y), int(height_XY));
+      int(x_pos), int(y_pos_for_y_label), int(width_y_label), int(font_height));
 
   return {x_label_bounds, y_label_bounds};
 }
@@ -281,14 +281,14 @@ juce::Point<int> PlotLookAndFeel::getTracePointPositionFrom(
   float y;
 
   if (common_plot_params.x_scaling == Scaling::linear) {
-    x = getXGraphValueLinear(graph_values.getX(), x_scale, x_offset);
+    x = getXPixelValueLinear(graph_values.getX(), x_scale, x_offset);
   } else {
-    x = getXPixelPointsLogarithmic(graph_values.getX(), x_scale, x_offset);
+    x = getXPixelValueLogarithmic(graph_values.getX(), x_scale, x_offset);
   }
   if (common_plot_params.y_scaling == Scaling::linear) {
-    y = getYGraphValueLinear(graph_values.getY(), y_scale, y_offset);
+    y = getYPixelValueLinear(graph_values.getY(), y_scale, y_offset);
   } else {
-    y = getYPixelPointsLogarithmic(graph_values.getY(), y_scale, y_offset);
+    y = getYPixelValueLogarithmic(graph_values.getY(), y_scale, y_offset);
   }
 
   return juce::Point<float>(x, y).toInt();
@@ -445,18 +445,17 @@ void PlotLookAndFeel::drawLegend(juce::Graphics& g,
   g.setFont(getLegendFont());
 
   const auto height = int(font.getHeightInPoints());
-  int i = 0u;
+  int label_index = 0u;
   for (const auto li : legend_info) {
     const auto width = font.getStringWidth(li.description);
     const auto x = margin_width;
-    const int y = i * (height + margin_height) + margin_height;
+    const int y = label_index++ * (height + margin_height) + margin_height;
     const juce::Rectangle<int> label_bounds = {x, y, width, height};
 
     g.setColour(findColour(Plot::legend_label_colour));
     g.drawText(li.description, label_bounds, juce::Justification::centredLeft);
     g.setColour(li.description_colour);
     g.fillRect(x + width + margin_width, y + height / 2, margin_width * 2, 2);
-    i++;
   }
 
   g.setColour(findColour(Plot::frame_colour));
@@ -611,11 +610,11 @@ void PlotLookAndFeel::updateXPixelPoints(
     if (common_plot_parameter_view.y_scaling == Scaling::linear) {
       for (const auto i : update_only_these_indices)
         pixel_points[i].setX(
-            getXGraphValueLinear(x_data[i], x_scale, x_offset));
+            getXPixelValueLinear(x_data[i], x_scale, x_offset));
     } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
       for (const auto i : update_only_these_indices)
         pixel_points[i].setX(
-            getXPixelPointsLogarithmic(x_data[i], x_scale, x_offset));
+            getXPixelValueLogarithmic(x_data[i], x_scale, x_offset));
     }
     return;
   }
@@ -624,12 +623,12 @@ void PlotLookAndFeel::updateXPixelPoints(
   if (common_plot_parameter_view.x_scaling == Scaling::linear) {
     for (const auto i_x : pixel_points_indices) {
       pixel_points[i++].setX(
-          getXGraphValueLinear(x_data[i_x], x_scale, x_offset));
+          getXPixelValueLinear(x_data[i_x], x_scale, x_offset));
     }
   } else if (common_plot_parameter_view.x_scaling == Scaling::logarithmic) {
     for (const auto i_x : pixel_points_indices) {
       pixel_points[i++].setX(
-          getXPixelPointsLogarithmic(x_data[i_x], x_scale, x_offset));
+          getXPixelValueLogarithmic(x_data[i_x], x_scale, x_offset));
     }
   }
 }
@@ -655,11 +654,11 @@ void PlotLookAndFeel::updateYPixelPoints(
     if (common_plot_parameter_view.y_scaling == Scaling::linear) {
       for (const auto i : update_only_these_indices)
         pixel_points[i].setY(
-            getYGraphValueLinear(y_data[i], y_scale, y_offset));
+            getYPixelValueLinear(y_data[i], y_scale, y_offset));
     } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
       for (const auto i : update_only_these_indices)
         pixel_points[i].setY(
-            getYPixelPointsLogarithmic(y_data[i], y_scale, y_offset));
+            getYPixelValueLogarithmic(y_data[i], y_scale, y_offset));
     }
     return;
   }
@@ -669,13 +668,13 @@ void PlotLookAndFeel::updateYPixelPoints(
   if (common_plot_parameter_view.y_scaling == Scaling::linear) {
     for (const auto i_y : pixel_points_indices) {
       pixel_points[i].setY(
-          getYGraphValueLinear(y_data[i_y], y_scale, y_offset));
+          getYPixelValueLinear(y_data[i_y], y_scale, y_offset));
       i++;
     }
   } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
     for (const auto i_y : pixel_points_indices) {
       pixel_points[i].setY(
-          getYPixelPointsLogarithmic(y_data[i_y], y_scale, y_offset));
+          getYPixelValueLogarithmic(y_data[i_y], y_scale, y_offset));
       i++;
     }
   }
