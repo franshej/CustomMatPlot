@@ -76,5 +76,5 @@ if(CMP_BUILD_EXAMPLES)
 endif()
 
 if(CMP_BUILD_TESTS)
-    add_subdirectory(test)
+    add_subdirectory(tests)
 endif()
