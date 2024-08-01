@@ -6,52 +6,41 @@
 #include "cmp_graph_line.h"
 #include "cmp_test_helper.hpp"
 
-class PlotTest : public juce::UnitTest {
- public:
-  PlotTest() : juce::UnitTest("Plot Class", "plot function") {}
+SECTION(PlotClassTest, "Plot class") {
+  auto expectEqualsLambda = [&](auto a, auto b) { expectEquals(a, b); };
+  const std::vector<float> x_data1 = {1.f, 2.f};
+  const std::vector<float> y_data1 = {100.f, 200.f};
+  const std::vector<float> x_data2 = {1.f, 2.f, 3.f, 4.f};
+  const std::vector<float> y_data2 = {200.f, 300.f, 400.f, 500.f};
+  const std::vector<float> x_data3 = {1.f, 2.f};
+  const std::vector<float> y_data3 = {400.f, 500.f};
+  cmp::Plot plot;
 
-  void runTest() override {
-    {
-      auto expectEqualsLambda = [&](auto a, auto b) { expectEquals(a, b); };
-      const std::vector<float> x_data1 = {1.f, 2.f};
-      const std::vector<float> y_data1 = {100.f, 200.f};
-      const std::vector<float> x_data2 = {1.f, 2.f, 3.f, 4.f};
-      const std::vector<float> y_data2 = {200.f, 300.f, 400.f, 500.f};
-      const std::vector<float> x_data3 = {1.f, 2.f};
-      const std::vector<float> y_data3 = {400.f, 500.f};
-
-      cmp::Plot plot;
-      beginTest("Part 1: empty graph line.");
-      auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-      expect(graph_lines.empty());
-
-      beginTest("Part 2: single graph line");
-      plot.plot({y_data1});
-      graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-      expectEquals(graph_lines.size(), 1ul);
-      const auto& x_data = graph_lines[0]->getXData();
-      const auto& y_data = graph_lines[0]->getYData();
-      expectEqualVectors(x_data, x_data1, expectEqualsLambda);
-      expectEqualVectors(y_data, y_data1, expectEqualsLambda);
-
-      beginTest("Part 3: several graph line");
-      plot.plot({y_data1, y_data2, y_data3});
-      graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-      expectEquals(graph_lines.size(), 3ul);
-      expectEqualVectors(graph_lines[0]->getXData(), x_data1,
-                         expectEqualsLambda);
-      expectEqualVectors(graph_lines[0]->getYData(), y_data1,
-                         expectEqualsLambda);
-      expectEqualVectors(graph_lines[1]->getXData(), x_data2,
-                         expectEqualsLambda);
-      expectEqualVectors(graph_lines[1]->getYData(), y_data2,
-                         expectEqualsLambda);
-      expectEqualVectors(graph_lines[2]->getXData(), x_data3,
-                         expectEqualsLambda);
-      expectEqualVectors(graph_lines[2]->getYData(), y_data3,
-                         expectEqualsLambda);
-    }
+  TEST("Part 1: empty graph line.") {
+    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
+    expect(graph_lines.empty());
   }
-};
 
-static PlotTest test;
+  TEST("Part 2: single graph line") {
+    plot.plot({y_data1});
+    const auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
+    expectEquals(graph_lines.size(), 1ul);
+    const auto& x_data = graph_lines[0]->getXData();
+    const auto& y_data = graph_lines[0]->getYData();
+    expectEqualVectors(x_data, x_data1, expectEqualsLambda);
+    expectEqualVectors(y_data, y_data1, expectEqualsLambda);
+  }
+
+  TEST("Part 3: several graph line") {
+    plot.plot({y_data1, y_data2});
+    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
+    expectEquals(graph_lines.size(), 2ul);
+    expectEquals(graph_lines.size(), 3ul);
+    expectEqualVectors(graph_lines[0]->getXData(), x_data1, expectEqualsLambda);
+    expectEqualVectors(graph_lines[0]->getYData(), y_data1, expectEqualsLambda);
+    expectEqualVectors(graph_lines[1]->getXData(), x_data2, expectEqualsLambda);
+    expectEqualVectors(graph_lines[1]->getYData(), y_data2, expectEqualsLambda);
+    expectEqualVectors(graph_lines[2]->getXData(), x_data3, expectEqualsLambda);
+    expectEqualVectors(graph_lines[2]->getYData(), y_data3, expectEqualsLambda);
+  }
+}
