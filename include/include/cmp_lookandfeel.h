@@ -15,7 +15,7 @@
 
 namespace cmp {
 
-/*
+/**
  *  \class PlotLookAndFeel
  *  \brief LookAndFeel class for user custom lookanfeel.
  *

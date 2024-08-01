@@ -33,7 +33,7 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
   auto min_value = std::numeric_limits<float>::max();
 
   for (const auto& graph : graph_lines) {
-    const auto& values = isXValue ? graph->getXValues() : graph->getYValues();
+    const auto& values = isXValue ? graph->getXData() : graph->getYData();
 
     if (!values.empty()) {
       const auto& current_max = *std::max_element(values.begin(), values.end());
@@ -1091,7 +1091,7 @@ void Plot::addSelectableTracePointsForGraphData() {
   m_trace->clear();
 
   for (const auto& graph_line : *m_graph_lines) {
-    const auto& y_values = graph_line->getYValues();
+    const auto& y_values = graph_line->getYData();
     size_t data_point_index = 0;
 
     for (; data_point_index < y_values.size(); data_point_index++) {

@@ -137,7 +137,7 @@ class GraphLine : public juce::Component {
    *
    *  @return a const reference of the y-values.
    */
-  const std::vector<float>& getYValues() const noexcept;
+  const std::vector<float>& getYData() const noexcept;
 
   /** @brief Get x-values
    *
@@ -145,7 +145,7 @@ class GraphLine : public juce::Component {
    *
    *  @return a const reference of the x-values.
    */
-  const std::vector<float>& getXValues() const noexcept;
+  const std::vector<float>& getXData() const noexcept;
 
   /** @brief Get the pixel points
    *
