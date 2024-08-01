@@ -30,8 +30,8 @@ GraphLineDataView::GraphLineDataView(
       graph_attribute(_graph_attribute) {}
 
 GraphLineDataView::GraphLineDataView(const GraphLine& graph_line)
-    : x_data(graph_line.getXValues()),
-      y_data(graph_line.getYValues()),
+    : x_data(graph_line.getXData()),
+      y_data(graph_line.getYData()),
       pixel_points(graph_line.getPixelPoints()),
       pixel_point_indices(graph_line.getPixelPointIndices()),
       graph_attribute(graph_line.getGraphAttribute()) {}
@@ -204,11 +204,11 @@ void GraphLine::movePixelPoint(const juce::Point<float>& d_pixel_point,
   m_y_data[pixel_point_index] += d_pixel_point.getY();
 }
 
-const std::vector<float>& GraphLine::getYValues() const noexcept {
+const std::vector<float>& GraphLine::getYData() const noexcept {
   return m_y_data;
 }
 
-const std::vector<float>& GraphLine::getXValues() const noexcept {
+const std::vector<float>& GraphLine::getXData() const noexcept {
   return m_x_data;
 }
 
