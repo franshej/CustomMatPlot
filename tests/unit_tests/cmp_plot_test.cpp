@@ -32,9 +32,8 @@ SECTION(PlotClassTest, "Plot class") {
   }
 
   TEST("Part 3: several graph line") {
-    plot.plot({y_data1, y_data2});
+    plot.plot({y_data1, y_data2, y_data3});
     auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-    expectEquals(graph_lines.size(), 2ul);
     expectEquals(graph_lines.size(), 3ul);
     expectEqualVectors(graph_lines[0]->getXData(), x_data1, expectEqualsLambda);
     expectEqualVectors(graph_lines[0]->getYData(), y_data1, expectEqualsLambda);
