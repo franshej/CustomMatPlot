@@ -115,8 +115,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
-    const auto graph_bounds =
-        juce::Rectangle<int>(m_common_plot_params->graph_bounds).toFloat();
+    const auto graph_bounds = m_common_plot_params->graph_bounds.toFloat();
 
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {

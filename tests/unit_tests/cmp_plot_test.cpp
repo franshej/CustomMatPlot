@@ -6,7 +6,7 @@
 #include "cmp_graph_line.h"
 #include "cmp_test_helper.hpp"
 
-SECTION(PlotClassTest, "Plot class") {
+SECTION(PlotClass, "Plot class") {
   auto expectEqualsLambda = [&](auto a, auto b) { expectEquals(a, b); };
   const std::vector<float> x_data1 = {1.f, 2.f};
   const std::vector<float> y_data1 = {100.f, 200.f};
@@ -16,12 +16,12 @@ SECTION(PlotClassTest, "Plot class") {
   const std::vector<float> y_data3 = {400.f, 500.f};
   cmp::Plot plot;
 
-  TEST("Part 1: empty graph line.") {
+  TEST("Empty graph line.") {
     auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
     expect(graph_lines.empty());
   }
 
-  TEST("Part 2: single graph line") {
+  TEST("Single graph line") {
     plot.plot({y_data1});
     const auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
     expectEquals(graph_lines.size(), 1ul);
@@ -31,7 +31,7 @@ SECTION(PlotClassTest, "Plot class") {
     expectEqualVectors(y_data, y_data1, expectEqualsLambda);
   }
 
-  TEST("Part 3: several graph line") {
+  TEST("Several graph line") {
     plot.plot({y_data1, y_data2, y_data3});
     auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
     expectEquals(graph_lines.size(), 3ul);
