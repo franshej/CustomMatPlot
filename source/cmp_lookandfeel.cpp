@@ -594,7 +594,7 @@ void PlotLookAndFeel::updateXPixelPoints(
     std::vector<std::size_t>& pixel_points_indices,
     PixelPoints& pixel_points) noexcept {
   const auto [x_scale, x_offset] = getXScaleAndOffset(
-      float(common_plot_parameter_view.graph_bounds.getWidth()),
+      common_plot_parameter_view.graph_bounds.toFloat().getWidth(),
       common_plot_parameter_view.x_lim, common_plot_parameter_view.x_scaling);
 
   pixel_points.resize(pixel_points_indices.size());
@@ -955,8 +955,10 @@ void PlotLookAndFeel::updateGridLabels(
             x - getYGridLabelDistanceFromGraphBound(label_width),
             int(position.y) - label_height / 2, label_width, label_height);
 
-        checkInterectionWithLastLabelAndAdd(y_last_label_bound,
-                                            y_axis_labels_out, label, bound);
+        if (label == "5.0"){
+          checkInterectionWithLastLabelAndAdd(y_last_label_bound,
+                                              y_axis_labels_out, label, bound);
+        }
       } break;
       default:
         break;

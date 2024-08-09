@@ -19,6 +19,14 @@
 
 #pragma once
 
+#include <juce_core/juce_core.h>
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+#include "juce_core/system/juce_PlatformDefs.h"
+
 namespace cmp {
 
 /*============================================================================*/
@@ -97,16 +105,6 @@ getRectangleMeasures(juce::Rectangle<int> grid_area) noexcept {
   return std::make_tuple(x, y, width, height);
 }
 
-template <class value_type>
-constexpr auto getLocalBoundsFrom =
-    [](const auto& bounds) -> juce::Rectangle<value_type> {
-  const auto x = static_cast<value_type>(0);
-  const auto y = static_cast<value_type>(0);
-  const auto width = static_cast<value_type>(bounds.getWidth());
-  const auto height = static_cast<value_type>(bounds.getHeight());
-  return juce::Rectangle<value_type>(x, y, width, height);
-};
-
 constexpr float getXFromXCoordinate(const float x_pos,
                                     const juce::Rectangle<float>& bounds,
                                     const Lim_f x_lim,
@@ -118,7 +116,7 @@ constexpr float getXFromXCoordinate(const float x_pos,
 
   const auto coordinateToXLog = [&]() {
     return std::pow(10, ((x_pos - bounds.getX()) / bounds.getWidth()) *
-                        std::log10(x_lim.max / x_lim.min)) *
+                            std::log10(x_lim.max / x_lim.min)) *
            x_lim.min;
   };
 
@@ -147,8 +145,8 @@ constexpr float getYFromYCoordinate(const float y_pos,
 
   const auto coordinateToYLog = [&]() {
     return std::pow(10, ((bounds.getHeight() - (y_pos - bounds.getY())) /
-                     bounds.getHeight()) *
-                        std::log10(y_lim.max / y_lim.min)) *
+                         bounds.getHeight()) *
+                            std::log10(y_lim.max / y_lim.min)) *
            y_lim.min;
   };
   switch (y_scaling) {
@@ -328,7 +326,6 @@ template <class ValueType>
   return {value_text_out, factor_text};
 }
 
-
 /*============================================================================*/
 /*==========================From lnf.cpp======================================*/
 /*============================================================================*/
@@ -466,8 +463,8 @@ static std::vector<float> getLogarithmicTicks(
        ++curr_power) {
     const auto curr_pos_base = std::pow(10.f, curr_power);
 
-    const auto delta =
-        std::pow(10.f, curr_power + 1.f) / static_cast<float>(num_ticks_per_power);
+    const auto delta = std::pow(10.f, curr_power + 1.f) /
+                       static_cast<float>(num_ticks_per_power);
 
     for (float i = 0; i < num_ticks_per_power; ++i) {
       const auto tick =
@@ -530,6 +527,45 @@ class ParamVal
       this->m_is_set = true;
     }
     return *this;
+  }
+};
+
+class TicksGenerator {
+ private:
+  static constexpr std::array<float, 51> simpleIntervals = {
+      1e-8f, 2e-8f, 5e-8f, 1e-7f, 2e-7f, 5e-7f, 1e-6f, 2e-6f, 5e-6f,
+      1e-5f, 2e-5f, 5e-5f, 1e-4f, 2e-4f, 5e-4f, 1e-3f, 2e-3f, 5e-3f,
+      1e-2f, 2e-2f, 5e-2f, 1e-1f, 2e-1f, 5e-1f, 1e0f,  2e0f,  5e0f,
+      1e1f,  2e1f,  5e1f,  1e2f,  2e2f,  5e2f,  1e3f,  2e3f,  5e3f,
+      1e4f,  2e4f,  5e4f,  1e5f,  2e5f,  5e5f,  1e6f,  2e6f,  5e6f,
+      1e7f,  2e7f,  5e7f,  1e8f,  2e8f,  5e8f};
+
+ public:
+  static std::vector<float> generateTicks(const float min, const float max,
+                                          const int size) {
+    if (size <= 0 || min >= max) {
+      throw std::invalid_argument(
+          "Invalid arguments, size must be > 0 and min "
+          "must be less than max.");
+    }
+
+    const float range = max - min;
+    const float idealInterval = range / size;
+
+    const auto it = std::lower_bound(simpleIntervals.begin(),
+                                     simpleIntervals.end(), idealInterval);
+    const float interval =
+        (it == simpleIntervals.end()) ? simpleIntervals.back() : *it;
+
+    std::vector<float> gridValues;
+    float currentValue = std::ceil(min / interval) * interval;
+
+    while (currentValue <= max) {
+      gridValues.push_back(currentValue);
+      currentValue += interval;
+    }
+
+    return gridValues;
   }
 };
 
