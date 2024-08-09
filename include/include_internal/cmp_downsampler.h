@@ -5,7 +5,7 @@
  * https://opensource.org/licenses/MIT
  */
 
-/*
+/**
  * @file cmp_downsampler.h
  *
  * @brief Class to downsample data before its being plotted to save cpu.

@@ -109,8 +109,30 @@ An example app plotting the frequency response of the incoming left and right au
 ![Image](img/freq-plot-ui.png)
 
 ## Tests
+
+### Unit testing
+The `juce::UnitTest` class is wrapped into macros to make it easier to write new structured tests.
+
+```cpp
+SECTION(PlotTest, "Plot class") {
+  cmp::Plot plot;
+
+  TEST("Part 1: empty graph line.") {
+    const auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
+    expect(graph_lines.empty());
+  }
+
+  TEST("Part 2: single graph line") {
+    plot.plot({y_data1});
+    ...
+  }
+}
+```
+
+
+### Manual tests
 <a name="tests"></a>
-To make it more convenient to write new tests the CMP library implements tests macros similar to the macros in google tests.
+To make it more convenient to write new manual tests the CMP library implements tests macros similar to the macros in google tests.
 
 The following example below will plot a ramp of 10 values from 0-9:
 ```cpp

@@ -1,15 +1,16 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
 
+#include <cmath>
+#include <vector>
+
 #include "cmp_datamodels.h"
 #include "cmp_lookandfeel.h"
 #include "test_macros.h"
-#include <vector>
-#include <cmath>
 
 #define PI2 6.28318530718f
 
@@ -38,6 +39,22 @@ TEST(test_custom_x_labels, non_real_time) {
 
   PLOT_Y({y_test_data});
   X_LABELS(labels)
+  X_LABEL("X LABEL");
+  Y_LABEL("Y LABEL");
+  TITLE("TITLE");
+}
+
+TEST(test_custom_x_labels_ticks, non_real_time) {
+  ADD_PLOT;
+
+  std::vector<float> y_test_data(10000);
+  std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
+  const std::vector<std::string> labels = {"MMM", "Two", "Three", "Fyra"};
+  std::vector<float> x_ticks = {0, 3000, 7000, 10000};
+
+  PLOT_Y({y_test_data});
+  X_LABELS(labels)
+  X_TICKS(x_ticks);
   X_LABEL("X LABEL");
   Y_LABEL("Y LABEL");
   TITLE("TITLE");
@@ -407,7 +424,7 @@ TEST(markers, non_real_time) {
     ++i;
   }
   cmp::GraphAttributeList ga(test_data_y.size());
-  ga[0].marker= cmp::Marker::Type::Circle;
+  ga[0].marker = cmp::Marker::Type::Circle;
 
   ga[1].marker = cmp::Marker::Type::Square;
   ga[1].marker.value().FaceColour = juce::Colours::lightpink;
@@ -464,37 +481,37 @@ TEST(xy_downsampling, non_real_time) {
 }
 
 TEST(set_trace_point, non_real_time) {
- ADD_PLOT;
+  ADD_PLOT;
 
- std::vector<float> y_data_1(1'000u, 0.0f);
- std::iota(y_data_1.begin(), y_data_1.end(), 0.0f);
+  std::vector<float> y_data_1(1'000u, 0.0f);
+  std::iota(y_data_1.begin(), y_data_1.end(), 0.0f);
 
- std::vector<float> y_data_2(1'000u, 0.0f);
- std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
+  std::vector<float> y_data_2(1'000u, 0.0f);
+  std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
 
- const auto y = {y_data_1, y_data_2};
+  const auto y = {y_data_1, y_data_2};
 
- PLOT_Y(y);
+  PLOT_Y(y);
 
- SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
+  SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 }
 
 TEST(clear_all_tracepoints, non_real_time) {
- ADD_PLOT;
+  ADD_PLOT;
 
- std::vector<float> y_data_1(1'000u, 0.0f);
- std::iota(y_data_1.begin(), y_data_1.end(), 0.0f);
+  std::vector<float> y_data_1(1'000u, 0.0f);
+  std::iota(y_data_1.begin(), y_data_1.end(), 0.0f);
 
- std::vector<float> y_data_2(1'000u, 0.0f);
- std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
+  std::vector<float> y_data_2(1'000u, 0.0f);
+  std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
 
- const auto y = {y_data_1, y_data_2};
+  const auto y = {y_data_1, y_data_2};
 
- PLOT_Y(y);
+  PLOT_Y(y);
 
- SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
+  SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 
- CLEAR_TRACE_POINTS
+  CLEAR_TRACE_POINTS
 }
 
 TEST(set_scaling_dynamic, non_real_time) {
@@ -534,28 +551,27 @@ TEST(step_function_downsample, non_real_time) {
   PLOT_XY({y}, {x});
 }
 
-
 TEST(trace_point_cb, non_real_time) {
- ADD_SEMI_LOG_X;
+  ADD_SEMI_LOG_X;
 
- std::vector<float> y_data_1(1'000u, 0.0f);
- std::iota(y_data_1.begin(), y_data_1.end(), 0.0f);
+  std::vector<float> y_data_1(1'000u, 0.0f);
+  std::iota(y_data_1.begin(), y_data_1.end(), 0.0f);
 
- std::vector<float> y_data_2(1'000u, 0.0f);
- std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
+  std::vector<float> y_data_2(1'000u, 0.0f);
+  std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
 
- const auto y = {y_data_1, y_data_2};
+  const auto y = {y_data_1, y_data_2};
 
- PLOT_Y(y);
+  PLOT_Y(y);
 
- SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
+  SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 
- GET_PLOT->onTraceValueChange = [](auto comp, auto prev_data, auto new_data) {
-   DBG("Prev X: " + std::to_string(prev_data.getX()) +
-       "Prev Y: " + std::to_string(prev_data.getY()) +
-       "\nNew X: " + std::to_string(new_data.getX()) +
-       "New Y: " + std::to_string(new_data.getY()));
- };
+  GET_PLOT->onTraceValueChange = [](auto comp, auto prev_data, auto new_data) {
+    DBG("Prev X: " + std::to_string(prev_data.getX()) +
+        "Prev Y: " + std::to_string(prev_data.getY()) +
+        "\nNew X: " + std::to_string(new_data.getX()) +
+        "New Y: " + std::to_string(new_data.getY()));
+  };
 }
 
 template <typename T>
@@ -598,9 +614,7 @@ TEST(heart, non_real_time) {
 
 TEST(test_vertical_line, non_real_time) {
   ADD_PLOT;
-  {
-    GET_PLOT->plotVerticalLines({5.0f});
-  }
+  { GET_PLOT->plotVerticalLines({5.0f}); }
 
   {
     std::vector<float> y_test_data(10);
@@ -608,7 +622,5 @@ TEST(test_vertical_line, non_real_time) {
     PLOT_Y({y_test_data});
   }
 
-  {
-    GET_PLOT->plotVerticalLines({10.0f});
-  }
+  { GET_PLOT->plotVerticalLines({10.0f}); }
 }
