@@ -105,10 +105,9 @@ getRectangleMeasures(juce::Rectangle<int> grid_area) noexcept {
   return std::make_tuple(x, y, width, height);
 }
 
-constexpr float getXFromXCoordinate(const float x_pos,
-                                    const juce::Rectangle<float>& bounds,
-                                    const Lim_f x_lim,
-                                    const Scaling x_scaling) noexcept {
+constexpr float getXDataFromXPixelCoordinate(
+    const float x_pos, const juce::Rectangle<float>& bounds, const Lim_f x_lim,
+    const Scaling x_scaling) noexcept {
   const auto coordinateToXLinear = [&]() {
     const auto x_scale = bounds.getWidth() / (x_lim.max - x_lim.min);
     return ((x_pos - bounds.getX()) / x_scale) + x_lim.min;
@@ -133,10 +132,9 @@ constexpr float getXFromXCoordinate(const float x_pos,
   }
 }
 
-constexpr float getYFromYCoordinate(const float y_pos,
-                                    const juce::Rectangle<float>& bounds,
-                                    const Lim_f y_lim,
-                                    const Scaling y_scaling) noexcept {
+constexpr float getYDataFromYPixelCoordinate(
+    const float y_pos, const juce::Rectangle<float>& bounds, const Lim_f y_lim,
+    const Scaling y_scaling) noexcept {
   const auto coordinateToYLinear = [&]() {
     const auto y_scale = bounds.getHeight() / std::abs(y_lim.max - y_lim.min);
 
@@ -162,13 +160,13 @@ constexpr float getYFromYCoordinate(const float y_pos,
   }
 }
 
-static juce::Point<float> getDataPointFromGraphCoordinate(
+static juce::Point<float> getDataPointFromPixelCoordinate(
     const juce::Point<float> pos,
     const CommonPlotParameterView common_plot_params) noexcept {
-  const auto x = getXFromXCoordinate(
+  const auto x = getXDataFromXPixelCoordinate(
       pos.getX(), common_plot_params.graph_bounds.toFloat(),
       common_plot_params.x_lim, common_plot_params.x_scaling);
-  const auto y = getYFromYCoordinate(
+  const auto y = getYDataFromYPixelCoordinate(
       pos.getY(), common_plot_params.graph_bounds.toFloat(),
       common_plot_params.y_lim, common_plot_params.y_scaling);
 
