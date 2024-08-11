@@ -541,8 +541,9 @@ class TicksGenerator {
       1e7f,  2e7f,  5e7f,  1e8f,  2e8f,  5e8f};
 
  public:
-  static std::vector<float> generateTicks(const float min, const float max,
-                                          const int size) {
+  static std::vector<float> generateTicks(
+      const float min, const float max, const int size,
+      const std::vector<float>& previous_ticks) {
     if (size <= 0 || min >= max) {
       throw std::invalid_argument(
           "Invalid arguments, size must be > 0 and min "
@@ -557,10 +558,16 @@ class TicksGenerator {
     const float interval =
         (it == simpleIntervals.end()) ? simpleIntervals.back() : *it;
 
-    std::vector<float> gridValues;
-    float currentValue = std::ceil(min / interval) * interval;
+    if (!previous_ticks.empty() &&
+        std::abs(previous_ticks.front() - min) < interval &&
+        (previous_ticks.back() - max) < interval) {
+      return previous_ticks;
+    }
 
-    while (currentValue <= max) {
+    std::vector<float> gridValues;
+    float currentValue = (std::ceil(min / interval) - (size / 2)) * interval;
+
+    while (currentValue <= max + (size / 2) * interval) {
       gridValues.push_back(currentValue);
       currentValue += interval;
     }
