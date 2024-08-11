@@ -545,9 +545,7 @@ class TicksGenerator {
       const float min, const float max, const int size,
       const std::vector<float>& previous_ticks) {
     if (size <= 0 || min >= max) {
-      throw std::invalid_argument(
-          "Invalid arguments, size must be > 0 and min "
-          "must be less than max.");
+      return {};
     }
 
     const float range = max - min;
