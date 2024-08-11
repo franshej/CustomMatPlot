@@ -64,17 +64,17 @@ juce::Rectangle<ValueType> GraphArea::getDataBound() const noexcept {
   const auto start_pos = this->getStartPosition();
   const auto end_pos = this->getEndPosition();
 
-  const auto x_start = getXFromXCoordinate(
+  const auto x_start = getXDataFromXPixelCoordinate(
       float(start_pos.getX()), local_graph_bounds, m_common_plot_params->x_lim,
       m_common_plot_params->x_scaling);
-  const auto x_end = getXFromXCoordinate(
+  const auto x_end = getXDataFromXPixelCoordinate(
       float(end_pos.getX()), local_graph_bounds, m_common_plot_params->x_lim,
       m_common_plot_params->x_scaling);
 
-  const auto y_start = getYFromYCoordinate(
+  const auto y_start = getYDataFromYPixelCoordinate(
       float(start_pos.getY()), local_graph_bounds, m_common_plot_params->y_lim,
       m_common_plot_params->y_scaling);
-  const auto y_end = getYFromYCoordinate(
+  const auto y_end = getYDataFromYPixelCoordinate(
       float(end_pos.getY()), local_graph_bounds, m_common_plot_params->y_lim,
       m_common_plot_params->y_scaling);
 

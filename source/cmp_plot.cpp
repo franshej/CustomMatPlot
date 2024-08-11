@@ -47,8 +47,7 @@ static std::pair<float, float> findMinMaxValuesInGraphLines(
 }
 
 template <class ValueType>
-static Lim<ValueType> createLimsIfTheSame(
-    const Lim<ValueType>& lims) noexcept {
+static Lim<ValueType> createLimsIfTheSame(const Lim<ValueType>& lims) noexcept {
   if (lims.min == lims.max) {
     const auto one = ValueType(1);
     return {lims.min - one, lims.max + one};
@@ -219,18 +218,17 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
   throw std::invalid_argument("Min value must be lower than max value.");
 
   UNLIKELY if (abs(new_y_lim.max - new_y_lim.min) <
-      std::numeric_limits<float>::epsilon())
-     {
-      m_y_lim.min = new_y_lim.min - 1;
-      m_y_lim.max = new_y_lim.max + 1;
-    }
+               std::numeric_limits<float>::epsilon()) {
+    m_y_lim.min = new_y_lim.min - 1;
+    m_y_lim.max = new_y_lim.max + 1;
+  }
 
-  UNLIKELY if (m_y_scaling == Scaling::logarithmic && new_y_lim.isMinOrMaxZero())
-     {
-      throw std::invalid_argument(
-          "The min/max y-value is zero or 'yLim' has been called with a zero "
-          "value. 10log(0) = -inf");
-    }
+  UNLIKELY if (m_y_scaling == Scaling::logarithmic &&
+               new_y_lim.isMinOrMaxZero()) {
+    throw std::invalid_argument(
+        "The min/max y-value is zero or 'yLim' has been called with a zero "
+        "value. 10log(0) = -inf");
+  }
 
   if (new_y_lim && m_y_lim != new_y_lim) {
     m_y_lim = new_y_lim;
@@ -249,8 +247,11 @@ void Plot::moveXYLims(const juce::Point<float>& d_xy) {
 }
 
 void Plot::updateGraphLines() {
-  m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical>(m_y_lim);
-  m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal>(m_y_lim);
+  m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical>(
+      m_y_lim);
+  m_graph_lines
+      ->setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal>(
+          m_y_lim);
 
   for (const auto& graph_line : *m_graph_lines) {
     graph_line->updateXIndicesAndPixelPoints();
@@ -335,15 +336,18 @@ void Plot::yLim(const float min, const float max) {
 }
 
 template <typename ValueType>
-static std::pair<std::vector<std::vector<ValueType>>, std::vector<std::vector<ValueType>>> 
-prepareDataForVerticalOrHorizontalLines(const std::vector<ValueType>& coordinates, Lim<ValueType> limits) {
+static std::pair<std::vector<std::vector<ValueType>>,
+                 std::vector<std::vector<ValueType>>>
+prepareDataForVerticalOrHorizontalLines(
+    const std::vector<ValueType>& coordinates, Lim<ValueType> limits) {
   if (coordinates.empty()) return {{}, {}};
 
-  std::vector<std::vector<ValueType>> lines_start_end(coordinates.size(), {limits.min, limits.max});
+  std::vector<std::vector<ValueType>> lines_start_end(coordinates.size(),
+                                                      {limits.min, limits.max});
   std::vector<std::vector<ValueType>> line_coordinates(coordinates.size());
 
   auto line_coordinate_it = line_coordinates.begin();
-  for (auto& x: coordinates) {
+  for (auto& x : coordinates) {
     *line_coordinate_it++ = {x, x};
   }
 
@@ -352,7 +356,8 @@ prepareDataForVerticalOrHorizontalLines(const std::vector<ValueType>& coordinate
 
 void Plot::plotVerticalLines(const std::vector<float>& x_coordinates,
                              const GraphAttributeList& graph_attributes) {
-  auto [y_data, x_data] = prepareDataForVerticalOrHorizontalLines<float>(x_coordinates, m_y_lim);
+  auto [y_data, x_data] =
+      prepareDataForVerticalOrHorizontalLines<float>(x_coordinates, m_y_lim);
   if (y_data.empty() || x_data.empty()) return;
 
   plotInternal<GraphLineType::vertical>(y_data, x_data, graph_attributes);
@@ -617,7 +622,7 @@ void Plot::paint(juce::Graphics& g) {
 }
 
 void Plot::parentHierarchyChanged() {
-  auto *parentComponent = getParentComponent();
+  auto* parentComponent = getParentComponent();
   if (parentComponent) {
     parentComponent->addMouseListener(this, true);
   }
@@ -674,7 +679,7 @@ void Plot::updateGraphLineYData(
   UNLIKELY if (y_data.size() != m_graph_lines->size<t_graph_line_type>()) {
     m_graph_lines->resize<t_graph_line_type>(y_data.size());
     std::size_t graph_line_index = 0u;
-    for (auto &graph_line : *m_graph_lines) {
+    for (auto& graph_line : *m_graph_lines) {
       if (graph_line == nullptr) {
         addGraphLineInternal<t_graph_line_type>(graph_line, graph_line_index);
       }
@@ -684,13 +689,13 @@ void Plot::updateGraphLineYData(
 
   auto y_data_it = y_data.begin();
   for (const auto& graph_line : *m_graph_lines) {
-    if (graph_line->getType() == t_graph_line_type){
-          if (y_data_it == y_data.end())
-            throw std::range_error(
-                "Y_data out of range, internal error, please create an issue "
-                "on "
-                "Github with a test case that triggers this error.");
-          graph_line->setYValues(*y_data_it++);
+    if (graph_line->getType() == t_graph_line_type) {
+      if (y_data_it == y_data.end())
+        throw std::range_error(
+            "Y_data out of range, internal error, please create an issue "
+            "on "
+            "Github with a test case that triggers this error.");
+      graph_line->setYValues(*y_data_it++);
     }
   }
 
@@ -715,15 +720,12 @@ template <GraphLineType t_graph_line_type>
 void Plot::updateGraphLineXData(const std::vector<std::vector<float>>& x_data) {
   // There is a bug in the code if this assert happens.
   jassert(x_data.size() == m_graph_lines->size<t_graph_line_type>());
-  if(x_data.size() != m_graph_lines->size<t_graph_line_type>()){
-    int i =  m_graph_lines->size<t_graph_line_type>();
-    ++i;
-  }
 
   auto x_data_it = x_data.begin();
   for (const auto& graph : *m_graph_lines) {
-    if (graph->getType() == t_graph_line_type)
+    if (graph->getType() == t_graph_line_type) {
       graph->setXValues(*x_data_it++);
+    }
   }
 
   if (m_x_autoscale && !is_panning_or_zoomed) {
@@ -842,8 +844,8 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
 
   auto d_data_position =
-      getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params) -
-      getDataPointFromGraphCoordinate(m_prev_mouse_position,
+      getDataPointFromPixelCoordinate(mouse_pos, m_common_graph_params) -
+      getDataPointFromPixelCoordinate(m_prev_mouse_position,
                                       m_common_graph_params);
 
   switch (m_pixel_point_move_type) {
@@ -1145,17 +1147,17 @@ void Plot::setGraphLineDataChangedCallback(
 void Plot::panning(const juce::MouseEvent& event) {
   UNLIKELY if (m_x_scaling == Scaling::logarithmic ||
                m_y_scaling == Scaling::logarithmic) {
-    jassertfalse; // Panning is not implemented for logarithmic scaling.
+    jassertfalse;  // Panning is not implemented for logarithmic scaling.
     // TODO: Implement panning for logarithmic scaling.
     return;
   }
 
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
-  const auto current_pos =
-      getDataPointFromGraphCoordinate(mouse_pos, m_common_graph_params);
-  const auto prev_pos = getDataPointFromGraphCoordinate(m_prev_mouse_position,
-                                                        m_common_graph_params);
-  const auto d_data_position = current_pos - prev_pos;
+  const auto current_data_pos =
+      getDataPointFromPixelCoordinate(mouse_pos, m_common_graph_params);
+  const auto prev_data_pos = getDataPointFromPixelCoordinate(
+      m_prev_mouse_position, m_common_graph_params);
+  const auto d_data_position = current_data_pos - prev_data_pos;
   m_prev_mouse_position = mouse_pos;
 
   moveXYLims(-d_data_position);
