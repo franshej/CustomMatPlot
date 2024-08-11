@@ -33,9 +33,7 @@ const std::pair<int, int> getMaxGridLabelWidth(const cmp::Plot* plot) noexcept {
 
 /*============================================================================*/
 
-PlotLookAndFeel::PlotLookAndFeel() {
-  setDefaultPlotColours();
-}
+PlotLookAndFeel::PlotLookAndFeel() { setDefaultPlotColours(); }
 
 void PlotLookAndFeel::setDefaultPlotColours() noexcept {
   setColour(Plot::background_colour, juce::Colour(0xff2C3E50));
@@ -702,8 +700,9 @@ void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
     num_vertical_lines =
         std::size_t(tiny_grids ? num_vertical_lines * 1.5 : num_vertical_lines);
 
-    x_ticks = getLinearTicks_V2(
-        num_vertical_lines, common_plot_parameter_view.x_lim, previous_ticks);
+    const auto lim = common_plot_parameter_view.x_lim;
+    x_ticks = TicksGenerator::generateTicks(lim.min, lim.max,
+                                            num_vertical_lines, previous_ticks);
   };
 
   const auto addVerticalTicksLogarithmic = [&]() {
@@ -748,8 +747,9 @@ void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
     num_horizontal_lines = tiny_grids ? std::size_t(num_horizontal_lines * 1.5)
                                       : num_horizontal_lines;
 
-    y_ticks = getLinearTicks_V2(
-        num_horizontal_lines, common_plot_parameter_view.y_lim, previous_ticks);
+    const auto lim = common_plot_parameter_view.y_lim;
+    y_ticks = TicksGenerator::generateTicks(
+        lim.min, lim.max, num_horizontal_lines, previous_ticks);
   };
 
   const auto addHorizontalTicksLogarithmic = [&]() {
@@ -955,10 +955,8 @@ void PlotLookAndFeel::updateGridLabels(
             x - getYGridLabelDistanceFromGraphBound(label_width),
             int(position.y) - label_height / 2, label_width, label_height);
 
-        if (label == "5.0"){
-          checkInterectionWithLastLabelAndAdd(y_last_label_bound,
-                                              y_axis_labels_out, label, bound);
-        }
+        checkInterectionWithLastLabelAndAdd(y_last_label_bound,
+                                            y_axis_labels_out, label, bound);
       } break;
       default:
         break;
