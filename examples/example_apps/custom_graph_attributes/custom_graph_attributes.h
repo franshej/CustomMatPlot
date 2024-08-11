@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -25,17 +25,18 @@ class custom_graph_attributes : public juce::Component {
     constexpr auto length_1st_graph = 10;
 
     // Create some data to visulise.
-    auto y_data = {
+    const auto y_data = {
         cmp::generateSineWaveVector(length_1st_graph, -17.0f, 14.0f, 1.0f),
         cmp::generateSineWaveVector(length, -5.0f, 6.0f, 3.0f),
         cmp::generateSineWaveVector(length, -5.0f, 2.0f, 6.0f)};
 
-    auto x_data_1st_graph = []() {
-      auto v = std::vector<float>(10);
+    auto x_gen = [&y_data](const auto index) {
+      static const std::vector<std::vector<float>> y_data_vec(y_data);
+      auto v = std::vector<float>(y_data_vec[index].size());
       cmp::iota_delta(v.begin(), v.end(), 1.0f,
                       float(length) / float(v.size()));
       return v;
-    }();
+    };
 
     // Setting graph attributes.
     auto graph_attributes = cmp::GraphAttributeList(y_data.size());
@@ -49,7 +50,7 @@ class custom_graph_attributes : public juce::Component {
     graph_attributes[2].dashed_lengths = {10.0f, 20.0f, 10.0f};
 
     // Plot some values.
-    m_plot.plot(y_data, {x_data_1st_graph, {}, {}}, graph_attributes);
+    m_plot.plot(y_data, {x_gen(0), x_gen(1), x_gen(2)}, graph_attributes);
   };
 
   void resized() override {
