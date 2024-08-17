@@ -231,6 +231,9 @@ struct Lim {
   constexpr Lim(ValueType new_min, ValueType new_max)
       : min{new_min}, max{new_max} {}
 
+  constexpr Lim(const juce::Point<ValueType> lim)
+      : min{lim.getX()}, max{lim.getY()} {}
+
   ValueType min;
   ValueType max;
 
@@ -508,7 +511,8 @@ struct fast_vector {
   constexpr void push_back(const T elem) noexcept { vec[index++] = elem; }
 
   /**
-   * @brief push_back for the vector if the element is not in back of the vector.
+   * @brief push_back for the vector if the element is not in back of the
+   * vector.
    * @warning This will only work if the vector has a size already.
    * @param elem The element to be added to the vector.
    */
@@ -532,7 +536,7 @@ struct fast_vector {
 
   /**
    * @brief Get a const reference to the vector.
-   * @return const std::vector<T>& A const reference to the vector. 
+   * @return const std::vector<T>& A const reference to the vector.
    */
   constexpr const std::vector<T>& get() const noexcept { return vec; }
 

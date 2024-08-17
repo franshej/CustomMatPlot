@@ -140,10 +140,10 @@ enum RadioButtonIds { TraceZoomButtons = 1001 };
 Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
     : m_x_scaling(x_scaling),
       m_y_scaling(y_scaling),
-      m_x_lim({0, 0}),
-      m_y_lim({0, 0}),
-      m_x_lim_start({0, 0}),
-      m_y_lim_start({0, 0}),
+      m_x_lim(Lim_f(0, 0)),
+      m_y_lim(Lim_f(0, 0)),
+      m_x_lim_start(Lim_f(0, 0)),
+      m_y_lim_start(Lim_f(0, 0)),
       m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
                             m_y_scaling, m_downsampling_type),
       m_graph_lines(std::make_unique<GraphLineList>()),
@@ -239,12 +239,6 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
   }
 }
 
-void Plot::moveXYLims(const juce::Point<float>& d_xy) {
-  m_x_lim += d_xy.getX();
-  m_y_lim += d_xy.getY();
-  is_panning_or_zoomed = true;
-  updateGridAndTracepointsAndGraphLines();
-}
 
 void Plot::updateGraphLines() {
   m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical>(
@@ -1145,23 +1139,27 @@ void Plot::setGraphLineDataChangedCallback(
 }
 
 void Plot::panning(const juce::MouseEvent& event) {
-  UNLIKELY if (m_x_scaling == Scaling::logarithmic ||
-               m_y_scaling == Scaling::logarithmic) {
-    jassertfalse;  // Panning is not implemented for logarithmic scaling.
-    // TODO: Implement panning for logarithmic scaling.
-    return;
-  }
-
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
-  const auto current_data_pos =
-      getDataPointFromPixelCoordinate(mouse_pos, m_common_graph_params);
-  const auto prev_data_pos = getDataPointFromPixelCoordinate(
-      m_prev_mouse_position, m_common_graph_params);
-  const auto d_data_position = current_data_pos - prev_data_pos;
-  m_prev_mouse_position = mouse_pos;
+  const auto d_mouse_pos = mouse_pos - m_prev_mouse_position;
+  const auto new_x_lim_min_pixel = m_graph_bounds.getX() - d_mouse_pos.getX();
+  const auto new_x_lim_max_pixel = m_graph_bounds.getRight() - d_mouse_pos.getX();
+  const auto new_x_lim_data_min = getXDataFromXPixelCoordinate(new_x_lim_min_pixel, m_graph_bounds.toFloat(), m_x_lim, m_x_scaling);
+  const auto new_x_lim_data_max = getXDataFromXPixelCoordinate(new_x_lim_max_pixel, m_graph_bounds.toFloat(), m_x_lim, m_x_scaling);
+  const auto new_x_lim_data = Lim_f(new_x_lim_data_min, new_x_lim_data_max);
 
-  moveXYLims(-d_data_position);
-  updateGraphLines();
+  const auto new_y_lim_min_pos = m_graph_bounds.getBottom() - d_mouse_pos.getY();
+  const auto new_y_lim_max_pos = m_graph_bounds.getY() - d_mouse_pos.getY();
+  const auto new_y_lim_data_min = getYDataFromYPixelCoordinate(new_y_lim_min_pos, m_graph_bounds.toFloat(), m_y_lim, m_y_scaling);
+  const auto new_y_lim_data_max = getYDataFromYPixelCoordinate(new_y_lim_max_pos, m_graph_bounds.toFloat(), m_y_lim, m_y_scaling);
+  const auto new_y_lim_data = Lim_f(new_y_lim_data_min, new_y_lim_data_max);
+ 
+  m_prev_mouse_position = mouse_pos;
+  is_panning_or_zoomed = true;
+
+  this->updateXLim(new_x_lim_data);
+  this->updateYLim(new_y_lim_data);
+
+  updateGridAndTracepointsAndGraphLines();
   repaint();
 }
 
