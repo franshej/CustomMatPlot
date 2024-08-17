@@ -86,11 +86,11 @@ class PlotLabel : public juce::Component {
    */
   const juce::Label &getTitleLabel() const noexcept;
 
-  /** @brief Get info struct about if the labels are set ot not.
+  /** @brief Get info struct about which labels that are set ot not.
    *
-   *  @return const IsLabelsSet.
+   *  @return const AreLabelsSet.
    */
-  const IsLabelsSet getIsLabelsAreSet() const noexcept;
+  const AreLabelsSet areLabelsSet() const noexcept;
 
   void resized() override;
   void paint(juce::Graphics &g) override;

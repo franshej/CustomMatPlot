@@ -710,7 +710,7 @@ class Plot : public juce::Component {
   std::unique_ptr<LookAndFeelMethods> m_lookandfeel_default;
 
   /** Friend functions */
-  friend const IsLabelsSet getIsLabelsAreSet(const Plot* plot) noexcept;
+  friend const AreLabelsSet areLabelsSet(const Plot* plot) noexcept;
   friend const std::pair<int, int> getMaxGridLabelWidth(
       const Plot* plot) noexcept;
 

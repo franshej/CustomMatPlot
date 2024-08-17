@@ -75,7 +75,7 @@ struct GridLine {
 };
 
 /** @brief A struct that defines if a axis labels has been set or not. */
-struct IsLabelsSet {
+struct AreLabelsSet {
   bool x_label{false};
   bool y_label{false};
   bool title_label{false};

@@ -21,7 +21,7 @@ juce::Rectangle<int> PlotLookAndFeelTimeline::getGraphBounds(
   auto graph_bounds = juce::Rectangle<int>();
 
   if (const auto* plot = dynamic_cast<const Plot*>(plot_comp)) {
-    const auto is_labels_set = getIsLabelsAreSet(plot);
+    const auto are_labels_set = areLabelsSet(plot);
     const auto [x_grid_label_width, y_grid_label_width] =
         getMaxGridLabelWidth(plot);
 
@@ -36,11 +36,11 @@ juce::Rectangle<int> PlotLookAndFeelTimeline::getGraphBounds(
             : bounds.getHeight() -
                   (getMargin() + getXGridLabelDistanceFromGraphBound());
 
-    if (is_labels_set.x_label) {
+    if (are_labels_set.x_label) {
       bottom -= (getXYTitleFont().getHeight() + getMargin());
     }
 
-    if (is_labels_set.title_label) {
+    if (are_labels_set.title_label) {
       top += getXYTitleFont().getHeight() + getMargin();
     }
 

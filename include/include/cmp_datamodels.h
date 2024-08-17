@@ -51,7 +51,7 @@ struct GraphSpread;
 struct GraphSpreadIndex;
 struct GridLine;
 struct GraphLineList;
-struct IsLabelsSet;
+struct AreLabelsSet;
 struct CommonPlotParameterView;
 struct GraphLineDataView;
 template <class ValueType>
