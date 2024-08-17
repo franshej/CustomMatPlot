@@ -63,8 +63,7 @@ The CMP compontent implements MouseEvents to interact with the plot using the mo
 6. Move the trace point label by dragging it.
 7. Move the legend to by dragging it.
 8. Move pixel points.
-8. Panning for linear scaling
-9. #TODO: Panning for logarithmic scaling
+8. Panning.
 
 ## LookAndFeel
 <a name="lookandfeel"></a>

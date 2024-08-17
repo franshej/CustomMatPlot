@@ -646,8 +646,6 @@ class Plot : public juce::Component {
   /** @internal */
   void setDownsamplingTypeInternal(const DownsamplingType downsampling_type);
   /** @internal */
-  void moveXYLims(const juce::Point<float>& d_xy);
-  /** @internal */
   void updateGridAndTracepointsAndGraphLines();
   /** @internal */
   void updateGraphLines();
