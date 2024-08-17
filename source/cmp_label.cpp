@@ -46,8 +46,8 @@ const juce::Label &PlotLabel::getTitleLabel() const noexcept {
   return m_title_label;
 }
 
-const IsLabelsSet PlotLabel::getIsLabelsAreSet() const noexcept {
-  return IsLabelsSet{
+const AreLabelsSet PlotLabel::areLabelsSet() const noexcept {
+  return AreLabelsSet{
       m_x_label.getText().isNotEmpty(),
       m_y_label.getText().isNotEmpty(),
       m_title_label.getText().isNotEmpty(),

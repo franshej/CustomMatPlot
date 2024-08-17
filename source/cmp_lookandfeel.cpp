@@ -23,8 +23,8 @@ namespace cmp {
 
 /*============================================================================*/
 
-const IsLabelsSet getIsLabelsAreSet(const cmp::Plot* plot) noexcept {
-  return plot->m_plot_label->getIsLabelsAreSet();
+const AreLabelsSet areLabelsSet(const cmp::Plot* plot) noexcept {
+  return plot->m_plot_label->areLabelsSet();
 };
 
 const std::pair<int, int> getMaxGridLabelWidth(const cmp::Plot* plot) noexcept {
@@ -101,7 +101,7 @@ juce::Rectangle<int> PlotLookAndFeel::getGraphBounds(
   auto graph_bounds = juce::Rectangle<int>();
 
   if (const auto* plot = dynamic_cast<const Plot*>(plot_comp)) {
-    const auto is_labels_set = getIsLabelsAreSet(plot);
+    const auto is_labels_set = areLabelsSet(plot);
     const auto [x_grid_label_width, y_grid_label_width] =
         getMaxGridLabelWidth(plot);
 
