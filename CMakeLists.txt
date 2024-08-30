@@ -76,5 +76,6 @@ if(CMP_BUILD_EXAMPLES)
 endif()
 
 if(CMP_BUILD_TESTS)
+    find_package(CURL REQUIRED)
     add_subdirectory(tests)
 endif()
