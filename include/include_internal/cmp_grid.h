@@ -32,7 +32,7 @@ namespace cmp {
  * Componenet for creating grids and grid labels. The idea with this componenet
  * is to create the grids behind the actual graph(s) together with graph labels
  * outside the graph area. It can also be used to only create the grid labels
- * without the grids. Default are grids off.
+ * without the grids.
  *
  */
 class Grid : public juce::Component {

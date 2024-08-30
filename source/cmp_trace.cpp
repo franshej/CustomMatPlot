@@ -65,11 +65,9 @@ void TraceLabel<ValueType>::updateTraceLabel() {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
     m_x_label.first =
-        "X: " +
-        valueToString(m_graph_value->getX(), *m_common_plot_params, true).first;
-    m_y_label.first = "Y: " + valueToString(m_graph_value->getY(),
-                                            *m_common_plot_params, false)
-                                  .first;
+        "X: " + valueToStringWithoutTrailingZeros(m_graph_value->getX());
+    m_y_label.first =
+        "Y: " + valueToStringWithoutTrailingZeros(m_graph_value->getY());
 
     const auto [x_label_bounds, y_label_bounds] =
         lnf->getTraceXYLabelBounds(m_x_label.first, m_y_label.first);
