@@ -6,9 +6,12 @@
 
 #include "cmp_utils.h"
 
-SECTION(UtilsTest, "Utils class"){TEST("Generate ticks: 0.0f -> 1000.0f"){
+SECTION(UtilsTest, "Utils class"){
+
+TEST("Generate ticks: 0.0f -> 1000.0f"){
     std::vector<float> result = cmp::TicksGenerator::generateTicks(
         0.0f, 1000.0f, 10, std::vector<float>());
+
 std::vector<float> expected = {
     -500.0f, -400.0f, -300.0f, -200.0f, -100.0f, 0.0f,    100.0f,
     200.0f,  300.0f,  400.0f,  500.0f,  600.0f,  700.0f,  800.0f,
@@ -67,37 +70,38 @@ TEST("Previous Ticks") {
 }
 
 TEST("Float to string: 123.45000") {
-    float num = 123.45000;
-    std::string expected = "123.45";
-    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
-    expectEquals(result, expected);
+  float num = 123.45000;
+  std::string expected = "123.45";
+  std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+  expectEquals(result, expected);
 }
 
 TEST("Float to string: 123.45") {
-    float num = 123.45;
-    std::string expected = "123.45";
-    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
-    expectEquals(result, expected);
+  float num = 123.45;
+  std::string expected = "123.45";
+  std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+  expectEquals(result, expected);
 }
 
 TEST("Float to string: 1000.0000") {
-    float num = 1000.0000;
-    std::string expected = "1000";
-    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
-    expectEquals(result, expected);
+  float num = 1000.0000;
+  std::string expected = "1000";
+  std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+  expectEquals(result, expected);
 }
 
 TEST("Float to string: 0.00012345000") {
-    float num = 0.00012345000f;
-    std::string expected = "0.00012345";
-    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
-    expectEquals(result, expected);
+  float num = 0.00012345000f;
+  std::string expected = "0.00012345";
+  std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+  expectEquals(result, expected);
 }
 
 TEST("Float to string: 0.0") {
-    float num = 0.0;
-    std::string expected = "0";
-    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
-    expectEquals(result, expected);
+  float num = 0.0;
+  std::string expected = "0";
+  std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+  expectEquals(result, expected);
 }
-};
+}
+;

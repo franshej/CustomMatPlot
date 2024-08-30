@@ -6,15 +6,44 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
       with:
         submodules: true
         fetch-depth: 0
+
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libcurl4-gnutls-dev
+
     - name: Install CMake
       uses: jwlawson/actions-setup-cmake@v1
       with:
         cmake-version: '3.22.0'
-    - name: Build
-      run: cmake -S . -B build && cmake --build build
+
+    - name: Configure CMake
+      run: cmake -S . -B build -DCMP_BUILD_TESTS=ON
+
+    - name: Build project
+      run: cmake --build build
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build
+        path: build/
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: build
+        path: build/
+
+    - name: Set executable permission
+      run: chmod +x build/tests/unit_tests/cmp_plot_test
+
+    - name: Run CTest
+      run: ctest --verbose --output-on-failure --test-dir build/tests
