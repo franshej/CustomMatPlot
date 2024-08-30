@@ -65,5 +65,39 @@ TEST("Previous Ticks") {
     expectWithinAbsoluteError(result[i], expected[i], 0.009f);
   }
 }
+
+TEST("Float to string: 123.45000") {
+    float num = 123.45000;
+    std::string expected = "123.45";
+    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+    expectEquals(result, expected);
 }
-;
+
+TEST("Float to string: 123.45") {
+    float num = 123.45;
+    std::string expected = "123.45";
+    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+    expectEquals(result, expected);
+}
+
+TEST("Float to string: 1000.0000") {
+    float num = 1000.0000;
+    std::string expected = "1000";
+    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+    expectEquals(result, expected);
+}
+
+TEST("Float to string: 0.00012345000") {
+    float num = 0.00012345000f;
+    std::string expected = "0.00012345";
+    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+    expectEquals(result, expected);
+}
+
+TEST("Float to string: 0.0") {
+    float num = 0.0;
+    std::string expected = "0";
+    std::string result = cmp::valueToStringWithoutTrailingZeros(num);
+    expectEquals(result, expected);
+}
+};

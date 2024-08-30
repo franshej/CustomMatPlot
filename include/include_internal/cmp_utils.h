@@ -237,91 +237,35 @@ constexpr auto getYScaleAndOffset =
 
 /*============================================================================*/
 
-template <class ValueType>
-[[nodiscard]] std::pair<std::string, std::string> valueToString(
-    const ValueType value, const CommonPlotParameterView common_plot_params,
-    const bool is_x,
-    [[maybe_unused]] const std::size_t size_of_exponent_before_factor =
-        std::numeric_limits<std::size_t>::max()) {
-  static_assert(std::is_same<float, ValueType>::value ||
-                    std::is_same<const float, ValueType>::value ||
-                    std::is_same<double, ValueType>::value ||
-                    std::is_same<const double, ValueType>::value,
-                "Type must be either float or double");
-  auto lims = is_x ? common_plot_params.x_lim : common_plot_params.y_lim;
+template <typename ValueType>
+std::string valueToStringWithoutTrailingZeros(ValueType num) {
+    // Ensure that the type is either float or double
+    static_assert(std::is_same<float, ValueType>::value ||
+                  std::is_same<const float, ValueType>::value ||
+                  std::is_same<double, ValueType>::value ||
+                  std::is_same<const double, ValueType>::value,
+                  "Type must be either float or double");
 
-  const auto max_exp = lims.max != 0 ? std::log10(std::abs(lims.max)) : 0;
-  const auto min_exp = lims.min != 0 ? std::log10(std::abs(lims.min)) : 0;
+    std::ostringstream oss;
+    oss << num;
+    std::string strNum = oss.str();
 
-  const auto max_abs_exp = std::ceil(std::abs(max_exp));
-  const auto min_abs_exp = std::ceil(std::abs(min_exp));
-
-  const auto exp_diff = max_exp - min_exp;
-
-  const auto [largest_exp,
-              largest_abs_exp] = [&]() -> std::pair<ValueType, ValueType> {
-    if (max_abs_exp < 2 && min_abs_exp < 2)
-      return {ValueType(2), ValueType(2)};
-    else if (max_abs_exp > min_abs_exp)
-      return {max_exp, max_abs_exp};
-    else
-      return {min_exp, min_abs_exp};
-  }();
-
-  std::string factor_text = "";
-  std::string value_text = "";
-
-  // Not used atm.
-  if constexpr (false) {
-    const auto factor = ValueType(std::pow(10.0, largest_abs_exp));
-
-    lims /= factor;
-
-    factor_text = "1e" + std::to_string(int(largest_exp));
-    value_text = std::to_string(value / factor);
-  } else {
-    value_text = std::to_string(value);
-  }
-
-  const auto lims_diff = lims.max - lims.min;
-  const auto lims_diff_log = std::log10(lims_diff);
-
-  auto num_digits_diff =
-      lims_diff_log < 0 ? std::abs(lims_diff_log) + 2 : lims_diff_log;
-
-  auto num_digits_before_sign = 0.0f;
-  if (lims_diff_log >= 0 && largest_exp >= 0) {
-    if (int(std::ceil(std::log10(std::abs(value)))) == int(largest_abs_exp)) {
-      num_digits_before_sign += largest_abs_exp + 1.0f;
-    } else {
-      num_digits_before_sign += largest_abs_exp;
+    size_t decimalPos = strNum.find('.');
+    
+    if (decimalPos == std::string::npos) {
+        return strNum;
     }
-  } else if (lims_diff_log < 0.0f && largest_exp > 0.0f) {
-    num_digits_before_sign += largest_abs_exp + num_digits_diff;
-  } else if (lims_diff_log < 0.0f && largest_exp < 0.0f) {
-    num_digits_before_sign += std::max(num_digits_diff, largest_abs_exp);
-  }
-
-  const auto num_digits_before_exponent_sign =
-      std::size_t(std::ceil(num_digits_before_sign) + int(value < 0));
-
-  const auto num_digits_before_checking_ending_character =
-      std::size_t(num_digits_before_exponent_sign + 2 * int(largest_exp < 0));
-
-  auto value_text_out =
-      value_text.substr(0u, num_digits_before_checking_ending_character);
-
-  if (value_text_out.back() == '.') {
-    if (lims_diff < 20) {
-      value_text_out = value_text.substr(
-          0u, num_digits_before_checking_ending_character + 1);
-    } else {
-      value_text_out = value_text.substr(
-          0u, num_digits_before_checking_ending_character - 1);
+    
+    size_t endPos = strNum.length() - 1;
+    while (endPos > decimalPos && strNum[endPos] == '0') {
+        endPos--;
     }
-  }
-
-  return {value_text_out, factor_text};
+    
+    if (strNum[endPos] == '.') {
+        endPos--;
+    }
+    
+    return strNum.substr(0, endPos + 1);
 }
 
 /*============================================================================*/
@@ -538,6 +482,12 @@ class TicksGenerator {
       1e4f,  2e4f,  5e4f,  1e5f,  2e5f,  5e5f,  1e6f,  2e6f,  5e6f,
       1e7f,  2e7f,  5e7f,  1e8f,  2e8f,  5e8f};
 
+  static constexpr float epsilon = 1e-7f;  // Tolerance level
+
+  static float roundToNearestInterval(float value, float interval) {
+    return std::round(value / interval) * interval;
+  }
+
  public:
   static std::vector<float> generateTicks(
       const float min, const float max, const int size,
@@ -564,7 +514,7 @@ class TicksGenerator {
     float currentValue = (std::ceil(min / interval) - (size / 2)) * interval;
 
     while (currentValue <= max + (size / 2) * interval) {
-      gridValues.push_back(currentValue);
+      gridValues.push_back(roundToNearestInterval(currentValue, interval));
       currentValue += interval;
     }
 

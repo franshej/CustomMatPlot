@@ -922,7 +922,7 @@ void PlotLookAndFeel::updateGridLabels(
             use_custom_x_labels
                 ? getNextCustomLabel(custom_x_labels_reverse_it,
                                      x_custom_label_ticks.rend())
-                : valueToString(tick, common_plot_params, true).first;
+                : valueToStringWithoutTrailingZeros(tick);
 
         const auto [label_width, label_height] =
             getLabelWidthAndHeight(font, label);
@@ -946,7 +946,7 @@ void PlotLookAndFeel::updateGridLabels(
             use_custom_y_labels
                 ? getNextCustomLabel(custom_y_labels_reverse_it,
                                      y_custom_label_ticks.rend())
-                : valueToString(tick, common_plot_params, false).first;
+                : valueToStringWithoutTrailingZeros(tick);
 
         const auto [label_width, label_height] =
             getLabelWidthAndHeight(font, label);
