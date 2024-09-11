@@ -245,7 +245,7 @@ void Plot::updateGraphLines() {
       m_y_lim);
   m_graph_lines
       ->setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal>(
-          m_y_lim);
+          m_x_lim);
 
   for (const auto& graph_line : *m_graph_lines) {
     graph_line->updateXIndicesAndPixelPoints();
@@ -346,6 +346,15 @@ prepareDataForVerticalOrHorizontalLines(
   }
 
   return {lines_start_end, line_coordinates};
+}
+
+void Plot::plotHorizontalLines(const std::vector<float>& y_coordinates,
+                               const GraphAttributeList& graph_attributes) {
+  auto [x_data, y_data] =
+      prepareDataForVerticalOrHorizontalLines<float>(y_coordinates, m_x_lim);
+  if (x_data.empty() || y_data.empty()) return;
+
+  plotInternal<GraphLineType::horizontal>(y_data, x_data, graph_attributes);
 }
 
 void Plot::plotVerticalLines(const std::vector<float>& x_coordinates,

@@ -42,4 +42,22 @@ SECTION(PlotClass, "Plot class") {
     expectEqualVectors(graph_lines[2]->getXData(), x_data3, expectEqualsLambda);
     expectEqualVectors(graph_lines[2]->getYData(), y_data3, expectEqualsLambda);
   }
+
+  TEST("Horizontal line") {
+    cmp::Plot horizontal_plot;
+    horizontal_plot.plotHorizontalLines({100.f});
+    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(horizontal_plot);
+    expectEquals(graph_lines.size(), 1ul);
+    expect(graph_lines[0]->getType() == cmp::GraphLineType::horizontal);
+    expectEqualVectors(graph_lines[0]->getYData(), {100.f, 100.f}, expectEqualsLambda);
+  }
+
+  TEST("Vertical line") {
+    cmp::Plot vertical_plot;
+    vertical_plot.plotVerticalLines({100.f});
+    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(vertical_plot);
+    expectEquals(graph_lines.size(), 1ul);
+    expect(graph_lines[0]->getType() == cmp::GraphLineType::vertical);
+    expectEqualVectors(graph_lines[0]->getXData(), {100.f, 100.f}, expectEqualsLambda);
+  }
 }

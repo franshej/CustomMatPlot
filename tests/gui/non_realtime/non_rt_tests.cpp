@@ -614,7 +614,7 @@ TEST(heart, non_real_time) {
 
 TEST(test_vertical_line, non_real_time) {
   ADD_PLOT;
-  { GET_PLOT->plotVerticalLines({5.0f}); }
+  { GET_PLOT->plotVerticalLines({7.0f}); }
 
   {
     std::vector<float> y_test_data(10);
@@ -622,5 +622,18 @@ TEST(test_vertical_line, non_real_time) {
     PLOT_Y({y_test_data});
   }
 
-  { GET_PLOT->plotVerticalLines({10.0f}); }
+  { GET_PLOT->plotVerticalLines({3.0f, 10.0f, 5.0f}); }
+}
+
+TEST(test_horizontal_line, non_real_time) {
+  ADD_PLOT;
+  { GET_PLOT->plotHorizontalLines({5.0f}); }
+
+  {
+    std::vector<float> y_test_data(10);
+    std::iota(y_test_data.begin(), y_test_data.end(), 0);
+    PLOT_Y({y_test_data});
+  }
+
+  { GET_PLOT->plotHorizontalLines({3.0f, 10.0f, 5.0f}); }
 }

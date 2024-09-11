@@ -77,24 +77,24 @@ class Plot : public juce::Component {
             const std::vector<std::vector<float>>& x_data = {},
             const GraphAttributeList& graph_attribute_list = {});
 
-  /** @brief Draw horizontal line.
+  /** @brief Draw horizontal line(s).
    *
    * Draw a horizontal line at the given y-value. It is also possible to move
    * the whole line by dragging anywhere on it.
    *
-   * @param y_value the y-value of the horizontal line.
+   * @param y_coordinates the y-coordinates of where the horizontal line(s) will be drawn.
    * @param graph_attribute the graph attribute of the horizontal line.
    * @return void.
    */
-  // void plotHorizontalLine(const float y_value,
-  //                         const GraphAttribute& graph_attribute = {});
+  void plotHorizontalLines(const std::vector<float>& y_coordinates,
+                           const GraphAttributeList& graph_attributes = {});
 
-  /** @brief Draw vertical line.
+  /** @brief Draw vertical line(s).
   *
   * Draw vertical line(s) at the given x-value. It is also possible to move the
   * whole line by dragging anywhere on it.
   *
-  @param x_value the x-value of the vertical line.
+  @param x_coordinates the x-coordinates of where the vertical line(s) will be drawn.
   @param graph_attribute the graph attribute of the vertical line.
   @return void.
   */
