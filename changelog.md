@@ -1,13 +1,25 @@
 ## Next version
 
 ### Fixed
-- xy-downsamling issue missing points.
 
 ### Added
-- Draw vertical line.
-- Different types of lines: vertical, horizonal and normal.
 
-## ### 1.2.3 (2023-10-8)
+## 1.3.0 (2024-9-12)
+
+### Fixed
+- xy-downsamling issue missing points.
+- Fixed grid line auto ticks.
+- Fixed grid line labels formatting.
+
+### Added
+- Panning for logarithmic scaling.
+- CI: build & run unit tests.
+- Unit tests.
+- Update JUCE 7.0.12
+- Draw vertical line.
+- Draw horizontal line.
+
+## 1.2.3 (2023-10-8)
 
 ### Fixed
 - ctrl, shift and alt key were not detected on Windows.
