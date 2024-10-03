@@ -61,7 +61,7 @@ TEST(real_time_plot_function, real_time) {
       y = (float)rand() / RAND_MAX;
     }
 
-    REALTIMEPLOT({y_test_data});
+    GET_PLOT->plotUpdateYOnly({y_test_data});
   };
 }
 
@@ -94,7 +94,7 @@ TEST(spread, real_time) {
   const std::vector<cmp::GraphSpreadIndex> spread_indices = {{0, 1}};
   FILL_BETWEEN(spread_indices);
 
-  GET_TIMER_CB = [=](const int dt_ms) { REALTIMEPLOT(getYData()); };
+  GET_TIMER_CB = [=](const int dt_ms) { GET_PLOT->plotUpdateYOnly(getYData()); };
 }
 
 TEST(random_yx_values, real_time) {

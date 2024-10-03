@@ -1,8 +1,10 @@
 ## Next version
 
 ### Fixed
+- plotUpdateYOnly (realTimePlot).
 
 ### Added
+- Renamed realTimePlot to plotUpdateYOnly.
 
 ## 1.3.0 (2024-9-12)
 
