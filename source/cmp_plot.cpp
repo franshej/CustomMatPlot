@@ -369,8 +369,16 @@ void Plot::plotVerticalLines(const std::vector<float>& x_coordinates,
 template <GraphLineType t_graph_line_type>
 void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
                         const std::vector<std::vector<float>>& x_data,
-                        const GraphAttributeList& graph_attributes) {
+                        const GraphAttributeList& graph_attributes,
+                        const bool update_y_data_only) {
+  if (update_y_data_only) jassert(!m_graph_lines->empty());
+  // Call cmp::Plot::plot first with x-data to set the x-data.
+
   updateGraphLineYData<t_graph_line_type>(y_data, graph_attributes);
+
+  if (update_y_data_only) {
+    goto skip_update_x_data_label;
+  }
 
   if (!x_data.empty()) {
     updateGraphLineXData<t_graph_line_type>(x_data);
@@ -383,6 +391,7 @@ void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
     }
   }
 
+skip_update_x_data_label:
   updateGridGraphLinesAndTrace();
 }
 
@@ -412,8 +421,8 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
   repaint();
 }
 
-void Plot::realTimePlot(const std::vector<std::vector<float>>& y_data) {
-  plotInternal<GraphLineType::normal>(y_data, {}, {});
+void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
+  plotInternal<GraphLineType::normal>(y_data, {}, {}, true);
 
   updateTracePointsAndLegends();
 

@@ -14,6 +14,9 @@ SECTION(PlotClass, "Plot class") {
   const std::vector<float> y_data2 = {200.f, 300.f, 400.f, 500.f};
   const std::vector<float> x_data3 = {1.f, 2.f};
   const std::vector<float> y_data3 = {400.f, 500.f};
+  const std::vector<float> x_data_random_1 = {32.f, 45.f};
+  const std::vector<float> x_data_random_2 = {432156.f, 43.f, 2123.f, 553.f};
+  const std::vector<float> x_data_random_3 = {5321.f, 4215.f};
   cmp::Plot plot;
 
   TEST("Empty graph line.") {
@@ -59,5 +62,18 @@ SECTION(PlotClass, "Plot class") {
     expectEquals(graph_lines.size(), 1ul);
     expect(graph_lines[0]->getType() == cmp::GraphLineType::vertical);
     expectEqualVectors(graph_lines[0]->getXData(), {100.f, 100.f}, expectEqualsLambda);
+  }
+
+  TEST ("Update Y data only") {
+    plot.plot({y_data1, y_data2, y_data3}, {x_data_random_1, x_data_random_2, x_data_random_3});
+    plot.plotUpdateYOnly({y_data1, y_data2, y_data3});
+    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
+    expectEquals(graph_lines.size(), 3ul);
+    expectEqualVectors(graph_lines[0]->getXData(), x_data_random_1, expectEqualsLambda);
+    expectEqualVectors(graph_lines[0]->getYData(), y_data1, expectEqualsLambda);
+    expectEqualVectors(graph_lines[1]->getXData(), x_data_random_2, expectEqualsLambda);
+    expectEqualVectors(graph_lines[1]->getYData(), y_data2, expectEqualsLambda);
+    expectEqualVectors(graph_lines[2]->getXData(), x_data_random_3, expectEqualsLambda);
+    expectEqualVectors(graph_lines[2]->getYData(), y_data3, expectEqualsLambda);
   }
 }

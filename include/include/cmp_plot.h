@@ -101,15 +101,15 @@ class Plot : public juce::Component {
   void plotVerticalLines(const std::vector<float>& x_coordinates,
                          const GraphAttributeList& graph_attributes = {});
 
-  /** @brief Realtime plot.
+  /** @brief Plot, but only update the y-data.
    *
    * This plot function will only update the y-data in the graphs and only
    * repaint the graph_area, therefore requires less CPU than the 'plot'
-   * function. x-data can be set through the 'plot' function.
+   * function. x-data must be set through the 'plot' function before calling this function.
    *
    * @param y_data vector of vectors with the y-values.
    */
-  void realTimePlot(const std::vector<std::vector<float>>& y_data);
+  void plotUpdateYOnly(const std::vector<std::vector<float>>& y_data);
 
   /** @brief Fill the area between two data lines.
    *
@@ -637,7 +637,8 @@ class Plot : public juce::Component {
   template <GraphLineType t_graph_line_type>
   void plotInternal(const std::vector<std::vector<float>>& y_data,
                     const std::vector<std::vector<float>>& x_data,
-                    const GraphAttributeList& graph_attributes);
+                    const GraphAttributeList& graph_attributes,
+                    const bool update_y_data_only = false);
   /** @internal */
   std::vector<std::vector<float>> generateXdataRamp(
       const std::vector<std::vector<float>>& y_data);
