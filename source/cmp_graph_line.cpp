@@ -140,7 +140,7 @@ void GraphLine::paint(juce::Graphics& g) {
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->drawGraphLine(g, graph_line_data);
+    lnf->drawGraphLine(g, graph_line_data, getLocalBounds());
   }
 }
 
@@ -175,6 +175,9 @@ void GraphLine::setGraphAttribute(const GraphAttribute& graph_attribute) {
 
   if (graph_attribute.marker)
     m_graph_attributes.marker = graph_attribute.marker;
+
+  if (graph_attribute.gradient_colours)
+    m_graph_attributes.gradient_colours = graph_attribute.gradient_colours;
 }
 
 void GraphLine::setYValues(const std::vector<float>& y_data) {

@@ -102,7 +102,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
       UserInput user_input) const noexcept override;
 
   void drawGraphLine(juce::Graphics &g,
-                     const GraphLineDataView graph_line_data) override;
+                     const GraphLineDataView graph_line_data,
+                     const juce::Rectangle<int>& graph_line_bounds) override;
 
   void drawGridLabels(juce::Graphics &g, const LabelVector &x_axis_labels,
                       const LabelVector &y_axis_labels) override;

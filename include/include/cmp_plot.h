@@ -366,7 +366,8 @@ class Plot : public juce::Component {
 
     /** This method draws a single graph line. */
     virtual void drawGraphLine(juce::Graphics& g,
-                               const GraphLineDataView graph_line_data) = 0;
+                               const GraphLineDataView graph_line_data,
+                               const juce::Rectangle<int>& graph_line_bounds) = 0;
 
     /** This method draws the labels on the x and y axis. */
     virtual void drawGridLabels(juce::Graphics& g,

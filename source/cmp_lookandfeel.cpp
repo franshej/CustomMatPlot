@@ -292,8 +292,9 @@ juce::Point<int> PlotLookAndFeel::getTracePointPositionFrom(
   return juce::Point<float>(x, y).toInt();
 }
 
-void PlotLookAndFeel::drawGraphLine(juce::Graphics& g,
-                                    const GraphLineDataView graph_line_data) {
+void PlotLookAndFeel::drawGraphLine(
+    juce::Graphics& g, const GraphLineDataView graph_line_data,
+    const juce::Rectangle<int>& graph_line_bounds) {
   juce::Path graph_path;
   const juce::PathStrokeType stroke_type =
       graph_line_data.graph_attribute.path_stroke_type
@@ -356,7 +357,25 @@ void PlotLookAndFeel::drawGraphLine(juce::Graphics& g,
       g.setColour(graph_colour);
     }
 
-    g.strokePath(graph_path, stroke_type);
+    if (graph_line_data.graph_attribute.gradient_colours) {
+      const auto& gradient_colours =
+          graph_line_data.graph_attribute.gradient_colours.value();
+
+      const auto graph_line_bounds_f = graph_line_bounds.toFloat();
+      juce::ColourGradient gradient = juce::ColourGradient::vertical(
+          gradient_colours.first, 0.f, gradient_colours.second,
+          graph_line_bounds_f.getHeight());
+
+      graph_path.lineTo(pixel_points.back().getX(),
+                        graph_line_bounds.getBottom());
+      graph_path.lineTo(pixel_points.front().getX(),
+                        graph_line_bounds.getBottom());
+      graph_path.closeSubPath();
+      g.setGradientFill(gradient);
+      g.fillPath(graph_path);
+    } else {
+      g.strokePath(graph_path, stroke_type);
+    }
   }
 }
 
@@ -918,11 +937,10 @@ void PlotLookAndFeel::updateGridLabels(
 
     switch (direction) {
       case GridLine::Direction::vertical: {
-        const auto label =
-            use_custom_x_labels
-                ? getNextCustomLabel(custom_x_labels_reverse_it,
-                                     x_custom_label_ticks.rend())
-                : valueToStringWithoutTrailingZeros(tick);
+        const auto label = use_custom_x_labels
+                               ? getNextCustomLabel(custom_x_labels_reverse_it,
+                                                    x_custom_label_ticks.rend())
+                               : valueToStringWithoutTrailingZeros(tick);
 
         const auto [label_width, label_height] =
             getLabelWidthAndHeight(font, label);
@@ -942,11 +960,10 @@ void PlotLookAndFeel::updateGridLabels(
                                             x_axis_labels_out, label, bound);
       } break;
       case GridLine::Direction::horizontal: {
-        const auto label =
-            use_custom_y_labels
-                ? getNextCustomLabel(custom_y_labels_reverse_it,
-                                     y_custom_label_ticks.rend())
-                : valueToStringWithoutTrailingZeros(tick);
+        const auto label = use_custom_y_labels
+                               ? getNextCustomLabel(custom_y_labels_reverse_it,
+                                                    y_custom_label_ticks.rend())
+                               : valueToStringWithoutTrailingZeros(tick);
 
         const auto [label_width, label_height] =
             getLabelWidthAndHeight(font, label);

@@ -637,3 +637,18 @@ TEST(test_horizontal_line, non_real_time) {
 
   { GET_PLOT->plotHorizontalLines({3.0f, 10.0f, 5.0f}); }
 }
+
+TEST(gradient, non_real_time) {
+  ADD_PLOT;
+
+  std::vector<float> y_test_data(1000);
+  std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
+
+  cmp::GraphAttributeList ga(1);
+  juce::Colour colour0 = juce::Colours::red;
+  juce::Colour colour1 = juce::Colours::green;
+  ga[0].gradient_colours = std::make_pair(colour0, colour1);
+
+  PLOT_XY_ATTRI({y_test_data}, {}, ga);
+  GRID_ON;
+}
