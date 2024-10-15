@@ -5,6 +5,7 @@
 
 ### Added
 - Renamed realTimePlot to plotUpdateYOnly.
+- Gradient below graph line using GraphAttribute
 
 ## 1.3.0 (2024-9-12)
 

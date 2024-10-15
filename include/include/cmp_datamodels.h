@@ -430,6 +430,10 @@ struct GraphAttribute {
   std::function<void(juce::Graphics& g, juce::Point<float> data_point,
                      juce::Point<float> pixel_point)>
       on_pixel_point_paint{nullptr};
+
+  /** Creates a vertical linear gradient between top and bottom of the graph
+   * area. Only the gradient below the graph line is visible.  */
+  std::optional<std::pair<juce::Colour, juce::Colour>> gradient_colours;
 };
 
 /** @brief A struct that defines between which two graph_lines the area is
