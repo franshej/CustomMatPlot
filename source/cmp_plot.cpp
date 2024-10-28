@@ -117,19 +117,8 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
 }
 
 void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
-  m_grid->setLookAndFeel(lookandfeel);
-  m_plot_label->setLookAndFeel(lookandfeel);
-  m_frame->setLookAndFeel(lookandfeel);
-  m_legend->setLookAndFeel(lookandfeel);
-  m_selected_area->setLookAndFeel(lookandfeel);
-  m_trace->setLookAndFeel(lookandfeel);
-
-  for (const auto& graph_line : *m_graph_lines) {
-    graph_line->setLookAndFeel(lookandfeel);
-  }
-
-  for (const auto& spread : m_graph_spread_list) {
-    spread->setLookAndFeel(lookandfeel);
+  for (auto* child : getChildren()) {
+    child->setLookAndFeel(lookandfeel);
   }
 }
 
@@ -153,7 +142,9 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_selected_area(std::make_unique<GraphArea>(m_common_graph_params)),
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
       m_trace(std::make_unique<Trace>(m_common_graph_params)) {
-  lookAndFeelChanged();
+  m_lookandfeel_default = getDefaultLookAndFeel();
+  setLookAndFeel(m_lookandfeel_default.get());
+
   addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
   addAndMakeVisible(m_selected_area.get());
@@ -238,7 +229,6 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
     }
   }
 }
-
 
 void Plot::updateGraphLines() {
   m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical>(
@@ -647,19 +637,16 @@ void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
   resizeChildrens();
 }
 
-std::unique_ptr<Plot::LookAndFeelMethods> Plot::getDefaultLookAndFeel() {
+std::unique_ptr<PlotLookAndFeel> Plot::getDefaultLookAndFeel() {
   return std::make_unique<PlotLookAndFeel>();
 }
 
 void Plot::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = &getLookAndFeel();
-    m_lookandfeel_default.reset();
   } else {
-    if (!m_lookandfeel_default) {
-      m_lookandfeel_default = getDefaultLookAndFeel();
-    }
-    m_lookandfeel = m_lookandfeel_default.get();
+    // Not a valid look and feel. Use the Plot::LookAndFeelMethods instead.
+    jassertfalse;
   }
 
   resetLookAndFeelChildrens(m_lookandfeel);
