@@ -601,7 +601,7 @@ class Plot : public juce::Component {
   std::tuple<size_t, const GraphLine*> findNearestPoint(
       juce::Point<float> point, const GraphLine* graphline = nullptr);
   /** @internal */
-  std::unique_ptr<LookAndFeelMethods> getDefaultLookAndFeel();
+  std::unique_ptr<PlotLookAndFeel> getDefaultLookAndFeel();
   /** @internal */
   template <GraphLineType t_graph_line_type>
   void addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
@@ -707,7 +707,7 @@ class Plot : public juce::Component {
 
   /** Look and feel */
   juce::LookAndFeel* m_lookandfeel;
-  std::unique_ptr<LookAndFeelMethods> m_lookandfeel_default;
+  std::unique_ptr<PlotLookAndFeel> m_lookandfeel_default;
 
   /** Friend functions */
   friend const AreLabelsSet areLabelsSet(const Plot* plot) noexcept;
