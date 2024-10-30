@@ -120,9 +120,11 @@ void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
   for (auto* child : getChildren()) {
     child->setLookAndFeel(lookandfeel);
   }
+
+  m_trace->setLookAndFeel(lookandfeel);
 }
 
-Plot::~Plot() { resetLookAndFeelChildrens(); }
+Plot::~Plot() { setLookAndFeel(nullptr); }
 
 enum RadioButtonIds { TraceZoomButtons = 1001 };
 
@@ -142,8 +144,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_selected_area(std::make_unique<GraphArea>(m_common_graph_params)),
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
       m_trace(std::make_unique<Trace>(m_common_graph_params)) {
-  m_lookandfeel_default = getDefaultLookAndFeel();
-  setLookAndFeel(m_lookandfeel_default.get());
+  setLookAndFeel(getDefaultLookAndFeel());
 
   addAndMakeVisible(m_grid.get());
   addChildComponent(m_legend.get());
@@ -160,7 +161,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   };
 
   m_legend->onNumberOfDescriptionsChanged = [this](const auto& desc) {
-    if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
+    if (auto lnf = getPlotLookAndFeel()) {
       const auto legend_bounds = lnf->getLegendBounds(m_graph_bounds, desc);
 
       m_legend->setBounds(legend_bounds);
@@ -176,6 +177,11 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   };
 
   this->setWantsKeyboardFocus(true);
+}
+
+PlotLookAndFeel* Plot::getPlotLookAndFeel() {
+  auto* lnf = &getLookAndFeel();
+  return dynamic_cast<PlotLookAndFeel*>(lnf);
 }
 
 void Plot::updateXLim(const Lim_f& new_x_lim) {
@@ -444,7 +450,7 @@ void Plot::fillBetween(
       graph_spread =
           std::make_unique<GraphSpread>(first_graph, second_graph, colour);
       graph_spread->setBounds(m_graph_bounds);
-      graph_spread->setLookAndFeel(m_lookandfeel);
+      graph_spread->setLookAndFeel(getPlotLookAndFeel());
       addAndMakeVisible(graph_spread.get());
       graph_spread->toBehind(m_selected_area.get());
     } else {
@@ -496,9 +502,6 @@ void Plot::setScaling(const Scaling x_scaling,
     m_x_scaling = x_scaling;
     m_y_scaling = y_scaling;
 
-    resetLookAndFeelChildrens();
-    m_lookandfeel_default.reset(nullptr);
-    lookAndFeelChanged();
     updateGridGraphLinesAndTrace();
   }
 }
@@ -569,7 +572,7 @@ void Plot::setGridType(const GridType grid_type) {
 void Plot::clearTracePoints() noexcept { m_trace->clear(); }
 
 void Plot::resizeChildrens() {
-  if (auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel)) {
+  if (auto lnf = getPlotLookAndFeel()) {
     const auto plot_bound = lnf->getPlotBounds(getBounds());
     const auto graph_bound = lnf->getGraphBounds(getBounds(), this);
 
@@ -616,8 +619,8 @@ void Plot::resizeChildrens() {
 void Plot::resized() { resizeChildrens(); }
 
 void Plot::paint(juce::Graphics& g) {
-  if (m_lookandfeel) {
-    auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+  if (getPlotLookAndFeel()) {
+    auto lnf = getPlotLookAndFeel();
 
     lnf->drawBackground(g, m_common_graph_params.graph_bounds);
   }
@@ -631,37 +634,30 @@ void Plot::parentHierarchyChanged() {
   lookAndFeelChanged();
 }
 
-void Plot::setLookAndFeel(PlotLookAndFeel* look_and_feel) {
-  resetLookAndFeelChildrens();
-  this->juce::Component::setLookAndFeel(look_and_feel);
-  resizeChildrens();
-}
-
-std::unique_ptr<PlotLookAndFeel> Plot::getDefaultLookAndFeel() {
-  return std::make_unique<PlotLookAndFeel>();
+PlotLookAndFeel* Plot::getDefaultLookAndFeel() {
+  if (!m_lookandfeel_default)
+    m_lookandfeel_default = std::make_unique<PlotLookAndFeel>();
+  return m_lookandfeel_default.get();
 }
 
 void Plot::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
-    m_lookandfeel = &getLookAndFeel();
+    resetLookAndFeelChildrens(lnf);
   } else {
-    // Not a valid look and feel. Use the Plot::LookAndFeelMethods instead.
-    jassertfalse;
+    resetLookAndFeelChildrens(nullptr);
   }
-
-  resetLookAndFeelChildrens(m_lookandfeel);
 }
 
 template <GraphLineType t_graph_line_type>
 void Plot::addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
                                 const size_t graph_line_index) {
-  auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+  auto lnf = getPlotLookAndFeel();
   graph_line = std::make_unique<GraphLine>(m_common_graph_params);
   const auto colour_id = lnf->getColourFromGraphID(graph_line_index);
   const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
   graph_line->setColour(graph_colour);
-  graph_line->setLookAndFeel(m_lookandfeel);
+  graph_line->setLookAndFeel(lnf);
   graph_line->setBounds(m_graph_bounds);
   graph_line->setType(t_graph_line_type);
 
@@ -733,9 +729,7 @@ void Plot::updateGraphLineXData(const std::vector<std::vector<float>>& x_data) {
 }
 
 void Plot::setLegend(const StringVector& graph_descriptions) {
-  if (m_lookandfeel && m_legend) {
-    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
-
+  if (m_legend) {
     m_legend->setVisible(true);
     m_legend->setLegend(graph_descriptions);
     m_legend->updateLegends(*m_graph_lines);
@@ -987,7 +981,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
     m_prev_mouse_position = getMousePositionRelativeToGraphArea(event);
 
-    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+    const auto lnf = getPlotLookAndFeel();
     if (m_selected_area.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
         mouseHandler(
@@ -1018,7 +1012,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
 
 void Plot::mouseDrag(const juce::MouseEvent& event) {
   if (isVisible()) {
-    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+    const auto lnf = getPlotLookAndFeel();
     if (m_legend.get() == event.eventComponent) {
       mouseHandler(event,
                    lnf->getUserInputAction(UserInput::left | UserInput::drag |
@@ -1056,7 +1050,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
 
 void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
-    const auto lnf = static_cast<LookAndFeelMethods*>(m_lookandfeel);
+    const auto lnf = getPlotLookAndFeel();
     if (m_selected_area.get() == event.eventComponent &&
         m_mouse_drag_state == MouseDragState::drag) {
       if (!event.mods.isRightButtonDown()) {

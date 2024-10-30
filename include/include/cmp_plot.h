@@ -279,19 +279,6 @@ class Plot : public juce::Component {
    */
   void setLegend(const std::vector<std::string>& graph_descriptions);
 
-  /** @brief  Sets the look and feel to use for this component.
-   *
-   * The object passed in will not be deleted by the component, so it's the
-   * caller's responsibility to manage it. It may be used at any time until this
-   * component has been deleted.
-   *
-   * Calling this method will also invoke the juce::Componenet::setLookAndFeel
-   * and in turn sendLookAndFeelChange() method.
-   *
-   * @see getLookAndFeel, lookAndFeelChanged
-   */
-  void setLookAndFeel(PlotLookAndFeel* look_and_feel);
-
   //==============================================================================
 
   /** @brief This lambda is triggered when a tracepoint value is changed.
@@ -601,7 +588,7 @@ class Plot : public juce::Component {
   std::tuple<size_t, const GraphLine*> findNearestPoint(
       juce::Point<float> point, const GraphLine* graphline = nullptr);
   /** @internal */
-  std::unique_ptr<PlotLookAndFeel> getDefaultLookAndFeel();
+  PlotLookAndFeel* getDefaultLookAndFeel();
   /** @internal */
   template <GraphLineType t_graph_line_type>
   void addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
@@ -706,7 +693,7 @@ class Plot : public juce::Component {
   std::unique_ptr<Trace> m_trace;
 
   /** Look and feel */
-  juce::LookAndFeel* m_lookandfeel;
+  PlotLookAndFeel* getPlotLookAndFeel();
   std::unique_ptr<PlotLookAndFeel> m_lookandfeel_default;
 
   /** Friend functions */
