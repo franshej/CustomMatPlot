@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -34,13 +34,9 @@ void PlotLabel::setTitle(const std::string &title) {
   updateLabels();
 }
 
-const juce::Label &PlotLabel::getXLabel() const noexcept {
-  return m_x_label;
-}
+const juce::Label &PlotLabel::getXLabel() const noexcept { return m_x_label; }
 
-const juce::Label &PlotLabel::getYLabel() const noexcept {
-  return m_y_label;
-}
+const juce::Label &PlotLabel::getYLabel() const noexcept { return m_y_label; }
 
 const juce::Label &PlotLabel::getTitleLabel() const noexcept {
   return m_title_label;
@@ -57,8 +53,7 @@ const AreLabelsSet PlotLabel::areLabelsSet() const noexcept {
 void PlotLabel::resized() { updateLabels(); }
 
 void PlotLabel::updateLabels() {
-  if (m_lookandfeel) {
-    auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
+  if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     const auto graph_bounds =
         lnf->getGraphBounds(getBounds(), getParentComponent());
     lnf->updateXYTitleLabels(getBounds(), graph_bounds, m_x_label, m_y_label,

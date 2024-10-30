@@ -1,10 +1,12 @@
 #include "cmp_plot.h"
 
 #include <juce_core/juce_core.h>
+#include <memory>
 
 #include "cmp_datamodels.h"
 #include "cmp_graph_line.h"
 #include "cmp_test_helper.hpp"
+#include "cmp_lookandfeel.h"
 
 SECTION(PlotClass, "Plot class") {
   auto expectEqualsLambda = [&](auto a, auto b) { expectEquals(a, b); };
@@ -75,5 +77,20 @@ SECTION(PlotClass, "Plot class") {
     expectEqualVectors(graph_lines[1]->getYData(), y_data2, expectEqualsLambda);
     expectEqualVectors(graph_lines[2]->getXData(), x_data_random_3, expectEqualsLambda);
     expectEqualVectors(graph_lines[2]->getYData(), y_data3, expectEqualsLambda);
+  }
+
+  TEST("Set colour"){
+    cmp::Plot plot_tmp;
+    plot_tmp.getLookAndFeel().setColour(cmp::Plot::grid_colour, juce::Colours::red);
+    const auto red = plot_tmp.getLookAndFeel().findColour(cmp::Plot::grid_colour);
+    expect(red == juce::Colours::red);
+  }
+
+  TEST("Custom look and feel"){
+    cmp::Plot plot_tmp;
+    std::unique_ptr<cmp::PlotLookAndFeel> look_and_feel = std::make_unique<cmp::PlotLookAndFeel>();
+    plot_tmp.setLookAndFeel(look_and_feel.get());
+    expect(&plot_tmp.getLookAndFeel() == look_and_feel.get());
+    plot_tmp.setLookAndFeel(nullptr);
   }
 }
