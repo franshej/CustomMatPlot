@@ -337,7 +337,7 @@ class Plot : public juce::Component {
   /**
    *   These methods define a interface for the LookAndFeel class of juce.
    *   The Plot class needs a LookAndFeel, that implements these methods.
-   *   The default implementation can be seen in, \see cmp_lookandfeelmethods.h
+   *   The default implementation can be seen in \see cmp_lookandfeelmethods.h
    */
   class LookAndFeelMethods : public juce::LookAndFeel_V4 {
    public:
