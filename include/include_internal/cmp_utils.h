@@ -236,41 +236,39 @@ constexpr auto getYScaleAndOffset =
 };
 
 /*============================================================================*/
+/*========================= Utility functions ================================*/
+/*============================================================================*/
 
 template <typename ValueType>
 std::string valueToStringWithoutTrailingZeros(ValueType num) {
-    // Ensure that the type is either float or double
-    static_assert(std::is_same<float, ValueType>::value ||
-                  std::is_same<const float, ValueType>::value ||
-                  std::is_same<double, ValueType>::value ||
-                  std::is_same<const double, ValueType>::value,
-                  "Type must be either float or double");
+  // Ensure that the type is either float or double
+  static_assert(std::is_same<float, ValueType>::value ||
+                    std::is_same<const float, ValueType>::value ||
+                    std::is_same<double, ValueType>::value ||
+                    std::is_same<const double, ValueType>::value,
+                "Type must be either float or double");
 
-    std::ostringstream oss;
-    oss << num;
-    std::string strNum = oss.str();
+  std::ostringstream oss;
+  oss << num;
+  std::string strNum = oss.str();
 
-    size_t decimalPos = strNum.find('.');
-    
-    if (decimalPos == std::string::npos) {
-        return strNum;
-    }
-    
-    size_t endPos = strNum.length() - 1;
-    while (endPos > decimalPos && strNum[endPos] == '0') {
-        endPos--;
-    }
-    
-    if (strNum[endPos] == '.') {
-        endPos--;
-    }
-    
-    return strNum.substr(0, endPos + 1);
+  size_t decimalPos = strNum.find('.');
+
+  if (decimalPos == std::string::npos) {
+    return strNum;
+  }
+
+  size_t endPos = strNum.length() - 1;
+  while (endPos > decimalPos && strNum[endPos] == '0') {
+    endPos--;
+  }
+
+  if (strNum[endPos] == '.') {
+    endPos--;
+  }
+
+  return strNum.substr(0, endPos + 1);
 }
-
-/*============================================================================*/
-/*==========================From lnf.cpp======================================*/
-/*============================================================================*/
 
 static const std::string getNextCustomLabel(
     std::vector<std::string>::reverse_iterator& custom_labels_it,
@@ -419,6 +417,8 @@ static std::vector<float> getLogarithmicTicks(
   return ticks;
 };
 
+/*============================================================================*/
+/*========================     Classes     ===================================*/
 /*============================================================================*/
 
 class TicksGenerator {
