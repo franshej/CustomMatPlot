@@ -251,7 +251,7 @@ void Plot::updateGraphLines() {
 
 void Plot::updateGridGraphLinesAndTrace() {
   if (!m_graph_bounds.isEmpty()) {
-    m_grid->updateGrid();
+    m_grid->update();
     m_trace->updateTracePointsBounds();
     updateGraphLines();
   }
@@ -261,7 +261,7 @@ void Plot::updateGridGraphLinesAndTrace() {
 
 void Plot::updateGridAndTracepointsAndGraphLines() {
   if (!m_graph_bounds.isEmpty()) {
-    m_grid->updateGrid(true);
+    m_grid->update();
     m_trace->updateTracePointsBounds();
 
     for (const auto& graph_line : *m_graph_lines) {
@@ -515,25 +515,25 @@ void Plot::setXLabel(const std::string& x_label) {
 void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
   m_grid->setXLabels(x_labels);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
+  if (!m_graph_bounds.isEmpty()) m_grid->update();
 }
 
 void Plot::setYTickLabels(const std::vector<std::string>& y_labels) {
   m_grid->setYLabels(y_labels);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
+  if (!m_graph_bounds.isEmpty()) m_grid->update();
 }
 
 void Plot::setXTicks(const std::vector<float>& x_ticks) {
   m_grid->setXTicks(x_ticks);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
+  if (!m_graph_bounds.isEmpty()) m_grid->update();
 }
 
 void Plot::setYTicks(const std::vector<float>& y_ticks) {
   m_grid->setYTicks(y_ticks);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
+  if (!m_graph_bounds.isEmpty()) m_grid->update();
 }
 
 void Plot::setYLabel(const std::string& y_label) {
