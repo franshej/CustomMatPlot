@@ -104,10 +104,9 @@ class Grid : public juce::Component {
    *  This function updates the grid if any new parameter is set. Should be
    *  called after an parameter is set to update the grid.
    *
-   *  @param use_cached_grids if true already computed grid will be used.
    *  @return void.
    */
-  void updateGrid(const bool use_cached_grids = false);
+  void update();
 
   /** @brief Get the max width of the x and y-labels
    *
@@ -144,7 +143,7 @@ class Grid : public juce::Component {
   void createAutoGridTicks(std::vector<float>& x_ticks,
                            std::vector<float>& y_ticks);
   void createLabels();
-  void updateGridInternal(const bool use_cached_grids);
+  void updateInternal();
   void addGridLines(const std::vector<float>& ticks,
                     const GridLine::Direction direction);
   void addTranslucentGridLines();
