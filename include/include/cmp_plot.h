@@ -678,7 +678,7 @@ class Plot : public juce::Component {
   /** Common plot parameters. */
   Scaling m_x_scaling, m_y_scaling;
   DownsamplingType m_downsampling_type{DownsamplingType::xy_downsampling};
-  juce::Rectangle<int> m_graph_bounds;
+  Observable<juce::Rectangle<int>> m_graph_bounds;
   cmp::Lim<float> m_x_lim, m_y_lim, m_x_lim_start, m_y_lim_start;
   CommonPlotParameterView m_common_graph_params;
 
