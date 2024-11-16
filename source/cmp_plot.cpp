@@ -135,6 +135,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_y_lim(Lim_f(0, 0)),
       m_x_lim_start(Lim_f(0, 0)),
       m_y_lim_start(Lim_f(0, 0)),
+      m_graph_bounds(ObserverId::GraphBounds),
       m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
                             m_y_scaling, m_downsampling_type),
       m_graph_lines(std::make_unique<GraphLineList>()),
@@ -250,7 +251,7 @@ void Plot::updateGraphLines() {
 }
 
 void Plot::updateGridGraphLinesAndTrace() {
-  if (!m_graph_bounds.isEmpty()) {
+  if (!m_graph_bounds->isEmpty()) {
     m_grid->update();
     m_trace->updateTracePointsBounds();
     updateGraphLines();
@@ -260,7 +261,7 @@ void Plot::updateGridGraphLinesAndTrace() {
 }
 
 void Plot::updateGridAndTracepointsAndGraphLines() {
-  if (!m_graph_bounds.isEmpty()) {
+  if (!m_graph_bounds->isEmpty()) {
     m_grid->update();
     m_trace->updateTracePointsBounds();
 
@@ -515,25 +516,25 @@ void Plot::setXLabel(const std::string& x_label) {
 void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
   m_grid->setXLabels(x_labels);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->update();
+  if (!m_graph_bounds->isEmpty()) m_grid->update();
 }
 
 void Plot::setYTickLabels(const std::vector<std::string>& y_labels) {
   m_grid->setYLabels(y_labels);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->update();
+  if (!m_graph_bounds->isEmpty()) m_grid->update();
 }
 
 void Plot::setXTicks(const std::vector<float>& x_ticks) {
   m_grid->setXTicks(x_ticks);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->update();
+  if (!m_graph_bounds->isEmpty()) m_grid->update();
 }
 
 void Plot::setYTicks(const std::vector<float>& y_ticks) {
   m_grid->setYTicks(y_ticks);
 
-  if (!m_graph_bounds.isEmpty()) m_grid->update();
+  if (!m_graph_bounds->isEmpty()) m_grid->update();
 }
 
 void Plot::setYLabel(const std::string& y_label) {
@@ -929,7 +930,7 @@ void Plot::selectedTracePointsWithinSelectedArea() {
 
   for (auto& trace_point : m_trace->getTraceLabelPoints()) {
     auto trace_point_pos = trace_point.trace_point->getBounds().getPosition() -
-                           m_graph_bounds.getPosition() + margin;
+                           m_graph_bounds->getPosition() + margin;
 
     if (selected_area.contains(trace_point_pos)) {
       m_trace->selectTracePoint(trace_point.trace_point.get(), true);
@@ -947,7 +948,7 @@ void Plot::moveTracepoint(const juce::MouseEvent& event) {
   auto bounds = event.eventComponent->getBounds();
 
   const auto mouse_pos =
-      bounds.getPosition() - m_graph_bounds.getPosition() +
+      bounds.getPosition() - m_graph_bounds->getPosition() +
       event.getEventRelativeTo(event.eventComponent).getPosition();
 
   const auto* associated_graph_line =
@@ -1123,7 +1124,7 @@ juce::Point<float> Plot::getMousePositionRelativeToGraphArea(
     const auto component_pos = event.eventComponent->getBounds().getPosition();
 
     const auto mouse_pos =
-        (event.getPosition() + component_pos - m_graph_bounds.getPosition())
+        (event.getPosition() + component_pos - m_graph_bounds->getPosition())
             .toFloat();
 
     return mouse_pos;
@@ -1140,16 +1141,16 @@ void Plot::setGraphLineDataChangedCallback(
 void Plot::panning(const juce::MouseEvent& event) {
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
   const auto d_mouse_pos = mouse_pos - m_prev_mouse_position;
-  const auto new_x_lim_min_pixel = m_graph_bounds.getX() - d_mouse_pos.getX();
-  const auto new_x_lim_max_pixel = m_graph_bounds.getRight() - d_mouse_pos.getX();
-  const auto new_x_lim_data_min = getXDataFromXPixelCoordinate(new_x_lim_min_pixel, m_graph_bounds.toFloat(), m_x_lim, m_x_scaling);
-  const auto new_x_lim_data_max = getXDataFromXPixelCoordinate(new_x_lim_max_pixel, m_graph_bounds.toFloat(), m_x_lim, m_x_scaling);
+  const auto new_x_lim_min_pixel = m_graph_bounds->getX() - d_mouse_pos.getX();
+  const auto new_x_lim_max_pixel = m_graph_bounds->getRight() - d_mouse_pos.getX();
+  const auto new_x_lim_data_min = getXDataFromXPixelCoordinate(new_x_lim_min_pixel, m_graph_bounds->toFloat(), m_x_lim, m_x_scaling);
+  const auto new_x_lim_data_max = getXDataFromXPixelCoordinate(new_x_lim_max_pixel, m_graph_bounds->toFloat(), m_x_lim, m_x_scaling);
   const auto new_x_lim_data = Lim_f(new_x_lim_data_min, new_x_lim_data_max);
 
-  const auto new_y_lim_min_pos = m_graph_bounds.getBottom() - d_mouse_pos.getY();
-  const auto new_y_lim_max_pos = m_graph_bounds.getY() - d_mouse_pos.getY();
-  const auto new_y_lim_data_min = getYDataFromYPixelCoordinate(new_y_lim_min_pos, m_graph_bounds.toFloat(), m_y_lim, m_y_scaling);
-  const auto new_y_lim_data_max = getYDataFromYPixelCoordinate(new_y_lim_max_pos, m_graph_bounds.toFloat(), m_y_lim, m_y_scaling);
+  const auto new_y_lim_min_pos = m_graph_bounds->getBottom() - d_mouse_pos.getY();
+  const auto new_y_lim_max_pos = m_graph_bounds->getY() - d_mouse_pos.getY();
+  const auto new_y_lim_data_min = getYDataFromYPixelCoordinate(new_y_lim_min_pos, m_graph_bounds->toFloat(), m_y_lim, m_y_scaling);
+  const auto new_y_lim_data_max = getYDataFromYPixelCoordinate(new_y_lim_max_pos, m_graph_bounds->toFloat(), m_y_lim, m_y_scaling);
   const auto new_y_lim_data = Lim_f(new_y_lim_data_min, new_y_lim_data_max);
  
   m_prev_mouse_position = mouse_pos;
