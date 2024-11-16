@@ -43,6 +43,10 @@ class Legend;
 class Trace;
 class GraphArea;
 class PlotLookAndFeel;
+template <typename T>
+class Observable;
+template <typename T>
+class Observer;
 
 struct LegendLabel;
 struct GraphAttribute;
@@ -221,6 +225,15 @@ enum class GridType : uint32_t {
   grid_translucent,
   /** Tiny grid drawn with translucent lines between. */
   tiny_grid_translucent,
+};
+
+/** Enum to define which type of value to be observed. */
+enum class ObserverId {
+  GraphBounds,
+  XLim,
+  YLim,
+  XScaling,
+  YScaling,
 };
 
 /*============================================================================*/
@@ -549,6 +562,58 @@ struct fast_vector {
   std::vector<T>& vec;     ///< Reference to the vector.
 };
 
+/*============================================================================*/
+/*========================      Classes      =================================*/
+/*============================================================================*/
+
+template <typename T>
+class Observer {
+ public:
+  virtual void valueUpdated(ObserverId id, const T& newValue) = 0;
+};
+
+template <typename T>
+class Observable {
+ public:
+  Observable(ObserverId id, T value = T()) : id(id), value(value) {}
+
+  Observable& operator=(const T& newValue) {
+    value = newValue;
+    notifyDependents();
+    return *this;
+  }
+
+  Observable& operator=(const Observable& other) = delete;
+
+  template <typename... Dependents>
+  void addDependents(Dependents&... dependents) {
+    (addDependent(dependents), ...);
+  }
+  operator const T&() const { return value; }
+  ObserverId getId() const { return id; }
+  const T* operator->() const { return &value; }
+
+ private:
+  ObserverId id;
+  T value;
+  std::vector<std::function<void(ObserverId, const T&)>> observers;
+
+  template <typename ObserverType>
+  void addDependent(ObserverType& dependent) {
+    observers.push_back([&dependent](ObserverId id, const T& value) {
+      dependent.valueUpdated(id, value);
+    });
+  }
+
+  void notifyDependents() {
+    for (auto& observer : observers) {
+        observer(id, value);
+    }
+  }
+};
+
+/*============================================================================*/
+/*========================     Functions     =================================*/
 /*============================================================================*/
 
 template <class ForwardIt, class ValueType>
