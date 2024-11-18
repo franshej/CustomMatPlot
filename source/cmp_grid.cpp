@@ -308,7 +308,7 @@ void Grid::setXLabels(const std::vector<std::string> &x_labels) {
 
 void Grid::update() { updateInternal(); }
 
-void Grid::valueUpdated(ObserverId id, const juce::Rectangle<int> &new_value) {
+void Grid::observableValueUpdated(ObserverId id, const juce::Rectangle<int> &new_value) {
   if (id == ObserverId::GraphBounds && m_graph_bounds != new_value) {
     m_graph_bounds = new_value;
     updateInternal();
