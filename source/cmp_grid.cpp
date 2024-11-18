@@ -18,7 +18,7 @@ namespace cmp {
 
 /*============================================================================*/
 
-static juce::Rectangle<float> getMarginGridBound(
+static juce::Rectangle<float> getMarginGridBounds(
     const juce::Rectangle<float> &bound) noexcept {
   constexpr auto safe_marging_offset_px = 1.0f;
   const auto x = bound.getX();
@@ -40,12 +40,10 @@ void Grid::createLabels() {
 
 void Grid::updateInternal() {
   if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
-    // width and height must be larger than zero.
-    jassertfalse;
     return;
   }
 
-  //TODO: set use_cached_grids to false when the grid is resized.
+  // TODO: set use_cached_grids to false when the grid is resized.
   const bool use_cached_grids = false;
 
   if (!use_cached_grids) {
@@ -118,7 +116,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
-    const auto graph_bounds = m_common_plot_params->graph_bounds.toFloat();
+    const auto graph_bounds = m_graph_bounds.toFloat();
 
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
@@ -132,7 +130,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
     };
 
     const auto [scale, offset] = getScaleOffset();
-    const auto margin_grid_bound = getMarginGridBound(graph_bounds);
+    const auto margin_grid_bounds = getMarginGridBounds(graph_bounds);
 
     switch (direction) {
       case GridLine::Direction::vertical:
@@ -146,7 +144,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
                        : getXPixelValueLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
 
-          if (!margin_grid_bound.contains(grid_line.position)) {
+          if (!margin_grid_bounds.contains(grid_line.position)) {
             continue;
           }
 
@@ -169,7 +167,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
                              ? getYPixelValueLinear(t, scale, offset)
                              : getYPixelValueLogarithmic(t, scale, offset)))};
 
-          if (!margin_grid_bound.contains(grid_line.position)) {
+          if (!margin_grid_bounds.contains(grid_line.position)) {
             continue;
           }
 
@@ -212,8 +210,7 @@ void Grid::addTranslucentGridLines() {
   for (auto grid_line = m_grid_lines.begin(); grid_line != m_grid_lines.end();
        ++grid_line) {
     auto addGridWithinBound = [&](const GridLine &grid_line) {
-      const auto margin_grid_bound =
-          getMarginGridBound(m_common_plot_params->graph_bounds.toFloat());
+      const auto margin_grid_bound = m_graph_bounds.toFloat();
       if (margin_grid_bound.contains(grid_line.position)) {
         translucent_gridlines.emplace_back(grid_line);
       }
@@ -309,8 +306,13 @@ void Grid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
 }
 
-void Grid::update() {
-  updateInternal();
+void Grid::update() { updateInternal(); }
+
+void Grid::valueUpdated(ObserverId id, const juce::Rectangle<int> &new_value) {
+  if (id == ObserverId::GraphBounds && m_graph_bounds != new_value) {
+    m_graph_bounds = new_value;
+    updateInternal();
+  }
 }
 
 void Grid::resized() {}
