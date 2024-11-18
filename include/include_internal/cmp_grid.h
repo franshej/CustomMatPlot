@@ -119,7 +119,7 @@ class Grid : public juce::Component, Observer<juce::Rectangle<int>> {
    * @param id The id of the observer.
    * @param new_value The new value of the observer.
    */
-  void valueUpdated(ObserverId id, const juce::Rectangle<int>& new_value) override;
+  void observableValueUpdated(ObserverId id, const juce::Rectangle<int>& new_value) override;
 
   //==============================================================================
   /** @internal */

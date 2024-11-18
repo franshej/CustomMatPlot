@@ -569,7 +569,7 @@ struct fast_vector {
 template <typename T>
 class Observer {
  public:
-  virtual void valueUpdated(ObserverId id, const T& newValue) = 0;
+  virtual void observableValueUpdated(ObserverId id, const T& newValue) = 0;
 };
 
 template <typename T>
@@ -579,15 +579,15 @@ class Observable {
 
   Observable& operator=(const T& newValue) {
     value = newValue;
-    notifyDependents();
+    notifyObservers();
     return *this;
   }
 
   Observable& operator=(const Observable& other) = delete;
 
-  template <typename... Dependents>
-  void addDependents(Dependents&... dependents) {
-    (addDependent(dependents), ...);
+  template <typename... ObserverType>
+  void addObserver(ObserverType&... observer) {
+    (addObserverInternal(observer), ...);
   }
   operator const T&() const { return value; }
   ObserverId getId() const { return id; }
@@ -599,13 +599,13 @@ class Observable {
   std::vector<std::function<void(ObserverId, const T&)>> observers;
 
   template <typename ObserverType>
-  void addDependent(ObserverType& dependent) {
-    observers.push_back([&dependent](ObserverId id, const T& value) {
-      dependent.valueUpdated(id, value);
+  void addObserverInternal(ObserverType& observer) {
+    observers.push_back([&observer](ObserverId id, const T& value) {
+      observer.observableValueUpdated(id, value);
     });
   }
 
-  void notifyDependents() {
+  void notifyObservers() {
     for (auto& observer : observers) {
         observer(id, value);
     }

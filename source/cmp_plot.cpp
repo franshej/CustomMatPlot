@@ -145,7 +145,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_selected_area(std::make_unique<GraphArea>(m_common_graph_params)),
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
       m_trace(std::make_unique<Trace>(m_common_graph_params)) {
-  m_graph_bounds.addDependents(*m_grid);
+  m_graph_bounds.addObserver(*m_grid);
 
   setLookAndFeel(getDefaultLookAndFeel());
 
