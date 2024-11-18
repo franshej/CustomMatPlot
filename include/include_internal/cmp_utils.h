@@ -470,5 +470,4 @@ class TicksGenerator {
     return gridValues;
   }
 };
-
 }  // namespace cmp

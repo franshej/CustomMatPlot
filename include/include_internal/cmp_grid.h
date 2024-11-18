@@ -35,7 +35,7 @@ namespace cmp {
  * without the grids.
  *
  */
-class Grid : public juce::Component {
+class Grid : public juce::Component, Observer<juce::Rectangle<int>> {
  public:
   /** @brief Construct a new Grid object.
    *
@@ -43,16 +43,6 @@ class Grid : public juce::Component {
    */
   Grid(const CommonPlotParameterView& common_plot_parameter_view)
       : m_common_plot_params(&common_plot_parameter_view){};
-
-  /** @brief Set the bounds of where the grids will be drawn
-   *
-   *  The grid area must be within the bounds of this componenet. The
-   *  grid labels will be draw with a half 'font_size' outside the grid area.
-   *
-   *  @param grid_area The area of where the grids will be drawn
-   *  @return void.
-   */
-  void setGridBounds(const juce::Rectangle<int>& grid_area);
 
   /** @brief Enables grid or tiny grid
    *
@@ -123,6 +113,14 @@ class Grid : public juce::Component {
    */
   std::function<void(Grid*)> onGridLabelLengthChanged = nullptr;
 
+  /**
+   * @brief Observer callback function for when the grid bounds is updated.
+   * 
+   * @param id The id of the observer.
+   * @param new_value The new value of the observer.
+   */
+  void valueUpdated(ObserverId id, const juce::Rectangle<int>& new_value) override;
+
   //==============================================================================
   /** @internal */
   void resized() override;
@@ -147,6 +145,8 @@ class Grid : public juce::Component {
   void addGridLines(const std::vector<float>& ticks,
                     const GridLine::Direction direction);
   void addTranslucentGridLines();
+
+  juce::Rectangle<int> m_graph_bounds;
 
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks, m_x_prev_ticks,
