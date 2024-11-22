@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <tuple>
 
+#include "cmp_datamodels.h"
 #include "cmp_graph_line.h"
 #include "cmp_plot.h"
 #include "cmp_utils.h"
@@ -121,12 +122,10 @@ void Grid::addGridLines(const std::vector<float> &ticks,
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
         return getXScaleAndOffset(graph_bounds.getWidth(),
-                                  m_common_plot_params->x_lim,
-                                  m_common_plot_params->x_scaling);
+                                  m_common_plot_params->x_lim, m_x_scaling);
       }
       return getYScaleAndOffset(graph_bounds.getHeight(),
-                                m_common_plot_params->y_lim,
-                                m_common_plot_params->y_scaling);
+                                m_common_plot_params->y_lim, m_y_scaling);
     };
 
     const auto [scale, offset] = getScaleOffset();
@@ -139,7 +138,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
           grid_line.position = {
               graph_bounds.getX() +
-                  (m_common_plot_params->x_scaling == Scaling::linear
+                  (m_x_scaling == Scaling::linear
                        ? getXPixelValueLinear(t, scale, offset)
                        : getXPixelValueLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
@@ -163,7 +162,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           grid_line.position = {
               graph_bounds.getX(),
               std::ceil(graph_bounds.getY() +
-                        (m_common_plot_params->y_scaling == Scaling::linear
+                        (m_y_scaling == Scaling::linear
                              ? getYPixelValueLinear(t, scale, offset)
                              : getYPixelValueLogarithmic(t, scale, offset)))};
 
@@ -308,9 +307,20 @@ void Grid::setXLabels(const std::vector<std::string> &x_labels) {
 
 void Grid::update() { updateInternal(); }
 
-void Grid::observableValueUpdated(ObserverId id, const juce::Rectangle<int> &new_value) {
+void Grid::observableValueUpdated(ObserverId id,
+                                  const juce::Rectangle<int> &new_value) {
   if (id == ObserverId::GraphBounds && m_graph_bounds != new_value) {
     m_graph_bounds = new_value;
+    updateInternal();
+  }
+}
+
+void Grid::observableValueUpdated(ObserverId id, const Scaling &new_value) {
+  if (id == ObserverId::XScaling) {
+    m_x_scaling = new_value;
+    updateInternal();
+  } else if (id == ObserverId::YScaling) {
+    m_y_scaling = new_value;
     updateInternal();
   }
 }
