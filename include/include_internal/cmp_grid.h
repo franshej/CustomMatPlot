@@ -35,7 +35,7 @@ namespace cmp {
  * without the grids.
  *
  */
-class Grid : public juce::Component, Observer<juce::Rectangle<int>> {
+class Grid : public juce::Component, Observer<juce::Rectangle<int>>, Observer<Scaling> {
  public:
   /** @brief Construct a new Grid object.
    *
@@ -115,11 +115,20 @@ class Grid : public juce::Component, Observer<juce::Rectangle<int>> {
 
   /**
    * @brief Observer callback function for when the grid bounds is updated.
-   * 
+   *
    * @param id The id of the observer.
    * @param new_value The new value of the observer.
    */
-  void observableValueUpdated(ObserverId id, const juce::Rectangle<int>& new_value) override;
+  void observableValueUpdated(ObserverId id,
+                              const juce::Rectangle<int>& new_value) override;
+
+  /**
+   * @brief Observer callback function for when the scaling is updated.
+   *
+   * @param id The id of the observer.
+   * @param new_value The new value of the observer.
+   */
+  void observableValueUpdated(ObserverId id, const Scaling& new_value) override;
 
   //==============================================================================
   /** @internal */
@@ -147,6 +156,7 @@ class Grid : public juce::Component, Observer<juce::Rectangle<int>> {
   void addTranslucentGridLines();
 
   juce::Rectangle<int> m_graph_bounds;
+  Scaling m_x_scaling, m_y_scaling;
 
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks, m_x_prev_ticks,

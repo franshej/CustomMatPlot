@@ -129,8 +129,8 @@ Plot::~Plot() { setLookAndFeel(nullptr); }
 enum RadioButtonIds { TraceZoomButtons = 1001 };
 
 Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
-    : m_x_scaling(x_scaling),
-      m_y_scaling(y_scaling),
+    : m_x_scaling(ObserverId::XScaling, x_scaling),
+      m_y_scaling(ObserverId::YScaling, y_scaling),
       m_x_lim(Lim_f(0, 0)),
       m_y_lim(Lim_f(0, 0)),
       m_x_lim_start(Lim_f(0, 0)),
@@ -146,6 +146,8 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_grid(std::make_unique<Grid>(m_common_graph_params)),
       m_trace(std::make_unique<Trace>(m_common_graph_params)) {
   m_graph_bounds.addObserver(*m_grid);
+  m_x_scaling.addObserver(*m_grid);
+  m_y_scaling.addObserver(*m_grid);
 
   setLookAndFeel(getDefaultLookAndFeel());
 
