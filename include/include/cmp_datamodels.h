@@ -241,6 +241,8 @@ enum class ObserverId {
 /** @brief A template struct that defines min and max. */
 template <class ValueType>
 struct Lim {
+  constexpr Lim() : min{0}, max{0} {};
+
   constexpr Lim(ValueType new_min, ValueType new_max)
       : min{new_min}, max{new_max} {}
 
@@ -588,9 +590,11 @@ class Observable {
   template <typename... ObserverType>
   void addObserver(ObserverType&... observer) {
     (addObserverInternal(observer), ...);
+    notifyObservers();
   }
   operator const T&() const { return value; }
   ObserverId getId() const { return id; }
+  const T& getValue() const { return value; }
   const T* operator->() const { return &value; }
 
  private:
@@ -607,7 +611,7 @@ class Observable {
 
   void notifyObservers() {
     for (auto& observer : observers) {
-        observer(id, value);
+      observer(id, value);
     }
   }
 };

@@ -131,10 +131,8 @@ enum RadioButtonIds { TraceZoomButtons = 1001 };
 Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
     : m_x_scaling(ObserverId::XScaling, x_scaling),
       m_y_scaling(ObserverId::YScaling, y_scaling),
-      m_x_lim(Lim_f(0, 0)),
-      m_y_lim(Lim_f(0, 0)),
-      m_x_lim_start(Lim_f(0, 0)),
-      m_y_lim_start(Lim_f(0, 0)),
+      m_x_lim(ObserverId::XLim),
+      m_y_lim(ObserverId::YLim),
       m_graph_bounds(ObserverId::GraphBounds),
       m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
                             m_y_scaling, m_downsampling_type),
@@ -143,11 +141,13 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_frame(std::make_unique<Frame>()),
       m_legend(std::make_unique<Legend>()),
       m_selected_area(std::make_unique<GraphArea>(m_common_graph_params)),
-      m_grid(std::make_unique<Grid>(m_common_graph_params)),
+      m_grid(std::make_unique<Grid>()),
       m_trace(std::make_unique<Trace>(m_common_graph_params)) {
   m_graph_bounds.addObserver(*m_grid);
   m_x_scaling.addObserver(*m_grid);
   m_y_scaling.addObserver(*m_grid);
+  m_x_lim.addObserver(*m_grid);
+  m_y_lim.addObserver(*m_grid);
 
   setLookAndFeel(getDefaultLookAndFeel());
 
@@ -195,8 +195,7 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
 
   UNLIKELY if ((abs(new_x_lim.max - new_x_lim.min) <
                 std::numeric_limits<float>::epsilon())) {
-    m_x_lim.min = new_x_lim.min - 1;
-    m_x_lim.max = new_x_lim.max + 1;
+    m_x_lim = {new_x_lim.min - 1, new_x_lim.max + 1};
   }
 
   UNLIKELY if (m_x_scaling == Scaling::logarithmic &&
@@ -209,7 +208,7 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
   if (new_x_lim && new_x_lim != m_x_lim) {
     m_x_lim = new_x_lim;
 
-    if (m_y_lim && !m_x_autoscale) {
+    if (m_y_lim.getValue() && !m_x_autoscale) {
       updateGridGraphLinesAndTrace();
     }
   }
@@ -221,8 +220,7 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
 
   UNLIKELY if (abs(new_y_lim.max - new_y_lim.min) <
                std::numeric_limits<float>::epsilon()) {
-    m_y_lim.min = new_y_lim.min - 1;
-    m_y_lim.max = new_y_lim.max + 1;
+    m_y_lim = {new_y_lim.min - 1, new_y_lim.max + 1};
   }
 
   UNLIKELY if (m_y_scaling == Scaling::logarithmic &&
@@ -235,18 +233,15 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
   if (new_y_lim && m_y_lim != new_y_lim) {
     m_y_lim = new_y_lim;
 
-    if (m_x_lim && !m_y_autoscale) {
+    if (m_x_lim.getValue() && !m_y_autoscale) {
       updateGridGraphLinesAndTrace();
     }
   }
 }
 
 void Plot::updateGraphLines() {
-  m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical>(
-      m_y_lim);
-  m_graph_lines
-      ->setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal>(
-          m_x_lim);
+  m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical, float>(m_y_lim);
+  m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal, float>(m_x_lim);
 
   for (const auto& graph_line : *m_graph_lines) {
     graph_line->updateXIndicesAndPixelPoints();

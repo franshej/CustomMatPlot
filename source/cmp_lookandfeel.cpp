@@ -699,7 +699,8 @@ void PlotLookAndFeel::updateYPixelPoints(
 
 void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
     const juce::Rectangle<int>& bounds,
-    const CommonPlotParameterView& common_plot_parameter_view,
+    const Lim_f& x_lim,
+    const Scaling x_scaling,
     const GridType grid_type, const std::vector<float>& previous_ticks,
     std::vector<float>& x_ticks) noexcept {
   x_ticks.clear();
@@ -719,8 +720,7 @@ void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
     num_vertical_lines =
         std::size_t(tiny_grids ? num_vertical_lines * 1.5 : num_vertical_lines);
 
-    const auto lim = common_plot_parameter_view.x_lim;
-    x_ticks = TicksGenerator::generateTicks(lim.min, lim.max,
+    x_ticks = TicksGenerator::generateTicks(x_lim.min, x_lim.max,
                                             num_vertical_lines, previous_ticks);
   };
 
@@ -735,19 +735,20 @@ void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
                                                  : num_ticks_per_power);
 
     x_ticks = getLogarithmicTicks(
-        num_ticks_per_power, common_plot_parameter_view.x_lim, previous_ticks);
+        num_ticks_per_power, x_lim, previous_ticks);
   };
 
-  if (common_plot_parameter_view.x_scaling == Scaling::linear) {
+  if (x_scaling == Scaling::linear) {
     addVerticalTicksLinear();
-  } else if (common_plot_parameter_view.x_scaling == Scaling::logarithmic) {
+  } else if (x_scaling == Scaling::logarithmic) {
     addVerticalTicksLogarithmic();
   }
 }
 
 void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
     const juce::Rectangle<int>& bounds,
-    const CommonPlotParameterView& common_plot_parameter_view,
+    const Lim_f& y_lim,
+    const Scaling y_scaling,
     const GridType grid_type, const std::vector<float>& previous_ticks,
     std::vector<float>& y_ticks) noexcept {
   y_ticks.clear();
@@ -765,10 +766,9 @@ void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
     }
     num_horizontal_lines = tiny_grids ? std::size_t(num_horizontal_lines * 1.5)
                                       : num_horizontal_lines;
-
-    const auto lim = common_plot_parameter_view.y_lim;
+    
     y_ticks = TicksGenerator::generateTicks(
-        lim.min, lim.max, num_horizontal_lines, previous_ticks);
+        y_lim.min, y_lim.max, num_horizontal_lines, previous_ticks);
   };
 
   const auto addHorizontalTicksLogarithmic = [&]() {
@@ -782,12 +782,12 @@ void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
                                      : num_ticks_per_power;
 
     y_ticks = getLogarithmicTicks(
-        num_ticks_per_power, common_plot_parameter_view.y_lim, previous_ticks);
+        num_ticks_per_power, y_lim, previous_ticks);
   };
 
-  if (common_plot_parameter_view.y_scaling == Scaling::linear) {
+  if (y_scaling == Scaling::linear) {
     addHorizontalTicksLinear();
-  } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
+  } else if (y_scaling == Scaling::logarithmic) {
     addHorizontalTicksLogarithmic();
   }
 }
@@ -856,13 +856,13 @@ UserInputAction PlotLookAndFeel::getUserInputAction(
   return UserInputAction::none;
 }
 
-void PlotLookAndFeel::updateGridLabels(
-    const CommonPlotParameterView common_plot_params,
-    const std::vector<GridLine>& grid_lines, StringVector& x_custom_label_ticks,
-    StringVector& y_custom_label_ticks, LabelVector& x_axis_labels_out,
-    LabelVector& y_axis_labels_out) {
-  const auto [x, y, width, height] =
-      getRectangleMeasures<int>(common_plot_params.graph_bounds);
+void PlotLookAndFeel::updateGridLabels(const juce::Rectangle<int>& graph_bounds,
+                                       const std::vector<GridLine>& grid_lines,
+                                       StringVector& x_custom_label_ticks,
+                                       StringVector& y_custom_label_ticks,
+                                       LabelVector& x_axis_labels_out,
+                                       LabelVector& y_axis_labels_out) {
+  const auto [x, y, width, height] = getRectangleMeasures<int>(graph_bounds);
   const auto font = getGridLabelFont();
 
   const std::size_t num_horizonal_lines =
@@ -946,11 +946,10 @@ void PlotLookAndFeel::updateGridLabels(
             getLabelWidthAndHeight(font, label);
 
         const auto is_x_axis_label_below_graph = isXAxisLabelsBelowGraph();
-        const auto bound_y =
-            is_x_axis_label_below_graph
-                ? common_plot_params.graph_bounds.getBottom() +
-                      getXGridLabelDistanceFromGraphBound()
-                : common_plot_params.graph_bounds.getTopLeft().y - label_height;
+        const auto bound_y = is_x_axis_label_below_graph
+                                 ? graph_bounds.getBottom() +
+                                       getXGridLabelDistanceFromGraphBound()
+                                 : graph_bounds.getTopLeft().y - label_height;
 
         const auto bound =
             juce::Rectangle<int>(int(position.x) - label_width / 2, bound_y,
