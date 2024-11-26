@@ -33,9 +33,8 @@ static juce::Rectangle<float> getMarginGridBounds(
 void Grid::createLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->updateGridLabels(*m_common_plot_params, m_grid_lines,
-                          m_custom_x_labels, m_custom_y_labels, m_x_axis_labels,
-                          m_y_axis_labels);
+    lnf->updateGridLabels(m_graph_bounds, m_grid_lines, m_custom_x_labels,
+                          m_custom_y_labels, m_x_axis_labels, m_y_axis_labels);
   }
 }
 
@@ -121,11 +120,10 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
-        return getXScaleAndOffset(graph_bounds.getWidth(),
-                                  m_common_plot_params->x_lim, m_x_scaling);
+        return getXScaleAndOffset(graph_bounds.getWidth(), m_x_lim,
+                                  m_x_scaling);
       }
-      return getYScaleAndOffset(graph_bounds.getHeight(),
-                                m_common_plot_params->y_lim, m_y_scaling);
+      return getYScaleAndOffset(graph_bounds.getHeight(), m_y_lim, m_y_scaling);
     };
 
     const auto [scale, offset] = getScaleOffset();
@@ -325,6 +323,16 @@ void Grid::observableValueUpdated(ObserverId id, const Scaling &new_value) {
   }
 }
 
+void Grid::observableValueUpdated(ObserverId id, const Lim_f &new_value) {
+  if (id == ObserverId::XLim) {
+    m_x_lim = new_value;
+    updateInternal();
+  } else if (id == ObserverId::YLim) {
+    m_y_lim = new_value;
+    updateInternal();
+  }
+}
+
 void Grid::resized() {}
 
 void Grid::setGridType(const GridType grid_type) { m_grid_type = grid_type; }
@@ -346,10 +354,10 @@ void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<cmp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
-      lnf->updateVerticalGridLineTicksAuto(getBounds(), *m_common_plot_params,
+      lnf->updateVerticalGridLineTicksAuto(getBounds(), m_x_lim, m_x_scaling,
                                            m_grid_type, m_x_prev_ticks,
                                            x_ticks);
-      lnf->updateHorizontalGridLineTicksAuto(getBounds(), *m_common_plot_params,
+      lnf->updateHorizontalGridLineTicksAuto(getBounds(), m_y_lim, m_y_scaling,
                                              m_grid_type, m_y_prev_ticks,
                                              y_ticks);
       m_x_prev_ticks = x_ticks;

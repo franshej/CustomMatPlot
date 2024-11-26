@@ -35,14 +35,11 @@ namespace cmp {
  * without the grids.
  *
  */
-class Grid : public juce::Component, Observer<juce::Rectangle<int>>, Observer<Scaling> {
+class Grid : public juce::Component,
+             Observer<juce::Rectangle<int>>,
+             Observer<Scaling>,
+             Observer<Lim_f> {
  public:
-  /** @brief Construct a new Grid object.
-   *
-   *  @param common_plot_parameter_view the common plot parameters.
-   */
-  Grid(const CommonPlotParameterView& common_plot_parameter_view)
-      : m_common_plot_params(&common_plot_parameter_view){};
 
   /** @brief Enables grid or tiny grid
    *
@@ -130,6 +127,14 @@ class Grid : public juce::Component, Observer<juce::Rectangle<int>>, Observer<Sc
    */
   void observableValueUpdated(ObserverId id, const Scaling& new_value) override;
 
+  /**
+   * @brief Observer callback function for when the limits is updated.
+   *
+   * @param id The id of the observer.
+   * @param new_value The new value of the observer.
+   */
+  void observableValueUpdated(ObserverId id, const Lim_f& new_value) override;
+
   //==============================================================================
   /** @internal */
   void resized() override;
@@ -157,6 +162,7 @@ class Grid : public juce::Component, Observer<juce::Rectangle<int>>, Observer<Sc
 
   juce::Rectangle<int> m_graph_bounds;
   Scaling m_x_scaling, m_y_scaling;
+  Lim_f m_x_lim, m_y_lim;
 
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks, m_x_prev_ticks,
@@ -170,7 +176,6 @@ class Grid : public juce::Component, Observer<juce::Rectangle<int>>, Observer<Sc
   GridType m_grid_type = GridType::grid_translucent;
 
   juce::LookAndFeel* m_lookandfeel;
-  const CommonPlotParameterView* m_common_plot_params{nullptr};
 
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_labels,
       m_x_axis_labels;

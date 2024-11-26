@@ -101,9 +101,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   UserInputAction getUserInputAction(
       UserInput user_input) const noexcept override;
 
-  void drawGraphLine(juce::Graphics &g,
-                     const GraphLineDataView graph_line_data,
-                     const juce::Rectangle<int>& graph_line_bounds) override;
+  void drawGraphLine(juce::Graphics &g, const GraphLineDataView graph_line_data,
+                     const juce::Rectangle<int> &graph_line_bounds) override;
 
   void drawGridLabels(juce::Graphics &g, const LabelVector &x_axis_labels,
                       const LabelVector &y_axis_labels) override;
@@ -154,22 +153,22 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
       PixelPoints &pixel_points) noexcept override;
 
   void updateVerticalGridLineTicksAuto(
-      const juce::Rectangle<int> &bounds,
-      const CommonPlotParameterView &common_plot_parameter_view,
-      const GridType grid_type, const std::vector<float> &previous_ticks,
+      const juce::Rectangle<int> &bounds, const Lim_f &x_lim,
+      const Scaling x_scaling, const GridType grid_type,
+      const std::vector<float> &previous_ticks,
       std::vector<float> &x_ticks) noexcept override;
 
   void updateHorizontalGridLineTicksAuto(
-      const juce::Rectangle<int> &bounds,
-      const CommonPlotParameterView &common_plot_parameter_view,
-      const GridType grid_type, const std::vector<float> &previous_ticks,
+      const juce::Rectangle<int> &bounds, const Lim_f &y_lim,
+      const Scaling y_scaling, const GridType grid_type,
+      const std::vector<float> &previous_ticks,
       std::vector<float> &y_ticks) noexcept override;
 
   juce::Font getGridLabelFont() const noexcept override;
 
   juce::Font getXYTitleFont() const noexcept override;
 
-  void updateGridLabels(const CommonPlotParameterView common_plot_params,
+  void updateGridLabels(const juce::Rectangle<int> &graph_bounds,
                         const std::vector<GridLine> &grid_lines,
                         StringVector &x_custom_label_ticks,
                         StringVector &y_custom_label_ticks,

@@ -82,7 +82,8 @@ class Plot : public juce::Component {
    * Draw a horizontal line at the given y-value. It is also possible to move
    * the whole line by dragging anywhere on it.
    *
-   * @param y_coordinates the y-coordinates of where the horizontal line(s) will be drawn.
+   * @param y_coordinates the y-coordinates of where the horizontal line(s) will
+   * be drawn.
    * @param graph_attribute the graph attribute of the horizontal line.
    * @return void.
    */
@@ -94,7 +95,8 @@ class Plot : public juce::Component {
   * Draw vertical line(s) at the given x-value. It is also possible to move the
   * whole line by dragging anywhere on it.
   *
-  @param x_coordinates the x-coordinates of where the vertical line(s) will be drawn.
+  @param x_coordinates the x-coordinates of where the vertical line(s) will be
+  drawn.
   @param graph_attribute the graph attribute of the vertical line.
   @return void.
   */
@@ -105,7 +107,8 @@ class Plot : public juce::Component {
    *
    * This plot function will only update the y-data in the graphs and only
    * repaint the graph_area, therefore requires less CPU than the 'plot'
-   * function. x-data must be set through the 'plot' function before calling this function.
+   * function. x-data must be set through the 'plot' function before calling
+   * this function.
    *
    * @param y_data vector of vectors with the y-values.
    */
@@ -352,9 +355,9 @@ class Plot : public juce::Component {
                            const juce::Rectangle<int> bounds) = 0;
 
     /** This method draws a single graph line. */
-    virtual void drawGraphLine(juce::Graphics& g,
-                               const GraphLineDataView graph_line_data,
-                               const juce::Rectangle<int>& graph_line_bounds) = 0;
+    virtual void drawGraphLine(
+        juce::Graphics& g, const GraphLineDataView graph_line_data,
+        const juce::Rectangle<int>& graph_line_bounds) = 0;
 
     /** This method draws the labels on the x and y axis. */
     virtual void drawGridLabels(juce::Graphics& g,
@@ -511,16 +514,16 @@ class Plot : public juce::Component {
 
     /** Updates the x-ticks with auto generated ticks. */
     virtual void updateVerticalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds,
-        const CommonPlotParameterView& common_plot_parameter_view,
-        const GridType grid_type, const std::vector<float>& previous_ticks,
+        const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
+        const Scaling x_scaling, const GridType grid_type,
+        const std::vector<float>& previous_ticks,
         std::vector<float>& x_ticks) noexcept = 0;
 
     /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds,
-        const CommonPlotParameterView& common_plot_parameter_view,
-        const GridType grid_type, const std::vector<float>& previous_ticks,
+        const juce::Rectangle<int>& bounds, const Lim_f& y_lim,
+        const Scaling y_scaling, const GridType grid_type,
+        const std::vector<float>& previous_ticks,
         std::vector<float>& y_ticks) noexcept = 0;
 
     /** Updates the x-coordinates of the pixel points used when drawing a graph
@@ -543,11 +546,12 @@ class Plot : public juce::Component {
         PixelPoints& pixel_points) noexcept = 0;
 
     /** Updates both the vertical and horizontal grid labels. */
-    virtual void updateGridLabels(
-        const CommonPlotParameterView common_plot_params,
-        const std::vector<GridLine>& grid_lines, StringVector& x_label_ticks,
-        StringVector& y_label_ticks, LabelVector& x_axis_labels,
-        LabelVector& y_axis_labels) = 0;
+    virtual void updateGridLabels(const juce::Rectangle<int>& graph_bounds,
+                                  const std::vector<GridLine>& grid_lines,
+                                  StringVector& x_label_ticks,
+                                  StringVector& y_label_ticks,
+                                  LabelVector& x_axis_labels,
+                                  LabelVector& y_axis_labels) = 0;
 
     /** Update the title, x and y axis labels. */
     virtual void updateXYTitleLabels(const juce::Rectangle<int>& bounds,
@@ -677,9 +681,10 @@ class Plot : public juce::Component {
 
   /** Common plot parameters. */
   Observable<Scaling> m_x_scaling, m_y_scaling;
-  DownsamplingType m_downsampling_type{DownsamplingType::xy_downsampling};
   Observable<juce::Rectangle<int>> m_graph_bounds;
-  cmp::Lim<float> m_x_lim, m_y_lim, m_x_lim_start, m_y_lim_start;
+  Observable<Lim<float>> m_x_lim, m_y_lim;
+  cmp::Lim<float> m_x_lim_start, m_y_lim_start;
+  DownsamplingType m_downsampling_type{DownsamplingType::xy_downsampling};
   CommonPlotParameterView m_common_graph_params;
 
   /** Child components */
