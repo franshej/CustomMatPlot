@@ -142,12 +142,12 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_legend(std::make_unique<Legend>()),
       m_selected_area(std::make_unique<GraphArea>()),
       m_grid(std::make_unique<Grid>()),
-      m_trace(std::make_unique<Trace>(m_common_graph_params)) {
-  m_graph_bounds.addObserver(*m_grid);
-  m_x_scaling.addObserver(*m_grid, *m_selected_area);
-  m_y_scaling.addObserver(*m_grid, *m_selected_area);
-  m_x_lim.addObserver(*m_grid, *m_selected_area);
-  m_y_lim.addObserver(*m_grid, *m_selected_area);
+      m_trace(std::make_unique<Trace>()) {
+  m_graph_bounds.addObserver(*m_grid, *m_trace);
+  m_x_scaling.addObserver(*m_grid, *m_selected_area, *m_trace);
+  m_y_scaling.addObserver(*m_grid, *m_selected_area, *m_trace);
+  m_x_lim.addObserver(*m_grid, *m_selected_area, *m_trace);
+  m_y_lim.addObserver(*m_grid, *m_selected_area, *m_trace);
 
   setLookAndFeel(getDefaultLookAndFeel());
 
@@ -622,7 +622,7 @@ void Plot::paint(juce::Graphics& g) {
   if (getPlotLookAndFeel()) {
     auto lnf = getPlotLookAndFeel();
 
-    lnf->drawBackground(g, m_common_graph_params.graph_bounds);
+    lnf->drawBackground(g, m_graph_bounds);
   }
 }
 

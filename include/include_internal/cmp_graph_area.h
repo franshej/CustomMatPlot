@@ -103,9 +103,9 @@ class GraphArea : public juce::Component, Observer<Lim<float>>, Observer<Scaling
   template <typename ValueType>
   juce::Rectangle<ValueType> getSelectedAreaBound() const noexcept;
 
-  /** @brief Observer function for x-limits.
+  /** @brief Observer function for limits.
    *
-   *  Observer function for x-limits.
+   *  Observer function for limits.
    *
    *  @param id the observer id.
    *  @param new_value the new value.

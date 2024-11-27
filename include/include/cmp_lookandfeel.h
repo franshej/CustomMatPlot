@@ -83,7 +83,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   juce::Font getTraceFont() const noexcept override;
 
   juce::Point<int> getTracePointPositionFrom(
-      const CommonPlotParameterView common_plot_params,
+      const juce::Rectangle<int>& graph_bounds, const Lim<float> x_lim,
+      const Scaling x_scaling, const Lim<float> y_lim, const Scaling y_scaling,
       const juce::Point<float> graph_values) const noexcept override;
 
   int getXGridLabelDistanceFromGraphBound() const noexcept override;
