@@ -140,14 +140,14 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_plot_label(std::make_unique<PlotLabel>()),
       m_frame(std::make_unique<Frame>()),
       m_legend(std::make_unique<Legend>()),
-      m_selected_area(std::make_unique<GraphArea>(m_common_graph_params)),
+      m_selected_area(std::make_unique<GraphArea>()),
       m_grid(std::make_unique<Grid>()),
       m_trace(std::make_unique<Trace>(m_common_graph_params)) {
   m_graph_bounds.addObserver(*m_grid);
-  m_x_scaling.addObserver(*m_grid);
-  m_y_scaling.addObserver(*m_grid);
-  m_x_lim.addObserver(*m_grid);
-  m_y_lim.addObserver(*m_grid);
+  m_x_scaling.addObserver(*m_grid, *m_selected_area);
+  m_y_scaling.addObserver(*m_grid, *m_selected_area);
+  m_x_lim.addObserver(*m_grid, *m_selected_area);
+  m_y_lim.addObserver(*m_grid, *m_selected_area);
 
   setLookAndFeel(getDefaultLookAndFeel());
 
