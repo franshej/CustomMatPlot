@@ -69,14 +69,13 @@ static auto computeXEndIdx(const ValueType x_max_lim,
 }
 
 template <class ValueType, class IndexType, class ForwardIt>
-static auto calculateXIdxsBetweenStartEnd(
+static auto calculateXIndicesBetweenStartEnd(
     const ForwardIt start_x_idx, const ForwardIt end_x_idx,
-    const cmp::CommonPlotParameterView common_params,
+    const Scaling x_scaling, const Lim<ValueType> x_lim, const juce::Rectangle<int> &graph_bounds,
     const std::vector<ValueType>& x_data,
     std::vector<IndexType>& x_based_idxs_out) {
   const auto [x_scale, x_offset] =
-      getXScaleAndOffset(float(common_params.graph_bounds.getWidth()),
-                         common_params.x_lim, common_params.x_scaling);
+      getXScaleAndOffset(float(graph_bounds.getWidth()), x_lim, x_scaling);
 
   float last_added_x = x_data[start_x_idx];
   std::size_t current_index = start_x_idx;
@@ -84,7 +83,7 @@ static auto calculateXIdxsBetweenStartEnd(
   const auto inverse_x_scale = 1.0f / x_scale;
   auto last_x_diff = 0.f;
 
-  if (common_params.x_scaling == Scaling::linear) {
+  if (x_scaling == Scaling::linear) {
     for (auto i = current_index; i < end_x_idx; ++i) {
       const auto current_x_diff = i > 0 ? x_data[i - 1] - x_data[i] : 0.f;
 
@@ -98,7 +97,7 @@ static auto calculateXIdxsBetweenStartEnd(
         x_based_idxs_out[pixel_point_index++] = i;
       }
     }
-  } else if (common_params.x_scaling == Scaling::logarithmic) {
+  } else if (x_scaling == Scaling::logarithmic) {
     for (auto x = x_data.begin() + start_x_idx; x != x_data.begin() + end_x_idx;
          ++x) {
       if (std::log10(std::abs(*x / last_added_x)) > inverse_x_scale) {
@@ -114,14 +113,11 @@ static auto calculateXIdxsBetweenStartEnd(
 }
 
 template <class FloatType>
-void Downsampler<FloatType>::calculateXBasedDSIdxs(
-    const CommonPlotParameterView common_params,
+void Downsampler<FloatType>::calculateXIndices(
+    const Scaling x_scaling, const Lim<FloatType> x_lim, const juce::Rectangle<int> &graph_bounds,
     const std::vector<FloatType>& x_data,
     std::vector<std::size_t>& x_based_idxs_out) {
   x_based_idxs_out.resize(x_data.size());
-
-  const auto& bounds = common_params.graph_bounds;
-  const auto& x_lim = common_params.x_lim;
 
   std::size_t max_x_index{x_data.size() - 1u};
 
@@ -146,8 +142,8 @@ void Downsampler<FloatType>::calculateXBasedDSIdxs(
   x_based_idxs_out.front() = start_x_index;
 
   const auto x_idxs_size_required =
-      calculateXIdxsBetweenStartEnd<FloatType, size_t>(
-          start_x_index, end_x_index, common_params, x_data, x_based_idxs_out);
+      calculateXIndicesBetweenStartEnd<FloatType, size_t>(
+          start_x_index, end_x_index, x_scaling, x_lim, graph_bounds, x_data, x_based_idxs_out);
 
   x_based_idxs_out.resize(x_idxs_size_required);
   x_based_idxs_out.back() = end_x_index;
@@ -155,7 +151,6 @@ void Downsampler<FloatType>::calculateXBasedDSIdxs(
 
 template <class FloatType>
 void Downsampler<FloatType>::calculateXYBasedIdxs(
-    const CommonPlotParameterView common_params,
     const std::vector<std::size_t>& x_based_idxs_out,
     const std::vector<FloatType>& y_data,
     std::vector<std::size_t>& xy_based_idxs_out) {

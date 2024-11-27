@@ -141,14 +141,14 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
 
   void updateXPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
-      const CommonPlotParameterView &common_plot_parameter_view,
+      const Scaling x_scaling, const Lim<float> x_lim, const juce::Rectangle<int> &graph_bounds,
       const std::vector<float> &x_data,
       std::vector<std::size_t> &pixel_points_indices,
       PixelPoints &pixel_points) noexcept override;
 
   void updateYPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
-      const CommonPlotParameterView &common_plot_parameter_view,
+      const Scaling y_scaling, const Lim<float> y_lim, const juce::Rectangle<int> &graph_bounds,
       const std::vector<float> &y_data,
       const std::vector<std::size_t> &pixel_points_indices,
       PixelPoints &pixel_points) noexcept override;

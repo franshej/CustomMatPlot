@@ -162,13 +162,12 @@ constexpr float getYDataFromYPixelCoordinate(
 
 static juce::Point<float> getDataPointFromPixelCoordinate(
     const juce::Point<float> pos,
-    const CommonPlotParameterView common_plot_params) noexcept {
+    const juce::Rectangle<float>& graph_bounds, const Lim_f x_lim,
+    const Scaling x_scaling, const Lim_f y_lim, const Scaling y_scaling) noexcept {
   const auto x = getXDataFromXPixelCoordinate(
-      pos.getX(), common_plot_params.graph_bounds.toFloat(),
-      common_plot_params.x_lim, common_plot_params.x_scaling);
+      pos.getX(), graph_bounds, x_lim, x_scaling);
   const auto y = getYDataFromYPixelCoordinate(
-      pos.getY(), common_plot_params.graph_bounds.toFloat(),
-      common_plot_params.y_lim, common_plot_params.y_scaling);
+      pos.getY(), graph_bounds, y_lim, y_scaling);
 
   return juce::Point<float>(x, y);
 }

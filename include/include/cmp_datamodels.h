@@ -234,6 +234,7 @@ enum class ObserverId {
   YLim,
   XScaling,
   YScaling,
+  DownsamplingType,
 };
 
 /*============================================================================*/

@@ -531,7 +531,7 @@ class Plot : public juce::Component {
      *  line. */
     virtual void updateXPixelPoints(
         const std::vector<std::size_t>& update_only_these_indices,
-        const CommonPlotParameterView& common_plot_parameter_view,
+        const Scaling x_scaling, const Lim<float> x_lim, const juce::Rectangle<int> &graph_bounds,
         const std::vector<float>& x_data,
         std::vector<std::size_t>& pixel_points_indices,
         PixelPoints& pixel_points) noexcept = 0;
@@ -540,8 +540,7 @@ class Plot : public juce::Component {
      * line. */
     virtual void updateYPixelPoints(
         const std::vector<std::size_t>& update_only_these_indices,
-
-        const CommonPlotParameterView& common_plot_parameter_view,
+        const Scaling y_scaling, const Lim<float> y_lim, const juce::Rectangle<int> &graph_bounds,
         const std::vector<float>& y_data,
         const std::vector<std::size_t>& pixel_points_indices,
         PixelPoints& pixel_points) noexcept = 0;
@@ -685,8 +684,7 @@ class Plot : public juce::Component {
   Observable<juce::Rectangle<int>> m_graph_bounds;
   Observable<Lim<float>> m_x_lim, m_y_lim;
   cmp::Lim<float> m_x_lim_start, m_y_lim_start;
-  DownsamplingType m_downsampling_type{DownsamplingType::xy_downsampling};
-  CommonPlotParameterView m_common_graph_params;
+  Observable<DownsamplingType> m_downsampling_type;
 
   /** Child components */
   GraphSpreadList m_graph_spread_list;

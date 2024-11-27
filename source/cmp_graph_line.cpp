@@ -66,14 +66,14 @@ GraphLine::findClosestPixelPointTo(const juce::Point<float>& this_pixel_point,
       closest_pixel_point = pixel_point;
       closest_i = i;
       closest_data_point =
-          juce::Point<float>(m_x_data[m_xy_based_ds_indices[i]],
-                             m_y_data[m_xy_based_ds_indices[i]]);
+          juce::Point<float>(m_x_data[m_xy_indices[i]],
+                             m_y_data[m_xy_indices[i]]);
     }
     i++;
   }
 
   return {closest_pixel_point, closest_data_point,
-          m_xy_based_ds_indices[closest_i]};
+          m_xy_indices[closest_i]};
 }
 
 std::pair<juce::Point<float>, size_t> GraphLine::findClosestDataPointTo(
@@ -121,8 +121,8 @@ juce::Colour GraphLine::getColour() const noexcept {
 
 juce::Point<float> GraphLine::getDataPointFromPixelPointIndex(
     size_t pixel_point_index) const {
-  return juce::Point<float>(m_x_data[m_xy_based_ds_indices[pixel_point_index]],
-                            m_y_data[m_xy_based_ds_indices[pixel_point_index]]);
+  return juce::Point<float>(m_x_data[m_xy_indices[pixel_point_index]],
+                            m_y_data[m_xy_indices[pixel_point_index]]);
 };
 
 juce::Point<float> GraphLine::getDataPointFromDataPointIndex(
@@ -147,10 +147,8 @@ void GraphLine::paint(juce::Graphics& g) {
 void GraphLine::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
-    if (m_common_plot_params) {
-      updateXIndicesAndPixelPointsIntern({});
-      updateYIndicesAndPixelPointsIntern({});
-    }
+    updateXIndicesAndPixelPointsIntern({});
+    updateYIndicesAndPixelPointsIntern({});
   } else {
     m_lookandfeel = nullptr;
   }
@@ -220,13 +218,13 @@ const PixelPoints& GraphLine::getPixelPoints() const noexcept {
 }
 
 const std::vector<size_t>& GraphLine::getPixelPointIndices() const noexcept {
-  return m_xy_based_ds_indices;
+  return m_xy_indices;
 }
 
 void GraphLine::updateXIndicesAndPixelPoints(
     const std::vector<size_t>& update_only_these_indices) {
   // x_lim must be set to calculate the xdata.
-  jassert(m_common_plot_params->x_lim);
+  jassert(m_x_lim);
 
   // x_data empty.
   jassert(!m_x_data.empty());
@@ -237,7 +235,7 @@ void GraphLine::updateXIndicesAndPixelPoints(
 void GraphLine::updateYIndicesAndPixelPoints(
     const std::vector<size_t>& update_only_these_indices) {
   // x_lim must be set to calculate the xdata.
-  jassert(m_common_plot_params->y_lim);
+  jassert(m_y_lim);
 
   // y_data empty.
   jassert(!m_y_data.empty());
@@ -249,7 +247,7 @@ void GraphLine::updateXIndicesAndPixelPointsIntern(
     const std::vector<size_t>& update_only_these_indices) {
   const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
-  switch (m_common_plot_params->downsampling_type) {
+  switch (m_downsampling_type) {
     case DownsamplingType::no_downsampling:
       m_x_based_ds_indices.resize(m_x_data.size());
 
@@ -257,13 +255,13 @@ void GraphLine::updateXIndicesAndPixelPointsIntern(
       break;
 
     case DownsamplingType::x_downsampling:
-      Downsampler<float>::calculateXBasedDSIdxs(*m_common_plot_params, m_x_data,
+      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_graph_bounds, m_x_data,
                                                 m_x_based_ds_indices);
 
       break;
 
     case DownsamplingType::xy_downsampling:
-      Downsampler<float>::calculateXBasedDSIdxs(*m_common_plot_params, m_x_data,
+      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_graph_bounds, m_x_data,
                                                 m_x_based_ds_indices);
       return;
       break;
@@ -273,7 +271,7 @@ void GraphLine::updateXIndicesAndPixelPointsIntern(
   }
 
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-  lnf->updateXPixelPoints(update_only_these_indices, *m_common_plot_params,
+  lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_graph_bounds,
                           m_x_data, m_x_based_ds_indices, m_pixel_points);
 }
 
@@ -282,9 +280,9 @@ void GraphLine::updateYIndicesAndPixelPointsIntern(
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
   const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
-  m_xy_based_ds_indices = m_x_based_ds_indices;
+  m_xy_indices = m_x_based_ds_indices;
 
-  switch (m_common_plot_params->downsampling_type) {
+  switch (m_downsampling_type) {
     case DownsamplingType::no_downsampling:
       break;
 
@@ -292,28 +290,27 @@ void GraphLine::updateYIndicesAndPixelPointsIntern(
       break;
 
     case DownsamplingType::xy_downsampling:
-      Downsampler<float>::calculateXYBasedIdxs(*m_common_plot_params,
-                                                 m_x_based_ds_indices, m_y_data,
-                                                 m_xy_based_ds_indices);
+      Downsampler<float>::calculateXYBasedIdxs(m_x_based_ds_indices, m_y_data,
+                                               m_xy_indices);
 
-      lnf->updateXPixelPoints(update_only_these_indices, *m_common_plot_params,
-                              m_x_data, m_xy_based_ds_indices, m_pixel_points);
+      lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_graph_bounds,
+                              m_x_data, m_xy_indices, m_pixel_points);
       break;
 
     default:
       break;
   }
 
-  lnf->updateYPixelPoints(update_only_these_indices, *m_common_plot_params,
-                          m_y_data, m_xy_based_ds_indices, m_pixel_points);
+  lnf->updateYPixelPoints(update_only_these_indices, m_y_scaling, m_y_lim, m_graph_bounds,
+                          m_y_data, m_xy_indices, m_pixel_points);
 }
 
 void GraphLine::updateXYPixelPoints() {
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-  lnf->updateXPixelPoints({}, *m_common_plot_params, m_x_data,
-                          m_xy_based_ds_indices, m_pixel_points);
-  lnf->updateYPixelPoints({}, *m_common_plot_params, m_y_data,
-                          m_xy_based_ds_indices, m_pixel_points);
+  lnf->updateXPixelPoints({}, m_x_scaling, m_x_lim, m_graph_bounds, m_x_data,
+                          m_xy_indices, m_pixel_points);
+  lnf->updateYPixelPoints({}, m_y_scaling, m_y_lim, m_graph_bounds, m_y_data,
+                          m_xy_indices, m_pixel_points);
 }
 
 void GraphLine::setType(const GraphLineType graph_line_type) {
@@ -322,6 +319,34 @@ void GraphLine::setType(const GraphLineType graph_line_type) {
 
 GraphLineType GraphLine::getType() const noexcept {
   return m_graph_line_type;
+}
+
+void GraphLine::observableValueUpdated(ObserverId id, const Scaling &new_value)
+{
+  if (id == ObserverId::XScaling)
+    m_x_scaling = new_value;
+  else if (id == ObserverId::YScaling)
+    m_y_scaling = new_value;
+}
+
+void GraphLine::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
+{
+  if (id == ObserverId::XLim)
+    m_x_lim = new_value;
+  else if (id == ObserverId::YLim)
+    m_y_lim = new_value;
+}
+
+void GraphLine::observableValueUpdated(ObserverId id, const juce::Rectangle<int> &new_value)
+{
+  if (id == ObserverId::GraphBounds)
+    m_graph_bounds = new_value;
+}
+
+void GraphLine::observableValueUpdated(ObserverId id, const DownsamplingType &new_value)
+{
+  if (id == ObserverId::DownsamplingType)
+    m_downsampling_type = new_value;
 }
 
 /************************************************************************************/
