@@ -134,8 +134,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_x_lim(ObserverId::XLim),
       m_y_lim(ObserverId::YLim),
       m_graph_bounds(ObserverId::GraphBounds),
-      m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
-                            m_y_scaling, m_downsampling_type),
+      m_downsampling_type(ObserverId::DownsamplingType, DownsamplingType::xy_downsampling),
       m_graph_lines(std::make_unique<GraphLineList>()),
       m_plot_label(std::make_unique<PlotLabel>()),
       m_frame(std::make_unique<Frame>()),
@@ -652,7 +651,15 @@ template <GraphLineType t_graph_line_type>
 void Plot::addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
                                 const size_t graph_line_index) {
   auto lnf = getPlotLookAndFeel();
-  graph_line = std::make_unique<GraphLine>(m_common_graph_params);
+  graph_line = std::make_unique<GraphLine>();
+
+  m_graph_bounds.addObserver(*graph_line);
+  m_downsampling_type.addObserver(*graph_line);
+  m_x_scaling.addObserver(*graph_line);
+  m_y_scaling.addObserver(*graph_line);
+  m_x_lim.addObserver(*graph_line);
+  m_y_lim.addObserver(*graph_line);
+
   const auto colour_id = lnf->getColourFromGraphID(graph_line_index);
   const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
@@ -837,9 +844,10 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
 
   auto d_data_position =
-      getDataPointFromPixelCoordinate(mouse_pos, m_common_graph_params) -
-      getDataPointFromPixelCoordinate(m_prev_mouse_position,
-                                      m_common_graph_params);
+      getDataPointFromPixelCoordinate(mouse_pos, m_graph_bounds.getValue().toFloat(), m_x_lim,
+                                      m_x_scaling, m_y_lim, m_y_scaling) -
+      getDataPointFromPixelCoordinate(m_prev_mouse_position, m_graph_bounds.getValue().toFloat(),
+                                      m_x_lim, m_x_scaling, m_y_lim, m_y_scaling);
 
   switch (m_pixel_point_move_type) {
     case PixelPointMoveType::horizontal: {

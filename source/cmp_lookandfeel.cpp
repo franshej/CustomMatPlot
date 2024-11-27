@@ -605,13 +605,11 @@ void PlotLookAndFeel::drawSelectionArea(
 
 void PlotLookAndFeel::updateXPixelPoints(
     const std::vector<std::size_t>& update_only_these_indices,
-    const CommonPlotParameterView& common_plot_parameter_view,
+    const Scaling x_scaling, const Lim<float> x_lim, const juce::Rectangle<int> &graph_bounds,
     const std::vector<float>& x_data,
     std::vector<std::size_t>& pixel_points_indices,
     PixelPoints& pixel_points) noexcept {
-  const auto [x_scale, x_offset] = getXScaleAndOffset(
-      common_plot_parameter_view.graph_bounds.toFloat().getWidth(),
-      common_plot_parameter_view.x_lim, common_plot_parameter_view.x_scaling);
+  const auto [x_scale, x_offset] = getXScaleAndOffset(graph_bounds.toFloat().getWidth(), x_lim, x_scaling);
 
   pixel_points.resize(pixel_points_indices.size());
 
@@ -623,11 +621,11 @@ void PlotLookAndFeel::updateXPixelPoints(
       // no_downsampling.
     }
 
-    if (common_plot_parameter_view.y_scaling == Scaling::linear) {
+    if (x_scaling == Scaling::linear) {
       for (const auto i : update_only_these_indices)
         pixel_points[i].setX(
             getXPixelValueLinear(x_data[i], x_scale, x_offset));
-    } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
+    } else if (x_scaling == Scaling::logarithmic) {
       for (const auto i : update_only_these_indices)
         pixel_points[i].setX(
             getXPixelValueLogarithmic(x_data[i], x_scale, x_offset));
@@ -636,12 +634,12 @@ void PlotLookAndFeel::updateXPixelPoints(
   }
 
   std::size_t i{0u};
-  if (common_plot_parameter_view.x_scaling == Scaling::linear) {
+  if (x_scaling == Scaling::linear) {
     for (const auto i_x : pixel_points_indices) {
       pixel_points[i++].setX(
           getXPixelValueLinear(x_data[i_x], x_scale, x_offset));
     }
-  } else if (common_plot_parameter_view.x_scaling == Scaling::logarithmic) {
+  } else if (x_scaling == Scaling::logarithmic) {
     for (const auto i_x : pixel_points_indices) {
       pixel_points[i++].setX(
           getXPixelValueLogarithmic(x_data[i_x], x_scale, x_offset));
@@ -651,13 +649,12 @@ void PlotLookAndFeel::updateXPixelPoints(
 
 void PlotLookAndFeel::updateYPixelPoints(
     const std::vector<std::size_t>& update_only_these_indices,
-    const CommonPlotParameterView& common_plot_parameter_view,
+    const Scaling y_scaling, const Lim<float> y_lim, const juce::Rectangle<int> &graph_bounds,
     const std::vector<float>& y_data,
     const std::vector<std::size_t>& pixel_points_indices,
     PixelPoints& pixel_points) noexcept {
   const auto [y_scale, y_offset] = getYScaleAndOffset(
-      common_plot_parameter_view.graph_bounds.toFloat().getHeight(),
-      common_plot_parameter_view.y_lim, common_plot_parameter_view.y_scaling);
+      graph_bounds.toFloat().getHeight(), y_lim, y_scaling);
 
   if (!update_only_these_indices.empty()) {
     if (pixel_points_indices.size() != y_data.size()) {
@@ -667,11 +664,11 @@ void PlotLookAndFeel::updateYPixelPoints(
       // no_downsampling.
     }
 
-    if (common_plot_parameter_view.y_scaling == Scaling::linear) {
+    if (y_scaling == Scaling::linear) {
       for (const auto i : update_only_these_indices)
         pixel_points[i].setY(
             getYPixelValueLinear(y_data[i], y_scale, y_offset));
-    } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
+    } else if (y_scaling == Scaling::logarithmic) {
       for (const auto i : update_only_these_indices)
         pixel_points[i].setY(
             getYPixelValueLogarithmic(y_data[i], y_scale, y_offset));
@@ -681,13 +678,13 @@ void PlotLookAndFeel::updateYPixelPoints(
 
   std::size_t i = 0u;
 
-  if (common_plot_parameter_view.y_scaling == Scaling::linear) {
+  if (y_scaling == Scaling::linear) {
     for (const auto i_y : pixel_points_indices) {
       pixel_points[i].setY(
           getYPixelValueLinear(y_data[i_y], y_scale, y_offset));
       i++;
     }
-  } else if (common_plot_parameter_view.y_scaling == Scaling::logarithmic) {
+  } else if (y_scaling == Scaling::logarithmic) {
     for (const auto i_y : pixel_points_indices) {
       pixel_points[i].setY(
           getYPixelValueLogarithmic(y_data[i_y], y_scale, y_offset));

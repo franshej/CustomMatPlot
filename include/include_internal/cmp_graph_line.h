@@ -33,15 +33,8 @@ namespace cmp {
  *  \brief A class component to draw 2-D lines/marker symbols. This is
  *  a subcomponenet to cmp::Plot.
  */
-class GraphLine : public juce::Component {
+class GraphLine : public juce::Component, Observer<Scaling>, Observer<Lim<float>>, Observer<juce::Rectangle<int>>, Observer<DownsamplingType> {
  public:
-  /**
-   * @brief Construct a new Graph Line object.
-   * @param common_plot_parameter_view the common plot parameters.
-   */
-  GraphLine(const CommonPlotParameterView& common_plot_parameter_view)
-      : m_common_plot_params(&common_plot_parameter_view){};
-
   /** @brief Find closest point on graph from pixel point.
    *
    * @param this_pixel_point the point on the graph.
@@ -234,6 +227,38 @@ class GraphLine : public juce::Component {
    */
   GraphLineType getType() const noexcept;
 
+  /** @brief Observer function for scaling.
+   *
+   * @param id the id of the observer.
+   * @param new_value the new value of the observer.
+   * @return void.
+   */
+  void observableValueUpdated(ObserverId id, const Scaling& new_value) override;
+
+  /** @brief Observer function for x/y-limits.
+   *
+   * @param id the id of the observer.
+   * @param new_value the new value of the observer.
+   * @return void.
+   */
+  void observableValueUpdated(ObserverId id, const Lim<float>& new_value) override;
+
+  /** @brief Observer function for graph bounds.
+   *
+   * @param id the id of the observer.
+   * @param new_value the new value of the observer.
+   * @return void.
+   */
+  void observableValueUpdated(ObserverId id, const juce::Rectangle<int>& new_value) override;
+
+  /** @brief Observer function for downsampling type.
+   *
+   * @param id the id of the observer.
+   * @param new_value the new value of the observer.
+   * @return void.
+   */
+  void observableValueUpdated(ObserverId id, const DownsamplingType& new_value) override;
+
   //==============================================================================
 
   /** @internal */
@@ -250,11 +275,14 @@ class GraphLine : public juce::Component {
       const std::vector<size_t>& update_only_these_indices);
 
   std::vector<float> m_x_data, m_y_data;
-  std::vector<std::size_t> m_x_based_ds_indices, m_xy_based_ds_indices;
+  std::vector<std::size_t> m_x_based_ds_indices, m_xy_indices;
   PixelPoints m_pixel_points;
   GraphLineType m_graph_line_type{GraphLineType::normal};
 
-  const CommonPlotParameterView* m_common_plot_params{nullptr};
+  Scaling m_x_scaling, m_y_scaling;
+  Lim<float> m_x_lim, m_y_lim;
+  juce::Rectangle<int> m_graph_bounds;
+  DownsamplingType m_downsampling_type{DownsamplingType::xy_downsampling};
   juce::LookAndFeel* m_lookandfeel{nullptr};
   GraphAttribute m_graph_attributes;
 };
