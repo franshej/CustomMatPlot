@@ -31,17 +31,8 @@ namespace cmp {
  * The idea is to use this component to draw the zoom area, selection area or
  * move a trace point.
  */
-class GraphArea : public juce::Component {
+class GraphArea : public juce::Component, Observer<Lim<float>>, Observer<Scaling>  {
  public:
-  /** @brief Constructor.
-   *
-   *  Constructor.
-   *
-   * @param common_plot_parameter_view the common plot parameters.
-   *  @return void.
-   */
-  GraphArea(const CommonPlotParameterView& common_plot_parameter_view) noexcept
-      : m_common_plot_params(&common_plot_parameter_view){};
 
   /** @brief Get the start postion.
    *
@@ -112,6 +103,24 @@ class GraphArea : public juce::Component {
   template <typename ValueType>
   juce::Rectangle<ValueType> getSelectedAreaBound() const noexcept;
 
+  /** @brief Observer function for x-limits.
+   *
+   *  Observer function for x-limits.
+   *
+   *  @param id the observer id.
+   *  @param new_value the new value.
+   */
+  void observableValueUpdated(ObserverId id, const Lim<float>& new_value) override;
+
+  /** @brief Observer function for scaling.
+   *
+   *  Observer function for scaling.
+   *
+   *  @param id the observer id.
+   *  @param new_value the new value.
+   */
+  void observableValueUpdated(ObserverId id, const Scaling& new_value) override;
+
   /** @internal */
   void resized() override;
   /** @internal */
@@ -124,6 +133,9 @@ class GraphArea : public juce::Component {
 
   juce::Point<int> m_start_pos, m_end_pos;
   bool m_is_start_pos_set{false};
+
+  Lim<float> m_x_lim, m_y_lim;
+  Scaling m_x_scaling, m_y_scaling;
 
   const CommonPlotParameterView* m_common_plot_params;
 };
