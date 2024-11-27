@@ -28,7 +28,7 @@ static ContainerType& getPlotFromID(
 }
 
 static juce::Rectangle<int> getScreenArea() {
-  return juce::Desktop::getInstance().getDisplays().getMainDisplay().userArea;
+  return juce::Desktop::getInstance().getDisplays().getPrimaryDisplay()->userArea;
 }
 
 struct TimerCallback : public juce::Timer {

@@ -193,7 +193,7 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
   if (new_x_lim.min > new_x_lim.max) UNLIKELY
   throw std::invalid_argument("Min value must be lower than max value.");
 
-  UNLIKELY if ((abs(new_x_lim.max - new_x_lim.min) <
+  UNLIKELY if ((std::abs(new_x_lim.max - new_x_lim.min) <
                 std::numeric_limits<float>::epsilon())) {
     m_x_lim = {new_x_lim.min - 1, new_x_lim.max + 1};
   }
@@ -218,7 +218,7 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
   if (new_y_lim.min > new_y_lim.max) UNLIKELY
   throw std::invalid_argument("Min value must be lower than max value.");
 
-  UNLIKELY if (abs(new_y_lim.max - new_y_lim.min) <
+  UNLIKELY if (std::abs(new_y_lim.max - new_y_lim.min) <
                std::numeric_limits<float>::epsilon()) {
     m_y_lim = {new_y_lim.min - 1, new_y_lim.max + 1};
   }
