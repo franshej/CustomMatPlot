@@ -94,8 +94,7 @@ typedef TracePoint<float> TracePoint_f;
 template <class ValueType>
 struct TraceLabel : public juce::Component {
   /** Set the graph labels from point. */
-  void setGraphLabelFrom(const juce::Point<ValueType>& graph_value,
-                         const CommonPlotParameterView& common_plot_params);
+  void setGraphLabelFrom(const juce::Point<ValueType>& graph_value);
 
   /** @internal */
   void resized() override;
@@ -117,9 +116,7 @@ struct TraceLabel : public juce::Component {
   /** @internal */
   juce::LookAndFeel* m_lookandfeel;
   /** @internal */
-  CommonPlotParameterView const* m_common_plot_params{nullptr};
-  /** @internal */
-  juce::Point<ValueType> const* m_graph_value{nullptr};
+  juce::Point<ValueType> const* m_data_point{nullptr};
 };
 
 /** @brief A typedef defines a tracelabel using floats. */
@@ -177,11 +174,8 @@ typedef TraceLabelPoint<float> TraceLabelPoint_f;
  * The idea is to use this class to display the x, y value of a one more
  * points on one or more graphs.
  */
-class Trace {
+class Trace : public Observer<Lim<float>>, Observer<Scaling>, Observer<juce::Rectangle<int>> {
  public:
-  /** Constructor. */
-  Trace(CommonPlotParameterView common_plot_params);
-
   /** Destructor. Setting lookandfeel to nullptr. */
   ~Trace();
 
@@ -337,6 +331,27 @@ class Trace {
    */
   void selectTracePoint(const juce::Component* component, const bool selected);
 
+  /** @brief Observer function for limits.
+   *
+   * @param id the observer id.
+   * @param new_value the new value.
+   */
+  void observableValueUpdated(ObserverId id, const Lim<float>& new_value) override;
+
+  /** @brief Observer function for scaling.
+   *
+   * @param id the observer id.
+   * @param new_value the new value.
+   */
+  void observableValueUpdated(ObserverId id, const Scaling& new_value) override;
+
+  /** @brief Observer function for graph bounds.
+   *
+   * @param id the observer id.
+   * @param new_value the new value.
+   */
+  void observableValueUpdated(ObserverId id, const juce::Rectangle<int>& new_value) override;
+
  private:
   /** @internal */
   void tracePointCbHelper(const juce::Component* trace_point,
@@ -370,7 +385,11 @@ class Trace {
       const juce::Component* trace_point);
   juce::LookAndFeel* m_lookandfeel;
   std::vector<TraceLabelPoint_f> m_trace_labelpoints;
-  CommonPlotParameterView m_common_plot_params;
+
+  /** @internal */
+  Lim<float> m_x_lim, m_y_lim;
+  Scaling m_x_scaling, m_y_scaling;
+  juce::Rectangle<int> m_graph_bounds;
 };
 
 }  // namespace cmp

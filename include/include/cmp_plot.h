@@ -457,7 +457,8 @@ class Plot : public juce::Component {
 
     /** Get position for a single trace point.*/
     virtual CONSTEXPR20 juce::Point<int> getTracePointPositionFrom(
-        const CommonPlotParameterView common_plot_params,
+        const juce::Rectangle<int>& graph_bounds, const Lim<float> x_lim,
+        const Scaling x_scaling, const Lim<float> y_lim, const Scaling y_scaling,
         const juce::Point<float> graph_values) const noexcept = 0;
 
     /** Get the local bounds used when drawing the trace label (the bounds

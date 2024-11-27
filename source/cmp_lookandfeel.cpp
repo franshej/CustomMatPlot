@@ -265,25 +265,24 @@ juce::Font PlotLookAndFeel::getTraceFont() const noexcept {
 }
 
 juce::Point<int> PlotLookAndFeel::getTracePointPositionFrom(
-    const CommonPlotParameterView common_plot_params,
+    const juce::Rectangle<int>& graph_bounds, const Lim<float> x_lim,
+    const Scaling x_scaling, const Lim<float> y_lim, const Scaling y_scaling,
     const juce::Point<float> graph_values) const noexcept {
   const auto [x_scale, x_offset] = getXScaleAndOffset(
-      float(common_plot_params.graph_bounds.getWidth()),
-      common_plot_params.x_lim, common_plot_params.x_scaling);
+      float(graph_bounds.getWidth()), x_lim, x_scaling);
 
   const auto [y_scale, y_offset] = getYScaleAndOffset(
-      float(common_plot_params.graph_bounds.getHeight()),
-      common_plot_params.y_lim, common_plot_params.y_scaling);
+      float(graph_bounds.getHeight()), y_lim, y_scaling);
 
   float x;
   float y;
 
-  if (common_plot_params.x_scaling == Scaling::linear) {
+  if (x_scaling == Scaling::linear) {
     x = getXPixelValueLinear(graph_values.getX(), x_scale, x_offset);
   } else {
     x = getXPixelValueLogarithmic(graph_values.getX(), x_scale, x_offset);
   }
-  if (common_plot_params.y_scaling == Scaling::linear) {
+  if (y_scaling == Scaling::linear) {
     y = getYPixelValueLinear(graph_values.getY(), y_scale, y_offset);
   } else {
     y = getYPixelValueLogarithmic(graph_values.getY(), y_scale, y_offset);
