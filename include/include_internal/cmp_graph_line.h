@@ -33,8 +33,13 @@ namespace cmp {
  *  \brief A class component to draw 2-D lines/marker symbols. This is
  *  a subcomponenet to cmp::Plot.
  */
-class GraphLine : public juce::Component, Observer<Scaling>, Observer<Lim<float>>, Observer<juce::Rectangle<int>>, Observer<DownsamplingType> {
- public:
+class GraphLine : public juce::Component,
+                  public virtual Observer<Scaling>,
+                  public virtual Observer<Lim<float>>,
+                  public virtual Observer<juce::Rectangle<int>>,
+                  public virtual Observer<DownsamplingType>,
+                  public virtual Observer<bool> {
+public:
   /** @brief Find closest point on graph from pixel point.
    *
    * @param this_pixel_point the point on the graph.
@@ -101,6 +106,13 @@ class GraphLine : public juce::Component, Observer<Scaling>, Observer<Lim<float>
    *  @return the graph_attributes.
    */
   const GraphAttribute& getGraphAttribute() const noexcept;
+
+  /** @brief Set the indices to update.
+   *
+   * @param indices the indices to update.
+   * @return void.
+   */
+  void setIndicesToUpdate(const std::vector<std::size_t> indices);
 
   /** @brief Set the y-values for the graph-line
    *
@@ -169,25 +181,21 @@ class GraphLine : public juce::Component, Observer<Scaling>, Observer<Lim<float>
    *
    *  This function updates the pixel points if any new parameter is set. Should
    *  be called after an parameter changed to update the graph. However, call
-   *  updateXYPixelPoints() if the min/max x/y-limits are move equally.
+   *  updateXY() if the min/max x/y-limits are move equally.
    *
-   *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateXIndicesAndPixelPoints(
-      const std::vector<size_t>& update_only_these_indices = {});
+  void updateX();
 
   /** @brief Update the pixel points indices and y-value in the pixel points.
    *
    *  This function updates the pixel points if any new parameter is set. Should
    *  be called after an parameter changed to update the graph. However, call
-   *  updateXYPixelPoints() if the min/max x/y-limits are move equally.
+   *  updateXY() if the min/max x/y-limits are move equally.
    *
-   *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateYIndicesAndPixelPoints(
-      const std::vector<size_t>& update_only_these_indices = {});
+  void updateY();
 
   /** @brief move pixel point in graphline
    *
@@ -202,13 +210,13 @@ class GraphLine : public juce::Component, Observer<Scaling>, Observer<Lim<float>
    *
    *  This function updates the pixel points if any new parameter is set.
    *
-   *  @note updateXIndicesAndPixelPoints() and updateYIndicesAndPixelPoints()
+   *  @note updateX() and updateY()
    *  must have been called anytime before this function.
    *
    *  @param update_only_these_indices only update these indices.
    *  @return void.
    */
-  void updateXYPixelPoints();
+  void updateXY();
 
   /** @brief Set GraphLine type
    *
@@ -259,6 +267,14 @@ class GraphLine : public juce::Component, Observer<Scaling>, Observer<Lim<float>
    */
   void observableValueUpdated(ObserverId id, const DownsamplingType& new_value) override;
 
+  /** @brief Observer function for notify components on update.
+   *
+   * @param id the id of the observer.
+   * @param new_value the new value of the observer.
+   * @return void.
+   */
+  void observableValueUpdated(ObserverId id, const bool& new_value) override;
+
   //==============================================================================
 
   /** @internal */
@@ -275,7 +291,7 @@ class GraphLine : public juce::Component, Observer<Scaling>, Observer<Lim<float>
       const std::vector<size_t>& update_only_these_indices);
 
   std::vector<float> m_x_data, m_y_data;
-  std::vector<std::size_t> m_x_based_ds_indices, m_xy_indices;
+  std::vector<std::size_t> m_x_based_ds_indices, m_xy_indices, m_indices_to_update;
   PixelPoints m_pixel_points;
   GraphLineType m_graph_line_type{GraphLineType::normal};
 
@@ -310,21 +326,10 @@ struct GraphLineList : public std::vector<std::unique_ptr<GraphLine>> {
   template <GraphLineType t_graph_line_type>
   void resize(size_t new_size);
 
-  /** @brief Set x- or y-limits for vertical and horizontal lines.
-   * 
-   * Set the y limit for vertical lines and x limit for horizontal lines.
-   * 
-   * @tparam t_graph_line_type the type of graph line.
-   * @param x_or_y_limit x- or y-limit.
-   * @return void.
-   */
-    template <GraphLineType t_graph_line_type, typename ValueType>
-    void setLimitsForVerticalOrHorizontalLines(const Lim<ValueType>& x_or_y_limit);
-
-    private:
-    /** @internal */
-    template <GraphLineType t_graph_line_type>
-    std::vector<GraphLine*> getGraphLinesOfType();
+ private:
+  /** @internal */
+  template <GraphLineType t_graph_line_type>
+  std::vector<GraphLine*> getGraphLinesOfType();
 };
 
 /**
