@@ -27,7 +27,7 @@ namespace cmp {
  *  the x- and y-limits, ticks and ticklabels.
  */
 class Plot : public juce::Component {
- public:
+public:
   /** Destructor, making sure to set the lookandfeel in all subcomponenets to
    * nullptr. */
   ~Plot();
@@ -73,9 +73,9 @@ class Plot : public juce::Component {
    *  GraphAttribute.
    *  @return void.
    */
-  void plot(const std::vector<std::vector<float>>& y_data,
-            const std::vector<std::vector<float>>& x_data = {},
-            const GraphAttributeList& graph_attribute_list = {});
+  void plot(const std::vector<std::vector<float>> &y_data,
+            const std::vector<std::vector<float>> &x_data = {},
+            const GraphAttributeList &graph_attribute_list = {});
 
   /** @brief Draw horizontal line(s).
    *
@@ -87,8 +87,8 @@ class Plot : public juce::Component {
    * @param graph_attribute the graph attribute of the horizontal line.
    * @return void.
    */
-  void plotHorizontalLines(const std::vector<float>& y_coordinates,
-                           const GraphAttributeList& graph_attributes = {});
+  void plotHorizontalLines(const std::vector<float> &y_coordinates,
+                           const GraphAttributeList &graph_attributes = {});
 
   /** @brief Draw vertical line(s).
   *
@@ -100,8 +100,8 @@ class Plot : public juce::Component {
   @param graph_attribute the graph attribute of the vertical line.
   @return void.
   */
-  void plotVerticalLines(const std::vector<float>& x_coordinates,
-                         const GraphAttributeList& graph_attributes = {});
+  void plotVerticalLines(const std::vector<float> &x_coordinates,
+                         const GraphAttributeList &graph_attributes = {});
 
   /** @brief Plot, but only update the y-data.
    *
@@ -112,7 +112,7 @@ class Plot : public juce::Component {
    *
    * @param y_data vector of vectors with the y-values.
    */
-  void plotUpdateYOnly(const std::vector<std::vector<float>>& y_data);
+  void plotUpdateYOnly(const std::vector<std::vector<float>> &y_data);
 
   /** @brief Fill the area between two data lines.
    *
@@ -127,8 +127,8 @@ class Plot : public juce::Component {
    *        is filled.
    * @param fill_area_colours the colours of the areas.
    */
-  void fillBetween(const std::vector<GraphSpreadIndex>& graph_spread_indices,
-                   const std::vector<juce::Colour>& fill_area_colours = {});
+  void fillBetween(const std::vector<GraphSpreadIndex> &graph_spread_indices,
+                   const std::vector<juce::Colour> &fill_area_colours = {});
 
   /** @brief Set downsampling type.
    *
@@ -175,7 +175,7 @@ class Plot : public juce::Component {
    *  @param x_label text to be displayed on the x-axis
    *  @return void.
    */
-  void setXLabel(const std::string& x_label);
+  void setXLabel(const std::string &x_label);
 
   /** @brief Set the text for label on the Y-axis
    *
@@ -184,7 +184,7 @@ class Plot : public juce::Component {
    *  @param y_label text to be displayed on the y-axis
    *  @return void.
    */
-  void setYLabel(const std::string& y_label);
+  void setYLabel(const std::string &y_label);
 
   /** @brief Set x & y-axis scaling
    *
@@ -203,7 +203,7 @@ class Plot : public juce::Component {
    *  @param title text to be displayed as the title
    *  @return void.
    */
-  void setTitle(const std::string& title);
+  void setTitle(const std::string &title);
 
   /** @brief Set trace-point
    *
@@ -214,7 +214,7 @@ class Plot : public juce::Component {
    * wish to be set.
    * @return void.
    */
-  void setTracePoint(const juce::Point<float>& trace_point_coordinate);
+  void setTracePoint(const juce::Point<float> &trace_point_coordinate);
 
   /** @brief Set the text for grid labels on the x-axis
    *
@@ -224,7 +224,7 @@ class Plot : public juce::Component {
    *  @param x_labels text for the labels displayed as the x-axis
    *  @return void.
    */
-  void setXTickLabels(const std::vector<std::string>& x_labels);
+  void setXTickLabels(const std::vector<std::string> &x_labels);
 
   /** @brief Set the text for tick labels on the y-axis
    *
@@ -234,7 +234,7 @@ class Plot : public juce::Component {
    *  @param y_labels text for the labels displayed as the y-axis
    *  @return void.
    */
-  void setYTickLabels(const std::vector<std::string>& y_labels);
+  void setYTickLabels(const std::vector<std::string> &y_labels);
 
   /** @brief Set the ticks values
    *
@@ -243,7 +243,7 @@ class Plot : public juce::Component {
    *  @param x_ticks x-postions of ticks
    *  @return void.
    */
-  void setXTicks(const std::vector<float>& x_ticks);
+  void setXTicks(const std::vector<float> &x_ticks);
 
   /** @brief Set the ticks values
    *
@@ -252,7 +252,7 @@ class Plot : public juce::Component {
    *  @param y_ticks y-postions of ticks
    *  @return void.
    */
-  void setYTicks(const std::vector<float>& y_ticks);
+  void setYTicks(const std::vector<float> &y_ticks);
 
   /** @brief Enables grid or tiny grid
    *
@@ -280,7 +280,7 @@ class Plot : public juce::Component {
    *  @param graph_descriptions description of the graphs
    *  @return void.
    */
-  void setLegend(const std::vector<std::string>& graph_descriptions);
+  void setLegend(const std::vector<std::string> &graph_descriptions);
 
   //==============================================================================
 
@@ -290,7 +290,7 @@ class Plot : public juce::Component {
    * @param previous_trace_point previous tracepoint value.
    * @param new_trace_point the new tracepoint value.
    */
-  std::function<void(const juce::Component* current_plot,
+  std::function<void(const juce::Component *current_plot,
                      const juce::Point<float> previous_trace_point,
                      const juce::Point<float> new_trace_point)>
       onTraceValueChange = nullptr;
@@ -343,98 +343,100 @@ class Plot : public juce::Component {
    *   The default implementation can be seen in \see cmp_lookandfeelmethods.h
    */
   class LookAndFeelMethods : public juce::LookAndFeel_V4 {
-   public:
+  public:
     virtual ~LookAndFeelMethods() = default;
 
     /** Draw background. */
-    virtual void drawBackground(juce::Graphics& g,
-                                const juce::Rectangle<int>& bound) = 0;
+    virtual void drawBackground(juce::Graphics &g,
+                                const juce::Rectangle<int> &bound) = 0;
 
     /** This method draws a frame around the graph area. */
-    virtual void drawFrame(juce::Graphics& g,
+    virtual void drawFrame(juce::Graphics &g,
                            const juce::Rectangle<int> bounds) = 0;
 
     /** This method draws a single graph line. */
-    virtual void drawGraphLine(
-        juce::Graphics& g, const GraphLineDataView graph_line_data,
-        const juce::Rectangle<int>& graph_line_bounds) = 0;
+    virtual void
+    drawGraphLine(juce::Graphics &g, const GraphLineDataView graph_line_data,
+                  const juce::Rectangle<int> &graph_line_bounds) = 0;
 
     /** This method draws the labels on the x and y axis. */
-    virtual void drawGridLabels(juce::Graphics& g,
-                                const LabelVector& x_axis_labels,
-                                const LabelVector& y_axis_labels) = 0;
+    virtual void drawGridLabels(juce::Graphics &g,
+                                const LabelVector &x_axis_labels,
+                                const LabelVector &y_axis_labels) = 0;
 
     /** This method draws either a vertical or horizontal gridline. */
-    virtual void drawGridLine(juce::Graphics& g, const GridLine& grid_line,
+    virtual void drawGridLine(juce::Graphics &g, const GridLine &grid_line,
                               const GridType grid_type) = 0;
 
     /** This method draws the legend. */
-    virtual void drawLegend(juce::Graphics& g,
+    virtual void drawLegend(juce::Graphics &g,
                             std::vector<LegendLabel> legend_info,
-                            const juce::Rectangle<int>& bound) = 0;
+                            const juce::Rectangle<int> &bound) = 0;
 
     /** This method draws the legend background. */
-    virtual void drawLegendBackground(
-        juce::Graphics& g, const juce::Rectangle<int>& legend_bound) = 0;
+    virtual void
+    drawLegendBackground(juce::Graphics &g,
+                         const juce::Rectangle<int> &legend_bound) = 0;
 
     /** Fill area between two graph lines. */
-    virtual void drawSpread(juce::Graphics& g, const GraphLine* first_graph,
-                            const GraphLine* second_graph,
-                            const juce::Colour& spread_colour) = 0;
+    virtual void drawSpread(juce::Graphics &g, const GraphLine *first_graph,
+                            const GraphLine *second_graph,
+                            const juce::Colour &spread_colour) = 0;
 
     /** Draw a single trace point. */
-    virtual void drawTraceLabel(juce::Graphics& g, const cmp::Label& x_label,
-                                const cmp::Label& y_label,
+    virtual void drawTraceLabel(juce::Graphics &g, const cmp::Label &x_label,
+                                const cmp::Label &y_label,
                                 const juce::Rectangle<int> bound) = 0;
 
     /** This method draws the trace label background. */
-    virtual void drawTraceLabelBackground(
-        juce::Graphics& g, const juce::Rectangle<int>& trace_label_bound) = 0;
+    virtual void
+    drawTraceLabelBackground(juce::Graphics &g,
+                             const juce::Rectangle<int> &trace_label_bound) = 0;
 
     /** Draw trace point. */
-    virtual void drawTracePoint(juce::Graphics& g,
-                                const juce::Rectangle<int>& bounds) = 0;
+    virtual void drawTracePoint(juce::Graphics &g,
+                                const juce::Rectangle<int> &bounds) = 0;
 
     /** This method draws the selection area (e.g. zoom area). */
-    virtual void drawSelectionArea(
-        juce::Graphics& g, juce::Point<int>& start_coordinates,
-        const juce::Point<int>& end_coordinates,
-        const juce::Rectangle<int>& graph_bounds) noexcept = 0;
+    virtual void
+    drawSelectionArea(juce::Graphics &g, juce::Point<int> &start_coordinates,
+                      const juce::Point<int> &end_coordinates,
+                      const juce::Rectangle<int> &graph_bounds) noexcept = 0;
 
     /** A method to find and get the colour from an id. */
-    virtual CONSTEXPR20 juce::Colour findAndGetColourFromId(
-        const int colour_id) const noexcept = 0;
+    virtual CONSTEXPR20 juce::Colour
+    findAndGetColourFromId(const int colour_id) const noexcept = 0;
 
     /** Returns the Font used for the Trace and Zoom buttons. */
     virtual CONSTEXPR20 juce::Font getButtonFont() const noexcept = 0;
 
     /** Returns the 'ColourIdsGraph' for a given index.*/
-    virtual CONSTEXPR20 int getColourFromGraphID(
-        const std::size_t graph_index) const = 0;
+    virtual CONSTEXPR20 int
+    getColourFromGraphID(const std::size_t graph_index) const = 0;
 
     /** Get the graph bounds, where the graphs and grids are to be drawn. A plot
      * component can be given to base the graph bounds on the grid anf axis
      * labels. */
     virtual CONSTEXPR20 juce::Rectangle<int> getGraphBounds(
         const juce::Rectangle<int> bounds,
-        const juce::Component* plot_comp = nullptr) const noexcept = 0;
+        const juce::Component *plot_comp = nullptr) const noexcept = 0;
 
     /** Returns the Font used when drawing the grid labels. */
     virtual CONSTEXPR20 juce::Font getGridLabelFont() const noexcept = 0;
 
     /** Get Maximum allowed characters for grid labels. */
-    virtual CONSTEXPR20 std::size_t getMaximumAllowedCharacterGridLabel()
-        const noexcept = 0;
+    virtual CONSTEXPR20 std::size_t
+    getMaximumAllowedCharacterGridLabel() const noexcept = 0;
 
     /** Get the legend position */
     virtual CONSTEXPR20 juce::Point<int> getLegendPosition(
-        const juce::Rectangle<int>& graph_bounds,
-        const juce::Rectangle<int>& legend_bounds) const noexcept = 0;
+        const juce::Rectangle<int> &graph_bounds,
+        const juce::Rectangle<int> &legend_bounds) const noexcept = 0;
 
     /** Get the legend bounds */
     virtual CONSTEXPR20 juce::Rectangle<int> getLegendBounds(
-        [[maybe_unused]] const juce::Rectangle<int>& bounds,
-        const std::vector<std::string>& label_texts) const noexcept = 0;
+        [[maybe_unused]] const juce::Rectangle<int> &bounds,
+        const std::vector<std::string> &label_texts) const noexcept = 0;
 
     /** Returns the Font used when drawing legends. */
     virtual juce::Font getLegendFont() const noexcept = 0;
@@ -449,27 +451,28 @@ class Plot : public juce::Component {
     virtual CONSTEXPR20 std::size_t getMarkerLength() const noexcept = 0;
 
     /** Get the bounds of the componenet (Local bounds). */
-    virtual CONSTEXPR20 juce::Rectangle<int> getPlotBounds(
-        juce::Rectangle<int> bounds) const noexcept = 0;
+    virtual CONSTEXPR20 juce::Rectangle<int>
+    getPlotBounds(juce::Rectangle<int> bounds) const noexcept = 0;
 
     /** Get the Font used when drawing trace labels. */
     virtual CONSTEXPR20 juce::Font getTraceFont() const noexcept = 0;
 
     /** Get position for a single trace point.*/
     virtual CONSTEXPR20 juce::Point<int> getTracePointPositionFrom(
-        const juce::Rectangle<int>& graph_bounds, const Lim<float> x_lim,
-        const Scaling x_scaling, const Lim<float> y_lim, const Scaling y_scaling,
+        const juce::Rectangle<int> &graph_bounds, const Lim<float> x_lim,
+        const Scaling x_scaling, const Lim<float> y_lim,
+        const Scaling y_scaling,
         const juce::Point<float> graph_values) const noexcept = 0;
 
     /** Get the local bounds used when drawing the trace label (the bounds
      * around the x & y labels).*/
     virtual CONSTEXPR20 juce::Rectangle<int> getTraceLabelLocalBounds(
-        const juce::Rectangle<int>& x_label_bounds,
-        const juce::Rectangle<int>& y_label_bounds) const noexcept = 0;
+        const juce::Rectangle<int> &x_label_bounds,
+        const juce::Rectangle<int> &y_label_bounds) const noexcept = 0;
 
     /** Get the local bounds used when drawing the trace point.*/
-    virtual CONSTEXPR20 juce::Rectangle<int> getTracePointLocalBounds()
-        const noexcept = 0;
+    virtual CONSTEXPR20 juce::Rectangle<int>
+    getTracePointLocalBounds() const noexcept = 0;
 
     /** Get x and Y trace label bounds */
     virtual std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
@@ -482,8 +485,8 @@ class Plot : public juce::Component {
         juce::Rectangle<int> graph_bounds) const noexcept = 0;
 
     /** Get distance from left of grid x-labels to right side of graph bound. */
-    virtual CONSTEXPR20 int getXGridLabelDistanceFromGraphBound()
-        const noexcept = 0;
+    virtual CONSTEXPR20 int
+    getXGridLabelDistanceFromGraphBound() const noexcept = 0;
 
     /** Returns the Font used when drawing the x-, y-axis and title labels.
      */
@@ -494,8 +497,8 @@ class Plot : public juce::Component {
         const int y_grid_label_width) const noexcept = 0;
 
     /** Get defualt user input map action. */
-    virtual std::map<UserInput, UserInputAction> getDefaultUserInputMapAction()
-        const noexcept = 0;
+    virtual std::map<UserInput, UserInputAction>
+    getDefaultUserInputMapAction() const noexcept = 0;
 
     /** Override the default user input map action. */
     virtual std::map<UserInput, UserInputAction> overrideUserInputMapAction(
@@ -503,8 +506,8 @@ class Plot : public juce::Component {
         const noexcept = 0;
 
     /** Get the user input action for a given user input. */
-    virtual UserInputAction getUserInputAction(
-        UserInput user_input) const noexcept = 0;
+    virtual UserInputAction
+    getUserInputAction(UserInput user_input) const noexcept = 0;
 
     /** Defines the default colours */
     virtual void setDefaultPlotColours() noexcept = 0;
@@ -514,50 +517,53 @@ class Plot : public juce::Component {
     virtual void overridePlotColours() noexcept = 0;
 
     /** Updates the x-ticks with auto generated ticks. */
-    virtual void updateVerticalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
-        const Scaling x_scaling, const GridType grid_type,
-        const std::vector<float>& previous_ticks,
-        std::vector<float>& x_ticks) noexcept = 0;
+    virtual void
+    updateVerticalGridLineTicksAuto(const juce::Rectangle<int> &bounds,
+                                    const Lim_f &x_lim, const Scaling x_scaling,
+                                    const GridType grid_type,
+                                    const std::vector<float> &previous_ticks,
+                                    std::vector<float> &x_ticks) noexcept = 0;
 
     /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
-        const juce::Rectangle<int>& bounds, const Lim_f& y_lim,
+        const juce::Rectangle<int> &bounds, const Lim_f &y_lim,
         const Scaling y_scaling, const GridType grid_type,
-        const std::vector<float>& previous_ticks,
-        std::vector<float>& y_ticks) noexcept = 0;
+        const std::vector<float> &previous_ticks,
+        std::vector<float> &y_ticks) noexcept = 0;
 
     /** Updates the x-coordinates of the pixel points used when drawing a graph
      *  line. */
     virtual void updateXPixelPoints(
-        const std::vector<std::size_t>& update_only_these_indices,
-        const Scaling x_scaling, const Lim<float> x_lim, const juce::Rectangle<int> &graph_bounds,
-        const std::vector<float>& x_data,
-        std::vector<std::size_t>& pixel_points_indices,
-        PixelPoints& pixel_points) noexcept = 0;
+        const std::vector<std::size_t> &update_only_these_indices,
+        const Scaling x_scaling, const Lim<float> x_lim,
+        const juce::Rectangle<int> &graph_bounds,
+        const std::vector<float> &x_data,
+        std::vector<std::size_t> &pixel_points_indices,
+        PixelPoints &pixel_points) noexcept = 0;
 
     /** Updates the y-coordinates of the pixel points used when drawing a graph
      * line. */
     virtual void updateYPixelPoints(
-        const std::vector<std::size_t>& update_only_these_indices,
-        const Scaling y_scaling, const Lim<float> y_lim, const juce::Rectangle<int> &graph_bounds,
-        const std::vector<float>& y_data,
-        const std::vector<std::size_t>& pixel_points_indices,
-        PixelPoints& pixel_points) noexcept = 0;
+        const std::vector<std::size_t> &update_only_these_indices,
+        const Scaling y_scaling, const Lim<float> y_lim,
+        const juce::Rectangle<int> &graph_bounds,
+        const std::vector<float> &y_data,
+        const std::vector<std::size_t> &pixel_points_indices,
+        PixelPoints &pixel_points) noexcept = 0;
 
     /** Updates both the vertical and horizontal grid labels. */
-    virtual void updateGridLabels(const juce::Rectangle<int>& graph_bounds,
-                                  const std::vector<GridLine>& grid_lines,
-                                  StringVector& x_label_ticks,
-                                  StringVector& y_label_ticks,
-                                  LabelVector& x_axis_labels,
-                                  LabelVector& y_axis_labels) = 0;
+    virtual void updateGridLabels(const juce::Rectangle<int> &graph_bounds,
+                                  const std::vector<GridLine> &grid_lines,
+                                  StringVector &x_label_ticks,
+                                  StringVector &y_label_ticks,
+                                  LabelVector &x_axis_labels,
+                                  LabelVector &y_axis_labels) = 0;
 
     /** Update the title, x and y axis labels. */
-    virtual void updateXYTitleLabels(const juce::Rectangle<int>& bounds,
-                                     const juce::Rectangle<int>& graph_bounds,
-                                     juce::Label& x_label, juce::Label& y_label,
-                                     juce::Label& title_label) = 0;
+    virtual void updateXYTitleLabels(const juce::Rectangle<int> &bounds,
+                                     const juce::Rectangle<int> &graph_bounds,
+                                     juce::Label &x_label, juce::Label &y_label,
+                                     juce::Label &title_label) = 0;
 
     /** Is x-axis labels above or below the graph area */
     virtual CONSTEXPR20 bool isXAxisLabelsBelowGraph() const noexcept = 0;
@@ -567,117 +573,110 @@ class Plot : public juce::Component {
   /** @internal */
   void resized() override;
   /** @internal */
-  void paint(juce::Graphics& g) override;
+  void paint(juce::Graphics &g) override;
   /** @internal */
   void parentHierarchyChanged() override;
   /** @internal */
   void lookAndFeelChanged() override;
   /** @internal */
-  void mouseDrag(const juce::MouseEvent& event) override;
+  void mouseDrag(const juce::MouseEvent &event) override;
   /** @internal mouse drag state. */
   MouseDragState m_mouse_drag_state = MouseDragState::none;
   /** @internal */
-  void mouseDown(const juce::MouseEvent& event) override;
+  void mouseDown(const juce::MouseEvent &event) override;
   /** @internal */
-  void mouseUp(const juce::MouseEvent& event) override;
+  void mouseUp(const juce::MouseEvent &event) override;
   /** @internal */
-  juce::Point<float> getMousePositionRelativeToGraphArea(
-      const juce::MouseEvent& event) const;
+  juce::Point<float>
+  getMousePositionRelativeToGraphArea(const juce::MouseEvent &event) const;
   /** @internal */
-  void modifierKeysChanged(const juce::ModifierKeys& modifiers) override;
+  void modifierKeysChanged(const juce::ModifierKeys &modifiers) override;
 
- private:
+private:
   /** @internal */
   template <bool is_point_data_point = false>
-  std::tuple<size_t, const GraphLine*> findNearestPoint(
-      juce::Point<float> point, const GraphLine* graphline = nullptr);
+  std::tuple<size_t, const GraphLine *>
+  findNearestPoint(juce::Point<float> point,
+                   const GraphLine *graphline = nullptr);
   /** @internal */
-  PlotLookAndFeel* getDefaultLookAndFeel();
+  PlotLookAndFeel *getDefaultLookAndFeel();
   /** @internal */
   template <GraphLineType t_graph_line_type>
-  void addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
+  void addGraphLineInternal(std::unique_ptr<GraphLine> &graph_line,
                             const size_t graph_line_index);
   /** @internal */
   void resizeChildrens();
   /** @internal */
-  void resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel = nullptr);
+  void resetLookAndFeelChildrens(juce::LookAndFeel *lookandfeel = nullptr);
   /** @internal */
   template <GraphLineType t_graph_line_type>
-  void updateGraphLineYData(const std::vector<std::vector<float>>& y_data,
-                            const GraphAttributeList& graph_attribute_list);
+  void updateGraphLineYData(const std::vector<std::vector<float>> &y_data,
+                            const GraphAttributeList &graph_attribute_list);
   /** @internal */
   template <GraphLineType t_graph_line_type>
-  void updateGraphLineXData(const std::vector<std::vector<float>>& x_data);
+  void updateGraphLineXData(const std::vector<std::vector<float>> &x_data);
   /** @internal */
   void setAutoXScale();
   /** @internal */
   void setAutoYScale();
   /** @internal */
-  void updateXLim(const Lim_f& new_x_lim);
+  void updateXLim(const Lim_f &new_x_lim);
   /** @internal */
-  void updateYLim(const Lim_f& new_y_lim);
+  void updateYLim(const Lim_f &new_y_lim);
   /** @internal */
-  void updateGridGraphLinesAndTrace();
+  void addSelectableTracePoints();
   /** @internal */
-  void updateTracePointsAndLegends();
-  /** @internal */
-  void addSelectableTracePointsForGraphData();
-  /** @internal */
-  void setTracePointInternal(const juce::Point<float>& trace_point_coordinate,
+  void setTracePointInternal(const juce::Point<float> &trace_point_coordinate,
                              bool is_point_data_point);
   /** @internal */
   template <GraphLineType t_graph_line_type>
-  void plotInternal(const std::vector<std::vector<float>>& y_data,
-                    const std::vector<std::vector<float>>& x_data,
-                    const GraphAttributeList& graph_attributes,
+  void plotInternal(const std::vector<std::vector<float>> &y_data,
+                    const std::vector<std::vector<float>> &x_data,
+                    const GraphAttributeList &graph_attributes,
                     const bool update_y_data_only = false);
   /** @internal */
-  std::vector<std::vector<float>> generateXdataRamp(
-      const std::vector<std::vector<float>>& y_data);
+  std::vector<std::vector<float>>
+  generateXdataRamp(const std::vector<std::vector<float>> &y_data);
   /** @internal */
-  void updateTracepointsForGraphData();
+  void syncDownsamplingModeWithMoveType();
   /** @internal */
   void setDownsamplingTypeInternal(const DownsamplingType downsampling_type);
-  /** @internal */
-  void updateGridAndTracepointsAndGraphLines();
-  /** @internal */
-  void updateGraphLines();
 
   /** User input related things  */
   /** @internal */
-  void mouseHandler(const juce::MouseEvent& event,
+  void mouseHandler(const juce::MouseEvent &event,
                     const UserInputAction user_input_action);
   /** @internal */
-  void addOrRemoveTracePoint(const juce::MouseEvent& event);
+  void addOrRemoveTracePoint(const juce::MouseEvent &event);
   /** @internal */
   void resetZoom();
   /** @internal */
-  void setStartPosSelectedRegion(const juce::Point<int>& start_position);
+  void setStartPosSelectedRegion(const juce::Point<int> &start_position);
   /** @internal */
-  void drawSelectedRegion(const juce::Point<int>& end_position);
+  void drawSelectedRegion(const juce::Point<int> &end_position);
   /** @internal */
   void zoomOnSelectedRegion();
   /** @internal */
-  void moveTracepoint(const juce::MouseEvent& event);
+  void moveTracepoint(const juce::MouseEvent &event);
   /** @internal */
-  void moveTracepointLabel(const juce::MouseEvent& event);
+  void moveTracepointLabel(const juce::MouseEvent &event);
   /** @internal */
-  void moveLegend(const juce::MouseEvent& event);
+  void moveLegend(const juce::MouseEvent &event);
   /** @internal */
   void selectedTracePointsWithinSelectedArea();
   /** @internal */
-  void selectTracePoint(const juce::MouseEvent& event);
+  void selectTracePoint(const juce::MouseEvent &event);
   /** @internal */
-  void deselectTracePoint(const juce::MouseEvent& event);
+  void deselectTracePoint(const juce::MouseEvent &event);
   /** @internal */
-  void moveSelectedTracePoints(const juce::MouseEvent& event);
+  void moveSelectedTracePoints(const juce::MouseEvent &event);
   /** @internal */
-  void panning(const juce::MouseEvent& event);
+  void panning(const juce::MouseEvent &event);
 
   juce::ComponentDragger m_comp_dragger;
   juce::Point<float> m_prev_mouse_position{0.f, 0.f};
   GraphLinesChangedCallback m_graph_lines_changed_callback = nullptr;
-  const juce::ModifierKeys* m_modifiers = nullptr;
+  const juce::ModifierKeys *m_modifiers = nullptr;
 
   /** Common plot parameters. */
   Observable<Scaling> m_x_scaling, m_y_scaling;
@@ -685,6 +684,7 @@ class Plot : public juce::Component {
   Observable<Lim<float>> m_x_lim, m_y_lim;
   cmp::Lim<float> m_x_lim_start, m_y_lim_start;
   Observable<DownsamplingType> m_downsampling_type;
+  Observable<bool> m_notify_components_on_update;
 
   /** Child components */
   GraphSpreadList m_graph_spread_list;
@@ -697,13 +697,13 @@ class Plot : public juce::Component {
   std::unique_ptr<Trace> m_trace;
 
   /** Look and feel */
-  PlotLookAndFeel* getPlotLookAndFeel();
+  PlotLookAndFeel *getPlotLookAndFeel();
   std::unique_ptr<PlotLookAndFeel> m_lookandfeel_default;
 
   /** Friend functions */
-  friend const AreLabelsSet areLabelsSet(const Plot* plot) noexcept;
-  friend const std::pair<int, int> getMaxGridLabelWidth(
-      const Plot* plot) noexcept;
+  friend const AreLabelsSet areLabelsSet(const Plot *plot) noexcept;
+  friend const std::pair<int, int>
+  getMaxGridLabelWidth(const Plot *plot) noexcept;
 
   /** Other variables */
   PixelPointMoveType m_pixel_point_move_type{PixelPointMoveType::none};
@@ -716,7 +716,7 @@ class Plot : public juce::Component {
  *  logarithmic and y-axis linearly.
  */
 class SemiLogX : public Plot {
- public:
+public:
   SemiLogX() : Plot(Scaling::logarithmic){};
 };
 
@@ -726,7 +726,7 @@ class SemiLogX : public Plot {
  *  logarithmic and y-axis linearly.
  */
 class SemiLogY : public Plot {
- public:
+public:
   SemiLogY() : Plot(Scaling::linear, Scaling::logarithmic){};
 };
 
@@ -736,8 +736,8 @@ class SemiLogY : public Plot {
  *  are scaled logarithmic.
  */
 class LogLog : public Plot {
- public:
+public:
   LogLog() : Plot(Scaling::logarithmic, Scaling::logarithmic){};
 };
 
-}  // namespace cmp
+} // namespace cmp

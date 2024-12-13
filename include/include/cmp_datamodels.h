@@ -28,6 +28,7 @@
 
 #include <functional>
 #include <optional>
+#include <map>
 
 #include "juce_gui_basics/juce_gui_basics.h"
 
@@ -229,6 +230,7 @@ enum class GridType : uint32_t {
 
 /** Enum to define which type of value to be observed. */
 enum class ObserverId {
+  Undefined,
   GraphBounds,
   XLim,
   YLim,
@@ -570,15 +572,60 @@ struct fast_vector {
 /*============================================================================*/
 
 template <typename T>
+class Observable;
+
+template <typename T>
 class Observer {
  public:
   virtual void observableValueUpdated(ObserverId id, const T& newValue) = 0;
+  
+  void detachFromObservable(ObserverId observableId) {
+    auto it = m_observables.find(observableId);
+    if (it != m_observables.end()) {
+      auto* observable = it->second.first;
+      auto observerId = it->second.second;
+      m_observables.erase(it);
+      if (observable) {
+        observable->removeObserver(observerId);
+      }
+    }
+  }
+
+  void detachFromAllObservables() {
+    auto observablesCopy = m_observables;
+    for (const auto& [observableId, _] : observablesCopy) {
+      detachFromObservable(observableId);
+    }
+  }
+
+  virtual ~Observer() {
+    detachFromAllObservables();
+  }
+
+ private:
+  friend class Observable<T>;
+  void setObservable(Observable<T>* observable, ObserverId observableId, size_t observerId) {
+    auto it = m_observables.find(observableId);
+    if (it != m_observables.end()) {
+      detachFromObservable(observableId);
+    }
+    m_observables[observableId] = std::make_pair(observable, observerId);
+  }
+  
+  std::map<ObserverId, std::pair<Observable<T>*, size_t>> m_observables;
 };
 
 template <typename T>
 class Observable {
  public:
-  Observable(ObserverId id, T value = T()) : id(id), value(value) {}
+  Observable(ObserverId id, T value = T()) : id(id), value(value), next_observer_id(0) {}
+
+  ~Observable() {
+    auto observersCopy = observers;
+    for (const auto& [observerId, _] : observersCopy) {
+      removeObserver(observerId);
+    }
+  }
 
   Observable& operator=(const T& newValue) {
     value = newValue;
@@ -588,11 +635,25 @@ class Observable {
 
   Observable& operator=(const Observable& other) = delete;
 
+  void notify() { notifyObservers(); }
+
   template <typename... ObserverType>
   void addObserver(ObserverType&... observer) {
     (addObserverInternal(observer), ...);
     notifyObservers();
   }
+
+  void removeObserver(size_t observerId) {
+    auto it = std::find_if(observers.begin(), observers.end(),
+      [observerId](const auto& pair) {
+        return pair.first == observerId;
+      });
+    
+    if (it != observers.end()) {
+      observers.erase(it);
+    }
+  }
+  
   operator const T&() const { return value; }
   ObserverId getId() const { return id; }
   const T& getValue() const { return value; }
@@ -601,18 +662,23 @@ class Observable {
  private:
   ObserverId id;
   T value;
-  std::vector<std::function<void(ObserverId, const T&)>> observers;
+  size_t next_observer_id;
+  std::vector<std::pair<size_t, std::function<void(ObserverId, const T&)>>> observers;
 
   template <typename ObserverType>
   void addObserverInternal(ObserverType& observer) {
-    observers.push_back([&observer](ObserverId id, const T& value) {
-      observer.observableValueUpdated(id, value);
-    });
+    size_t observerId = next_observer_id++;
+    Observer<T>* baseObserver = &observer;
+    baseObserver->setObservable(this, id, observerId);
+    observers.push_back(std::make_pair(observerId, 
+      [baseObserver](ObserverId id, const T& value) {
+        baseObserver->observableValueUpdated(id, value);
+      }));
   }
 
   void notifyObservers() {
     for (auto& observer : observers) {
-      observer(id, value);
+      observer.second(id, value);
     }
   }
 };

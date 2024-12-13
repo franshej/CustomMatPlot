@@ -39,7 +39,7 @@ void Grid::createLabels() {
 }
 
 void Grid::updateInternal() {
-  if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
+  if (getBounds().isEmpty()) {
     return;
   }
 
@@ -301,6 +301,7 @@ void Grid::lookAndFeelChanged() {
 
 void Grid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
+  updateInternal();
 }
 
 void Grid::update() { updateInternal(); }
@@ -333,20 +334,27 @@ void Grid::observableValueUpdated(ObserverId id, const Lim_f &new_value) {
   }
 }
 
-void Grid::resized() {}
+void Grid::observableValueUpdated(ObserverId id, const bool &new_value) {
+  updateInternal();
+}
+
+void Grid::resized() { updateInternal(); }
 
 void Grid::setGridType(const GridType grid_type) { m_grid_type = grid_type; }
 
 void Grid::setXTicks(const std::vector<float> &x_ticks) {
   m_custom_x_ticks = x_ticks;
+  updateInternal();
 }
 
 void Grid::setYLabels(const std::vector<std::string> &y_labels) {
   m_custom_y_labels = y_labels;
+  updateInternal();
 }
 
 void Grid::setYTicks(const std::vector<float> &y_ticks) {
   m_custom_y_ticks = y_ticks;
+  updateInternal();
 }
 
 void Grid::createAutoGridTicks(std::vector<float> &x_ticks,

@@ -174,8 +174,10 @@ typedef TraceLabelPoint<float> TraceLabelPoint_f;
  * The idea is to use this class to display the x, y value of a one more
  * points on one or more graphs.
  */
-class Trace : public Observer<Lim<float>>, Observer<Scaling>, Observer<juce::Rectangle<int>> {
- public:
+class Trace : public virtual Observer<Lim<float>>,
+              public virtual Observer<Scaling>,
+              public virtual Observer<juce::Rectangle<int>> {
+public:
   /** Destructor. Setting lookandfeel to nullptr. */
   ~Trace();
 
@@ -252,14 +254,14 @@ class Trace : public Observer<Lim<float>>, Observer<Scaling>, Observer<juce::Rec
    *
    * @return void.
    */
-  void updateTracePointsBounds();
+  void updateAllTracePoints();
 
-  /** @brief Update a single tracepoint bounds from graph attributes.
+  /** @brief Update a single tracepoint from graph attributes.
    *
    * @param trace_label_or_point either a tracepoint or tracelabel.
    * @return void.
    */
-  void updateSingleTracePointBoundsFrom(juce::Component* trace_label_or_point);
+  void updateSingleTracePoint(juce::Component* trace_label_or_point);
 
   /** @brief Add the tracepoints to a parent component
    *
@@ -359,7 +361,7 @@ class Trace : public Observer<Lim<float>>, Observer<Scaling>, Observer<juce::Rec
                           const juce::Point<float> new_data_point);
 
   /** @internal */
-  void addSingleTracePointAndLabelInternal(
+  void addSingleTracePointInternal(
       const GraphLine* graph_line, const size_t pixel_point_index,
       const TracePointVisibilityType trace_point_visibility);
 
@@ -368,8 +370,8 @@ class Trace : public Observer<Lim<float>>, Observer<Scaling>, Observer<juce::Rec
                                       const size_t pixel_point_index);
 
   /** @internal */
-  void updateSingleTraceLabelTextsAndBoundsInternal(
-      TraceLabelPoint_f* trace_point_label, bool force_corner_position = false);
+  void updateSingleTracePoint(TraceLabelPoint_f* tlp,
+                              bool force_corner_position = false);
 
   /** @internal */
   void updateTracePointsLookAndFeel();

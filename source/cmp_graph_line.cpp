@@ -40,6 +40,12 @@ const GraphAttribute& GraphLine::getGraphAttribute() const noexcept {
   return m_graph_attributes;
 }
 
+void GraphLine::setIndicesToUpdate(const std::vector<std::size_t> indices){
+  m_indices_to_update = indices;
+  updateXY();
+  m_indices_to_update.clear();
+}
+
 void GraphLine::setColour(const juce::Colour graph_colour) {
   m_graph_attributes.graph_colour = graph_colour;
 }
@@ -131,7 +137,12 @@ juce::Point<float> GraphLine::getDataPointFromDataPointIndex(
                             m_y_data[data_point_index]);
 };
 
-void GraphLine::resized(){};
+void GraphLine::observableValueUpdated(ObserverId id, const bool &new_value)
+{
+  updateXY();
+}
+
+void GraphLine::resized() {};
 
 void GraphLine::paint(juce::Graphics& g) {
   const GraphLineDataView graph_line_data(*this);
@@ -221,26 +232,17 @@ const std::vector<size_t>& GraphLine::getPixelPointIndices() const noexcept {
   return m_xy_indices;
 }
 
-void GraphLine::updateXIndicesAndPixelPoints(
-    const std::vector<size_t>& update_only_these_indices) {
+void GraphLine::updateX() {
   // x_lim must be set to calculate the xdata.
-  jassert(m_x_lim);
+  if(!m_x_lim || m_x_data.empty()) return;
 
-  // x_data empty.
-  jassert(!m_x_data.empty());
-
-  updateXIndicesAndPixelPointsIntern(update_only_these_indices);
+  updateXIndicesAndPixelPointsIntern(m_indices_to_update);
 }
 
-void GraphLine::updateYIndicesAndPixelPoints(
-    const std::vector<size_t>& update_only_these_indices) {
-  // x_lim must be set to calculate the xdata.
-  jassert(m_y_lim);
+void GraphLine::updateY() {
+  if (!m_y_lim || m_y_data.empty()) return;
 
-  // y_data empty.
-  jassert(!m_y_data.empty());
-
-  updateYIndicesAndPixelPointsIntern(update_only_these_indices);
+  updateYIndicesAndPixelPointsIntern(m_indices_to_update);
 }
 
 void GraphLine::updateXIndicesAndPixelPointsIntern(
@@ -305,12 +307,9 @@ void GraphLine::updateYIndicesAndPixelPointsIntern(
                           m_y_data, m_xy_indices, m_pixel_points);
 }
 
-void GraphLine::updateXYPixelPoints() {
-  auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-  lnf->updateXPixelPoints({}, m_x_scaling, m_x_lim, m_graph_bounds, m_x_data,
-                          m_xy_indices, m_pixel_points);
-  lnf->updateYPixelPoints({}, m_y_scaling, m_y_lim, m_graph_bounds, m_y_data,
-                          m_xy_indices, m_pixel_points);
+void GraphLine::updateXY() {
+  updateX();
+  updateY();
 }
 
 void GraphLine::setType(const GraphLineType graph_line_type) {
@@ -323,30 +322,52 @@ GraphLineType GraphLine::getType() const noexcept {
 
 void GraphLine::observableValueUpdated(ObserverId id, const Scaling &new_value)
 {
-  if (id == ObserverId::XScaling)
+  if (id == ObserverId::XScaling) {
     m_x_scaling = new_value;
-  else if (id == ObserverId::YScaling)
+    updateX();
+  }
+  else if (id == ObserverId::YScaling) {
     m_y_scaling = new_value;
+    updateY();
+  }
 }
 
 void GraphLine::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
 {
-  if (id == ObserverId::XLim)
+  if (id == ObserverId::XLim) {
     m_x_lim = new_value;
-  else if (id == ObserverId::YLim)
+    if (m_graph_line_type == GraphLineType::horizontal) {
+      m_x_data.resize(2);
+      m_x_data.front() = m_x_lim.min;
+      m_x_data.back() = m_x_lim.max;
+    }
+    updateXY();
+  }
+  else if (id == ObserverId::YLim) {
     m_y_lim = new_value;
+    if (m_graph_line_type == GraphLineType::vertical) {
+      m_y_data.resize(2);
+      m_y_data.front() = m_y_lim.min;
+      m_y_data.back() = m_y_lim.max;
+    }
+    updateY();
+  }
 }
 
 void GraphLine::observableValueUpdated(ObserverId id, const juce::Rectangle<int> &new_value)
 {
-  if (id == ObserverId::GraphBounds)
+  if (id == ObserverId::GraphBounds) {
     m_graph_bounds = new_value;
+    updateXY();
+  }
 }
 
 void GraphLine::observableValueUpdated(ObserverId id, const DownsamplingType &new_value)
 {
-  if (id == ObserverId::DownsamplingType)
+  if (id == ObserverId::DownsamplingType) {
     m_downsampling_type = new_value;
+    updateXY();
+  }
 }
 
 /************************************************************************************/
@@ -413,27 +434,6 @@ void GraphLineList::resize(size_t new_size_of_type){
 template void GraphLineList::resize<GraphLineType::normal>(size_t new_size_of_type);
 template void GraphLineList::resize<GraphLineType::vertical>(size_t new_size_of_type);
 template void GraphLineList::resize<GraphLineType::horizontal>(size_t new_size_of_type);
-
-template <GraphLineType t_graph_line_type, typename ValueType>
-void GraphLineList::setLimitsForVerticalOrHorizontalLines(const Lim<ValueType>& x_or_y_limit) {
-  static_assert(t_graph_line_type == GraphLineType::vertical || t_graph_line_type == GraphLineType::horizontal,
-                "GraphLineType must be either vertical or horizontal");
-
-  const auto min = static_cast<float>(x_or_y_limit.min);
-  const auto max = static_cast<float>(x_or_y_limit.max);
-
-  for (auto& graph_line : getGraphLinesOfType<t_graph_line_type>()) {
-    if constexpr (t_graph_line_type == GraphLineType::vertical)
-      graph_line->setYValues({min, max});
-    else if constexpr (t_graph_line_type == GraphLineType::horizontal)
-      graph_line->setXValues({min, max});
-  }
-}
-
-template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical, float>(const Lim<float>& x_or_y_limit);
-template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical, double>(const Lim<double>& x_or_y_limit);
-template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal, float>(const Lim<float>& x_or_y_limit);
-template void GraphLineList::setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal, double>(const Lim<double>& x_or_y_limit);
 
 template <GraphLineType t_graph_line_type>
 std::vector<GraphLine*> GraphLineList::getGraphLinesOfType(){

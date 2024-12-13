@@ -36,9 +36,10 @@ namespace cmp {
  *
  */
 class Grid : public juce::Component,
-             Observer<juce::Rectangle<int>>,
-             Observer<Scaling>,
-             Observer<Lim_f> {
+             public virtual Observer<juce::Rectangle<int>>,
+             public virtual Observer<Scaling>,
+             public virtual Observer<Lim_f>,
+             public virtual Observer<bool> {
  public:
 
   /** @brief Enables grid or tiny grid
@@ -134,6 +135,14 @@ class Grid : public juce::Component,
    * @param new_value The new value of the observer.
    */
   void observableValueUpdated(ObserverId id, const Lim_f& new_value) override;
+
+  /**
+   * @brief Observer callback function for update the grid.
+   *
+   * @param id The id of the observer.
+   * @param new_value The new value of the observer.
+   */
+  void observableValueUpdated(ObserverId id, const bool& new_value) override;
 
   //==============================================================================
   /** @internal */

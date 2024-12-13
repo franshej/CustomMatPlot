@@ -31,9 +31,10 @@ namespace cmp {
  * The idea is to use this component to draw the zoom area, selection area or
  * move a trace point.
  */
-class GraphArea : public juce::Component, Observer<Lim<float>>, Observer<Scaling>  {
- public:
-
+class GraphArea : public juce::Component,
+                  public virtual Observer<Lim<float>>,
+                  public virtual Observer<Scaling> {
+public:
   /** @brief Get the start postion.
    *
    *  Get the start postion.
@@ -74,7 +75,7 @@ class GraphArea : public juce::Component, Observer<Lim<float>>, Observer<Scaling
    *  @param start_position the start position of the zoom area.
    *  @return void.
    */
-  void setStartPosition(const juce::Point<int>& start_position) noexcept;
+  void setStartPosition(const juce::Point<int> &start_position) noexcept;
 
   /** @brief Set the end zoom area postion.
    *
@@ -83,7 +84,7 @@ class GraphArea : public juce::Component, Observer<Lim<float>>, Observer<Scaling
    *  @param end_position the end position of the zoom area.
    *  @return void.
    */
-  void setEndPosition(const juce::Point<int>& end_position) noexcept;
+  void setEndPosition(const juce::Point<int> &end_position) noexcept;
 
   /** @brief Get data bound of selected area.
    *
@@ -119,17 +120,17 @@ class GraphArea : public juce::Component, Observer<Lim<float>>, Observer<Scaling
    *  @param id the observer id.
    *  @param new_value the new value.
    */
-  void observableValueUpdated(ObserverId id, const Scaling& new_value) override;
+  void observableValueUpdated(ObserverId id, const Scaling &new_value) override;
 
   /** @internal */
   void resized() override;
   /** @internal */
-  void paint(juce::Graphics& g) override;
+  void paint(juce::Graphics &g) override;
   /** @internal */
   void lookAndFeelChanged() override;
 
- private:
-  juce::LookAndFeel* m_lookandfeel = nullptr;
+private:
+  juce::LookAndFeel *m_lookandfeel = nullptr;
 
   juce::Point<int> m_start_pos, m_end_pos;
   bool m_is_start_pos_set{false};
@@ -137,6 +138,6 @@ class GraphArea : public juce::Component, Observer<Lim<float>>, Observer<Scaling
   Lim<float> m_x_lim, m_y_lim;
   Scaling m_x_scaling, m_y_scaling;
 
-  const CommonPlotParameterView* m_common_plot_params;
+  const CommonPlotParameterView *m_common_plot_params;
 };
-}  // namespace cmp
+} // namespace cmp
