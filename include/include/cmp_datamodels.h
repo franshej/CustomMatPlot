@@ -229,7 +229,7 @@ enum class GridType : uint32_t {
 };
 
 /** Enum to define which type of value to be observed. */
-enum class ObserverId {
+enum class ObserverId : uint32_t {
   Undefined,
   GraphBounds,
   XLim,
