@@ -28,6 +28,7 @@
 
 #include <functional>
 #include <optional>
+#include <map>
 
 #include "juce_gui_basics/juce_gui_basics.h"
 
@@ -43,6 +44,10 @@ class Legend;
 class Trace;
 class GraphArea;
 class PlotLookAndFeel;
+template <typename T>
+class Observable;
+template <typename T>
+class Observer;
 
 struct LegendLabel;
 struct GraphAttribute;
@@ -223,11 +228,24 @@ enum class GridType : uint32_t {
   tiny_grid_translucent,
 };
 
+/** Enum to define which type of value to be observed. */
+enum class ObserverId : uint32_t {
+  Undefined,
+  GraphBounds,
+  XLim,
+  YLim,
+  XScaling,
+  YScaling,
+  DownsamplingType,
+};
+
 /*============================================================================*/
 
 /** @brief A template struct that defines min and max. */
 template <class ValueType>
 struct Lim {
+  constexpr Lim() : min{0}, max{0} {};
+
   constexpr Lim(ValueType new_min, ValueType new_max)
       : min{new_min}, max{new_max} {}
 
@@ -549,6 +567,124 @@ struct fast_vector {
   std::vector<T>& vec;     ///< Reference to the vector.
 };
 
+/*============================================================================*/
+/*========================      Classes      =================================*/
+/*============================================================================*/
+
+template <typename T>
+class Observable;
+
+template <typename T>
+class Observer {
+ public:
+  virtual void observableValueUpdated(ObserverId id, const T& newValue) = 0;
+  
+  void detachFromObservable(ObserverId observableId) {
+    auto it = m_observables.find(observableId);
+    if (it != m_observables.end()) {
+      auto* observable = it->second.first;
+      auto observerId = it->second.second;
+      m_observables.erase(it);
+      if (observable) {
+        observable->removeObserver(observerId);
+      }
+    }
+  }
+
+  void detachFromAllObservables() {
+    auto observablesCopy = m_observables;
+    for (const auto& [observableId, _] : observablesCopy) {
+      detachFromObservable(observableId);
+    }
+  }
+
+  virtual ~Observer() {
+    detachFromAllObservables();
+  }
+
+ private:
+  friend class Observable<T>;
+  void setObservable(Observable<T>* observable, ObserverId observableId, size_t observerId) {
+    auto it = m_observables.find(observableId);
+    if (it != m_observables.end()) {
+      detachFromObservable(observableId);
+    }
+    m_observables[observableId] = std::make_pair(observable, observerId);
+  }
+  
+  std::map<ObserverId, std::pair<Observable<T>*, size_t>> m_observables;
+};
+
+template <typename T>
+class Observable {
+ public:
+  Observable(ObserverId id, T value = T()) : id(id), value(value), next_observer_id(0) {}
+
+  ~Observable() {
+    auto observersCopy = observers;
+    for (const auto& [observerId, _] : observersCopy) {
+      removeObserver(observerId);
+    }
+  }
+
+  Observable& operator=(const T& newValue) {
+    value = newValue;
+    notifyObservers();
+    return *this;
+  }
+
+  Observable& operator=(const Observable& other) = delete;
+
+  void notify() { notifyObservers(); }
+
+  template <typename... ObserverType>
+  void addObserver(ObserverType&... observer) {
+    (addObserverInternal(observer), ...);
+    notifyObservers();
+  }
+
+  void removeObserver(size_t observerId) {
+    auto it = std::find_if(observers.begin(), observers.end(),
+      [observerId](const auto& pair) {
+        return pair.first == observerId;
+      });
+    
+    if (it != observers.end()) {
+      observers.erase(it);
+    }
+  }
+  
+  operator const T&() const { return value; }
+  ObserverId getId() const { return id; }
+  const T& getValue() const { return value; }
+  const T* operator->() const { return &value; }
+
+ private:
+  ObserverId id;
+  T value;
+  size_t next_observer_id;
+  std::vector<std::pair<size_t, std::function<void(ObserverId, const T&)>>> observers;
+
+  template <typename ObserverType>
+  void addObserverInternal(ObserverType& observer) {
+    size_t observerId = next_observer_id++;
+    Observer<T>* baseObserver = &observer;
+    baseObserver->setObservable(this, id, observerId);
+    observers.push_back(std::make_pair(observerId, 
+      [baseObserver](ObserverId id, const T& value) {
+        baseObserver->observableValueUpdated(id, value);
+      }));
+  }
+
+  void notifyObservers() {
+    for (auto& observer : observers) {
+      observer.second(id, value);
+    }
+  }
+};
+
+/*============================================================================*/
+/*========================     Functions     =================================*/
 /*============================================================================*/
 
 template <class ForwardIt, class ValueType>

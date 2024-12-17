@@ -162,13 +162,12 @@ constexpr float getYDataFromYPixelCoordinate(
 
 static juce::Point<float> getDataPointFromPixelCoordinate(
     const juce::Point<float> pos,
-    const CommonPlotParameterView common_plot_params) noexcept {
+    const juce::Rectangle<float>& graph_bounds, const Lim_f x_lim,
+    const Scaling x_scaling, const Lim_f y_lim, const Scaling y_scaling) noexcept {
   const auto x = getXDataFromXPixelCoordinate(
-      pos.getX(), common_plot_params.graph_bounds.toFloat(),
-      common_plot_params.x_lim, common_plot_params.x_scaling);
+      pos.getX(), graph_bounds, x_lim, x_scaling);
   const auto y = getYDataFromYPixelCoordinate(
-      pos.getY(), common_plot_params.graph_bounds.toFloat(),
-      common_plot_params.y_lim, common_plot_params.y_scaling);
+      pos.getY(), graph_bounds, y_lim, y_scaling);
 
   return juce::Point<float>(x, y);
 }
@@ -236,41 +235,39 @@ constexpr auto getYScaleAndOffset =
 };
 
 /*============================================================================*/
+/*========================= Utility functions ================================*/
+/*============================================================================*/
 
 template <typename ValueType>
 std::string valueToStringWithoutTrailingZeros(ValueType num) {
-    // Ensure that the type is either float or double
-    static_assert(std::is_same<float, ValueType>::value ||
-                  std::is_same<const float, ValueType>::value ||
-                  std::is_same<double, ValueType>::value ||
-                  std::is_same<const double, ValueType>::value,
-                  "Type must be either float or double");
+  // Ensure that the type is either float or double
+  static_assert(std::is_same<float, ValueType>::value ||
+                    std::is_same<const float, ValueType>::value ||
+                    std::is_same<double, ValueType>::value ||
+                    std::is_same<const double, ValueType>::value,
+                "Type must be either float or double");
 
-    std::ostringstream oss;
-    oss << num;
-    std::string strNum = oss.str();
+  std::ostringstream oss;
+  oss << num;
+  std::string strNum = oss.str();
 
-    size_t decimalPos = strNum.find('.');
-    
-    if (decimalPos == std::string::npos) {
-        return strNum;
-    }
-    
-    size_t endPos = strNum.length() - 1;
-    while (endPos > decimalPos && strNum[endPos] == '0') {
-        endPos--;
-    }
-    
-    if (strNum[endPos] == '.') {
-        endPos--;
-    }
-    
-    return strNum.substr(0, endPos + 1);
+  size_t decimalPos = strNum.find('.');
+
+  if (decimalPos == std::string::npos) {
+    return strNum;
+  }
+
+  size_t endPos = strNum.length() - 1;
+  while (endPos > decimalPos && strNum[endPos] == '0') {
+    endPos--;
+  }
+
+  if (strNum[endPos] == '.') {
+    endPos--;
+  }
+
+  return strNum.substr(0, endPos + 1);
 }
-
-/*============================================================================*/
-/*==========================From lnf.cpp======================================*/
-/*============================================================================*/
 
 static const std::string getNextCustomLabel(
     std::vector<std::string>::reverse_iterator& custom_labels_it,
@@ -420,57 +417,8 @@ static std::vector<float> getLogarithmicTicks(
 };
 
 /*============================================================================*/
-
-template <class T>
-class ParamBase {
- public:
-  operator T() const { return m_param; }
-
- protected:
-  bool m_is_set{false};
-  T m_param;
-};
-
-template <class T>
-class ExplicitBoolOperator : public ParamBase<T> {
- public:
-  constexpr explicit operator bool() const noexcept { return this->m_is_set; }
-};
-
-template <class T>
-class ParamVal
-    : public std::conditional_t<std::is_same_v<T, bool>, ParamBase<T>,
-                                ExplicitBoolOperator<T>> {
- public:
-  ParamVal(const T param) {
-    this->m_is_set = false;
-    this->m_param = param;
-  };
-  ParamVal(T& param) {
-    this->m_is_set = false;
-    this->m_param = param;
-  };
-  ParamVal() {
-    this->m_is_set = false;
-    this->m_param = T();
-  };
-  ~ParamVal() = default;
-
-  T& operator=(const T& rhs) {
-    if (&this->m_param == &rhs) return this->m_param;
-    this->m_param = rhs;
-    this->m_is_set = true;
-    return this->m_param;
-  }
-  ParamVal<T> operator=(const ParamVal<T>& rhs) {
-    if (this == &rhs) return *this;
-    if (rhs) {
-      this->m_param = rhs;
-      this->m_is_set = true;
-    }
-    return *this;
-  }
-};
+/*========================     Classes     ===================================*/
+/*============================================================================*/
 
 class TicksGenerator {
  private:
@@ -521,5 +469,4 @@ class TicksGenerator {
     return gridValues;
   }
 };
-
 }  // namespace cmp

@@ -126,24 +126,28 @@ void Plot::resetLookAndFeelChildrens(juce::LookAndFeel* lookandfeel) {
 
 Plot::~Plot() { setLookAndFeel(nullptr); }
 
-enum RadioButtonIds { TraceZoomButtons = 1001 };
-
 Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
-    : m_x_scaling(x_scaling),
-      m_y_scaling(y_scaling),
-      m_x_lim(Lim_f(0, 0)),
-      m_y_lim(Lim_f(0, 0)),
-      m_x_lim_start(Lim_f(0, 0)),
-      m_y_lim_start(Lim_f(0, 0)),
-      m_common_graph_params(m_graph_bounds, m_x_lim, m_y_lim, m_x_scaling,
-                            m_y_scaling, m_downsampling_type),
+    : m_x_scaling(ObserverId::XScaling, x_scaling),
+      m_y_scaling(ObserverId::YScaling, y_scaling),
+      m_x_lim(ObserverId::XLim),
+      m_y_lim(ObserverId::YLim),
+      m_graph_bounds(ObserverId::GraphBounds),
+      m_downsampling_type(ObserverId::DownsamplingType, DownsamplingType::xy_downsampling),
+      m_notify_components_on_update(ObserverId::Undefined),
       m_graph_lines(std::make_unique<GraphLineList>()),
       m_plot_label(std::make_unique<PlotLabel>()),
       m_frame(std::make_unique<Frame>()),
       m_legend(std::make_unique<Legend>()),
-      m_selected_area(std::make_unique<GraphArea>(m_common_graph_params)),
-      m_grid(std::make_unique<Grid>(m_common_graph_params)),
-      m_trace(std::make_unique<Trace>(m_common_graph_params)) {
+      m_selected_area(std::make_unique<GraphArea>()),
+      m_grid(std::make_unique<Grid>()),
+      m_trace(std::make_unique<Trace>()) {
+  m_graph_bounds.addObserver(*m_grid, *m_trace);
+  m_x_scaling.addObserver(*m_grid, *m_selected_area, *m_trace);
+  m_y_scaling.addObserver(*m_grid, *m_selected_area, *m_trace);
+  m_x_lim.addObserver(*m_grid, *m_selected_area, *m_trace);
+  m_y_lim.addObserver(*m_grid, *m_selected_area, *m_trace);
+  m_notify_components_on_update.addObserver(*m_grid);
+
   setLookAndFeel(getDefaultLookAndFeel());
 
   addAndMakeVisible(m_grid.get());
@@ -188,10 +192,9 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
   if (new_x_lim.min > new_x_lim.max) UNLIKELY
   throw std::invalid_argument("Min value must be lower than max value.");
 
-  UNLIKELY if ((abs(new_x_lim.max - new_x_lim.min) <
+  UNLIKELY if ((std::abs(new_x_lim.max - new_x_lim.min) <
                 std::numeric_limits<float>::epsilon())) {
-    m_x_lim.min = new_x_lim.min - 1;
-    m_x_lim.max = new_x_lim.max + 1;
+    m_x_lim = {new_x_lim.min - 1, new_x_lim.max + 1};
   }
 
   UNLIKELY if (m_x_scaling == Scaling::logarithmic &&
@@ -203,10 +206,6 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
 
   if (new_x_lim && new_x_lim != m_x_lim) {
     m_x_lim = new_x_lim;
-
-    if (m_y_lim && !m_x_autoscale) {
-      updateGridGraphLinesAndTrace();
-    }
   }
 }
 
@@ -214,10 +213,9 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
   if (new_y_lim.min > new_y_lim.max) UNLIKELY
   throw std::invalid_argument("Min value must be lower than max value.");
 
-  UNLIKELY if (abs(new_y_lim.max - new_y_lim.min) <
+  UNLIKELY if (std::abs(new_y_lim.max - new_y_lim.min) <
                std::numeric_limits<float>::epsilon()) {
-    m_y_lim.min = new_y_lim.min - 1;
-    m_y_lim.max = new_y_lim.max + 1;
+    m_y_lim = {new_y_lim.min - 1, new_y_lim.max + 1};
   }
 
   UNLIKELY if (m_y_scaling == Scaling::logarithmic &&
@@ -227,54 +225,8 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
         "value. 10log(0) = -inf");
   }
 
-  if (new_y_lim && m_y_lim != new_y_lim) {
+  if (new_y_lim && m_y_lim.getValue() != new_y_lim) {
     m_y_lim = new_y_lim;
-
-    if (m_x_lim && !m_y_autoscale) {
-      updateGridGraphLinesAndTrace();
-    }
-  }
-}
-
-void Plot::updateGraphLines() {
-  m_graph_lines->setLimitsForVerticalOrHorizontalLines<GraphLineType::vertical>(
-      m_y_lim);
-  m_graph_lines
-      ->setLimitsForVerticalOrHorizontalLines<GraphLineType::horizontal>(
-          m_x_lim);
-
-  for (const auto& graph_line : *m_graph_lines) {
-    graph_line->updateXIndicesAndPixelPoints();
-    graph_line->updateYIndicesAndPixelPoints();
-  }
-}
-
-void Plot::updateGridGraphLinesAndTrace() {
-  if (!m_graph_bounds.isEmpty()) {
-    m_grid->updateGrid();
-    m_trace->updateTracePointsBounds();
-    updateGraphLines();
-  }
-
-  addSelectableTracePointsForGraphData();
-}
-
-void Plot::updateGridAndTracepointsAndGraphLines() {
-  if (!m_graph_bounds.isEmpty()) {
-    m_grid->updateGrid(true);
-    m_trace->updateTracePointsBounds();
-
-    for (const auto& graph_line : *m_graph_lines) {
-      graph_line->updateXYPixelPoints();
-    }
-  }
-}
-
-void cmp::Plot::updateTracePointsAndLegends() {
-  m_trace->updateTracePointsBounds();
-
-  if (m_legend->isVisible()) {
-    m_legend->updateLegends(*m_graph_lines);
   }
 }
 
@@ -368,7 +320,6 @@ void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
                         const GraphAttributeList& graph_attributes,
                         const bool update_y_data_only) {
   if (update_y_data_only) jassert(!m_graph_lines->empty());
-  // Call cmp::Plot::plot first with x-data to set the x-data.
 
   updateGraphLineYData<t_graph_line_type>(y_data, graph_attributes);
 
@@ -388,7 +339,7 @@ void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
   }
 
 skip_update_x_data_label:
-  updateGridGraphLinesAndTrace();
+  m_notify_components_on_update.notify();
 }
 
 std::vector<std::vector<float>> Plot::generateXdataRamp(
@@ -411,17 +362,11 @@ void Plot::plot(const std::vector<std::vector<float>>& y_data,
                 const std::vector<std::vector<float>>& x_data,
                 const GraphAttributeList& graph_attributes) {
   plotInternal<GraphLineType::normal>(y_data, x_data, graph_attributes);
-
-  updateTracePointsAndLegends();
-
   repaint();
 }
 
 void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
   plotInternal<GraphLineType::normal>(y_data, {}, {}, true);
-
-  updateTracePointsAndLegends();
-
   repaint(m_graph_bounds);
 }
 
@@ -478,7 +423,6 @@ void cmp::Plot::setDownsamplingTypeInternal(
   } else {
     m_downsampling_type = downsampling_type;
   }
-  updateGridGraphLinesAndTrace();
 }
 
 template <class ValueType>
@@ -501,8 +445,6 @@ void Plot::setScaling(const Scaling x_scaling,
 
     m_x_scaling = x_scaling;
     m_y_scaling = y_scaling;
-
-    updateGridGraphLinesAndTrace();
   }
 }
 
@@ -514,26 +456,18 @@ void Plot::setXLabel(const std::string& x_label) {
 
 void Plot::setXTickLabels(const std::vector<std::string>& x_labels) {
   m_grid->setXLabels(x_labels);
-
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
 }
 
 void Plot::setYTickLabels(const std::vector<std::string>& y_labels) {
   m_grid->setYLabels(y_labels);
-
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
 }
 
 void Plot::setXTicks(const std::vector<float>& x_ticks) {
   m_grid->setXTicks(x_ticks);
-
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
 }
 
 void Plot::setYTicks(const std::vector<float>& y_ticks) {
   m_grid->setYTicks(y_ticks);
-
-  if (!m_graph_bounds.isEmpty()) m_grid->updateGrid();
 }
 
 void Plot::setYLabel(const std::string& y_label) {
@@ -561,7 +495,6 @@ void Plot::setTracePointInternal(
                           : findNearestPoint<false>(trace_point_coordinate);
 
   m_trace->addOrRemoveTracePoint(nearest_graph_line, data_point_index);
-  m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 }
 
@@ -576,14 +509,8 @@ void Plot::resizeChildrens() {
     const auto plot_bound = lnf->getPlotBounds(getBounds());
     const auto graph_bound = lnf->getGraphBounds(getBounds(), this);
 
-    if (!graph_bound.isEmpty() && m_graph_bounds != graph_bound) {
+    if (!graph_bound.isEmpty()) {
       m_graph_bounds = graph_bound;
-
-      if (m_grid) {
-        m_grid->setBounds(plot_bound);
-      }
-
-      if (m_plot_label) m_plot_label->setBounds(plot_bound);
 
       constexpr auto margin_for_1px_outside = 1;
       const juce::Rectangle<int> frame_bound = {
@@ -591,11 +518,13 @@ void Plot::resizeChildrens() {
           graph_bound.getWidth() + margin_for_1px_outside,
           graph_bound.getHeight() + margin_for_1px_outside};
 
-      if (m_frame) m_frame->setBounds(frame_bound);
-      if (m_selected_area) m_selected_area->setBounds(graph_bound);
+      m_grid->setBounds(plot_bound);
+      m_plot_label->setBounds(plot_bound);
+      m_frame->setBounds(frame_bound);
+      m_selected_area->setBounds(graph_bound);
 
       for (const auto& graph_line : *m_graph_lines) {
-        graph_line->setBounds(graph_bound);
+        if (graph_line) graph_line->setBounds(graph_bound);
       }
 
       for (const auto& spread : m_graph_spread_list) {
@@ -607,11 +536,8 @@ void Plot::resizeChildrens() {
         const auto legend_postion =
             lnf->getLegendPosition(graph_bound, legend_bounds);
         legend_bounds.setPosition(legend_postion);
-
         m_legend->setBounds(legend_bounds);
       }
-
-      updateGridGraphLinesAndTrace();
     }
   }
 }
@@ -622,7 +548,7 @@ void Plot::paint(juce::Graphics& g) {
   if (getPlotLookAndFeel()) {
     auto lnf = getPlotLookAndFeel();
 
-    lnf->drawBackground(g, m_common_graph_params.graph_bounds);
+    lnf->drawBackground(g, m_graph_bounds);
   }
 }
 
@@ -643,6 +569,7 @@ PlotLookAndFeel* Plot::getDefaultLookAndFeel() {
 void Plot::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<LookAndFeelMethods*>(&getLookAndFeel())) {
     resetLookAndFeelChildrens(lnf);
+    resizeChildrens();
   } else {
     resetLookAndFeelChildrens(nullptr);
   }
@@ -652,7 +579,16 @@ template <GraphLineType t_graph_line_type>
 void Plot::addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
                                 const size_t graph_line_index) {
   auto lnf = getPlotLookAndFeel();
-  graph_line = std::make_unique<GraphLine>(m_common_graph_params);
+  graph_line = std::make_unique<GraphLine>();
+
+  m_graph_bounds.addObserver(*graph_line);
+  m_downsampling_type.addObserver(*graph_line);
+  m_x_scaling.addObserver(*graph_line);
+  m_y_scaling.addObserver(*graph_line);
+  m_x_lim.addObserver(*graph_line);
+  m_y_lim.addObserver(*graph_line);
+  m_notify_components_on_update.addObserver(*graph_line);
+
   const auto colour_id = lnf->getColourFromGraphID(graph_line_index);
   const auto graph_colour = lnf->findAndGetColourFromId(colour_id);
 
@@ -746,7 +682,6 @@ void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
 
   m_trace->addOrRemoveTracePoint(nearest_graph_line, data_point_index,
                                  TracePointVisibilityType::visible);
-  m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 }
 
@@ -837,9 +772,10 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
 
   auto d_data_position =
-      getDataPointFromPixelCoordinate(mouse_pos, m_common_graph_params) -
-      getDataPointFromPixelCoordinate(m_prev_mouse_position,
-                                      m_common_graph_params);
+      getDataPointFromPixelCoordinate(mouse_pos, m_graph_bounds.getValue().toFloat(), m_x_lim,
+                                      m_x_scaling, m_y_lim, m_y_scaling) -
+      getDataPointFromPixelCoordinate(m_prev_mouse_position, m_graph_bounds.getValue().toFloat(),
+                                      m_x_lim, m_x_scaling, m_y_lim, m_y_scaling);
 
   switch (m_pixel_point_move_type) {
     case PixelPointMoveType::horizontal: {
@@ -876,11 +812,11 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   }
 
   for (auto& [graph_line, indices_to_update] : graph_line_data_point_map) {
-    graph_line->updateXIndicesAndPixelPoints(indices_to_update);
-    graph_line->updateYIndicesAndPixelPoints(indices_to_update);
+    graph_line->setIndicesToUpdate(indices_to_update);
+    graph_line->setIndicesToUpdate(indices_to_update);
   }
 
-  m_trace->updateTracePointsBounds();
+  m_trace->updateAllTracePoints();
   m_prev_mouse_position = mouse_pos;
 
   repaint();
@@ -894,7 +830,6 @@ void Plot::resetZoom() {
   is_panning_or_zoomed = false;
   updateXLim(m_x_lim_start);
   updateYLim(m_y_lim_start);
-  updateGridGraphLinesAndTrace();
   repaint();
 }
 
@@ -917,7 +852,6 @@ void Plot::zoomOnSelectedRegion() {
 
   updateXLim({data_bound.getX(), data_bound.getX() + data_bound.getWidth()});
   updateYLim({data_bound.getY(), data_bound.getY() + data_bound.getHeight()});
-  updateGridGraphLinesAndTrace();
 
   m_selected_area->reset();
   repaint();
@@ -929,16 +863,14 @@ void Plot::selectedTracePointsWithinSelectedArea() {
 
   for (auto& trace_point : m_trace->getTraceLabelPoints()) {
     auto trace_point_pos = trace_point.trace_point->getBounds().getPosition() -
-                           m_graph_bounds.getPosition() + margin;
+                           m_graph_bounds->getPosition() + margin;
 
     if (selected_area.contains(trace_point_pos)) {
       m_trace->selectTracePoint(trace_point.trace_point.get(), true);
     }
   }
 
-  m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
-
   m_selected_area->reset();
   repaint();
 }
@@ -947,7 +879,7 @@ void Plot::moveTracepoint(const juce::MouseEvent& event) {
   auto bounds = event.eventComponent->getBounds();
 
   const auto mouse_pos =
-      bounds.getPosition() - m_graph_bounds.getPosition() +
+      bounds.getPosition() - m_graph_bounds->getPosition() +
       event.getEventRelativeTo(event.eventComponent).getPosition();
 
   const auto* associated_graph_line =
@@ -969,7 +901,7 @@ void Plot::moveTracepointLabel(const juce::MouseEvent& event) {
 
   if (m_trace->setCornerPositionForLabelAssociatedWith(event.eventComponent,
                                                        mouse_pos)) {
-    m_trace->updateSingleTracePointBoundsFrom(event.eventComponent);
+    m_trace->updateSingleTracePoint(event.eventComponent);
   }
 }
 
@@ -1078,10 +1010,10 @@ void Plot::modifierKeysChanged(const juce::ModifierKeys& modifiers) {
 
 void Plot::setMovePointsType(const PixelPointMoveType move_points_type) {
   m_pixel_point_move_type = move_points_type;
-  updateTracepointsForGraphData();
+  syncDownsamplingModeWithMoveType();
 }
 
-void Plot::addSelectableTracePointsForGraphData() {
+void Plot::addSelectableTracePoints() {
   if (m_pixel_point_move_type == PixelPointMoveType::none) return;
   m_trace->clear();
 
@@ -1096,11 +1028,10 @@ void Plot::addSelectableTracePointsForGraphData() {
     }
   }
 
-  m_trace->updateTracePointsBounds();
   m_trace->addAndMakeVisibleTo(this);
 }
 
-void Plot::updateTracepointsForGraphData() {
+void Plot::syncDownsamplingModeWithMoveType() {
   switch (m_pixel_point_move_type) {
     case PixelPointMoveType::none:
       return;
@@ -1123,7 +1054,7 @@ juce::Point<float> Plot::getMousePositionRelativeToGraphArea(
     const auto component_pos = event.eventComponent->getBounds().getPosition();
 
     const auto mouse_pos =
-        (event.getPosition() + component_pos - m_graph_bounds.getPosition())
+        (event.getPosition() + component_pos - m_graph_bounds->getPosition())
             .toFloat();
 
     return mouse_pos;
@@ -1140,25 +1071,24 @@ void Plot::setGraphLineDataChangedCallback(
 void Plot::panning(const juce::MouseEvent& event) {
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
   const auto d_mouse_pos = mouse_pos - m_prev_mouse_position;
-  const auto new_x_lim_min_pixel = m_graph_bounds.getX() - d_mouse_pos.getX();
-  const auto new_x_lim_max_pixel = m_graph_bounds.getRight() - d_mouse_pos.getX();
-  const auto new_x_lim_data_min = getXDataFromXPixelCoordinate(new_x_lim_min_pixel, m_graph_bounds.toFloat(), m_x_lim, m_x_scaling);
-  const auto new_x_lim_data_max = getXDataFromXPixelCoordinate(new_x_lim_max_pixel, m_graph_bounds.toFloat(), m_x_lim, m_x_scaling);
+  const auto new_x_lim_min_pixel = m_graph_bounds->getX() - d_mouse_pos.getX();
+  const auto new_x_lim_max_pixel = m_graph_bounds->getRight() - d_mouse_pos.getX();
+  const auto new_x_lim_data_min = getXDataFromXPixelCoordinate(new_x_lim_min_pixel, m_graph_bounds->toFloat(), m_x_lim, m_x_scaling);
+  const auto new_x_lim_data_max = getXDataFromXPixelCoordinate(new_x_lim_max_pixel, m_graph_bounds->toFloat(), m_x_lim, m_x_scaling);
   const auto new_x_lim_data = Lim_f(new_x_lim_data_min, new_x_lim_data_max);
 
-  const auto new_y_lim_min_pos = m_graph_bounds.getBottom() - d_mouse_pos.getY();
-  const auto new_y_lim_max_pos = m_graph_bounds.getY() - d_mouse_pos.getY();
-  const auto new_y_lim_data_min = getYDataFromYPixelCoordinate(new_y_lim_min_pos, m_graph_bounds.toFloat(), m_y_lim, m_y_scaling);
-  const auto new_y_lim_data_max = getYDataFromYPixelCoordinate(new_y_lim_max_pos, m_graph_bounds.toFloat(), m_y_lim, m_y_scaling);
+  const auto new_y_lim_min_pos = m_graph_bounds->getBottom() - d_mouse_pos.getY();
+  const auto new_y_lim_max_pos = m_graph_bounds->getY() - d_mouse_pos.getY();
+  const auto new_y_lim_data_min = getYDataFromYPixelCoordinate(new_y_lim_min_pos, m_graph_bounds->toFloat(), m_y_lim, m_y_scaling);
+  const auto new_y_lim_data_max = getYDataFromYPixelCoordinate(new_y_lim_max_pos, m_graph_bounds->toFloat(), m_y_lim, m_y_scaling);
   const auto new_y_lim_data = Lim_f(new_y_lim_data_min, new_y_lim_data_max);
  
   m_prev_mouse_position = mouse_pos;
   is_panning_or_zoomed = true;
 
-  this->updateXLim(new_x_lim_data);
-  this->updateYLim(new_y_lim_data);
+  updateXLim(new_x_lim_data);
+  updateYLim(new_y_lim_data);
 
-  updateGridAndTracepointsAndGraphLines();
   repaint();
 }
 

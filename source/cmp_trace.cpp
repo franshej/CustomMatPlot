@@ -61,13 +61,13 @@ bool TracePoint<ValueType>::setDataPoint(const size_t data_point_index,
 
 template <class ValueType>
 void TraceLabel<ValueType>::updateTraceLabel() {
-  if (m_graph_value && m_common_plot_params && m_lookandfeel) {
+  if (m_data_point && m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
     m_x_label.first =
-        "X: " + valueToStringWithoutTrailingZeros(m_graph_value->getX());
+        "X: " + valueToStringWithoutTrailingZeros(m_data_point->getX());
     m_y_label.first =
-        "Y: " + valueToStringWithoutTrailingZeros(m_graph_value->getY());
+        "Y: " + valueToStringWithoutTrailingZeros(m_data_point->getY());
 
     const auto [x_label_bounds, y_label_bounds] =
         lnf->getTraceXYLabelBounds(m_x_label.first, m_y_label.first);
@@ -79,10 +79,8 @@ void TraceLabel<ValueType>::updateTraceLabel() {
 
 template <class ValueType>
 void TraceLabel<ValueType>::setGraphLabelFrom(
-    const juce::Point<ValueType>& graph_value,
-    const CommonPlotParameterView& common_plot_params) {
-  m_common_plot_params = &common_plot_params;
-  m_graph_value = &graph_value;
+    const juce::Point<ValueType>& graph_value) {
+  m_data_point = &graph_value;
   updateTraceLabel();
 }
 
@@ -106,9 +104,6 @@ void TraceLabel<ValueType>::lookAndFeelChanged() {
     m_lookandfeel = nullptr;
   }
 }
-
-Trace::Trace(CommonPlotParameterView common_plot_params)
-    : m_common_plot_params(common_plot_params){};
 
 Trace::~Trace() {
   m_lookandfeel = nullptr;
@@ -138,21 +133,20 @@ void Trace::addOrRemoveTracePoint(const GraphLine* graph_line,
                                   const size_t data_point_index,
                                   const TracePointVisibilityType visibility) {
   if (!doesTracePointExist(graph_line, data_point_index)) {
-    addSingleTracePointAndLabelInternal(graph_line, data_point_index,
+    addSingleTracePointInternal(graph_line, data_point_index,
                                         visibility);
   } else {
     removeSingleTracePointAndLabel(graph_line, data_point_index);
   }
 }
 
-void Trace::updateTracePointsBounds() {
+void Trace::updateAllTracePoints() {
   for (auto& tlp : m_trace_labelpoints) {
-    updateSingleTraceLabelTextsAndBoundsInternal(&tlp);
+    updateSingleTracePoint(&tlp);
   }
 }
 
-void Trace::updateSingleTracePointBoundsFrom(
-    juce::Component* trace_label_or_point) {
+void Trace::updateSingleTracePoint(juce::Component* trace_label_or_point) {
   const auto tlp_it = findTraceLabelPointIteratorFrom(trace_label_or_point);
 
   if (tlp_it == m_trace_labelpoints.end()) {
@@ -162,7 +156,7 @@ void Trace::updateSingleTracePointBoundsFrom(
   auto it = m_trace_labelpoints.erase(
       tlp_it, tlp_it);  // remove const for ::const_iterator
 
-  updateSingleTraceLabelTextsAndBoundsInternal(&(*it), true);
+  updateSingleTracePoint(&(*it), true);
 }
 
 void Trace::addAndMakeVisibleTo(juce::Component* parent_comp) {
@@ -189,7 +183,7 @@ bool Trace::setDataPointFor(juce::Component* trace_point,
 
   if (it != m_trace_labelpoints.end() &&
       it->trace_point->setDataPoint(data_point_index, graph_line)) {
-    updateSingleTraceLabelTextsAndBoundsInternal(&(*it));
+    updateSingleTracePoint(&(*it));
 
     return true;
   }
@@ -235,7 +229,7 @@ void Trace::tracePointCbHelper(const juce::Component* trace_point,
   }
 }
 
-void Trace::addSingleTracePointAndLabelInternal(
+void Trace::addSingleTracePointInternal(
     const GraphLine* graph_line, const size_t data_point_index,
     const TracePointVisibilityType trace_point_visibility) {
   auto trace_label = std::make_unique<TraceLabel_f>();
@@ -253,6 +247,8 @@ void Trace::addSingleTracePointAndLabelInternal(
 
   m_trace_labelpoints.push_back(
       {move(trace_label), move(trace_point), trace_point_visibility});
+
+  updateSingleTracePoint(&m_trace_labelpoints.back());
 }
 
 bool Trace::doesTracePointExist(const GraphLine* graph_line,
@@ -269,14 +265,44 @@ void Trace::addTracePoint(const GraphLine* graph_line,
                           const size_t data_point_index,
                           const TracePointVisibilityType visibility_type) {
   if (!doesTracePointExist(graph_line, data_point_index)) {
-    addSingleTracePointAndLabelInternal(graph_line, data_point_index,
+    addSingleTracePointInternal(graph_line, data_point_index,
                                         visibility_type);
   }
 }
 
 void Trace::selectTracePoint(const juce::Component* component,
                              const bool selected) {
-  findTraceLabelPointIteratorFrom(component)->setSelection(selected);
+  auto it = findTraceLabelPointIteratorFrom(component);
+  it->setSelection(selected);
+  updateSingleTracePoint(&(*it));
+}
+
+void Trace::observableValueUpdated(ObserverId id, const Lim<float>& new_value) {
+  if (id == ObserverId::XLim) {
+    m_x_lim = new_value;
+    updateAllTracePoints();
+  } else if (id == ObserverId::YLim) {
+    m_y_lim = new_value;
+    updateAllTracePoints();
+  }
+}
+
+void Trace::observableValueUpdated(ObserverId id, const Scaling& new_value) {
+  if (id == ObserverId::XScaling) {
+    m_x_scaling = new_value;
+    updateAllTracePoints();
+  } else if (id == ObserverId::YScaling) {
+    m_y_scaling = new_value;
+    updateAllTracePoints();
+  }
+}
+
+void Trace::observableValueUpdated(ObserverId id,
+                                    const juce::Rectangle<int>& new_value) {
+  if (id == ObserverId::GraphBounds) {
+    m_graph_bounds = new_value;
+    updateAllTracePoints();
+  }
 }
 
 const TracePoint<float>* Trace::getTracePointFrom(
@@ -296,58 +322,59 @@ void Trace::removeSingleTracePointAndLabel(const GraphLine* graph_line,
         return tlp.trace_point->associated_graph_line == graph_line &&
                tlp.trace_point->data_point_index == data_point_index;
       }));
+
+  updateAllTracePoints();
 }
 
-// TODO : remove this function so it's updated when lookandfeel is changed
-void Trace::updateSingleTraceLabelTextsAndBoundsInternal(
-    TraceLabelPoint_f* tlp, bool force_corner_position) {
+void Trace::updateSingleTracePoint(TraceLabelPoint_f* tlp,
+                                   bool force_corner_position) {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
 
     const auto data_value = tlp->trace_point->getDataPoint();
-    tlp->trace_label->setGraphLabelFrom(data_value, m_common_plot_params);
+    tlp->trace_label->setGraphLabelFrom(data_value);
 
-    const auto x_bound = tlp->trace_label->m_x_label.second;
-    const auto y_bound = tlp->trace_label->m_y_label.second;
+    const auto x_label_bound = tlp->trace_label->m_x_label.second;
+    const auto y_label_bound = tlp->trace_label->m_y_label.second;
 
     const auto trace_position =
-        lnf->getTracePointPositionFrom(m_common_plot_params, data_value) +
-        m_common_plot_params.graph_bounds.getPosition();
+        lnf->getTracePointPositionFrom(m_graph_bounds, m_x_lim, m_x_scaling,
+                                        m_y_lim, m_y_scaling, data_value) +
+        m_graph_bounds.getPosition();
 
-    const auto local_trace_bounds =
-        lnf->getTraceLabelLocalBounds(x_bound, y_bound);
-    auto trace_bounds = local_trace_bounds;
+    auto trace_label_bounds =
+        lnf->getTraceLabelLocalBounds(x_label_bound, y_label_bound);
 
     auto trace_label_corner_pos =
         force_corner_position
             ? tlp->trace_label->trace_label_corner_pos
-            : getCornerPosition(m_common_plot_params.graph_bounds.getCentre(),
+            : getCornerPosition(m_graph_bounds.getCentre(),
                                 trace_position);
 
     switch (trace_label_corner_pos) {
       case TraceLabelCornerPosition::top_left:
-        trace_bounds.setPosition(trace_position);
+        trace_label_bounds.setPosition(trace_position);
         break;
       case TraceLabelCornerPosition::top_right:
-        trace_bounds.setPosition(
-            trace_position.getX() - trace_bounds.getWidth(),
+        trace_label_bounds.setPosition(
+            trace_position.getX() - trace_label_bounds.getWidth(),
             trace_position.getY());
         break;
       case TraceLabelCornerPosition::bottom_left:
-        trace_bounds.setPosition(
+        trace_label_bounds.setPosition(
             trace_position.getX(),
-            trace_position.getY() - trace_bounds.getHeight());
+            trace_position.getY() - trace_label_bounds.getHeight());
         break;
       case TraceLabelCornerPosition::bottom_right:
-        trace_bounds.setPosition(
-            trace_position.getX() - trace_bounds.getWidth(),
-            trace_position.getY() - trace_bounds.getHeight());
+        trace_label_bounds.setPosition(
+            trace_position.getX() - trace_label_bounds.getWidth(),
+            trace_position.getY() - trace_label_bounds.getHeight());
         break;
       default:
         break;
     }
 
-    tlp->trace_label->setBounds(trace_bounds);
+    tlp->trace_label->setBounds(trace_label_bounds);
 
     auto trace_point_bounds = lnf->getTracePointLocalBounds();
     trace_point_bounds.setCentre(trace_position);

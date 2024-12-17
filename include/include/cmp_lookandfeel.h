@@ -83,7 +83,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   juce::Font getTraceFont() const noexcept override;
 
   juce::Point<int> getTracePointPositionFrom(
-      const CommonPlotParameterView common_plot_params,
+      const juce::Rectangle<int>& graph_bounds, const Lim<float> x_lim,
+      const Scaling x_scaling, const Lim<float> y_lim, const Scaling y_scaling,
       const juce::Point<float> graph_values) const noexcept override;
 
   int getXGridLabelDistanceFromGraphBound() const noexcept override;
@@ -101,9 +102,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   UserInputAction getUserInputAction(
       UserInput user_input) const noexcept override;
 
-  void drawGraphLine(juce::Graphics &g,
-                     const GraphLineDataView graph_line_data,
-                     const juce::Rectangle<int>& graph_line_bounds) override;
+  void drawGraphLine(juce::Graphics &g, const GraphLineDataView graph_line_data,
+                     const juce::Rectangle<int> &graph_line_bounds) override;
 
   void drawGridLabels(juce::Graphics &g, const LabelVector &x_axis_labels,
                       const LabelVector &y_axis_labels) override;
@@ -141,35 +141,35 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
 
   void updateXPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
-      const CommonPlotParameterView &common_plot_parameter_view,
+      const Scaling x_scaling, const Lim<float> x_lim, const juce::Rectangle<int> &graph_bounds,
       const std::vector<float> &x_data,
       std::vector<std::size_t> &pixel_points_indices,
       PixelPoints &pixel_points) noexcept override;
 
   void updateYPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
-      const CommonPlotParameterView &common_plot_parameter_view,
+      const Scaling y_scaling, const Lim<float> y_lim, const juce::Rectangle<int> &graph_bounds,
       const std::vector<float> &y_data,
       const std::vector<std::size_t> &pixel_points_indices,
       PixelPoints &pixel_points) noexcept override;
 
   void updateVerticalGridLineTicksAuto(
-      const juce::Rectangle<int> &bounds,
-      const CommonPlotParameterView &common_plot_parameter_view,
-      const GridType grid_type, const std::vector<float> &previous_ticks,
+      const juce::Rectangle<int> &bounds, const Lim_f &x_lim,
+      const Scaling x_scaling, const GridType grid_type,
+      const std::vector<float> &previous_ticks,
       std::vector<float> &x_ticks) noexcept override;
 
   void updateHorizontalGridLineTicksAuto(
-      const juce::Rectangle<int> &bounds,
-      const CommonPlotParameterView &common_plot_parameter_view,
-      const GridType grid_type, const std::vector<float> &previous_ticks,
+      const juce::Rectangle<int> &bounds, const Lim_f &y_lim,
+      const Scaling y_scaling, const GridType grid_type,
+      const std::vector<float> &previous_ticks,
       std::vector<float> &y_ticks) noexcept override;
 
   juce::Font getGridLabelFont() const noexcept override;
 
   juce::Font getXYTitleFont() const noexcept override;
 
-  void updateGridLabels(const CommonPlotParameterView common_plot_params,
+  void updateGridLabels(const juce::Rectangle<int> &graph_bounds,
                         const std::vector<GridLine> &grid_lines,
                         StringVector &x_custom_label_ticks,
                         StringVector &y_custom_label_ticks,

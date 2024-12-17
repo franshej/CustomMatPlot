@@ -10,6 +10,7 @@
 #include <stdexcept>
 #include <tuple>
 
+#include "cmp_datamodels.h"
 #include "cmp_graph_line.h"
 #include "cmp_plot.h"
 #include "cmp_utils.h"
@@ -18,7 +19,7 @@ namespace cmp {
 
 /*============================================================================*/
 
-static juce::Rectangle<float> getMarginGridBound(
+static juce::Rectangle<float> getMarginGridBounds(
     const juce::Rectangle<float> &bound) noexcept {
   constexpr auto safe_marging_offset_px = 1.0f;
   const auto x = bound.getX();
@@ -32,18 +33,18 @@ static juce::Rectangle<float> getMarginGridBound(
 void Grid::createLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->updateGridLabels(*m_common_plot_params, m_grid_lines,
-                          m_custom_x_labels, m_custom_y_labels, m_x_axis_labels,
-                          m_y_axis_labels);
+    lnf->updateGridLabels(m_graph_bounds, m_grid_lines, m_custom_x_labels,
+                          m_custom_y_labels, m_x_axis_labels, m_y_axis_labels);
   }
 }
 
-void Grid::updateGridInternal(const bool use_cached_grids) {
-  if (getBounds().getWidth() <= 0 && getBounds().getHeight() <= 0) {
-    // width and height must be larger than zero.
-    jassertfalse;
+void Grid::updateInternal() {
+  if (getBounds().isEmpty()) {
     return;
   }
+
+  // TODO: set use_cached_grids to false when the grid is resized.
+  const bool use_cached_grids = false;
 
   if (!use_cached_grids) {
     m_x_prev_ticks.clear();
@@ -115,21 +116,18 @@ void Grid::addGridLines(const std::vector<float> &ticks,
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
-    const auto graph_bounds = m_common_plot_params->graph_bounds.toFloat();
+    const auto graph_bounds = m_graph_bounds.toFloat();
 
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
-        return getXScaleAndOffset(graph_bounds.getWidth(),
-                                  m_common_plot_params->x_lim,
-                                  m_common_plot_params->x_scaling);
+        return getXScaleAndOffset(graph_bounds.getWidth(), m_x_lim,
+                                  m_x_scaling);
       }
-      return getYScaleAndOffset(graph_bounds.getHeight(),
-                                m_common_plot_params->y_lim,
-                                m_common_plot_params->y_scaling);
+      return getYScaleAndOffset(graph_bounds.getHeight(), m_y_lim, m_y_scaling);
     };
 
     const auto [scale, offset] = getScaleOffset();
-    const auto margin_grid_bound = getMarginGridBound(graph_bounds);
+    const auto margin_grid_bounds = getMarginGridBounds(graph_bounds);
 
     switch (direction) {
       case GridLine::Direction::vertical:
@@ -138,12 +136,12 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
           grid_line.position = {
               graph_bounds.getX() +
-                  (m_common_plot_params->x_scaling == Scaling::linear
+                  (m_x_scaling == Scaling::linear
                        ? getXPixelValueLinear(t, scale, offset)
                        : getXPixelValueLogarithmic(t, scale, offset)),
               graph_bounds.getY()};
 
-          if (!margin_grid_bound.contains(grid_line.position)) {
+          if (!margin_grid_bounds.contains(grid_line.position)) {
             continue;
           }
 
@@ -162,11 +160,11 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           grid_line.position = {
               graph_bounds.getX(),
               std::ceil(graph_bounds.getY() +
-                        (m_common_plot_params->y_scaling == Scaling::linear
+                        (m_y_scaling == Scaling::linear
                              ? getYPixelValueLinear(t, scale, offset)
                              : getYPixelValueLogarithmic(t, scale, offset)))};
 
-          if (!margin_grid_bound.contains(grid_line.position)) {
+          if (!margin_grid_bounds.contains(grid_line.position)) {
             continue;
           }
 
@@ -209,8 +207,7 @@ void Grid::addTranslucentGridLines() {
   for (auto grid_line = m_grid_lines.begin(); grid_line != m_grid_lines.end();
        ++grid_line) {
     auto addGridWithinBound = [&](const GridLine &grid_line) {
-      const auto margin_grid_bound =
-          getMarginGridBound(m_common_plot_params->graph_bounds.toFloat());
+      const auto margin_grid_bound = m_graph_bounds.toFloat();
       if (margin_grid_bound.contains(grid_line.position)) {
         translucent_gridlines.emplace_back(grid_line);
       }
@@ -295,7 +292,7 @@ void Grid::lookAndFeelChanged() {
   if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
     if (getBounds().getWidth() > 0 && getBounds().getHeight() > 0) {
-      updateGridInternal(false);
+      updateInternal();
     }
   } else {
     m_lookandfeel = nullptr;
@@ -304,26 +301,60 @@ void Grid::lookAndFeelChanged() {
 
 void Grid::setXLabels(const std::vector<std::string> &x_labels) {
   m_custom_x_labels = x_labels;
+  updateInternal();
 }
 
-void Grid::updateGrid(const bool use_cached_grids) {
-  updateGridInternal(use_cached_grids);
+void Grid::update() { updateInternal(); }
+
+void Grid::observableValueUpdated(ObserverId id,
+                                  const juce::Rectangle<int> &new_value) {
+  if (id == ObserverId::GraphBounds && m_graph_bounds != new_value) {
+    m_graph_bounds = new_value;
+    updateInternal();
+  }
 }
 
-void Grid::resized() {}
+void Grid::observableValueUpdated(ObserverId id, const Scaling &new_value) {
+  if (id == ObserverId::XScaling) {
+    m_x_scaling = new_value;
+    updateInternal();
+  } else if (id == ObserverId::YScaling) {
+    m_y_scaling = new_value;
+    updateInternal();
+  }
+}
+
+void Grid::observableValueUpdated(ObserverId id, const Lim_f &new_value) {
+  if (id == ObserverId::XLim) {
+    m_x_lim = new_value;
+    updateInternal();
+  } else if (id == ObserverId::YLim) {
+    m_y_lim = new_value;
+    updateInternal();
+  }
+}
+
+void Grid::observableValueUpdated(ObserverId id, const bool &new_value) {
+  updateInternal();
+}
+
+void Grid::resized() { updateInternal(); }
 
 void Grid::setGridType(const GridType grid_type) { m_grid_type = grid_type; }
 
 void Grid::setXTicks(const std::vector<float> &x_ticks) {
   m_custom_x_ticks = x_ticks;
+  updateInternal();
 }
 
 void Grid::setYLabels(const std::vector<std::string> &y_labels) {
   m_custom_y_labels = y_labels;
+  updateInternal();
 }
 
 void Grid::setYTicks(const std::vector<float> &y_ticks) {
   m_custom_y_ticks = y_ticks;
+  updateInternal();
 }
 
 void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
@@ -331,10 +362,10 @@ void Grid::createAutoGridTicks(std::vector<float> &x_ticks,
   if (m_lookandfeel) {
     if (auto *lnf =
             static_cast<cmp::Plot::LookAndFeelMethods *>(m_lookandfeel)) {
-      lnf->updateVerticalGridLineTicksAuto(getBounds(), *m_common_plot_params,
+      lnf->updateVerticalGridLineTicksAuto(getBounds(), m_x_lim, m_x_scaling,
                                            m_grid_type, m_x_prev_ticks,
                                            x_ticks);
-      lnf->updateHorizontalGridLineTicksAuto(getBounds(), *m_common_plot_params,
+      lnf->updateHorizontalGridLineTicksAuto(getBounds(), m_y_lim, m_y_scaling,
                                              m_grid_type, m_y_prev_ticks,
                                              y_ticks);
       m_x_prev_ticks = x_ticks;

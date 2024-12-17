@@ -39,6 +39,23 @@ void GraphArea::reset() noexcept {
   m_is_start_pos_set = false;
 }
 
+void GraphArea::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
+{
+  if (id == ObserverId::XLim) {
+    m_x_lim = new_value;
+  } else if (id == ObserverId::YLim) {
+    m_y_lim = new_value;
+  }
+}
+
+void GraphArea::observableValueUpdated(ObserverId id, const Scaling &new_value) {
+  if (id == ObserverId::XScaling) {
+    m_x_scaling = new_value;
+  } else if (id == ObserverId::YScaling) {
+    m_y_scaling = new_value;
+  }
+}
+
 void GraphArea::resized() {}
 
 void GraphArea::paint(juce::Graphics& g) {
@@ -65,18 +82,17 @@ juce::Rectangle<ValueType> GraphArea::getDataBound() const noexcept {
   const auto end_pos = this->getEndPosition();
 
   const auto x_start = getXDataFromXPixelCoordinate(
-      float(start_pos.getX()), local_graph_bounds, m_common_plot_params->x_lim,
-      m_common_plot_params->x_scaling);
+      float(start_pos.getX()), local_graph_bounds, m_x_lim, m_x_scaling);
   const auto x_end = getXDataFromXPixelCoordinate(
-      float(end_pos.getX()), local_graph_bounds, m_common_plot_params->x_lim,
-      m_common_plot_params->x_scaling);
+      float(end_pos.getX()), local_graph_bounds, m_x_lim,
+      m_x_scaling);
 
   const auto y_start = getYDataFromYPixelCoordinate(
-      float(start_pos.getY()), local_graph_bounds, m_common_plot_params->y_lim,
-      m_common_plot_params->y_scaling);
+      float(start_pos.getY()), local_graph_bounds, m_y_lim,
+      m_y_scaling);
   const auto y_end = getYDataFromYPixelCoordinate(
-      float(end_pos.getY()), local_graph_bounds, m_common_plot_params->y_lim,
-      m_common_plot_params->y_scaling);
+      float(end_pos.getY()), local_graph_bounds, m_y_lim,
+      m_y_scaling);
 
   const auto x_min = std::min(x_start, x_end);
   const auto x_width = std::max(x_start, x_end) - x_min;

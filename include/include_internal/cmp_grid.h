@@ -35,24 +35,12 @@ namespace cmp {
  * without the grids.
  *
  */
-class Grid : public juce::Component {
+class Grid : public juce::Component,
+             public virtual Observer<juce::Rectangle<int>>,
+             public virtual Observer<Scaling>,
+             public virtual Observer<Lim_f>,
+             public virtual Observer<bool> {
  public:
-  /** @brief Construct a new Grid object.
-   *
-   *  @param common_plot_parameter_view the common plot parameters.
-   */
-  Grid(const CommonPlotParameterView& common_plot_parameter_view)
-      : m_common_plot_params(&common_plot_parameter_view){};
-
-  /** @brief Set the bounds of where the grids will be drawn
-   *
-   *  The grid area must be within the bounds of this componenet. The
-   *  grid labels will be draw with a half 'font_size' outside the grid area.
-   *
-   *  @param grid_area The area of where the grids will be drawn
-   *  @return void.
-   */
-  void setGridBounds(const juce::Rectangle<int>& grid_area);
 
   /** @brief Enables grid or tiny grid
    *
@@ -104,10 +92,9 @@ class Grid : public juce::Component {
    *  This function updates the grid if any new parameter is set. Should be
    *  called after an parameter is set to update the grid.
    *
-   *  @param use_cached_grids if true already computed grid will be used.
    *  @return void.
    */
-  void updateGrid(const bool use_cached_grids = false);
+  void update();
 
   /** @brief Get the max width of the x and y-labels
    *
@@ -123,6 +110,39 @@ class Grid : public juce::Component {
    *  @return void.
    */
   std::function<void(Grid*)> onGridLabelLengthChanged = nullptr;
+
+  /**
+   * @brief Observer callback function for when the grid bounds is updated.
+   *
+   * @param id The id of the observer.
+   * @param new_value The new value of the observer.
+   */
+  void observableValueUpdated(ObserverId id,
+                              const juce::Rectangle<int>& new_value) override;
+
+  /**
+   * @brief Observer callback function for when the scaling is updated.
+   *
+   * @param id The id of the observer.
+   * @param new_value The new value of the observer.
+   */
+  void observableValueUpdated(ObserverId id, const Scaling& new_value) override;
+
+  /**
+   * @brief Observer callback function for when the limits is updated.
+   *
+   * @param id The id of the observer.
+   * @param new_value The new value of the observer.
+   */
+  void observableValueUpdated(ObserverId id, const Lim_f& new_value) override;
+
+  /**
+   * @brief Observer callback function for update the grid.
+   *
+   * @param id The id of the observer.
+   * @param new_value The new value of the observer.
+   */
+  void observableValueUpdated(ObserverId id, const bool& new_value) override;
 
   //==============================================================================
   /** @internal */
@@ -144,10 +164,14 @@ class Grid : public juce::Component {
   void createAutoGridTicks(std::vector<float>& x_ticks,
                            std::vector<float>& y_ticks);
   void createLabels();
-  void updateGridInternal(const bool use_cached_grids);
+  void updateInternal();
   void addGridLines(const std::vector<float>& ticks,
                     const GridLine::Direction direction);
   void addTranslucentGridLines();
+
+  juce::Rectangle<int> m_graph_bounds;
+  Scaling m_x_scaling, m_y_scaling;
+  Lim_f m_x_lim, m_y_lim;
 
   std::vector<GridLine> m_grid_lines;
   std::vector<float> m_custom_x_ticks, m_custom_y_ticks, m_x_prev_ticks,
@@ -161,7 +185,6 @@ class Grid : public juce::Component {
   GridType m_grid_type = GridType::grid_translucent;
 
   juce::LookAndFeel* m_lookandfeel;
-  const CommonPlotParameterView* m_common_plot_params{nullptr};
 
   std::vector<std::pair<std::string, juce::Rectangle<int>>> m_y_axis_labels,
       m_x_axis_labels;
