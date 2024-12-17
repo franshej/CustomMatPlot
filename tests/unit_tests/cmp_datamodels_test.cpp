@@ -36,7 +36,7 @@ SECTION(ObservableTest, "Observable class tests") {
     // Check if observer received the update
     expect(observer.lastUpdatedId == ObserverId::XLim);
     expectEquals(observer.lastValue, 42);
-    expectEquals(observer.updateCount, 1);
+    expectEquals(observer.updateCount, 2);
   }
 
   TEST("Multiple observers receive updates") {
@@ -52,9 +52,9 @@ SECTION(ObservableTest, "Observable class tests") {
 
     // Check if both observers received the update
     expectEquals(observer1.lastValue, 100);
-    expectEquals(observer1.updateCount, 1);
+    expectEquals(observer1.updateCount, 2);
     expectEquals(observer2.lastValue, 100);
-    expectEquals(observer2.updateCount, 1);
+    expectEquals(observer2.updateCount, 2);
   }
 
   TEST("Observer not notified after value remains the same") {
@@ -66,7 +66,7 @@ SECTION(ObservableTest, "Observable class tests") {
     observable = 50;
 
     // Observer should still be notified
-    expectEquals(observer.updateCount, 1);
+    expectEquals(observer.updateCount, 2);
   }
 
   TEST("Observable conversion to value type") {
@@ -85,5 +85,49 @@ SECTION(ObservableTest, "Observable class tests") {
     // Modify the value 
     observable = std::string("updated");
     expectEquals(*observable.operator->(), std::string("updated"));
+  }
+
+  TEST("Multiple observables with same observer") {
+    TestObserver observer;
+    Observable<int> observable1(ObserverId::XLim, 0);
+    Observable<int> observable2(ObserverId::YLim, 0);
+    
+    observable1.addObserver(observer);
+    expectEquals(observer.updateCount, 1);
+    
+    observable2.addObserver(observer);
+    expectEquals(observer.updateCount, 2);
+    
+    observable1 = 42;
+    expectEquals(static_cast<int>(observer.lastUpdatedId), static_cast<int>(ObserverId::XLim));
+    expectEquals(observer.lastValue, 42);
+    expectEquals(observer.updateCount, 3);
+
+    observable2 = 100;
+    expectEquals(static_cast<int>(observer.lastUpdatedId), static_cast<int>(ObserverId::YLim));
+    expectEquals(observer.lastValue, 100);
+    expectEquals(observer.updateCount, 4);
+  }
+
+  TEST("Observable cleanup when going out of scope") {
+    TestObserver observer1;
+
+    {
+      Observable<int> observable(ObserverId::XLim, 0);
+      {
+        TestObserver observer2;
+        observable.addObserver(observer1, observer2);
+        observable = 1337;
+
+        expectEquals(observer1.lastValue, 1337);
+        expectEquals(observer1.updateCount, 2);
+        expectEquals(observer2.lastValue, 1337);
+        expectEquals(observer2.updateCount, 2);
+      }
+
+      observable = 42;
+      expectEquals(observer1.updateCount, 3);
+      expectEquals(observer1.lastValue, 42);
+    }
   }
 }
