@@ -1,12 +1,12 @@
 /**
  * @file cmp_plot.h
- *
- * @brief Componenets for plotting 2-D lines/marker symbols
- *
+ * @brief Components for plotting 2-D lines and marker symbols
  * @ingroup CustomMatPlot
- *
+ * @details This file contains the Plot class and related components for creating
+ *          2D plots with features like line plots, scatter plots, zooming, panning,
+ *          and customizable axes.
  * @author Frans Rosencrantz
- * Contact: Frans.Rosencrantz@gmail.com
+ * @contact Frans.Rosencrantz@gmail.com
  */
 
 #pragma once
@@ -19,12 +19,18 @@
 namespace cmp {
 
 /*
- *  \class Plot
- *  \brief A component to plot 2-D lines/marker symbols.
- *
- *  This class can be used to plot 2-D lines/marker symbols. It's also possible
- *  to trace the graph and zoom in/out of specific area. Other features: set
- *  the x- and y-limits, ticks and ticklabels.
+ * @class Plot
+ * @brief A component to plot 2-D lines/marker symbols
+ * @details This class provides a flexible plotting component with features including:
+ *          - Line and scatter plots
+ *          - Graph tracing 
+ *          - Zooming and panning
+ *          - Customizable x/y limits, ticks and tick labels
+ *          - Linear and logarithmic axis scaling
+ *          - Legend support
+ * @see SemiLogX
+ * @see SemiLogY  
+ * @see LogLog
  */
 class Plot : public juce::Component {
 public:
@@ -36,70 +42,59 @@ public:
   Plot(const Scaling x_scaling = Scaling::linear,
        const Scaling y_scaling = Scaling::linear);
 
-  /** @brief Set the X-limits
-   *
-   *  Set the limits of X-axis.
-   *
-   *  @param min minimum value
-   *  @param max maximum value
-   *  @return void.
+  /** 
+   * @brief Set the X-limits
+   * @param min minimum value
+   * @param max maximum value
    */
   void xLim(const float min, const float max);
 
-  /** @brief Set the Y-limits
-   *
-   *  Set the limits of Y-axis.
-   *
-   *  @param min minimum value
-   *  @param max maximum value
-   *  @return void.
+  /** 
+   * @brief Set the Y-limits
+   * @param min minimum value
+   * @param max maximum value
    */
   void yLim(const float min, const float max);
 
-  /** @brief Plot y-data or y-data/x-data.
+  /** 
+   * @brief Plot y-data or y-data/x-data
    *
-   *  Plot y-data or y-data/x-data. Each vector in y-data represents a single
-   *  graph line. E.g. If 'y_data.size() == 3', three graph lines will be
-   *  plotted. If 'x_data' is empty the x-values will be set to linearly
-   *  increasing from 1 to the size of y-data.
+   * Plot y-data or y-data/x-data. Each vector in y-data represents a single
+   * graph line. E.g. If 'y_data.size() == 3', three graph lines will be
+   * plotted. If 'x_data' is empty the x-values will be set to linearly
+   * increasing from 1 to the size of y-data.
    *
-   *  The list of graph_attributes are applied per graph. E.g.
-   *  graph_attribute_list[0] is applied to graph[0]. If 'graph_colours' is
-   *  not set then 'ColourIdsGraph' is used for the lookandfeel.
+   * The list of graph_attributes are applied per graph. E.g.
+   * graph_attribute_list[0] is applied to graph[0]. If 'graph_colours' is
+   * not set then 'ColourIdsGraph' is used for the lookandfeel.
    *
-   *  @param y_data vector of vectors with the y-values.
-   *  @param x_data vector of vectors with the x-values.
-   *  @param graph_attribute_list a list of graph attributes @see
-   *  GraphAttribute.
-   *  @return void.
+   * @param y_data vector of vectors with the y-values
+   * @param x_data vector of vectors with the x-values
+   * @param graph_attribute_list a list of graph attributes @see GraphAttribute
    */
   void plot(const std::vector<std::vector<float>> &y_data,
             const std::vector<std::vector<float>> &x_data = {},
             const GraphAttributeList &graph_attribute_list = {});
 
-  /** @brief Draw horizontal line(s).
+  /** 
+   * @brief Draw horizontal line(s)
    *
-   * Draw a horizontal line at the given y-value. It is also possible to move
-   * the whole line by dragging anywhere on it.
+   * Draw horizontal line(s) at the given y-coordinates. Lines can be moved by dragging.
    *
-   * @param y_coordinates the y-coordinates of where the horizontal line(s) will
-   * be drawn.
-   * @param graph_attribute the graph attribute of the horizontal line.
-   * @return void.
+   * @param y_coordinates Y-coordinates where lines will be drawn
+   * @param graph_attributes Graph attributes for the lines
    */
   void plotHorizontalLines(const std::vector<float> &y_coordinates,
                            const GraphAttributeList &graph_attributes = {});
 
-  /** @brief Draw vertical line(s).
-  *
-  * Draw vertical line(s) at the given x-value. It is also possible to move the
-  * whole line by dragging anywhere on it.
-  *
-  @param x_coordinates the x-coordinates of where the vertical line(s) will be
-  drawn.
-  @param graph_attribute the graph attribute of the vertical line.
-  @return void.
-  */
+  /**
+   * @brief Draw vertical line(s)
+   *
+   * Draw vertical line(s) at the given x-coordinates. Lines can be moved by dragging.
+   *
+   * @param x_coordinates X-coordinates where lines will be drawn
+   * @param graph_attributes Graph attributes for the lines
+   */
   void plotVerticalLines(const std::vector<float> &x_coordinates,
                          const GraphAttributeList &graph_attributes = {});
 
@@ -114,18 +109,14 @@ public:
    */
   void plotUpdateYOnly(const std::vector<std::vector<float>> &y_data);
 
-  /** @brief Fill the area between two data lines.
+  /** @brief Fill the area between two data lines
    *
-   * 1. Use 'plot' or 'realTimePlot' to draw the graph lines.
-   * 2. Use this function to indicate between which graph lines the area is
-   *    filled.
+   * Steps to use:
+   * 1. Draw graph lines using plot() or realTimePlot()
+   * 2. Call this function to fill area between specified lines
    *
-   * The colour of the graph areas is defined by 'fill_area_colours'.
-   * 'ColourIdsGraph' is used if 'fill_area_colours' is empty.
-   *
-   * @param graph_spread_indices the indices between which graph lines the are
-   *        is filled.
-   * @param fill_area_colours the colours of the areas.
+   * @param graph_spread_indices Indices of graph lines to fill between
+   * @param fill_area_colours Colors for filled areas (uses ColourIdsGraph if empty)
    */
   void fillBetween(const std::vector<GraphSpreadIndex> &graph_spread_indices,
                    const std::vector<juce::Colour> &fill_area_colours = {});
@@ -168,61 +159,50 @@ public:
   void setGraphLineDataChangedCallback(
       GraphLinesChangedCallback graph_lines_changed_callback);
 
-  /** @brief Set the text for label on the X-axis
-   *
-   *  Set the text for label on the X-axis.
-   *
-   *  @param x_label text to be displayed on the x-axis
-   *  @return void.
+  /** 
+   * @brief Set the text for label on the X-axis
+   * @param x_label text to be displayed on the x-axis
    */
   void setXLabel(const std::string &x_label);
 
-  /** @brief Set the text for label on the Y-axis
-   *
-   *  Set the text for label on the Y-axis.
-   *
-   *  @param y_label text to be displayed on the y-axis
-   *  @return void.
+  /** 
+   * @brief Set the text for label on the Y-axis
+   * @param y_label text to be displayed on the y-axis
    */
   void setYLabel(const std::string &y_label);
 
-  /** @brief Set x & y-axis scaling
-   *
-   *  Set x & y-axis scaling of the plot. @see cmp::Scaling in cmp:datamodels.h.
-   *
-   *  @param x_scaling x-axis scaling.
-   *  @param y_scaling y-axis scaling.
-   *  @return void.
+  /** 
+   * @brief Set x & y-axis scaling
+   * @param x_scaling x-axis scaling
+   * @param y_scaling y-axis scaling
+   * @see cmp::Scaling in cmp:datamodels.h
    */
   void setScaling(Scaling x_scaling, Scaling y_scaling) noexcept;
 
-  /** @brief Set the text for title label
-   *
-   *  Set the text for title label.
-   *
-   *  @param title text to be displayed as the title
-   *  @return void.
+  /** 
+   * @brief Set the text for title label
+   * @param title text to be displayed as the title
    */
   void setTitle(const std::string &title);
 
-  /** @brief Set trace-point
+  /** 
+   * @brief Set trace-point
    *
    * Set a trace-point to the point on a graph-line closest the given
    * coordinate. The tracepoint will be removed if it already exists.
    *
-   * @param trance_point_coordinate the coordinate of where the trace-point is
-   * wish to be set.
-   * @return void.
+   * @param trace_point_coordinate the coordinate of where the trace-point is
+   * wish to be set
    */
   void setTracePoint(const juce::Point<float> &trace_point_coordinate);
 
-  /** @brief Set the text for grid labels on the x-axis
+  /** 
+   * @brief Set the text for grid labels on the x-axis
    *
-   *  Set custom text for the grid labels and overrides the labels made based
-   *  the x-data.
+   * Set custom text for the grid labels and overrides the labels made based
+   * on the x-data.
    *
-   *  @param x_labels text for the labels displayed as the x-axis
-   *  @return void.
+   * @param x_labels text for the labels displayed as the x-axis
    */
   void setXTickLabels(const std::vector<std::string> &x_labels);
 
@@ -297,14 +277,13 @@ public:
 
   //==============================================================================
 
-  /** @brief A set of colour IDs to use to change the colour of various aspects
-   *  of the Plot.
-   *
-   *  These constants can be used either via the Component::setColour(), or
-   *  LookAndFeel::setColour() methods.
-   *
-   *  @see Component::setColour, Component::findColour, LookAndFeel::setColour,
-   *  LookAndFeel::findColour
+  /** @brief Color IDs for customizing plot appearance
+   * @details These IDs can be used with Component::setColour() or LookAndFeel::setColour()
+   *          to customize colors of various plot elements.
+   * @note All color IDs should be passed to setColour() along with the desired Color value
+   * @see Component::setColour
+   * @see Component::findColour  
+   * @see LookAndFeel::setColour
    */
   enum ColourIds : int {
     background_colour,        /** Colour of the background. */
@@ -707,13 +686,14 @@ private:
 
   /** Other variables */
   PixelPointMoveType m_pixel_point_move_type{PixelPointMoveType::none};
-  bool m_x_autoscale = true, m_y_autoscale = true, is_panning_or_zoomed = false;
+  bool m_x_autoscale = true, m_y_autoscale = true, is_panning_or_zoomed_active = false;
 };
 
 /**
- * \class SemiLogX
- * \brief Component for plotting 2-D graph lines where the x-axis is scaled
- *  logarithmic and y-axis linearly.
+ * @class SemiLogX
+ * @brief Plot with logarithmic x-axis and linear y-axis scaling
+ * @details Convenience class that creates a Plot with logarithmic x-axis scaling.
+ *          Useful for data that spans multiple orders of magnitude in x.
  */
 class SemiLogX : public Plot {
 public:
@@ -721,9 +701,10 @@ public:
 };
 
 /**
- * \class SemiLogY
- * \brief Component for plotting 2-D graph lines where the x-axis is scaled
- *  logarithmic and y-axis linearly.
+ * @class SemiLogY
+ * @brief Plot with linear x-axis and logarithmic y-axis scaling  
+ * @details Convenience class that creates a Plot with logarithmic y-axis scaling.
+ *          Useful for data that spans multiple orders of magnitude in y.
  */
 class SemiLogY : public Plot {
 public:
@@ -731,9 +712,10 @@ public:
 };
 
 /**
- * \class LogLog
- * \brief Component for plotting 2-D graph lines where both the x- and y-axis
- *  are scaled logarithmic.
+ * @class LogLog
+ * @brief Plot with logarithmic scaling on both axes
+ * @details Convenience class that creates a Plot with logarithmic scaling on both axes.
+ *          Useful for data that spans multiple orders of magnitude in both dimensions.
  */
 class LogLog : public Plot {
 public:
