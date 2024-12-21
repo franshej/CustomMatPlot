@@ -686,7 +686,9 @@ private:
 
   /** Other variables */
   PixelPointMoveType m_pixel_point_move_type{PixelPointMoveType::none};
-  bool m_x_autoscale = true, m_y_autoscale = true, is_panning_or_zoomed_active = false;
+  bool m_x_autoscale = true;
+  bool m_y_autoscale = true;
+  bool m_is_panning_or_zoomed_active = false;
 };
 
 /**
