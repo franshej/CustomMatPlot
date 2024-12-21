@@ -630,7 +630,7 @@ void Plot::updateGraphLineYData(
     }
   }
 
-  UNLIKELY if (m_y_autoscale && !is_panning_or_zoomed) { setAutoYScale(); }
+  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) { setAutoYScale(); }
 
   if (!graph_attribute_list.empty()) {
     auto it_gal = graph_attribute_list.begin();
@@ -659,7 +659,7 @@ void Plot::updateGraphLineXData(const std::vector<std::vector<float>>& x_data) {
     }
   }
 
-  if (m_x_autoscale && !is_panning_or_zoomed) {
+  if (m_x_autoscale && !m_is_panning_or_zoomed_active) {
     setAutoXScale();
   }
 }
@@ -827,7 +827,7 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
 }
 
 void Plot::resetZoom() {
-  is_panning_or_zoomed = false;
+  m_is_panning_or_zoomed_active = false;
   updateXLim(m_x_lim_start);
   updateYLim(m_y_lim_start);
   repaint();
@@ -847,7 +847,7 @@ void Plot::drawSelectedRegion(const juce::Point<int>& end_position) {
 }
 
 void Plot::zoomOnSelectedRegion() {
-  is_panning_or_zoomed = true;
+  m_is_panning_or_zoomed_active = true;
   const auto data_bound = m_selected_area->getDataBound<float>();
 
   updateXLim({data_bound.getX(), data_bound.getX() + data_bound.getWidth()});
@@ -1084,7 +1084,7 @@ void Plot::panning(const juce::MouseEvent& event) {
   const auto new_y_lim_data = Lim_f(new_y_lim_data_min, new_y_lim_data_max);
  
   m_prev_mouse_position = mouse_pos;
-  is_panning_or_zoomed = true;
+  m_is_panning_or_zoomed_active = true;
 
   updateXLim(new_x_lim_data);
   updateYLim(new_y_lim_data);
