@@ -166,7 +166,6 @@ void Downsampler<FloatType>::calculateXYBasedIdxs(
   }
 
   for (auto i_it = x_based_idxs_out.begin();; ++i_it) {
-    // We have reached the last x-based ds index. Let's add it.
     UNLIKELY if (std::next(i_it) == x_based_idxs_out.end()) {
       xy_based_idxs.push_back(*i_it);
       break;
@@ -176,11 +175,10 @@ void Downsampler<FloatType>::calculateXYBasedIdxs(
     const auto num_data_sharing_same_pixel_col = *std::next(i_it) - *i_it;
 
     if (num_data_sharing_same_pixel_col <= 3u) {
-      for (auto i = 0u; i < num_data_sharing_same_pixel_col; ++i) {
-        xy_based_idxs.push_back(*std::next(i_it, i));
+      xy_based_idxs.push_back(*i_it);
+      for (auto i = 1u; i < num_data_sharing_same_pixel_col; ++i) {
+        xy_based_idxs.push_back(*i_it + i);
       }
-      // Let's find the min and max y-value that share the same x-pixel and get
-      // their indices.
     } else if (num_data_sharing_same_pixel_col > 3u) {
       auto current_index = *i_it + 1;
 
@@ -216,8 +214,10 @@ void Downsampler<FloatType>::calculateXYBasedIdxs(
         xy_based_idxs.push_back_if_not_in_back(max_idx);
       }
 
-      // Finally add the last index we found for this pixel column.
-      xy_based_idxs.push_back_if_not_in_back(current_index);
+      // Only add the end point if it's not already included
+      if (current_index != max_idx && current_index != min_idx) {
+        xy_based_idxs.push_back_if_not_in_back(current_index);
+      }
     }
   }
 }

@@ -813,7 +813,6 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
 
   for (auto& [graph_line, indices_to_update] : graph_line_data_point_map) {
     graph_line->setIndicesToUpdate(indices_to_update);
-    graph_line->setIndicesToUpdate(indices_to_update);
   }
 
   m_trace->updateAllTracePoints();
