@@ -39,7 +39,16 @@ class Legend : public juce::Component {
    *  @param label_texts the text to be displayed for each data series
    *  @return void.
    */
-  void setLegend(const StringVector& graph_descriptions);
+  void setLegend(const StringVector &graph_descriptions);
+
+  /** @brief Set GraphLines
+   *
+   * Set the GraphLines to be used for the legend.
+   *
+   * @param GraphLines* graph_lines in the plot.
+   * @return void.
+   */
+  void setGraphLines(const GraphLines &graph_lines);
 
   /** @breif Update legends
    *
@@ -47,15 +56,14 @@ class Legend : public juce::Component {
    * The legend descriptions are resized based on the graph_lines size.
    * The colour of the graph_line is displayed before the description text.
    *
-   * @param GraphLines* graph_lines in the plot.
    * @return void.
    */
-  void updateLegends(const GraphLines& graph_lines);
+  void update();
 
   /** @internal */
   void resized() override;
   /** @internal */
-  void paint(juce::Graphics& g) override;
+  void paint(juce::Graphics &g) override;
   /** @internal */
   void lookAndFeelChanged() override;
 
@@ -66,16 +74,16 @@ class Legend : public juce::Component {
    * @param StringVector the descriptions that will be drawn.
    * @return void.
    */
-  std::function<void(const StringVector&)> onNumberOfDescriptionsChanged{
+  std::function<void(const StringVector &)> onNumberOfDescriptionsChanged{
       nullptr};
 
  private:
-  juce::LookAndFeel* m_lookandfeel;
+  juce::LookAndFeel *m_lookandfeel;
 
   std::vector<LegendLabel> m_legend_labels;
   std::vector<std::string> m_label_texts;
 
   bool m_label_texts_is_changed{false};
-  const GraphLines* m_graph_lines{nullptr};
+  const GraphLines *m_graph_lines{nullptr};
 };
 }  // namespace cmp
