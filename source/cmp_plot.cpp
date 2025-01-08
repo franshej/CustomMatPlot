@@ -132,7 +132,8 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
       m_x_lim(ObserverId::XLim),
       m_y_lim(ObserverId::YLim),
       m_graph_bounds(ObserverId::GraphBounds),
-      m_downsampling_type(ObserverId::DownsamplingType, DownsamplingType::xy_downsampling),
+      m_downsampling_type(ObserverId::DownsamplingType,
+                          DownsamplingType::xy_downsampling),
       m_notify_components_on_update(ObserverId::Undefined),
       m_graph_lines(std::make_unique<GraphLineList>()),
       m_plot_label(std::make_unique<PlotLabel>()),
@@ -616,6 +617,7 @@ void Plot::updateGraphLineYData(
       }
       graph_line_index++;
     }
+    m_legend->setGraphLines(*m_graph_lines);
   }
 
   auto y_data_it = y_data.begin();
@@ -630,7 +632,9 @@ void Plot::updateGraphLineYData(
     }
   }
 
-  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) { setAutoYScale(); }
+  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
+    setAutoYScale();
+  }
 
   if (!graph_attribute_list.empty()) {
     auto it_gal = graph_attribute_list.begin();
@@ -665,11 +669,8 @@ void Plot::updateGraphLineXData(const std::vector<std::vector<float>>& x_data) {
 }
 
 void Plot::setLegend(const StringVector& graph_descriptions) {
-  if (m_legend) {
-    m_legend->setVisible(true);
-    m_legend->setLegend(graph_descriptions);
-    m_legend->updateLegends(*m_graph_lines);
-  }
+  m_legend->setVisible(true);
+  m_legend->setLegend(graph_descriptions);
 }
 
 void Plot::addOrRemoveTracePoint(const juce::MouseEvent& event) {
@@ -772,10 +773,12 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
 
   auto d_data_position =
-      getDataPointFromPixelCoordinate(mouse_pos, m_graph_bounds.getValue().toFloat(), m_x_lim,
-                                      m_x_scaling, m_y_lim, m_y_scaling) -
-      getDataPointFromPixelCoordinate(m_prev_mouse_position, m_graph_bounds.getValue().toFloat(),
-                                      m_x_lim, m_x_scaling, m_y_lim, m_y_scaling);
+      getDataPointFromPixelCoordinate(
+          mouse_pos, m_graph_bounds.getValue().toFloat(), m_x_lim, m_x_scaling,
+          m_y_lim, m_y_scaling) -
+      getDataPointFromPixelCoordinate(
+          m_prev_mouse_position, m_graph_bounds.getValue().toFloat(), m_x_lim,
+          m_x_scaling, m_y_lim, m_y_scaling);
 
   switch (m_pixel_point_move_type) {
     case PixelPointMoveType::horizontal: {
@@ -1071,17 +1074,23 @@ void Plot::panning(const juce::MouseEvent& event) {
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
   const auto d_mouse_pos = mouse_pos - m_prev_mouse_position;
   const auto new_x_lim_min_pixel = m_graph_bounds->getX() - d_mouse_pos.getX();
-  const auto new_x_lim_max_pixel = m_graph_bounds->getRight() - d_mouse_pos.getX();
-  const auto new_x_lim_data_min = getXDataFromXPixelCoordinate(new_x_lim_min_pixel, m_graph_bounds->toFloat(), m_x_lim, m_x_scaling);
-  const auto new_x_lim_data_max = getXDataFromXPixelCoordinate(new_x_lim_max_pixel, m_graph_bounds->toFloat(), m_x_lim, m_x_scaling);
+  const auto new_x_lim_max_pixel =
+      m_graph_bounds->getRight() - d_mouse_pos.getX();
+  const auto new_x_lim_data_min = getXDataFromXPixelCoordinate(
+      new_x_lim_min_pixel, m_graph_bounds->toFloat(), m_x_lim, m_x_scaling);
+  const auto new_x_lim_data_max = getXDataFromXPixelCoordinate(
+      new_x_lim_max_pixel, m_graph_bounds->toFloat(), m_x_lim, m_x_scaling);
   const auto new_x_lim_data = Lim_f(new_x_lim_data_min, new_x_lim_data_max);
 
-  const auto new_y_lim_min_pos = m_graph_bounds->getBottom() - d_mouse_pos.getY();
+  const auto new_y_lim_min_pos =
+      m_graph_bounds->getBottom() - d_mouse_pos.getY();
   const auto new_y_lim_max_pos = m_graph_bounds->getY() - d_mouse_pos.getY();
-  const auto new_y_lim_data_min = getYDataFromYPixelCoordinate(new_y_lim_min_pos, m_graph_bounds->toFloat(), m_y_lim, m_y_scaling);
-  const auto new_y_lim_data_max = getYDataFromYPixelCoordinate(new_y_lim_max_pos, m_graph_bounds->toFloat(), m_y_lim, m_y_scaling);
+  const auto new_y_lim_data_min = getYDataFromYPixelCoordinate(
+      new_y_lim_min_pos, m_graph_bounds->toFloat(), m_y_lim, m_y_scaling);
+  const auto new_y_lim_data_max = getYDataFromYPixelCoordinate(
+      new_y_lim_max_pos, m_graph_bounds->toFloat(), m_y_lim, m_y_scaling);
   const auto new_y_lim_data = Lim_f(new_y_lim_data_min, new_y_lim_data_max);
- 
+
   m_prev_mouse_position = mouse_pos;
   m_is_panning_or_zoomed_active = true;
 

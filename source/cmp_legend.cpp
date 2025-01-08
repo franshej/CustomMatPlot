@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -11,29 +11,38 @@
 #include "cmp_graph_line.h"
 #include "cmp_plot.h"
 
-void cmp::Legend::setLegend(const std::vector<std::string>& label_texts) {
-  m_label_texts = label_texts;
-
+void cmp::Legend::setLegend(const StringVector &graph_descriptions) {
+  m_label_texts = graph_descriptions;
   m_label_texts_is_changed = true;
+
+  update();
 }
 
-void cmp::Legend::updateLegends(const GraphLines& graph_lines) {
-  if ((m_legend_labels.size() != graph_lines.size() ||
-       m_label_texts_is_changed)) {
-    m_graph_lines = &graph_lines;
+void cmp::Legend::setGraphLines(const GraphLines &graph_lines) {
+  m_graph_lines = &graph_lines;
 
+  update();
+}
+
+void cmp::Legend::update() {
+  if (!m_graph_lines) {
+    return;
+  }
+
+  if ((m_legend_labels.size() != m_graph_lines->size() ||
+       m_label_texts_is_changed)) {
     m_label_texts_is_changed = false;
     m_legend_labels.resize(m_label_texts.size());
 
     auto it_legend = m_legend_labels.begin();
-    for (const auto& label : m_label_texts) {
+    for (const auto &label : m_label_texts) {
       it_legend++->description = label;
     }
 
-    m_legend_labels.resize(graph_lines.size());
+    m_legend_labels.resize(m_graph_lines->size());
 
     it_legend = m_legend_labels.begin();
-    for (const auto& gl : graph_lines) {
+    for (const auto &gl : *m_graph_lines) {
       it_legend++->description_colour = gl->getColour();
     }
 
@@ -53,20 +62,18 @@ void cmp::Legend::updateLegends(const GraphLines& graph_lines) {
 
 void cmp::Legend::resized() {}
 
-void cmp::Legend::paint(juce::Graphics& g) {
+void cmp::Legend::paint(juce::Graphics &g) {
   if (m_lookandfeel) {
-    auto* lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+    auto *lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
     lnf->drawLegend(g, m_legend_labels, getBounds());
   }
 }
 
 void cmp::Legend::lookAndFeelChanged() {
-  if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
+  if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
-    if (m_graph_lines) {
-      updateLegends(*m_graph_lines);
-    }
+    update();
   } else {
     m_lookandfeel = nullptr;
   }
