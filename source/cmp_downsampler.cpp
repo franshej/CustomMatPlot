@@ -64,14 +64,14 @@ namespace {
         // Find start index, ensuring we don't underflow
         const auto raw_start = std::distance(x_data.begin(), 
             std::lower_bound(x_data.begin(), x_data.end(), x_min_lim));
-        const auto padded_start = std::max(0L, raw_start - PADDING_POINTS);
+        const auto padded_start = std::max(0L, static_cast<long>(raw_start - PADDING_POINTS));
         const auto start_idx = static_cast<size_t>(padded_start);
 
         // Find end index, ensuring we don't overflow
         const auto raw_end = std::distance(x_data.begin(),
             std::upper_bound(x_data.begin(), x_data.end(), x_max_lim));
         const auto max_size = static_cast<long>(x_data.size() - 1);
-        const auto padded_end = std::min(max_size, raw_end + PADDING_POINTS);
+        const auto padded_end = std::min(max_size, static_cast<long>(raw_end + PADDING_POINTS));
         const auto end_idx = static_cast<size_t>(padded_end);
 
         return XRangeIndices<ValueType>{start_idx, end_idx};
