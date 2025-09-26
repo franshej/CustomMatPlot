@@ -27,7 +27,7 @@ jobs:
         cmake-version: '3.22.0'
 
     - name: Configure CMake
-      run: cmake -S . -B build -DCMP_BUILD_TESTS=ON
+      run: cmake -S . -B build -DCMP_BUILD_TESTS=ON -DJUCE_USE_FREETYPE=0 -DJUCE_USE_FONTCONFIG=0
 
     - name: Build project
       run: cmake --build build
