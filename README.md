@@ -6,9 +6,7 @@ CustomMatPlot (CMP) is a plotting library for C++. It provides an API for embedd
 | ![Image](img/spread.png)  | ![Image](img/sines.png)|
 | ------------- | ------------- |
 
-> Note: I'm not a senior developer so there may be several design flaws.
-
-## Table of Content
+## Table of Contents
   - [Features](#features)
   - [Requirements](#requirements)
   - [Controls](#controls)
@@ -37,10 +35,10 @@ Below is the feature list of CMP:
 - Markers: Star, triangles, square etc.
 - Custom stroke path.
 - Callback for every visible data point.
-- Callback for tace points.
+- Callback for trace points.
 - Two different downsampler levels.
-- Move points in the garph with mouse.
-- Customizable userinput mapping using lookandfeel class.
+- Move points in the graph with mouse.
+- Customizable user input mapping using lookandfeel class.
 
 ![Image](img/heart.png) 
 
@@ -53,17 +51,17 @@ Below is the feature list of CMP:
 ## Controls
 <a name="controls"></a>
 
-The CMP compontent implements MouseEvents to interact with the plot using the mouse. Below is a list with the default added mouse commands which can be overrided using a custom lookandfeel class (see "move_pixel_points" example):
+The CMP component implements MouseEvents to interact with the plot using the mouse. Below is a list of default mouse commands which can be overridden using a custom lookandfeel class (see "move_pixel_points" example):
 
-1. Left click drag anywhere in the graph area to zoom into the plot. The zoom area is displayed as traced lined rectangle.
+1. Left-click and drag anywhere in the graph area to zoom into the plot. The zoom area is displayed as a traced rectangle.
 2. Right click to zoom out to home.
 3. Double-click to add a trace-point to the graph lines closest to the mouse pointer.
 4. Double-click on a trace-point to remove it.
 5. Drag the trace point to move it along the graph-line.
 6. Move the trace point label by dragging it.
-7. Move the legend to by dragging it.
+7. Move the legend by dragging it.
 8. Move pixel points.
-8. Panning.
+9. Panning.
 
 ## LookAndFeel
 <a name="lookandfeel"></a>
@@ -131,7 +129,7 @@ SECTION(PlotTest, "Plot class") {
 
 ### Manual tests
 <a name="tests"></a>
-To make it more convenient to write new manual tests the CMP library implements tests macros similar to the macros in google tests.
+To make it more convenient to write new manual tests, the CMP library implements test macros similar to those in Google tests.
 
 The following example below will plot a ramp of 10 values from 0-9:
 ```cpp
