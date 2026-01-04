@@ -221,12 +221,14 @@ bool Trace::isComponentTraceLabel(const juce::Component* component) const {
              m_trace_labelpoints.end();
 }
 
-void Trace::tracePointCbHelper(const juce::Component* trace_point,
+void Trace::tracePointCbHelper(const juce::Component *trace_point,
                                const juce::Point<float> previous_data_point,
-                               const juce::Point<float> new_data_point) {
-  if (onTracePointChanged) {
-    onTracePointChanged(trace_point, previous_data_point, new_data_point);
-  }
+                               const juce::Point<float> new_data_point)
+{
+    if (onTracePointChanged)
+    {
+        onTracePointChanged(trace_point, previous_data_point, new_data_point);
+    }
 }
 
 void Trace::addSingleTracePointInternal(
@@ -275,6 +277,11 @@ void Trace::selectTracePoint(const juce::Component* component,
   auto it = findTraceLabelPointIteratorFrom(component);
   it->setSelection(selected);
   updateSingleTracePoint(&(*it));
+}
+
+void Trace::observableValueUpdated(ObserverId id, const bool &new_value)
+{
+  updateAllTracePoints();
 }
 
 void Trace::observableValueUpdated(ObserverId id, const Lim<float>& new_value) {

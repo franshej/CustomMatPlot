@@ -147,7 +147,7 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   m_y_scaling.addObserver(*m_grid, *m_selected_area, *m_trace);
   m_x_lim.addObserver(*m_grid, *m_selected_area, *m_trace);
   m_y_lim.addObserver(*m_grid, *m_selected_area, *m_trace);
-  m_notify_components_on_update.addObserver(*m_grid);
+  m_notify_components_on_update.addObserver(*m_grid, *m_trace);
 
   setLookAndFeel(getDefaultLookAndFeel());
 
