@@ -19,7 +19,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install dependencies
-      run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libcurl4-gnutls-dev
+      run: sudo apt-get update && sudo apt-get install -y libx11-dev libxcomposite-dev libxcursor-dev libxext-dev libxinerama-dev libxrandr-dev libxrender-dev libfreetype-dev libfontconfig1-dev libglu1-mesa-dev mesa-common-dev
 
     - name: Install CMake
       uses: jwlawson/actions-setup-cmake@v1
@@ -27,7 +27,7 @@ jobs:
         cmake-version: '3.22.0'
 
     - name: Configure CMake
-      run: cmake -S . -B build -DCMP_BUILD_TESTS=ON -DJUCE_USE_FREETYPE=0 -DJUCE_USE_FONTCONFIG=0
+      run: cmake -S . -B build -DCMP_BUILD_TESTS=ON
 
     - name: Build project
       run: cmake --build build
