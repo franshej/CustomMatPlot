@@ -38,7 +38,7 @@ class realtime : public juce::Component, private juce::Timer {
     };
 
     // Plot some values.
-    m_plot.realTimePlot({cmp::generateSineWaveVector<float>(
+    m_plot.plotUpdateYOnly({cmp::generateSineWaveVector<float>(
         (1 << 10), -1.0f, 1.0f, periods, phase)});
 
     if (periods >= 75.f) {

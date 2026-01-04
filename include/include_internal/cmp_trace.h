@@ -176,7 +176,8 @@ typedef TraceLabelPoint<float> TraceLabelPoint_f;
  */
 class Trace : public virtual Observer<Lim<float>>,
               public virtual Observer<Scaling>,
-              public virtual Observer<juce::Rectangle<int>> {
+              public virtual Observer<juce::Rectangle<int>>,
+              public virtual Observer<bool> {
 public:
   /** Destructor. Setting lookandfeel to nullptr. */
   ~Trace();
@@ -353,6 +354,13 @@ public:
    * @param new_value the new value.
    */
   void observableValueUpdated(ObserverId id, const juce::Rectangle<int>& new_value) override;
+
+  /** @brief Observer function for boolean values.
+   *
+   * @param id the observer id.
+   * @param new_value the new value.
+   */
+  void observableValueUpdated(ObserverId id, const bool& new_value) override;
 
  private:
   /** @internal */
