@@ -166,11 +166,9 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   };
 
   m_legend->onNumberOfDescriptionsChanged = [this](const auto& desc) {
-    if (auto lnf = getPlotLookAndFeel()) {
+      const auto *lnf = getPlotLookAndFeel();
       const auto legend_bounds = lnf->getLegendBounds(m_graph_bounds, desc);
-
       m_legend->setBounds(legend_bounds);
-    }
   };
 
   m_trace->onTracePointChanged = [this](const auto* trace_point,
@@ -506,39 +504,38 @@ void Plot::setGridType(const GridType grid_type) {
 void Plot::clearTracePoints() noexcept { m_trace->clear(); }
 
 void Plot::resizeChildrens() {
-  if (auto lnf = getPlotLookAndFeel()) {
-    const auto plot_bound = lnf->getPlotBounds(getBounds());
-    const auto graph_bound = lnf->getGraphBounds(getBounds(), this);
+  const auto *lnf = getPlotLookAndFeel();
+  const auto plot_bound = lnf->getPlotBounds(getBounds());
+  const auto graph_bound = lnf->getGraphBounds(getBounds(), this);
 
-    if (!graph_bound.isEmpty()) {
-      m_graph_bounds = graph_bound;
+  if (!graph_bound.isEmpty()) {
+    m_graph_bounds = graph_bound;
 
-      constexpr auto margin_for_1px_outside = 1;
-      const juce::Rectangle<int> frame_bound = {
-          graph_bound.getX(), graph_bound.getY(),
-          graph_bound.getWidth() + margin_for_1px_outside,
-          graph_bound.getHeight() + margin_for_1px_outside};
+    constexpr auto margin_for_1px_outside = 1;
+    const juce::Rectangle<int> frame_bound = {
+        graph_bound.getX(), graph_bound.getY(),
+        graph_bound.getWidth() + margin_for_1px_outside,
+        graph_bound.getHeight() + margin_for_1px_outside};
 
-      m_grid->setBounds(plot_bound);
-      m_plot_label->setBounds(plot_bound);
-      m_frame->setBounds(frame_bound);
-      m_selected_area->setBounds(graph_bound);
+    m_grid->setBounds(plot_bound);
+    m_plot_label->setBounds(plot_bound);
+    m_frame->setBounds(frame_bound);
+    m_selected_area->setBounds(graph_bound);
 
-      for (const auto& graph_line : *m_graph_lines) {
-        if (graph_line) graph_line->setBounds(graph_bound);
-      }
+    for (const auto& graph_line : *m_graph_lines) {
+      if (graph_line) graph_line->setBounds(graph_bound);
+    }
 
-      for (const auto& spread : m_graph_spread_list) {
-        spread->setBounds(graph_bound);
-      }
+    for (const auto& spread : m_graph_spread_list) {
+      spread->setBounds(graph_bound);
+    }
 
-      if (m_legend) {
-        auto legend_bounds = m_legend->getBounds();
-        const auto legend_postion =
-            lnf->getLegendPosition(graph_bound, legend_bounds);
-        legend_bounds.setPosition(legend_postion);
-        m_legend->setBounds(legend_bounds);
-      }
+    if (m_legend) {
+      auto legend_bounds = m_legend->getBounds();
+      const auto legend_postion =
+          lnf->getLegendPosition(graph_bound, legend_bounds);
+      legend_bounds.setPosition(legend_postion);
+      m_legend->setBounds(legend_bounds);
     }
   }
 }
@@ -546,11 +543,8 @@ void Plot::resizeChildrens() {
 void Plot::resized() { resizeChildrens(); }
 
 void Plot::paint(juce::Graphics& g) {
-  if (getPlotLookAndFeel()) {
-    auto lnf = getPlotLookAndFeel();
-
-    lnf->drawBackground(g, m_graph_bounds);
-  }
+  auto *lnf = getPlotLookAndFeel();
+  lnf->drawBackground(g, m_graph_bounds);
 }
 
 void Plot::parentHierarchyChanged() {
@@ -579,7 +573,7 @@ void Plot::lookAndFeelChanged() {
 template <GraphLineType t_graph_line_type>
 void Plot::addGraphLineInternal(std::unique_ptr<GraphLine>& graph_line,
                                 const size_t graph_line_index) {
-  auto lnf = getPlotLookAndFeel();
+  auto *lnf = getPlotLookAndFeel();
   graph_line = std::make_unique<GraphLine>();
 
   m_graph_bounds.addObserver(*graph_line);
@@ -915,7 +909,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
     m_prev_mouse_position = getMousePositionRelativeToGraphArea(event);
 
-    const auto lnf = getPlotLookAndFeel();
+    const auto *lnf = getPlotLookAndFeel();
     if (m_selected_area.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
         mouseHandler(
@@ -946,7 +940,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
 
 void Plot::mouseDrag(const juce::MouseEvent& event) {
   if (isVisible()) {
-    const auto lnf = getPlotLookAndFeel();
+    const auto *lnf = getPlotLookAndFeel();
     if (m_legend.get() == event.eventComponent) {
       mouseHandler(event,
                    lnf->getUserInputAction(UserInput::left | UserInput::drag |
@@ -984,7 +978,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
 
 void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
-    const auto lnf = getPlotLookAndFeel();
+    const auto *lnf = getPlotLookAndFeel();
     if (m_selected_area.get() == event.eventComponent &&
         m_mouse_drag_state == MouseDragState::drag) {
       if (!event.mods.isRightButtonDown()) {
