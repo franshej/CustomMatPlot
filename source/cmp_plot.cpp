@@ -81,7 +81,7 @@ std::tuple<size_t, const GraphLine*> Plot::findNearestPoint(
             graph_line->findClosestDataPointTo(point, false, false);
 
         current_data_point = current_point = data_point;
-        data_point_index = data_point_index_temp;
+        current_data_point_index = data_point_index_temp;
       } else {
         const auto [current_pixel_point, data_point, data_point_index_temp] =
             graph_line->findClosestPixelPointTo(point);
