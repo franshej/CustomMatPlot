@@ -196,7 +196,7 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
     m_x_lim = {new_x_lim.min - 1, new_x_lim.max + 1};
   }
 
-  UNLIKELY if (m_x_scaling == Scaling::logarithmic &&
+  UNLIKELY if (m_x_scaling.getValue() == Scaling::logarithmic &&
                new_x_lim.isMinOrMaxZero()) {
     throw std::invalid_argument(
         "The min/max x-value is zero or 'xLim' has been called with a zero "
@@ -217,7 +217,7 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
     m_y_lim = {new_y_lim.min - 1, new_y_lim.max + 1};
   }
 
-  UNLIKELY if (m_y_scaling == Scaling::logarithmic &&
+  UNLIKELY if (m_y_scaling.getValue() == Scaling::logarithmic &&
                new_y_lim.isMinOrMaxZero()) {
     throw std::invalid_argument(
         "The min/max y-value is zero or 'yLim' has been called with a zero "
@@ -438,7 +438,7 @@ static auto jassetLogLimBelowZero(const cmp::Scaling scaling,
 
 void Plot::setScaling(const Scaling x_scaling,
                       const Scaling y_scaling) noexcept {
-  if (x_scaling != m_x_scaling || y_scaling != m_y_scaling) {
+  if (x_scaling != m_x_scaling.getValue() || y_scaling != m_y_scaling.getValue()) {
     jassetLogLimBelowZero(x_scaling, m_x_lim_start);
     jassetLogLimBelowZero(y_scaling, m_y_lim_start);
 
