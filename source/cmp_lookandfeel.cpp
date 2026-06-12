@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "cmp_axis_transform.h"
 #include "cmp_datamodels.h"
 #include "cmp_graph_line.h"
 #include "cmp_grid.h"
@@ -609,7 +610,10 @@ void PlotLookAndFeel::updateXPixelPoints(
     const std::vector<float>& x_data,
     std::vector<std::size_t>& pixel_points_indices,
     PixelPoints& pixel_points) noexcept {
-  const auto [x_scale, x_offset] = getXScaleAndOffset(graph_bounds.toFloat().getWidth(), x_lim, x_scaling);
+  // Pixel points are graph-area-local: x_lim.min maps to pixel 0 and
+  // x_lim.max to the graph-area width.
+  const auto transform = AxisTransform({x_lim, x_scaling}, 0.0f,
+                                       graph_bounds.toFloat().getWidth());
 
   pixel_points.resize(pixel_points_indices.size());
 
@@ -621,29 +625,14 @@ void PlotLookAndFeel::updateXPixelPoints(
       // no_downsampling.
     }
 
-    if (x_scaling == Scaling::linear) {
-      for (const auto i : update_only_these_indices)
-        pixel_points[i].setX(
-            getXPixelValueLinear(x_data[i], x_scale, x_offset));
-    } else if (x_scaling == Scaling::logarithmic) {
-      for (const auto i : update_only_these_indices)
-        pixel_points[i].setX(
-            getXPixelValueLogarithmic(x_data[i], x_scale, x_offset));
-    }
+    for (const auto i : update_only_these_indices)
+      pixel_points[i].setX(transform.toPixel(x_data[i]));
     return;
   }
 
   std::size_t i{0u};
-  if (x_scaling == Scaling::linear) {
-    for (const auto i_x : pixel_points_indices) {
-      pixel_points[i++].setX(
-          getXPixelValueLinear(x_data[i_x], x_scale, x_offset));
-    }
-  } else if (x_scaling == Scaling::logarithmic) {
-    for (const auto i_x : pixel_points_indices) {
-      pixel_points[i++].setX(
-          getXPixelValueLogarithmic(x_data[i_x], x_scale, x_offset));
-    }
+  for (const auto i_x : pixel_points_indices) {
+    pixel_points[i++].setX(transform.toPixel(x_data[i_x]));
   }
 }
 
@@ -653,8 +642,10 @@ void PlotLookAndFeel::updateYPixelPoints(
     const std::vector<float>& y_data,
     const std::vector<std::size_t>& pixel_points_indices,
     PixelPoints& pixel_points) noexcept {
-  const auto [y_scale, y_offset] = getYScaleAndOffset(
-      graph_bounds.toFloat().getHeight(), y_lim, y_scaling);
+  // Pixel points are graph-area-local and the y-axis is inverted: y_lim.min
+  // maps to the graph-area height (bottom) and y_lim.max to pixel 0 (top).
+  const auto transform = AxisTransform(
+      {y_lim, y_scaling}, graph_bounds.toFloat().getHeight(), 0.0f);
 
   if (!update_only_these_indices.empty()) {
     if (pixel_points_indices.size() != y_data.size()) {
@@ -664,32 +655,16 @@ void PlotLookAndFeel::updateYPixelPoints(
       // no_downsampling.
     }
 
-    if (y_scaling == Scaling::linear) {
-      for (const auto i : update_only_these_indices)
-        pixel_points[i].setY(
-            getYPixelValueLinear(y_data[i], y_scale, y_offset));
-    } else if (y_scaling == Scaling::logarithmic) {
-      for (const auto i : update_only_these_indices)
-        pixel_points[i].setY(
-            getYPixelValueLogarithmic(y_data[i], y_scale, y_offset));
-    }
+    for (const auto i : update_only_these_indices)
+      pixel_points[i].setY(transform.toPixel(y_data[i]));
     return;
   }
 
   std::size_t i = 0u;
 
-  if (y_scaling == Scaling::linear) {
-    for (const auto i_y : pixel_points_indices) {
-      pixel_points[i].setY(
-          getYPixelValueLinear(y_data[i_y], y_scale, y_offset));
-      i++;
-    }
-  } else if (y_scaling == Scaling::logarithmic) {
-    for (const auto i_y : pixel_points_indices) {
-      pixel_points[i].setY(
-          getYPixelValueLogarithmic(y_data[i_y], y_scale, y_offset));
-      i++;
-    }
+  for (const auto i_y : pixel_points_indices) {
+    pixel_points[i].setY(transform.toPixel(y_data[i_y]));
+    i++;
   }
 }
 
