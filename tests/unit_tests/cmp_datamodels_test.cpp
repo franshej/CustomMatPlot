@@ -131,3 +131,29 @@ SECTION(ObservableTest, "Observable class tests") {
     }
   }
 }
+
+SECTION(AxisTest, "Axis struct") {
+  TEST("Default construction") {
+    constexpr Axis_f axis;
+
+    expectEquals(axis.lim.min, 0.f);
+    expectEquals(axis.lim.max, 0.f);
+    expect(axis.scaling == Scaling::linear);
+  }
+
+  TEST("Construction from limits and scaling") {
+    constexpr auto axis = Axis_f({1.f, 1000.f}, Scaling::logarithmic);
+
+    expectEquals(axis.lim.min, 1.f);
+    expectEquals(axis.lim.max, 1000.f);
+    expect(axis.scaling == Scaling::logarithmic);
+  }
+
+  TEST("Equality") {
+    const auto axis = Axis_f({0.f, 10.f}, Scaling::linear);
+
+    expect(axis == Axis_f({0.f, 10.f}, Scaling::linear));
+    expect(axis != Axis_f({0.f, 10.f}, Scaling::logarithmic));
+    expect(axis != Axis_f({0.f, 20.f}, Scaling::linear));
+  }
+}
