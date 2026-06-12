@@ -766,13 +766,17 @@ void Plot::deselectTracePoint(const juce::MouseEvent& event) {
 void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   const auto mouse_pos = getMousePositionRelativeToGraphArea(event);
 
+  // The mouse positions are relative to the graph area, so the graph bounds
+  // origin must be removed before converting them to data values.
+  const auto local_graph_bounds =
+      m_graph_bounds.getValue().withZeroOrigin().toFloat();
+
   auto d_data_position =
-      getDataPointFromPixelCoordinate(
-          mouse_pos, m_graph_bounds.getValue().toFloat(), m_x_lim, m_x_scaling,
-          m_y_lim, m_y_scaling) -
-      getDataPointFromPixelCoordinate(
-          m_prev_mouse_position, m_graph_bounds.getValue().toFloat(), m_x_lim,
-          m_x_scaling, m_y_lim, m_y_scaling);
+      getDataPointFromPixelCoordinate(mouse_pos, local_graph_bounds, m_x_lim,
+                                      m_x_scaling, m_y_lim, m_y_scaling) -
+      getDataPointFromPixelCoordinate(m_prev_mouse_position, local_graph_bounds,
+                                      m_x_lim, m_x_scaling, m_y_lim,
+                                      m_y_scaling);
 
   switch (m_pixel_point_move_type) {
     case PixelPointMoveType::horizontal: {
