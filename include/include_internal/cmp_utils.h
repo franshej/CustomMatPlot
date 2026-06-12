@@ -25,6 +25,7 @@
 #include <cmath>
 #include <vector>
 
+#include "cmp_axis_transform.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 
 namespace cmp {
@@ -108,56 +109,16 @@ getRectangleMeasures(juce::Rectangle<int> grid_area) noexcept {
 constexpr float getXDataFromXPixelCoordinate(
     const float x_pos, const juce::Rectangle<float>& bounds, const Lim_f x_lim,
     const Scaling x_scaling) noexcept {
-  const auto coordinateToXLinear = [&]() {
-    const auto x_scale = bounds.getWidth() / (x_lim.max - x_lim.min);
-    return ((x_pos - bounds.getX()) / x_scale) + x_lim.min;
-  };
-
-  const auto coordinateToXLog = [&]() {
-    return std::pow(10, ((x_pos - bounds.getX()) / bounds.getWidth()) *
-                            std::log10(x_lim.max / x_lim.min)) *
-           x_lim.min;
-  };
-
-  switch (x_scaling) {
-    case Scaling::linear:
-      return coordinateToXLinear();
-      break;
-    case Scaling::logarithmic:
-      return coordinateToXLog();
-      break;
-    default:
-      return coordinateToXLinear();
-      break;
-  }
+  return AxisTransform({x_lim, x_scaling}, bounds.getX(), bounds.getRight())
+      .fromPixel(x_pos);
 }
 
 constexpr float getYDataFromYPixelCoordinate(
     const float y_pos, const juce::Rectangle<float>& bounds, const Lim_f y_lim,
     const Scaling y_scaling) noexcept {
-  const auto coordinateToYLinear = [&]() {
-    const auto y_scale = bounds.getHeight() / std::abs(y_lim.max - y_lim.min);
-
-    return y_lim.max - ((y_pos - bounds.getY()) / y_scale);
-  };
-
-  const auto coordinateToYLog = [&]() {
-    return std::pow(10, ((bounds.getHeight() - (y_pos - bounds.getY())) /
-                         bounds.getHeight()) *
-                            std::log10(y_lim.max / y_lim.min)) *
-           y_lim.min;
-  };
-  switch (y_scaling) {
-    case Scaling::linear:
-      return coordinateToYLinear();
-      break;
-    case Scaling::logarithmic:
-      return coordinateToYLog();
-      break;
-    default:
-      return coordinateToYLinear();
-      break;
-  }
+  // The y-axis is inverted: the minimum value is at the bottom of the bounds.
+  return AxisTransform({y_lim, y_scaling}, bounds.getBottom(), bounds.getY())
+      .fromPixel(y_pos);
 }
 
 static juce::Point<float> getDataPointFromPixelCoordinate(
