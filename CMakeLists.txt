@@ -26,6 +26,7 @@ set(SOURCE source/cmp_plot.cpp
            source/cmp_graph_line.cpp
            source/cmp_graph_line3d.cpp
            source/cmp_axes3dbox.cpp
+           source/cmp_plot3d.cpp
            source/cmp_grid.cpp
            source/cmp_label.cpp
            source/cmp_frame.cpp
@@ -52,6 +53,8 @@ set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
                      include/include_internal/cmp_downsampler.h)
 
 set(PUBLIC_HEADERS include/include/cmp_plot.h
+                   include/include/cmp_plot3d.h
+                   include/include/cmp_lookandfeel_base.h
                    include/include/cmp_lookandfeel.h
                    include/include/cmp_datamodels.h)
 
