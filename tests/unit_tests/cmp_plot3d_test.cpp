@@ -115,6 +115,58 @@ SECTION(Plot3DClass, "Plot3D class") {
     expectEquals(plot_tmp.getViewElevation(), 20.f);
   }
 
+  TEST("Explicit limits override auto-scaling") {
+    cmp::Plot3D plot_tmp;
+    plot_tmp.setBounds(0, 0, 600, 500);
+    plot_tmp.setView(0.f, 90.f);
+    plot_tmp.xLim(0.f, 20.f);
+    plot_tmp.plot3({x_data1}, {y_data1}, {z_data1});
+
+    const auto graph_lines =
+        getChildComponentHelper<cmp::GraphLine3D>(plot_tmp);
+    const auto& pixel_points = graph_lines[0]->getPixelPoints();
+    const auto graph_bounds = graph_lines[0]->getLocalBounds().toFloat();
+
+    // x data 0..10 with xLim 0..20 only reaches the middle of the graph
+    // area; the auto-scaled y still spans the full height.
+    expectWithinAbsoluteError(pixel_points[2].getX(),
+                              graph_bounds.getWidth() / 2.f, 1e-2f);
+    expectWithinAbsoluteError(pixel_points[2].getY(), 0.f, 1e-2f);
+  }
+
+  TEST("Invalid limits throw") {
+    cmp::Plot3D plot_tmp;
+    auto exception_thrown = false;
+
+    try {
+      plot_tmp.zLim(1.f, 1.f);
+    } catch (const std::invalid_argument&) {
+      exception_thrown = true;
+    }
+
+    expect(exception_thrown);
+  }
+
+  TEST("Labels and title") {
+    cmp::Plot3D plot_tmp;
+    plot_tmp.setBounds(0, 0, 600, 500);
+    plot_tmp.setXLabel("x-label");
+    plot_tmp.setYLabel("y-label");
+    plot_tmp.setZLabel("z-label");
+    plot_tmp.setTitle("the title");
+
+    expect(plot_tmp.getXLabel().getText() == juce::String("x-label"));
+    expect(plot_tmp.getYLabel().getText() == juce::String("y-label"));
+    expect(plot_tmp.getZLabel().getText() == juce::String("z-label"));
+    expect(plot_tmp.getTitleLabel().getText() == juce::String("the title"));
+
+    // The labels are positioned within the plot bounds.
+    expect(!plot_tmp.getTitleLabel().getBounds().isEmpty());
+    expect(plot_tmp.getLocalBounds().contains(
+        plot_tmp.getXLabel().getBounds()));
+    expect(plot_tmp.getXLabel().getY() > plot_tmp.getTitleLabel().getY());
+  }
+
   TEST("Custom look and feel") {
     cmp::Plot3D plot_tmp;
     auto look_and_feel = std::make_unique<cmp::PlotLookAndFeel>();

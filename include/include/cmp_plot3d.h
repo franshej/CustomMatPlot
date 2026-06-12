@@ -60,6 +60,54 @@ public:
              const GraphAttributeList &graph_attributes = {});
 
   /**
+   * @brief Set the X-limits
+   * @details Disables x-axis auto-scaling.
+   * @param min minimum value
+   * @param max maximum value
+   */
+  void xLim(const float min, const float max);
+
+  /**
+   * @brief Set the Y-limits
+   * @details Disables y-axis auto-scaling.
+   * @param min minimum value
+   * @param max maximum value
+   */
+  void yLim(const float min, const float max);
+
+  /**
+   * @brief Set the Z-limits
+   * @details Disables z-axis auto-scaling.
+   * @param min minimum value
+   * @param max maximum value
+   */
+  void zLim(const float min, const float max);
+
+  /** @brief Set the text on the x-axis. */
+  void setXLabel(const std::string &x_label);
+
+  /** @brief Set the text on the y-axis. */
+  void setYLabel(const std::string &y_label);
+
+  /** @brief Set the text on the z-axis. */
+  void setZLabel(const std::string &z_label);
+
+  /** @brief Set the title of the plot. */
+  void setTitle(const std::string &title);
+
+  /** @brief Get the x-label. */
+  const juce::Label &getXLabel() const noexcept;
+
+  /** @brief Get the y-label. */
+  const juce::Label &getYLabel() const noexcept;
+
+  /** @brief Get the z-label. */
+  const juce::Label &getZLabel() const noexcept;
+
+  /** @brief Get the title-label. */
+  const juce::Label &getTitleLabel() const noexcept;
+
+  /**
    * @brief Set the camera view, like MATLAB's view(az, el)
    * @param azimuth_degrees horizontal rotation about the z-axis
    * @param elevation_degrees angle above the xy-plane
@@ -92,6 +140,8 @@ private:
   /** @internal */
   juce::Rectangle<int> getGraphBounds3D() noexcept;
   /** @internal */
+  void updateLabelsIntern();
+  /** @internal */
   PlotLookAndFeelBase *getPlotLookAndFeelBase();
 
   /** Axes and camera view. */
@@ -102,6 +152,7 @@ private:
   /** Child components */
   std::vector<std::unique_ptr<GraphLine3D>> m_graph_lines;
   std::unique_ptr<Axes3DBox> m_axes_box;
+  juce::Label m_x_label, m_y_label, m_z_label, m_title_label;
 
   /** Look and feel */
   std::unique_ptr<juce::LookAndFeel> m_lookandfeel_default;
