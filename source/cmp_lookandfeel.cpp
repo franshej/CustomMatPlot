@@ -611,11 +611,10 @@ void PlotLookAndFeel::updateXPixelPoints(
     std::vector<std::size_t>& pixel_points_indices,
     PixelPoints& pixel_points) noexcept {
   // Pixel points are graph-area-local: x_lim.min maps to pixel 0 and
-  // x_lim.max to the graph-area width.
+  // x_lim.max to the graph-area width. The caller owns the sizing of
+  // 'pixel_points'; this method only writes coordinates.
   const auto transform = AxisTransform({x_lim, x_scaling}, 0.0f,
                                        graph_bounds.toFloat().getWidth());
-
-  pixel_points.resize(pixel_points_indices.size());
 
   if (!update_only_these_indices.empty()) {
     if (pixel_points_indices.size() != x_data.size()) {
@@ -644,6 +643,8 @@ void PlotLookAndFeel::updateYPixelPoints(
     PixelPoints& pixel_points) noexcept {
   // Pixel points are graph-area-local and the y-axis is inverted: y_lim.min
   // maps to the graph-area height (bottom) and y_lim.max to pixel 0 (top).
+  // The caller owns the sizing of 'pixel_points'; this method only writes
+  // coordinates.
   const auto transform = AxisTransform(
       {y_lim, y_scaling}, graph_bounds.toFloat().getHeight(), 0.0f);
 

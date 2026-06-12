@@ -16,9 +16,9 @@
  * Conventions pinned down here:
  * - Pixel points are produced in graph-area-local coordinates (only the
  *   width/height of the graph bounds are used).
- * - updateXPixelPoints resizes the pixel-point vector;
- *   updateYPixelPoints expects it to be sized already, so X must be
- *   updated before Y.
+ * - The caller owns the sizing of the pixel-point vector;
+ *   updateXPixelPoints/updateYPixelPoints only write coordinates, so they
+ *   can run in any order.
  */
 SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
   auto expectNear = [&](const float result, const float expected) {
@@ -38,7 +38,7 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     cmp::PlotLookAndFeel lnf;
     const std::vector<float> x_data = {0.f, 2.5f, 5.f, 7.5f, 10.f};
     auto indices = makeIotaIndices(x_data.size());
-    cmp::PixelPoints pixel_points;
+    cmp::PixelPoints pixel_points(indices.size());
 
     lnf.updateXPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, graph_bounds,
                            x_data, indices, pixel_points);
@@ -55,9 +55,8 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     const std::vector<float> x_data = {0.f, 5.f, 10.f};
     const std::vector<float> y_data = {0.f, 5.f, 10.f};
     auto indices = makeIotaIndices(y_data.size());
-    cmp::PixelPoints pixel_points;
+    cmp::PixelPoints pixel_points(indices.size());
 
-    // updateXPixelPoints must run first: it sizes the pixel-point vector.
     lnf.updateXPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, graph_bounds,
                            x_data, indices, pixel_points);
     lnf.updateYPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, graph_bounds,
@@ -75,7 +74,7 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     const auto log_bounds = juce::Rectangle<int>(0, 0, 300, 300);
     const std::vector<float> data = {1.f, 10.f, 100.f, 1000.f};
     auto indices = makeIotaIndices(data.size());
-    cmp::PixelPoints pixel_points;
+    cmp::PixelPoints pixel_points(indices.size());
 
     lnf.updateXPixelPoints({}, cmp::Scaling::logarithmic, {1.f, 1000.f},
                            log_bounds, data, indices, pixel_points);
@@ -96,7 +95,7 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     std::vector<float> x_data = {0.f, 2.5f, 5.f, 7.5f, 10.f};
     std::vector<float> y_data = {0.f, 2.5f, 5.f, 7.5f, 10.f};
     auto indices = makeIotaIndices(x_data.size());
-    cmp::PixelPoints pixel_points;
+    cmp::PixelPoints pixel_points(indices.size());
 
     lnf.updateXPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, graph_bounds,
                            x_data, indices, pixel_points);

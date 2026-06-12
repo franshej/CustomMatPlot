@@ -273,6 +273,7 @@ void GraphLine::updateXIndicesAndPixelPointsIntern(
   }
 
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
+  m_pixel_points.resize(m_x_based_ds_indices.size());
   lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_graph_bounds,
                           m_x_data, m_x_based_ds_indices, m_pixel_points);
 }
@@ -295,6 +296,7 @@ void GraphLine::updateYIndicesAndPixelPointsIntern(
       Downsampler<float>::calculateXYBasedIdxs(m_x_based_ds_indices, m_y_data,
                                                m_xy_indices);
 
+      m_pixel_points.resize(m_xy_indices.size());
       lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_graph_bounds,
                               m_x_data, m_xy_indices, m_pixel_points);
       break;
@@ -303,6 +305,7 @@ void GraphLine::updateYIndicesAndPixelPointsIntern(
       break;
   }
 
+  m_pixel_points.resize(m_xy_indices.size());
   lnf->updateYPixelPoints(update_only_these_indices, m_y_scaling, m_y_lim, m_graph_bounds,
                           m_y_data, m_xy_indices, m_pixel_points);
 }
