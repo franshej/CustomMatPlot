@@ -15,6 +15,7 @@
 #include "cmp_graph_line3d.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_math3d.h"
+#include "cmp_plot.h"
 
 namespace cmp {
 
@@ -55,9 +56,78 @@ Plot3D::Plot3D(const Scaling x_scaling, const Scaling y_scaling,
   addAndMakeVisible(m_axes_box.get());
   m_axes_box->toBack();
 
-  // The axes box was added after the lookandfeel was set, so it has not
-  // been notified yet.
+  for (auto* label : {&m_x_label, &m_y_label, &m_z_label, &m_title_label}) {
+    label->setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(label);
+  }
+
+  // The children were added after the lookandfeel was set, so they have
+  // not been notified yet.
   resetLookAndFeelChildrens(&getLookAndFeel());
+}
+
+void Plot3D::xLim(const float min, const float max) {
+  if (min >= max)
+    throw std::invalid_argument("Min value must be lower than max value.");
+
+  m_x_axis.lim = {min, max};
+  m_x_autoscale = false;
+
+  updateChildrenParameters();
+}
+
+void Plot3D::yLim(const float min, const float max) {
+  if (min >= max)
+    throw std::invalid_argument("Min value must be lower than max value.");
+
+  m_y_axis.lim = {min, max};
+  m_y_autoscale = false;
+
+  updateChildrenParameters();
+}
+
+void Plot3D::zLim(const float min, const float max) {
+  if (min >= max)
+    throw std::invalid_argument("Min value must be lower than max value.");
+
+  m_z_axis.lim = {min, max};
+  m_z_autoscale = false;
+
+  updateChildrenParameters();
+}
+
+void Plot3D::setXLabel(const std::string& x_label) {
+  m_x_label.setText(x_label, juce::NotificationType::dontSendNotification);
+
+  updateLabelsIntern();
+}
+
+void Plot3D::setYLabel(const std::string& y_label) {
+  m_y_label.setText(y_label, juce::NotificationType::dontSendNotification);
+
+  updateLabelsIntern();
+}
+
+void Plot3D::setZLabel(const std::string& z_label) {
+  m_z_label.setText(z_label, juce::NotificationType::dontSendNotification);
+
+  updateLabelsIntern();
+}
+
+void Plot3D::setTitle(const std::string& title) {
+  m_title_label.setText(title, juce::NotificationType::dontSendNotification);
+
+  updateLabelsIntern();
+}
+
+const juce::Label& Plot3D::getXLabel() const noexcept { return m_x_label; }
+
+const juce::Label& Plot3D::getYLabel() const noexcept { return m_y_label; }
+
+const juce::Label& Plot3D::getZLabel() const noexcept { return m_z_label; }
+
+const juce::Label& Plot3D::getTitleLabel() const noexcept {
+  return m_title_label;
 }
 
 void Plot3D::plot3(const std::vector<std::vector<float>>& x_data,
@@ -163,6 +233,47 @@ void Plot3D::resizeChildrens() {
   for (const auto& graph_line : m_graph_lines) {
     if (graph_line) graph_line->setBounds(graph_bounds);
   }
+
+  updateLabelsIntern();
+}
+
+void Plot3D::updateLabelsIntern() {
+  auto* lnf = getPlotLookAndFeelBase();
+  if (!lnf || getLocalBounds().isEmpty()) return;
+
+  const auto font = lnf->getXYTitleFont();
+  const auto label_height = static_cast<int>(font.getHeight()) + 2;
+  const auto margin = static_cast<int>(lnf->getMarginSmall());
+  const auto bounds = getLocalBounds();
+
+  m_title_label.setFont(font);
+  m_title_label.setColour(juce::Label::textColourId,
+                          findColour(Plot::title_label_colour));
+  m_title_label.setBounds(0, margin, bounds.getWidth(), label_height);
+
+  m_x_label.setFont(font);
+  m_x_label.setColour(juce::Label::textColourId,
+                      findColour(Plot::x_label_colour));
+  m_x_label.setBounds(0, bounds.getHeight() - label_height - margin,
+                      bounds.getWidth(), label_height);
+
+  // The y- and z-labels sit on the left and right edges of the plot.
+  m_y_label.setFont(font);
+  m_y_label.setColour(juce::Label::textColourId,
+                      findColour(Plot::y_label_colour));
+  m_y_label.setBounds(margin, bounds.getCentreY() - label_height / 2,
+                      m_y_label.getFont().getStringWidth(m_y_label.getText()) +
+                          2 * margin,
+                      label_height);
+
+  m_z_label.setFont(font);
+  m_z_label.setColour(juce::Label::textColourId,
+                      findColour(Plot::y_label_colour));
+  const auto z_label_width =
+      m_z_label.getFont().getStringWidth(m_z_label.getText()) + 2 * margin;
+  m_z_label.setBounds(bounds.getWidth() - z_label_width - margin,
+                      bounds.getCentreY() - label_height / 2, z_label_width,
+                      label_height);
 }
 
 void Plot3D::resized() { resizeChildrens(); }
