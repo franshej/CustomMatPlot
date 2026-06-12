@@ -373,7 +373,8 @@ public:
         std::vector<float> &y_ticks) noexcept = 0;
 
     /** Updates the x-coordinates of the pixel points used when drawing a graph
-     *  line. */
+     *  line. The caller owns the sizing of 'pixel_points'; this method only
+     *  writes coordinates. */
     virtual void updateXPixelPoints(
         const std::vector<std::size_t> &update_only_these_indices,
         const Scaling x_scaling, const Lim<float> x_lim,
@@ -383,7 +384,8 @@ public:
         PixelPoints &pixel_points) noexcept = 0;
 
     /** Updates the y-coordinates of the pixel points used when drawing a graph
-     * line. */
+     * line. The caller owns the sizing of 'pixel_points'; this method only
+     * writes coordinates. */
     virtual void updateYPixelPoints(
         const std::vector<std::size_t> &update_only_these_indices,
         const Scaling y_scaling, const Lim<float> y_lim,
