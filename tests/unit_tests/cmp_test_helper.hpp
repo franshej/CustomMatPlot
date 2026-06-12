@@ -6,7 +6,7 @@
 
 template <typename ComponentType>
 static std::vector<ComponentType*> getChildComponentHelper(
-    cmp::Plot& parent_component) {
+    juce::Component& parent_component) {
   std::vector<ComponentType*> child_components;
 
   for (int i = 0; i < parent_component.getNumChildComponents(); i++) {
