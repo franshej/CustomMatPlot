@@ -61,6 +61,8 @@ struct CommonPlotParameterView;
 struct GraphLineDataView;
 template <class ValueType>
 struct Lim;
+template <class ValueType>
+struct Axis;
 
 /*============================================================================*/
 
@@ -328,6 +330,30 @@ constexpr Lim<ValueType> operator+(const Lim<ValueType>& rhs,
 
 /** @brief A struct that defines min and max using float. */
 typedef Lim<float> Lim_f;
+
+/** @brief A template struct that describes a single plot axis: its limits
+ * and scaling. */
+template <class ValueType>
+struct Axis {
+  constexpr Axis() = default;
+
+  constexpr Axis(const Lim<ValueType> new_lim, const Scaling new_scaling)
+      : lim{new_lim}, scaling{new_scaling} {}
+
+  Lim<ValueType> lim;
+  Scaling scaling{Scaling::linear};
+
+  bool operator==(const Axis<ValueType>& rhs) const noexcept {
+    return lim == rhs.lim && scaling == rhs.scaling;
+  }
+
+  bool operator!=(const Axis<ValueType>& rhs) const noexcept {
+    return !(*this == rhs);
+  }
+};
+
+/** @brief An axis using float limits. */
+typedef Axis<float> Axis_f;
 
 /** @brief A view of some common plot parameters. */
 struct CommonPlotParameterView {
