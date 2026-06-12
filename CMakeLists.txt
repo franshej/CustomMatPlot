@@ -24,6 +24,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/include/cmp_version.h.in
 
 set(SOURCE source/cmp_plot.cpp
            source/cmp_graph_line.cpp
+           source/cmp_graph_line3d.cpp
            source/cmp_grid.cpp
            source/cmp_label.cpp
            source/cmp_frame.cpp
@@ -34,6 +35,11 @@ set(SOURCE source/cmp_plot.cpp
            source/cmp_downsampler.cpp)
 
 set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
+                     include/include_internal/cmp_graph_line3d.h
+                     include/include_internal/cmp_axis_transform.h
+                     include/include_internal/cmp_math3d.h
+                     include/include_internal/cmp_camera3d.h
+                     include/include_internal/cmp_projector3d.h
  	                 include/include_internal/cmp_grid.h
                      include/include_internal/cmp_label.h
                      include/include_internal/cmp_utils.h
