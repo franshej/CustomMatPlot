@@ -62,6 +62,36 @@ SECTION(Projector3DTest, "3D projector") {
     expectPointNear(projector.toPixel({5.f, 5.f, 1000.f}), {250.f, 0.f});
   }
 
+  TEST("Logarithmic x-axis is normalized in log space") {
+    const auto log_x_axes =
+        cmp::Axes3{{{1.f, 1000.f}, cmp::Scaling::logarithmic},
+                   {{0.f, 10.f}, cmp::Scaling::linear},
+                   {{0.f, 10.f}, cmp::Scaling::linear}};
+    const cmp::Camera3D top_view(0.f, 90.f);
+    const cmp::Projector3D projector(log_x_axes, top_view, graph_bounds);
+
+    // x maps across the width, one decade per third.
+    expectPointNear(projector.toPixel({1.f, 5.f, 5.f}), {0.f, 200.f});
+    expectPointNear(projector.toPixel({10.f, 5.f, 5.f}), {500.f / 3.f, 200.f});
+    expectPointNear(projector.toPixel({100.f, 5.f, 5.f}), {500.f * 2.f / 3.f, 200.f});
+    expectPointNear(projector.toPixel({1000.f, 5.f, 5.f}), {500.f, 200.f});
+  }
+
+  TEST("Logarithmic y-axis is normalized in log space") {
+    const auto log_y_axes =
+        cmp::Axes3{{{0.f, 10.f}, cmp::Scaling::linear},
+                   {{1.f, 1000.f}, cmp::Scaling::logarithmic},
+                   {{0.f, 10.f}, cmp::Scaling::linear}};
+    const cmp::Camera3D top_view(0.f, 90.f);
+    const cmp::Projector3D projector(log_y_axes, top_view, graph_bounds);
+
+    // y maps up the height (inverted), one decade per third.
+    expectPointNear(projector.toPixel({5.f, 1.f, 5.f}), {250.f, 400.f});
+    expectPointNear(projector.toPixel({5.f, 10.f, 5.f}), {250.f, 400.f * 2.f / 3.f});
+    expectPointNear(projector.toPixel({5.f, 100.f, 5.f}), {250.f, 400.f / 3.f});
+    expectPointNear(projector.toPixel({5.f, 1000.f, 5.f}), {250.f, 0.f});
+  }
+
   TEST("Default view: the data cube fills the graph bounds") {
     const cmp::Projector3D projector(linear_axes, cmp::Camera3D(),
                                      graph_bounds);

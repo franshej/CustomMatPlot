@@ -16,6 +16,7 @@
 #include "cmp_lookandfeel.h"
 #include "cmp_math3d.h"
 #include "cmp_plot.h"
+#include "cmp_projector3d.h"
 
 namespace cmp {
 
@@ -55,6 +56,9 @@ Plot3D::Plot3D(const Scaling x_scaling, const Scaling y_scaling,
 
   addAndMakeVisible(m_axes_box.get());
   m_axes_box->toBack();
+  // The tick labels are drawn pushed outside the cube (and thus outside the
+  // box's own bounds), so painting must not be clipped to those bounds.
+  m_axes_box->setPaintingIsUnclipped(true);
 
   for (auto* label : {&m_x_label, &m_y_label, &m_z_label, &m_title_label}) {
     label->setJustificationType(juce::Justification::centred);
@@ -213,11 +217,15 @@ juce::Rectangle<int> Plot3D::getGraphBounds3D() noexcept {
   if (!lnf) return {};
 
   // The projected box corners sit on the graph-bound edges, so space is
-  // reserved around the graph bounds for the tick labels that are pushed
-  // outside the box.
+  // reserved around the graph bounds for the tick labels pushed outside the
+  // box and, beyond them, the x/y/z axis labels.
   const auto margin = static_cast<int>(lnf->getMargin());
+  const auto tick_label_space =
+      static_cast<int>(2.0f * lnf->getGridLabelFont().getHeight());
+  const auto axis_label_space =
+      static_cast<int>(lnf->getXYTitleFont().getHeight());
   const auto label_space =
-      2 * margin + static_cast<int>(2.0f * lnf->getGridLabelFont().getHeight());
+      2 * margin + tick_label_space + axis_label_space;
 
   return getLocalBounds().reduced(label_space);
 }
@@ -246,34 +254,68 @@ void Plot3D::updateLabelsIntern() {
   const auto margin = static_cast<int>(lnf->getMarginSmall());
   const auto bounds = getLocalBounds();
 
+  // The title stays centred along the top of the plot.
   m_title_label.setFont(font);
   m_title_label.setColour(juce::Label::textColourId,
                           findColour(Plot::title_label_colour));
   m_title_label.setBounds(0, margin, bounds.getWidth(), label_height);
 
-  m_x_label.setFont(font);
-  m_x_label.setColour(juce::Label::textColourId,
-                      findColour(Plot::x_label_colour));
-  m_x_label.setBounds(0, bounds.getHeight() - label_height - margin,
-                      bounds.getWidth(), label_height);
+  if (m_graph_bounds.isEmpty()) return;
 
-  // The y- and z-labels sit on the left and right edges of the plot.
-  m_y_label.setFont(font);
-  m_y_label.setColour(juce::Label::textColourId,
-                      findColour(Plot::y_label_colour));
-  m_y_label.setBounds(margin, bounds.getCentreY() - label_height / 2,
-                      m_y_label.getFont().getStringWidth(m_y_label.getText()) +
-                          2 * margin,
-                      label_height);
+  // The x/y/z labels are placed at the projected midpoint of their axis and
+  // pushed outward from the box centre, past the tick labels, so each label
+  // sits beside the axis it names in any view (like the tick labels do).
+  const auto axes = Axes3{m_x_axis, m_y_axis, m_z_axis};
+  const auto camera = Camera3D(m_azimuth_degrees, m_elevation_degrees);
+  const Projector3D projector(axes, camera, m_graph_bounds);
 
-  m_z_label.setFont(font);
-  m_z_label.setColour(juce::Label::textColourId,
-                      findColour(Plot::y_label_colour));
-  const auto z_label_width =
-      m_z_label.getFont().getStringWidth(m_z_label.getText()) + 2 * margin;
-  m_z_label.setBounds(bounds.getWidth() - z_label_width - margin,
-                      bounds.getCentreY() - label_height / 2, z_label_width,
-                      label_height);
+  const auto origin = m_graph_bounds.getPosition().toFloat();
+
+  const auto& xl = m_x_axis.lim;
+  const auto& yl = m_y_axis.lim;
+  const auto& zl = m_z_axis.lim;
+
+  const auto box_centre = (projector.toPixel({xl.min, yl.min, zl.min}) +
+                           projector.toPixel({xl.max, yl.max, zl.max})) /
+                          2.0f;
+
+  // Push just past the tick labels (which sit ~18 px out) so each axis label
+  // sits beside its axis without floating off to the plot edge.
+  const auto label_margin_px = static_cast<float>(label_height) + 12.0f;
+
+  const auto placeAxisLabel = [&](juce::Label& label, const int colour_id,
+                                  const Vec3f& edge_a, const Vec3f& edge_b) {
+    label.setFont(font);
+    label.setColour(juce::Label::textColourId, findColour(colour_id));
+
+    const auto edge_mid =
+        (projector.toPixel(edge_a) + projector.toPixel(edge_b)) / 2.0f;
+
+    auto direction = edge_mid - box_centre;
+    if (direction.getDistanceFromOrigin() > 0.0f)
+      direction /= direction.getDistanceFromOrigin();
+
+    const auto centre = origin + edge_mid + direction * label_margin_px;
+    const auto width = font.getStringWidth(label.getText()) + 2 * margin;
+
+    label.setBounds(
+        juce::Rectangle<int>(width, label_height).withCentre(centre.toInt()));
+  };
+
+  // The faces the labels run along, matching the tick-label placement.
+  const auto x_yface = getFaceValue(getXTickLabelYFace(camera), axes);
+  const auto y_xface = getFaceValue(getYTickLabelXFace(camera), axes);
+  const auto xy_zface = getFaceValue(getTickLabelZFace(camera), axes);
+  const auto z_edge = getZTickLabelEdge(camera);
+  const auto z_xface = getFaceValue(z_edge.first, axes);
+  const auto z_yface = getFaceValue(z_edge.second, axes);
+
+  placeAxisLabel(m_x_label, Plot::x_label_colour, {xl.min, x_yface, xy_zface},
+                 {xl.max, x_yface, xy_zface});
+  placeAxisLabel(m_y_label, Plot::y_label_colour, {y_xface, yl.min, xy_zface},
+                 {y_xface, yl.max, xy_zface});
+  placeAxisLabel(m_z_label, Plot::y_label_colour, {z_xface, z_yface, zl.min},
+                 {z_xface, z_yface, zl.max});
 }
 
 void Plot3D::resized() { resizeChildrens(); }

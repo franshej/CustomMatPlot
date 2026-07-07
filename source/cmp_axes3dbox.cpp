@@ -45,23 +45,29 @@ static std::vector<float> generateAxisTicks(const Axis_f& axis) {
   return ticks;
 }
 
-/** The data value of the fixed coordinate of a cube face. */
-static float getFaceValue(const CubeFace face, const Axes3& axes) noexcept {
-  switch (face) {
-    case CubeFace::x_min:
-      return axes.x.lim.min;
-    case CubeFace::x_max:
-      return axes.x.lim.max;
-    case CubeFace::y_min:
-      return axes.y.lim.min;
-    case CubeFace::y_max:
-      return axes.y.lim.max;
-    case CubeFace::z_min:
-      return axes.z.lim.min;
-    case CubeFace::z_max:
-    default:
-      return axes.z.lim.max;
+/** Grid-line positions for one axis. Linear axes reuse the label ticks; log
+ * axes add the minor lines (2..9 within every decade) so the grid shows the
+ * characteristic logarithmic bunching, not just one evenly-spaced line per
+ * decade. */
+static std::vector<float> generateAxisGridLines(const Axis_f& axis) {
+  if (!axis.lim) return {};
+
+  if (axis.scaling != Scaling::logarithmic) return generateAxisTicks(axis);
+
+  auto lines = std::vector<float>();
+
+  const auto first_decade = std::floor(std::log10(axis.lim.min));
+  const auto last_decade = std::floor(std::log10(axis.lim.max));
+
+  for (auto decade = first_decade; decade <= last_decade; ++decade) {
+    const auto decade_value = std::pow(10.0f, decade);
+    for (int n = 1; n <= 9; ++n) {
+      const auto value = static_cast<float>(n) * decade_value;
+      if (value >= axis.lim.min && value <= axis.lim.max) lines.push_back(value);
+    }
   }
+
+  return lines;
 }
 
 void Axes3DBox::setParameters(const Axes3& axes, const Camera3D& camera) {
@@ -84,10 +90,26 @@ const std::vector<float>& Axes3DBox::getZTicks() const noexcept {
   return m_z_ticks;
 }
 
+const std::vector<float>& Axes3DBox::getXGridLines() const noexcept {
+  return m_x_grid;
+}
+
+const std::vector<float>& Axes3DBox::getYGridLines() const noexcept {
+  return m_y_grid;
+}
+
+const std::vector<float>& Axes3DBox::getZGridLines() const noexcept {
+  return m_z_grid;
+}
+
 void Axes3DBox::updateTicks() {
   m_x_ticks = generateAxisTicks(m_axes.x);
   m_y_ticks = generateAxisTicks(m_axes.y);
   m_z_ticks = generateAxisTicks(m_axes.z);
+
+  m_x_grid = generateAxisGridLines(m_axes.x);
+  m_y_grid = generateAxisGridLines(m_axes.y);
+  m_z_grid = generateAxisGridLines(m_axes.z);
 }
 
 void Axes3DBox::resized() {}
@@ -121,10 +143,10 @@ void Axes3DBox::paint(juce::Graphics& g) {
       case CubeFace::x_min:
       case CubeFace::x_max:
         // The face spans the y- and z-axes.
-        for (const auto tick : m_y_ticks)
+        for (const auto tick : m_y_grid)
           drawProjectedLine({face_value, tick, z_lim.min},
                             {face_value, tick, z_lim.max});
-        for (const auto tick : m_z_ticks)
+        for (const auto tick : m_z_grid)
           drawProjectedLine({face_value, y_lim.min, tick},
                             {face_value, y_lim.max, tick});
 
@@ -141,10 +163,10 @@ void Axes3DBox::paint(juce::Graphics& g) {
       case CubeFace::y_min:
       case CubeFace::y_max:
         // The face spans the x- and z-axes.
-        for (const auto tick : m_x_ticks)
+        for (const auto tick : m_x_grid)
           drawProjectedLine({tick, face_value, z_lim.min},
                             {tick, face_value, z_lim.max});
-        for (const auto tick : m_z_ticks)
+        for (const auto tick : m_z_grid)
           drawProjectedLine({x_lim.min, face_value, tick},
                             {x_lim.max, face_value, tick});
 
@@ -162,10 +184,10 @@ void Axes3DBox::paint(juce::Graphics& g) {
       case CubeFace::z_max:
       default:
         // The face spans the x- and y-axes.
-        for (const auto tick : m_x_ticks)
+        for (const auto tick : m_x_grid)
           drawProjectedLine({tick, y_lim.min, face_value},
                             {tick, y_lim.max, face_value});
-        for (const auto tick : m_y_ticks)
+        for (const auto tick : m_y_grid)
           drawProjectedLine({x_lim.min, tick, face_value},
                             {x_lim.max, tick, face_value});
 
