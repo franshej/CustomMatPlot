@@ -59,6 +59,11 @@ class Projector3D {
                          const std::vector<float>& y_data,
                          const std::vector<float>& z_data,
                          PixelPoints& pixel_points) const {
+    // The x/y/z data must be equal length; the caller (the public plot3 API)
+    // guarantees this. There is a bug in the code if this assert happens.
+    jassert(x_data.size() == y_data.size() &&
+            y_data.size() == z_data.size());
+
     pixel_points.resize(x_data.size());
 
     for (std::size_t i = 0; i < x_data.size(); ++i) {
