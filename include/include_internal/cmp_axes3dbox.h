@@ -28,6 +28,25 @@ namespace cmp {
 /** @brief The six faces of the data cube. */
 enum class CubeFace : uint32_t { x_min, x_max, y_min, y_max, z_min, z_max };
 
+/** @brief The data value of the fixed coordinate of a cube face. */
+inline float getFaceValue(const CubeFace face, const Axes3& axes) noexcept {
+  switch (face) {
+    case CubeFace::x_min:
+      return axes.x.lim.min;
+    case CubeFace::x_max:
+      return axes.x.lim.max;
+    case CubeFace::y_min:
+      return axes.y.lim.min;
+    case CubeFace::y_max:
+      return axes.y.lim.max;
+    case CubeFace::z_min:
+      return axes.z.lim.min;
+    case CubeFace::z_max:
+    default:
+      return axes.z.lim.max;
+  }
+}
+
 /** @brief The outward normal of a cube face. */
 inline Vec3f getFaceNormal(const CubeFace face) noexcept {
   switch (face) {
@@ -136,6 +155,15 @@ class Axes3DBox : public juce::Component {
   /** @brief Get the auto-generated z-ticks. */
   const std::vector<float>& getZTicks() const noexcept;
 
+  /** @brief Get the x grid-line positions (log axes add minor lines). */
+  const std::vector<float>& getXGridLines() const noexcept;
+
+  /** @brief Get the y grid-line positions (log axes add minor lines). */
+  const std::vector<float>& getYGridLines() const noexcept;
+
+  /** @brief Get the z grid-line positions (log axes add minor lines). */
+  const std::vector<float>& getZGridLines() const noexcept;
+
   //==============================================================================
 
   /** @internal */
@@ -151,7 +179,9 @@ class Axes3DBox : public juce::Component {
 
   Axes3 m_axes;
   Camera3D m_camera;
+  // Ticks drive the labels; grid lines add log minor lines between decades.
   std::vector<float> m_x_ticks, m_y_ticks, m_z_ticks;
+  std::vector<float> m_x_grid, m_y_grid, m_z_grid;
   juce::LookAndFeel* m_lookandfeel{nullptr};
 };
 

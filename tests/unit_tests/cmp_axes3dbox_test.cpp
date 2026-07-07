@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "cmp_axes3dbox.h"
 #include "cmp_test_helper.hpp"
 
@@ -108,6 +110,55 @@ SECTION(Axes3DBoxTest, "3D axes box") {
     expectEquals(z_ticks[1], 10.f);
     expectEquals(z_ticks[2], 100.f);
     expectEquals(z_ticks[3], 1000.f);
+  }
+
+  TEST("Grid lines: linear axis matches the ticks") {
+    cmp::Axes3DBox axes_box;
+    axes_box.setParameters({{{0.f, 10.f}, cmp::Scaling::linear},
+                            {{-5.f, 5.f}, cmp::Scaling::linear},
+                            {{0.f, 100.f}, cmp::Scaling::linear}},
+                           cmp::Camera3D());
+
+    expectEqualVectors(axes_box.getZGridLines(), axes_box.getZTicks(),
+                       [this](auto a, auto b) { expectEquals(a, b); });
+  }
+
+  TEST("Grid lines: logarithmic scaling adds minor lines on any axis") {
+    const auto log_axis =
+        cmp::Axis_f{{1.f, 1000.f}, cmp::Scaling::logarithmic};
+    const auto lin_axis = cmp::Axis_f{{0.f, 10.f}, cmp::Scaling::linear};
+
+    // A log axis spanning 1..1000 has the minor lines 1..9, 10..90, 100..900
+    // and then 1000: 9 + 9 + 9 + 1 = 28 grid lines with the decade bunching.
+    const auto expectLogMinorLines = [this](const std::vector<float>& grid) {
+      expectEquals(grid.size(), std::size_t(28));
+      expectEquals(grid.front(), 1.f);
+      expectEquals(grid.back(), 1000.f);
+
+      const auto contains = [&](const float value) {
+        return std::find(grid.begin(), grid.end(), value) != grid.end();
+      };
+      expect(contains(2.f));
+      expect(contains(20.f));
+      expect(contains(200.f));
+    };
+
+    // Logarithmic scaling must work identically on each of the three axes.
+    {
+      cmp::Axes3DBox axes_box;
+      axes_box.setParameters({log_axis, lin_axis, lin_axis}, cmp::Camera3D());
+      expectLogMinorLines(axes_box.getXGridLines());
+    }
+    {
+      cmp::Axes3DBox axes_box;
+      axes_box.setParameters({lin_axis, log_axis, lin_axis}, cmp::Camera3D());
+      expectLogMinorLines(axes_box.getYGridLines());
+    }
+    {
+      cmp::Axes3DBox axes_box;
+      axes_box.setParameters({lin_axis, lin_axis, log_axis}, cmp::Camera3D());
+      expectLogMinorLines(axes_box.getZGridLines());
+    }
   }
 
   TEST("No ticks without axis limits") {
