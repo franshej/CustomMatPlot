@@ -12,7 +12,7 @@
 
 #include "cmp_axes3dbox.h"
 #include "cmp_camera3d.h"
-#include "cmp_graph_line3d.h"
+#include "cmp_series3d.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_math3d.h"
 #include "cmp_plot.h"
@@ -137,7 +137,7 @@ const juce::Label& Plot3D::getTitleLabel() const noexcept {
 void Plot3D::plot3(const std::vector<std::vector<float>>& x_data,
                    const std::vector<std::vector<float>>& y_data,
                    const std::vector<std::vector<float>>& z_data,
-                   const GraphAttributeList& graph_attributes) {
+                   const SeriesAttributeList& series_attributes) {
   if (x_data.size() != y_data.size() || x_data.size() != z_data.size())
     throw std::invalid_argument(
         "plot3: x_data, y_data and z_data must contain the same number of "
@@ -145,39 +145,39 @@ void Plot3D::plot3(const std::vector<std::vector<float>>& x_data,
 
   auto* lnf = getPlotLookAndFeelBase();
 
-  if (m_graph_lines.size() != x_data.size()) {
-    m_graph_lines.resize(x_data.size());
+  if (m_series.size() != x_data.size()) {
+    m_series.resize(x_data.size());
 
-    for (std::size_t i = 0; i < m_graph_lines.size(); ++i) {
-      if (m_graph_lines[i]) continue;
+    for (std::size_t i = 0; i < m_series.size(); ++i) {
+      if (m_series[i]) continue;
 
-      auto graph_line = std::make_unique<GraphLine3D>();
+      auto series = std::make_unique<Series3D>();
 
       if (lnf) {
-        const auto colour_id = lnf->getColourFromGraphID(i);
-        graph_line->setColour(lnf->findAndGetColourFromId(colour_id));
+        const auto colour_id = lnf->getColourFromSeriesID(i);
+        series->setColour(lnf->findAndGetColourFromId(colour_id));
       }
 
-      graph_line->setLookAndFeel(&getLookAndFeel());
-      graph_line->setBounds(m_graph_bounds);
-      addAndMakeVisible(graph_line.get());
+      series->setLookAndFeel(&getLookAndFeel());
+      series->setBounds(m_axes_bounds);
+      addAndMakeVisible(series.get());
 
-      m_graph_lines[i] = std::move(graph_line);
+      m_series[i] = std::move(series);
     }
 
     m_axes_box->toBack();
   }
 
-  for (std::size_t i = 0; i < m_graph_lines.size(); ++i) {
+  for (std::size_t i = 0; i < m_series.size(); ++i) {
     if (x_data[i].size() != y_data[i].size() ||
         x_data[i].size() != z_data[i].size())
       throw std::invalid_argument(
           "plot3: the x, y and z values of a line must have the same size.");
 
-    m_graph_lines[i]->setValues(x_data[i], y_data[i], z_data[i]);
+    m_series[i]->setValues(x_data[i], y_data[i], z_data[i]);
 
-    if (i < graph_attributes.size())
-      m_graph_lines[i]->setGraphAttribute(graph_attributes[i]);
+    if (i < series_attributes.size())
+      m_series[i]->setSeriesAttribute(series_attributes[i]);
   }
 
   if (m_x_autoscale) m_x_axis.lim = findDataLim(x_data);
@@ -205,19 +205,19 @@ void Plot3D::updateChildrenParameters() {
 
   m_axes_box->setParameters(axes, camera);
 
-  for (const auto& graph_line : m_graph_lines) {
-    if (graph_line) graph_line->updateProjection(axes, camera);
+  for (const auto& series : m_series) {
+    if (series) series->updateProjection(axes, camera);
   }
 
   repaint();
 }
 
-juce::Rectangle<int> Plot3D::getGraphBounds3D() noexcept {
+juce::Rectangle<int> Plot3D::getAxesBounds3D() noexcept {
   auto* lnf = getPlotLookAndFeelBase();
   if (!lnf) return {};
 
-  // The projected box corners sit on the graph-bound edges, so space is
-  // reserved around the graph bounds for the tick labels pushed outside the
+  // The projected box corners sit on the series-bound edges, so space is
+  // reserved around the axes bounds for the tick labels pushed outside the
   // box and, beyond them, the x/y/z axis labels.
   const auto margin = static_cast<int>(lnf->getMargin());
   const auto tick_label_space =
@@ -231,15 +231,15 @@ juce::Rectangle<int> Plot3D::getGraphBounds3D() noexcept {
 }
 
 void Plot3D::resizeChildrens() {
-  const auto graph_bounds = getGraphBounds3D();
+  const auto axes_bounds = getAxesBounds3D();
 
-  if (graph_bounds.isEmpty()) return;
+  if (axes_bounds.isEmpty()) return;
 
-  m_graph_bounds = graph_bounds;
-  m_axes_box->setBounds(graph_bounds);
+  m_axes_bounds = axes_bounds;
+  m_axes_box->setBounds(axes_bounds);
 
-  for (const auto& graph_line : m_graph_lines) {
-    if (graph_line) graph_line->setBounds(graph_bounds);
+  for (const auto& series : m_series) {
+    if (series) series->setBounds(axes_bounds);
   }
 
   updateLabelsIntern();
@@ -260,16 +260,16 @@ void Plot3D::updateLabelsIntern() {
                           findColour(Plot::title_label_colour));
   m_title_label.setBounds(0, margin, bounds.getWidth(), label_height);
 
-  if (m_graph_bounds.isEmpty()) return;
+  if (m_axes_bounds.isEmpty()) return;
 
   // The x/y/z labels are placed at the projected midpoint of their axis and
   // pushed outward from the box centre, past the tick labels, so each label
   // sits beside the axis it names in any view (like the tick labels do).
   const auto axes = Axes3{m_x_axis, m_y_axis, m_z_axis};
   const auto camera = Camera3D(m_azimuth_degrees, m_elevation_degrees);
-  const Projector3D projector(axes, camera, m_graph_bounds);
+  const Projector3D projector(axes, camera, m_axes_bounds);
 
-  const auto origin = m_graph_bounds.getPosition().toFloat();
+  const auto origin = m_axes_bounds.getPosition().toFloat();
 
   const auto& xl = m_x_axis.lim;
   const auto& yl = m_y_axis.lim;
@@ -282,7 +282,7 @@ void Plot3D::updateLabelsIntern() {
   // Push just past the tick labels so each axis label sits beside its axis
   // without floating off to the plot edge.
   const auto label_margin_px =
-      static_cast<float>(lnf->getAxisLabelDistanceFromGraphBound(label_height));
+      static_cast<float>(lnf->getAxisLabelDistanceFromAxesBound(label_height));
 
   const auto placeAxisLabel = [&](juce::Label& label, const int colour_id,
                                   const Vec3f& edge_a, const Vec3f& edge_b) {
@@ -323,7 +323,7 @@ void Plot3D::resized() { resizeChildrens(); }
 
 void Plot3D::paint(juce::Graphics& g) {
   if (auto* lnf = getPlotLookAndFeelBase()) {
-    lnf->drawBackground(g, m_graph_bounds);
+    lnf->drawBackground(g, m_axes_bounds);
   }
 }
 

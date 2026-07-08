@@ -9,7 +9,7 @@ class PlotLookAndFeelTimeline : public PlotLookAndFeel {
 
   void overridePlotColours() noexcept override;
 
-  juce::Rectangle<int> getGraphBounds(
+  juce::Rectangle<int> getAxesBounds(
       const juce::Rectangle<int> bounds,
       const juce::Component *const plot_comp) const noexcept override;
 
@@ -23,7 +23,7 @@ class PlotLookAndFeelTimeline : public PlotLookAndFeel {
                         LabelVector &x_axis_labels_out,
                         LabelVector &y_axis_labels_out) override;
 
-  bool isXAxisLabelsBelowGraph() const noexcept override;
+  bool isXAxisLabelsBelowAxesArea() const noexcept override;
 
   void drawGridLabels(juce::Graphics &g, const LabelVector &x_axis_labels,
                       const LabelVector &y_axis_labels) override;

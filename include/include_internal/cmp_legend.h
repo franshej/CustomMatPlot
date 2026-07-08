@@ -39,22 +39,22 @@ class Legend : public juce::Component {
    *  @param label_texts the text to be displayed for each data series
    *  @return void.
    */
-  void setLegend(const StringVector &graph_descriptions);
+  void setLegend(const StringVector &series_descriptions);
 
-  /** @brief Set GraphLines
+  /** @brief Set SeriesVector
    *
-   * Set the GraphLines to be used for the legend.
+   * Set the SeriesVector to be used for the legend.
    *
-   * @param GraphLines* graph_lines in the plot.
+   * @param SeriesVector* series in the plot.
    * @return void.
    */
-  void setGraphLines(const GraphLines &graph_lines);
+  void setSeries(const SeriesVector &series);
 
   /** @breif Update legends
    *
-   * Update the legends based on info from the graph_lines.
-   * The legend descriptions are resized based on the graph_lines size.
-   * The colour of the graph_line is displayed before the description text.
+   * Update the legends based on info from the series.
+   * The legend descriptions are resized based on the series size.
+   * The colour of the series is displayed before the description text.
    *
    * @return void.
    */
@@ -84,6 +84,6 @@ class Legend : public juce::Component {
   std::vector<std::string> m_label_texts;
 
   bool m_label_texts_is_changed{false};
-  const GraphLines *m_graph_lines{nullptr};
+  const SeriesVector *m_series{nullptr};
 };
 }  // namespace cmp

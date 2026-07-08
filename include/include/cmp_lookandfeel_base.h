@@ -30,14 +30,14 @@ public:
   virtual void drawBackground(juce::Graphics &g,
                               const juce::Rectangle<int> &bound) = 0;
 
-  /** This method draws a frame around the graph area. */
+  /** This method draws a frame around the axes area. */
   virtual void drawFrame(juce::Graphics &g,
                          const juce::Rectangle<int> bounds) = 0;
 
-  /** This method draws a single graph line. */
+  /** This method draws a single series. */
   virtual void
-  drawGraphLine(juce::Graphics &g, const GraphLineDataView graph_line_data,
-                const juce::Rectangle<int> &graph_line_bounds) = 0;
+  drawSeries(juce::Graphics &g, const SeriesDataView series_data,
+                const juce::Rectangle<int> &series_bounds) = 0;
 
   /** This method draws the legend. */
   virtual void drawLegend(juce::Graphics &g,
@@ -67,7 +67,7 @@ public:
   virtual void
   drawSelectionArea(juce::Graphics &g, juce::Point<int> &start_coordinates,
                     const juce::Point<int> &end_coordinates,
-                    const juce::Rectangle<int> &graph_bounds) noexcept = 0;
+                    const juce::Rectangle<int> &axes_bounds) noexcept = 0;
 
   /** A method to find and get the colour from an id. */
   virtual CONSTEXPR20 juce::Colour
@@ -76,14 +76,14 @@ public:
   /** Returns the Font used for the Trace and Zoom buttons. */
   virtual CONSTEXPR20 juce::Font getButtonFont() const noexcept = 0;
 
-  /** Returns the 'ColourIdsGraph' for a given index.*/
+  /** Returns the 'ColourIdsSeries' for a given index.*/
   virtual CONSTEXPR20 int
-  getColourFromGraphID(const std::size_t graph_index) const = 0;
+  getColourFromSeriesID(const std::size_t series_index) const = 0;
 
-  /** Get the graph bounds, where the graphs and grids are to be drawn. A plot
-   * component can be given to base the graph bounds on the grid anf axis
+  /** Get the axes bounds, where the series and grids are to be drawn. A plot
+   * component can be given to base the axes bounds on the grid anf axis
    * labels. */
-  virtual CONSTEXPR20 juce::Rectangle<int> getGraphBounds(
+  virtual CONSTEXPR20 juce::Rectangle<int> getAxesBounds(
       const juce::Rectangle<int> bounds,
       const juce::Component *plot_comp = nullptr) const noexcept = 0;
 
@@ -96,7 +96,7 @@ public:
 
   /** Get the legend position */
   virtual CONSTEXPR20 juce::Point<int> getLegendPosition(
-      const juce::Rectangle<int> &graph_bounds,
+      const juce::Rectangle<int> &axes_bounds,
       const juce::Rectangle<int> &legend_bounds) const noexcept = 0;
 
   /** Get the legend bounds */
@@ -107,7 +107,7 @@ public:
   /** Returns the Font used when drawing legends. */
   virtual juce::Font getLegendFont() const noexcept = 0;
 
-  /** Get margin used for labels and graph bounds. */
+  /** Get margin used for labels and axes bounds. */
   virtual CONSTEXPR20 std::size_t getMargin() const noexcept = 0;
 
   /** Get a smaller margin. */
@@ -116,16 +116,16 @@ public:
   /** Get pixel length of marker symbol. */
   virtual CONSTEXPR20 std::size_t getMarkerLength() const noexcept = 0;
 
-  /** Get the pixel distance a grid/tick label is pushed outside the graph
+  /** Get the pixel distance a grid/tick label is pushed outside the series
    * bound it sits beside. Used by the 3D axes box to space its tick labels
    * away from the data cube. */
-  virtual CONSTEXPR20 int getGridLabelDistanceFromGraphBound() const noexcept =
+  virtual CONSTEXPR20 int getGridLabelDistanceFromAxesBound() const noexcept =
       0;
 
   /** Get the pixel distance an axis title (the x/y/z label) is pushed outside
-   * the graph bound, given the title's pixel height. Used by the 3D plot to
+   * the axes bound, given the title's pixel height. Used by the 3D plot to
    * place the axis titles just past the tick labels. */
-  virtual CONSTEXPR20 int getAxisLabelDistanceFromGraphBound(
+  virtual CONSTEXPR20 int getAxisLabelDistanceFromAxesBound(
       const int label_height) const noexcept = 0;
 
   /** Get the bounds of the componenet (Local bounds). */
@@ -153,7 +153,7 @@ public:
   /** Get the bounds for the trace and zoom button. */
   virtual CONSTEXPR20 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
   getTraceAndZoomButtonBounds(
-      juce::Rectangle<int> graph_bounds) const noexcept = 0;
+      juce::Rectangle<int> axes_bounds) const noexcept = 0;
 
   /** Returns the Font used when drawing the x-, y-axis and title labels.
    */
@@ -181,7 +181,7 @@ public:
 
   /** Update the title, x and y axis labels. */
   virtual void updateXYTitleLabels(const juce::Rectangle<int> &bounds,
-                                   const juce::Rectangle<int> &graph_bounds,
+                                   const juce::Rectangle<int> &axes_bounds,
                                    juce::Label &x_label, juce::Label &y_label,
                                    juce::Label &title_label) = 0;
 };

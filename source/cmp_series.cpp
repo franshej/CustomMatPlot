@@ -5,7 +5,7 @@
  * https://opensource.org/licenses/MIT
  */
 
-#include "cmp_graph_line.h"
+#include "cmp_series.h"
 
 #include <cstddef>
 #include <mutex>
@@ -18,40 +18,40 @@
 
 namespace cmp {
 
-GraphLineDataView::GraphLineDataView(
+SeriesDataView::SeriesDataView(
     const std::vector<float>& _x_data, const std::vector<float>& _y_data,
     const PixelPoints& _pixel_points,
     const std::vector<std::size_t>& _pixel_point_indices,
-    const GraphAttribute& _graph_attribute)
+    const SeriesAttribute& _series_attribute)
     : x_data(_x_data),
       y_data(_y_data),
       pixel_points(_pixel_points),
       pixel_point_indices(_pixel_point_indices),
-      graph_attribute(_graph_attribute) {}
+      series_attribute(_series_attribute) {}
 
-GraphLineDataView::GraphLineDataView(const GraphLine& graph_line)
-    : x_data(graph_line.getXData()),
-      y_data(graph_line.getYData()),
-      pixel_points(graph_line.getPixelPoints()),
-      pixel_point_indices(graph_line.getPixelPointIndices()),
-      graph_attribute(graph_line.getGraphAttribute()) {}
+SeriesDataView::SeriesDataView(const Series& series)
+    : x_data(series.getXData()),
+      y_data(series.getYData()),
+      pixel_points(series.getPixelPoints()),
+      pixel_point_indices(series.getPixelPointIndices()),
+      series_attribute(series.getSeriesAttribute()) {}
 
-const GraphAttribute& GraphLine::getGraphAttribute() const noexcept {
-  return m_graph_attributes;
+const SeriesAttribute& Series::getSeriesAttribute() const noexcept {
+  return m_series_attributes;
 }
 
-void GraphLine::setIndicesToUpdate(const std::vector<std::size_t> indices){
+void Series::setIndicesToUpdate(const std::vector<std::size_t> indices){
   m_indices_to_update = indices;
   updateXY();
   m_indices_to_update.clear();
 }
 
-void GraphLine::setColour(const juce::Colour graph_colour) {
-  m_graph_attributes.graph_colour = graph_colour;
+void Series::setColour(const juce::Colour series_colour) {
+  m_series_attributes.series_colour = series_colour;
 }
 
 std::tuple<juce::Point<float>, juce::Point<float>, size_t>
-GraphLine::findClosestPixelPointTo(const juce::Point<float>& this_pixel_point,
+Series::findClosestPixelPointTo(const juce::Point<float>& this_pixel_point,
                                    bool check_only_distance_from_x) const {
   // No pixel points.
   jassert(!m_pixel_points.empty());
@@ -82,7 +82,7 @@ GraphLine::findClosestPixelPointTo(const juce::Point<float>& this_pixel_point,
           m_xy_indices[closest_i]};
 }
 
-std::pair<juce::Point<float>, size_t> GraphLine::findClosestDataPointTo(
+std::pair<juce::Point<float>, size_t> Series::findClosestDataPointTo(
     const juce::Point<float>& this_data_point, bool check_only_distance_from_x,
     bool only_visible_data_points) const {
   // No y_data empty.
@@ -121,41 +121,41 @@ std::pair<juce::Point<float>, size_t> GraphLine::findClosestDataPointTo(
   return {closest_data_point, nearest_i};
 }
 
-juce::Colour GraphLine::getColour() const noexcept {
-  return m_graph_attributes.graph_colour.value();
+juce::Colour Series::getColour() const noexcept {
+  return m_series_attributes.series_colour.value();
 }
 
-juce::Point<float> GraphLine::getDataPointFromPixelPointIndex(
+juce::Point<float> Series::getDataPointFromPixelPointIndex(
     size_t pixel_point_index) const {
   return juce::Point<float>(m_x_data[m_xy_indices[pixel_point_index]],
                             m_y_data[m_xy_indices[pixel_point_index]]);
 };
 
-juce::Point<float> GraphLine::getDataPointFromDataPointIndex(
+juce::Point<float> Series::getDataPointFromDataPointIndex(
     size_t data_point_index) const {
   return juce::Point<float>(m_x_data[data_point_index],
                             m_y_data[data_point_index]);
 };
 
-void GraphLine::observableValueUpdated(ObserverId id, const bool &new_value)
+void Series::observableValueUpdated(ObserverId id, const bool &new_value)
 {
   updateXY();
 }
 
-void GraphLine::resized() {};
+void Series::resized() {};
 
-void GraphLine::paint(juce::Graphics& g) {
-  const GraphLineDataView graph_line_data(*this);
+void Series::paint(juce::Graphics& g) {
+  const SeriesDataView series_data(*this);
 
   if (m_lookandfeel) {
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
     auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
-    lnf->drawGraphLine(g, graph_line_data, getLocalBounds());
+    lnf->drawSeries(g, series_data, getLocalBounds());
   }
 }
 
-void GraphLine::lookAndFeelChanged() {
+void Series::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
     updateXIndicesAndPixelPointsIntern({});
@@ -165,41 +165,41 @@ void GraphLine::lookAndFeelChanged() {
   }
 }
 
-void GraphLine::setGraphAttribute(const GraphAttribute& graph_attribute) {
-  if (graph_attribute.dashed_lengths)
-    m_graph_attributes.dashed_lengths = graph_attribute.dashed_lengths;
+void Series::setSeriesAttribute(const SeriesAttribute& series_attribute) {
+  if (series_attribute.dashed_lengths)
+    m_series_attributes.dashed_lengths = series_attribute.dashed_lengths;
 
-  if (graph_attribute.graph_colour)
-    m_graph_attributes.graph_colour = graph_attribute.graph_colour;
+  if (series_attribute.series_colour)
+    m_series_attributes.series_colour = series_attribute.series_colour;
 
-  if (graph_attribute.graph_line_opacity)
-    m_graph_attributes.graph_line_opacity = graph_attribute.graph_line_opacity;
+  if (series_attribute.series_opacity)
+    m_series_attributes.series_opacity = series_attribute.series_opacity;
 
-  if (graph_attribute.on_pixel_point_paint)
-    m_graph_attributes.on_pixel_point_paint =
-        graph_attribute.on_pixel_point_paint;
+  if (series_attribute.on_pixel_point_paint)
+    m_series_attributes.on_pixel_point_paint =
+        series_attribute.on_pixel_point_paint;
 
-  if (graph_attribute.path_stroke_type)
-    m_graph_attributes.path_stroke_type = graph_attribute.path_stroke_type;
+  if (series_attribute.path_stroke_type)
+    m_series_attributes.path_stroke_type = series_attribute.path_stroke_type;
 
-  if (graph_attribute.marker)
-    m_graph_attributes.marker = graph_attribute.marker;
+  if (series_attribute.marker)
+    m_series_attributes.marker = series_attribute.marker;
 
-  if (graph_attribute.gradient_colours)
-    m_graph_attributes.gradient_colours = graph_attribute.gradient_colours;
+  if (series_attribute.gradient_colours)
+    m_series_attributes.gradient_colours = series_attribute.gradient_colours;
 }
 
-void GraphLine::setYValues(const std::vector<float>& y_data) {
+void Series::setYValues(const std::vector<float>& y_data) {
   if (m_y_data.size() != y_data.size()) m_y_data.resize(y_data.size());
   std::copy(y_data.begin(), y_data.end(), m_y_data.begin());
 }
 
-void GraphLine::setXValues(const std::vector<float>& x_data) {
+void Series::setXValues(const std::vector<float>& x_data) {
   if (m_x_data.size() != x_data.size()) m_x_data.resize(x_data.size());
   std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
 }
 
-bool GraphLine::setXYValue(const juce::Point<float>& xy_value, size_t index) {
+bool Series::setXYValue(const juce::Point<float>& xy_value, size_t index) {
   if (index >= m_x_data.size()) return false;
 
   m_x_data[index] = xy_value.getX();
@@ -208,7 +208,7 @@ bool GraphLine::setXYValue(const juce::Point<float>& xy_value, size_t index) {
   return true;
 }
 
-void GraphLine::movePixelPoint(const juce::Point<float>& d_pixel_point,
+void Series::movePixelPoint(const juce::Point<float>& d_pixel_point,
                                size_t pixel_point_index) {
   if (pixel_point_index >= m_x_data.size()) return;
 
@@ -216,36 +216,36 @@ void GraphLine::movePixelPoint(const juce::Point<float>& d_pixel_point,
   m_y_data[pixel_point_index] += d_pixel_point.getY();
 }
 
-const std::vector<float>& GraphLine::getYData() const noexcept {
+const std::vector<float>& Series::getYData() const noexcept {
   return m_y_data;
 }
 
-const std::vector<float>& GraphLine::getXData() const noexcept {
+const std::vector<float>& Series::getXData() const noexcept {
   return m_x_data;
 }
 
-const PixelPoints& GraphLine::getPixelPoints() const noexcept {
+const PixelPoints& Series::getPixelPoints() const noexcept {
   return m_pixel_points;
 }
 
-const std::vector<size_t>& GraphLine::getPixelPointIndices() const noexcept {
+const std::vector<size_t>& Series::getPixelPointIndices() const noexcept {
   return m_xy_indices;
 }
 
-void GraphLine::updateX() {
+void Series::updateX() {
   // x_lim must be set to calculate the xdata.
   if(!m_x_lim || m_x_data.empty()) return;
 
   updateXIndicesAndPixelPointsIntern(m_indices_to_update);
 }
 
-void GraphLine::updateY() {
+void Series::updateY() {
   if (!m_y_lim || m_y_data.empty()) return;
 
   updateYIndicesAndPixelPointsIntern(m_indices_to_update);
 }
 
-void GraphLine::updateXIndicesAndPixelPointsIntern(
+void Series::updateXIndicesAndPixelPointsIntern(
     const std::vector<size_t>& update_only_these_indices) {
   const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
@@ -257,13 +257,13 @@ void GraphLine::updateXIndicesAndPixelPointsIntern(
       break;
 
     case DownsamplingType::x_downsampling:
-      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_graph_bounds, m_x_data,
+      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_axes_bounds, m_x_data,
                                                 m_x_based_ds_indices);
 
       break;
 
     case DownsamplingType::xy_downsampling:
-      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_graph_bounds, m_x_data,
+      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_axes_bounds, m_x_data,
                                                 m_x_based_ds_indices);
       return;
       break;
@@ -274,11 +274,11 @@ void GraphLine::updateXIndicesAndPixelPointsIntern(
 
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
   m_pixel_points.resize(m_x_based_ds_indices.size());
-  lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_graph_bounds,
+  lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_axes_bounds,
                           m_x_data, m_x_based_ds_indices, m_pixel_points);
 }
 
-void GraphLine::updateYIndicesAndPixelPointsIntern(
+void Series::updateYIndicesAndPixelPointsIntern(
     const std::vector<size_t>& update_only_these_indices) {
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
   const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
@@ -297,7 +297,7 @@ void GraphLine::updateYIndicesAndPixelPointsIntern(
                                                m_xy_indices);
 
       m_pixel_points.resize(m_xy_indices.size());
-      lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_graph_bounds,
+      lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_axes_bounds,
                               m_x_data, m_xy_indices, m_pixel_points);
       break;
 
@@ -306,24 +306,24 @@ void GraphLine::updateYIndicesAndPixelPointsIntern(
   }
 
   m_pixel_points.resize(m_xy_indices.size());
-  lnf->updateYPixelPoints(update_only_these_indices, m_y_scaling, m_y_lim, m_graph_bounds,
+  lnf->updateYPixelPoints(update_only_these_indices, m_y_scaling, m_y_lim, m_axes_bounds,
                           m_y_data, m_xy_indices, m_pixel_points);
 }
 
-void GraphLine::updateXY() {
+void Series::updateXY() {
   updateX();
   updateY();
 }
 
-void GraphLine::setType(const GraphLineType graph_line_type) {
-  m_graph_line_type = graph_line_type;
+void Series::setType(const SeriesType series_type) {
+  m_series_type = series_type;
 }
 
-GraphLineType GraphLine::getType() const noexcept {
-  return m_graph_line_type;
+SeriesType Series::getType() const noexcept {
+  return m_series_type;
 }
 
-void GraphLine::observableValueUpdated(ObserverId id, const Scaling &new_value)
+void Series::observableValueUpdated(ObserverId id, const Scaling &new_value)
 {
   if (id == ObserverId::XScaling) {
     m_x_scaling = new_value;
@@ -335,11 +335,11 @@ void GraphLine::observableValueUpdated(ObserverId id, const Scaling &new_value)
   }
 }
 
-void GraphLine::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
+void Series::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
 {
   if (id == ObserverId::XLim) {
     m_x_lim = new_value;
-    if (m_graph_line_type == GraphLineType::horizontal) {
+    if (m_series_type == SeriesType::horizontal) {
       m_x_data.resize(2);
       m_x_data.front() = m_x_lim.min;
       m_x_data.back() = m_x_lim.max;
@@ -348,7 +348,7 @@ void GraphLine::observableValueUpdated(ObserverId id, const Lim<float> &new_valu
   }
   else if (id == ObserverId::YLim) {
     m_y_lim = new_value;
-    if (m_graph_line_type == GraphLineType::vertical) {
+    if (m_series_type == SeriesType::vertical) {
       m_y_data.resize(2);
       m_y_data.front() = m_y_lim.min;
       m_y_data.back() = m_y_lim.max;
@@ -357,15 +357,15 @@ void GraphLine::observableValueUpdated(ObserverId id, const Lim<float> &new_valu
   }
 }
 
-void GraphLine::observableValueUpdated(ObserverId id, const juce::Rectangle<int> &new_value)
+void Series::observableValueUpdated(ObserverId id, const juce::Rectangle<int> &new_value)
 {
-  if (id == ObserverId::GraphBounds) {
-    m_graph_bounds = new_value;
+  if (id == ObserverId::AxesBounds) {
+    m_axes_bounds = new_value;
     updateXY();
   }
 }
 
-void GraphLine::observableValueUpdated(ObserverId id, const DownsamplingType &new_value)
+void Series::observableValueUpdated(ObserverId id, const DownsamplingType &new_value)
 {
   if (id == ObserverId::DownsamplingType) {
     m_downsampling_type = new_value;
@@ -374,47 +374,47 @@ void GraphLine::observableValueUpdated(ObserverId id, const DownsamplingType &ne
 }
 
 /************************************************************************************/
-/*********************************GraphLineList**************************************/
+/*********************************SeriesList**************************************/
 /************************************************************************************/
 
-size_t size_from_graph_line_type(const GraphLineList& GraphLineList,
-                                 const GraphLineType graph_line_type) {
-  return std::count_if(GraphLineList.begin(), GraphLineList.end(),
-                       [graph_line_type](const auto& graph_line) {
-                         return graph_line->getType() ==
-                                graph_line_type;
+size_t size_from_series_type(const SeriesList& SeriesList,
+                                 const SeriesType series_type) {
+  return std::count_if(SeriesList.begin(), SeriesList.end(),
+                       [series_type](const auto& series) {
+                         return series->getType() ==
+                                series_type;
                        });
 }
 
 template <>
-size_t GraphLineList::size<GraphLineType::any>() const noexcept {
+size_t SeriesList::size<SeriesType::any>() const noexcept {
   // Explicitly Call size of parent class.
-  return std::vector<std::unique_ptr<GraphLine>>::size();
+  return std::vector<std::unique_ptr<Series>>::size();
 }
 
 template <>
-size_t GraphLineList::size<GraphLineType::normal>() const noexcept {
-  return size_from_graph_line_type(*this, GraphLineType::normal);
+size_t SeriesList::size<SeriesType::normal>() const noexcept {
+  return size_from_series_type(*this, SeriesType::normal);
 }
 
 template <>
-size_t GraphLineList::size<GraphLineType::vertical>() const noexcept {
-  return size_from_graph_line_type(*this, GraphLineType::vertical);
+size_t SeriesList::size<SeriesType::vertical>() const noexcept {
+  return size_from_series_type(*this, SeriesType::vertical);
 }
 
 template <>
-size_t GraphLineList::size<GraphLineType::horizontal>() const noexcept {
-  return size_from_graph_line_type(*this, GraphLineType::horizontal);
+size_t SeriesList::size<SeriesType::horizontal>() const noexcept {
+  return size_from_series_type(*this, SeriesType::horizontal);
 }
 
-template <GraphLineType t_graph_line_type>
-void GraphLineList::resize(size_t new_size_of_type){
-  const auto current_size = size<t_graph_line_type>();
+template <SeriesType t_series_type>
+void SeriesList::resize(size_t new_size_of_type){
+  const auto current_size = size<t_series_type>();
 
   if (current_size == new_size_of_type) return;
 
   if (current_size > new_size_of_type) {
-    // sort the graph lines by type. nullptrs are sorted to the end.
+    // sort the series by type. nullptrs are sorted to the end.
     std::sort(begin(), end(), [](const auto& lhs, const auto& rhs) {
       if (!lhs) return false;
       if (!rhs) return true;
@@ -423,26 +423,26 @@ void GraphLineList::resize(size_t new_size_of_type){
 
     const auto num_to_erase = current_size - new_size_of_type;
     const auto erase_begin = std::find_if(
-        begin(), end(), [](const auto& graph_line) {
-          return graph_line->getType() == t_graph_line_type;
+        begin(), end(), [](const auto& series) {
+          return series->getType() == t_series_type;
         });
 
     erase(erase_begin, erase_begin + num_to_erase);
   } else {
-    const auto new_size =  size<GraphLineType::any>() - current_size + new_size_of_type;
-    std::vector<std::unique_ptr<GraphLine>>::resize(new_size);
+    const auto new_size =  size<SeriesType::any>() - current_size + new_size_of_type;
+    std::vector<std::unique_ptr<Series>>::resize(new_size);
   }
 }
 
-template void GraphLineList::resize<GraphLineType::normal>(size_t new_size_of_type);
-template void GraphLineList::resize<GraphLineType::vertical>(size_t new_size_of_type);
-template void GraphLineList::resize<GraphLineType::horizontal>(size_t new_size_of_type);
+template void SeriesList::resize<SeriesType::normal>(size_t new_size_of_type);
+template void SeriesList::resize<SeriesType::vertical>(size_t new_size_of_type);
+template void SeriesList::resize<SeriesType::horizontal>(size_t new_size_of_type);
 
-template <GraphLineType t_graph_line_type>
-std::vector<GraphLine*> GraphLineList::getGraphLinesOfType(){
-    std::vector<GraphLine*> result;
+template <SeriesType t_series_type>
+std::vector<Series*> SeriesList::getSeriesOfType(){
+    std::vector<Series*> result;
     for (auto &line : *this) {
-        if (line->getType() == t_graph_line_type) {
+        if (line->getType() == t_series_type) {
             result.push_back(line.get());
         }
     }
@@ -450,12 +450,12 @@ std::vector<GraphLine*> GraphLineList::getGraphLinesOfType(){
 }
 
 /************************************************************************************/
-/*********************************GraphSpread****************************************/
+/*********************************Spread****************************************/
 /************************************************************************************/
 
-void GraphSpread::resized() {}
+void Spread::resized() {}
 
-void GraphSpread::paint(juce::Graphics& g) {
+void Spread::paint(juce::Graphics& g) {
   if (m_lookandfeel) {
     const std::lock_guard<std::recursive_mutex> lock(plot_mutex);
 
@@ -464,7 +464,7 @@ void GraphSpread::paint(juce::Graphics& g) {
   }
 }
 
-void GraphSpread::lookAndFeelChanged() {
+void Spread::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {

@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "cmp_datamodels.h"
-#include "cmp_graph_line.h"
+#include "cmp_series.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_trace.h"
 #include "cmp_test_helper.hpp"
@@ -130,32 +130,32 @@ SECTION(MoveSelectedTracePointsTest, "Move selected trace points") {
     expectEquals(trace_points.size(), 1ul);
     auto* trace_point = trace_points[0];
 
-    const auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-    expectEquals(graph_lines.size(), 1ul);
+    const auto series = getChildComponentHelper<cmp::Series>(plot);
+    expectEquals(series.size(), 1ul);
 
-    // The graph line component covers the graph area.
-    const auto graph_bounds = graph_lines[0]->getBounds();
-    expect(!graph_bounds.isEmpty());
-    // The bug only shows when the graph area does not start at the origin.
-    expect(graph_bounds.getPosition() != juce::Point<int>(0, 0));
+    // The series component covers the axes area.
+    const auto axes_bounds = series[0]->getBounds();
+    expect(!axes_bounds.isEmpty());
+    // The bug only shows when the axes area does not start at the origin.
+    expect(axes_bounds.getPosition() != juce::Point<int>(0, 0));
 
     // Mouse positions are relative to the tracepoint component.
     const auto mouse_down_pos = juce::Point<float>(3.f, 3.f);
     const auto mouse_drag_pos = mouse_down_pos + juce::Point<float>(50.f, 20.f);
 
-    // Graph-area-local positions as Plot::getMousePositionRelativeToGraphArea
+    // Axes-area-local positions as Plot::getMousePositionRelativeToAxesArea
     // computes them (positions are rounded to int pixels).
     const auto trace_point_pos = trace_point->getBounds().getPosition();
     const auto prev_pos_local =
-        (mouse_down_pos.toInt() + trace_point_pos - graph_bounds.getPosition())
+        (mouse_down_pos.toInt() + trace_point_pos - axes_bounds.getPosition())
             .toFloat();
     const auto new_pos_local =
-        (mouse_drag_pos.toInt() + trace_point_pos - graph_bounds.getPosition())
+        (mouse_drag_pos.toInt() + trace_point_pos - axes_bounds.getPosition())
             .toFloat();
 
-    // The expected data movement converts the graph-area-local pixel
-    // positions with graph-area-local (zero-origin) bounds.
-    const auto local_bounds = graph_bounds.withZeroOrigin().toFloat();
+    // The expected data movement converts the axes-area-local pixel
+    // positions with axes-area-local (zero-origin) bounds.
+    const auto local_bounds = axes_bounds.withZeroOrigin().toFloat();
     const auto d_x = cmp::getXDataFromXPixelCoordinate(
                          new_pos_local.getX(), local_bounds, x_lim,
                          cmp::Scaling::logarithmic) -
@@ -175,14 +175,14 @@ SECTION(MoveSelectedTracePointsTest, "Move selected trace points") {
     plot.mouseDown(makeMouseEvent(trace_point, mouse_down_pos, false));
     plot.mouseDrag(makeMouseEvent(trace_point, mouse_drag_pos, true));
 
-    expectWithinAbsoluteError(graph_lines[0]->getXData()[1], expected_x,
+    expectWithinAbsoluteError(series[0]->getXData()[1], expected_x,
                               1e-3f * expected_x);
-    expectWithinAbsoluteError(graph_lines[0]->getYData()[1], expected_y,
+    expectWithinAbsoluteError(series[0]->getYData()[1], expected_y,
                               1e-3f);
 
     // The other data points are untouched.
-    expectEquals(graph_lines[0]->getXData()[0], x_data[0]);
-    expectEquals(graph_lines[0]->getYData()[2], y_data[2]);
+    expectEquals(series[0]->getXData()[0], x_data[0]);
+    expectEquals(series[0]->getYData()[2], y_data[2]);
 
     plot.setLookAndFeel(nullptr);
   }

@@ -91,7 +91,7 @@ TEST(spread, real_time) {
 
   PLOT_Y(getYData());
 
-  const std::vector<cmp::GraphSpreadIndex> spread_indices = {{0, 1}};
+  const std::vector<cmp::SpreadIndex> spread_indices = {{0, 1}};
   FILL_BETWEEN(spread_indices);
 
   GET_TIMER_CB = [=](const int dt_ms) { GET_PLOT->plotUpdateYOnly(getYData()); };

@@ -5,7 +5,7 @@
  * https://opensource.org/licenses/MIT
  */
 
-#include "cmp_graph_area.h"
+#include "cmp_selection_area.h"
 
 #include <algorithm>
 
@@ -13,33 +13,33 @@
 #include "cmp_utils.h"
 
 namespace cmp {
-void GraphArea::setStartPosition(
+void SelectionArea::setStartPosition(
     const juce::Point<int>& start_position) noexcept {
   m_start_pos = start_position;
   m_is_start_pos_set = true;
 }
 
-void GraphArea::setEndPosition(const juce::Point<int>& end_position) noexcept {
+void SelectionArea::setEndPosition(const juce::Point<int>& end_position) noexcept {
   m_end_pos = end_position;
 }
 
-juce::Point<int> GraphArea::getStartPosition() const noexcept {
+juce::Point<int> SelectionArea::getStartPosition() const noexcept {
   return m_start_pos;
 }
 
-juce::Point<int> GraphArea::getEndPosition() const noexcept {
+juce::Point<int> SelectionArea::getEndPosition() const noexcept {
   return m_end_pos;
 }
 
-bool GraphArea::isStartPosSet() const noexcept { return m_is_start_pos_set; }
+bool SelectionArea::isStartPosSet() const noexcept { return m_is_start_pos_set; }
 
-void GraphArea::reset() noexcept {
+void SelectionArea::reset() noexcept {
   m_start_pos = {0, 0};
   m_end_pos = {0, 0};
   m_is_start_pos_set = false;
 }
 
-void GraphArea::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
+void SelectionArea::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
 {
   if (id == ObserverId::XLim) {
     m_x_lim = new_value;
@@ -48,7 +48,7 @@ void GraphArea::observableValueUpdated(ObserverId id, const Lim<float> &new_valu
   }
 }
 
-void GraphArea::observableValueUpdated(ObserverId id, const Scaling &new_value) {
+void SelectionArea::observableValueUpdated(ObserverId id, const Scaling &new_value) {
   if (id == ObserverId::XScaling) {
     m_x_scaling = new_value;
   } else if (id == ObserverId::YScaling) {
@@ -56,9 +56,9 @@ void GraphArea::observableValueUpdated(ObserverId id, const Scaling &new_value) 
   }
 }
 
-void GraphArea::resized() {}
+void SelectionArea::resized() {}
 
-void GraphArea::paint(juce::Graphics& g) {
+void SelectionArea::paint(juce::Graphics& g) {
   if (m_lookandfeel && !m_end_pos.isOrigin()) {
     auto* lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
     lnf->drawSelectionArea(g, m_start_pos, m_end_pos,
@@ -66,7 +66,7 @@ void GraphArea::paint(juce::Graphics& g) {
   }
 }
 
-void GraphArea::lookAndFeelChanged() {
+void SelectionArea::lookAndFeelChanged() {
   if (auto* lnf = dynamic_cast<Plot::LookAndFeelMethods*>(&getLookAndFeel())) {
     m_lookandfeel = lnf;
   } else {
@@ -75,23 +75,23 @@ void GraphArea::lookAndFeelChanged() {
 }
 
 template <typename ValueType>
-juce::Rectangle<ValueType> GraphArea::getDataBound() const noexcept {
-  const auto local_graph_bounds = this->getLocalBounds().toFloat();
+juce::Rectangle<ValueType> SelectionArea::getDataBound() const noexcept {
+  const auto local_axes_bounds = this->getLocalBounds().toFloat();
 
   const auto start_pos = this->getStartPosition();
   const auto end_pos = this->getEndPosition();
 
   const auto x_start = getXDataFromXPixelCoordinate(
-      float(start_pos.getX()), local_graph_bounds, m_x_lim, m_x_scaling);
+      float(start_pos.getX()), local_axes_bounds, m_x_lim, m_x_scaling);
   const auto x_end = getXDataFromXPixelCoordinate(
-      float(end_pos.getX()), local_graph_bounds, m_x_lim,
+      float(end_pos.getX()), local_axes_bounds, m_x_lim,
       m_x_scaling);
 
   const auto y_start = getYDataFromYPixelCoordinate(
-      float(start_pos.getY()), local_graph_bounds, m_y_lim,
+      float(start_pos.getY()), local_axes_bounds, m_y_lim,
       m_y_scaling);
   const auto y_end = getYDataFromYPixelCoordinate(
-      float(end_pos.getY()), local_graph_bounds, m_y_lim,
+      float(end_pos.getY()), local_axes_bounds, m_y_lim,
       m_y_scaling);
 
   const auto x_min = std::min(x_start, x_end);
@@ -102,10 +102,10 @@ juce::Rectangle<ValueType> GraphArea::getDataBound() const noexcept {
   return juce::Rectangle<ValueType>{x_min, y_min, x_width, y_height};
 };
 
-template juce::Rectangle<float> GraphArea::getDataBound() const noexcept;
+template juce::Rectangle<float> SelectionArea::getDataBound() const noexcept;
 
 template <typename ValueType>
-juce::Rectangle<ValueType> GraphArea::getSelectedAreaBound() const noexcept {
+juce::Rectangle<ValueType> SelectionArea::getSelectedAreaBound() const noexcept {
   const auto start_pos = this->getStartPosition();
   const auto end_pos = this->getEndPosition();
 
@@ -117,6 +117,6 @@ juce::Rectangle<ValueType> GraphArea::getSelectedAreaBound() const noexcept {
   return juce::Rectangle<ValueType>{x_min, y_min, x_width, y_height};
 };
 
-template juce::Rectangle<int> GraphArea::getSelectedAreaBound() const noexcept;
+template juce::Rectangle<int> SelectionArea::getSelectedAreaBound() const noexcept;
 
 }  // namespace cmp

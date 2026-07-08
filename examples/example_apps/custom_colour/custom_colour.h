@@ -26,13 +26,13 @@ class custom_colour : public juce::Component {
                    cmp::generateSineWaveVector((1 << 11), -3.0f, 14.0f, 3.0f),
                    cmp::generateSineWaveVector((1 << 11), -5.0f, 2.0f, 6.0f)};
 
-    // Setting new colours on graph one and two.
-    auto graph_attributes = cmp::GraphAttributeList(y_data.size());
-    graph_attributes[0].graph_colour = juce::Colours::pink;
-    graph_attributes[1].graph_colour = juce::Colours::blueviolet;
+    // Setting new colours on series one and two.
+    auto series_attributes = cmp::SeriesAttributeList(y_data.size());
+    series_attributes[0].series_colour = juce::Colours::pink;
+    series_attributes[1].series_colour = juce::Colours::blueviolet;
 
     // Plot some values.
-    m_plot.plot(y_data, {}, graph_attributes);
+    m_plot.plot(y_data, {}, series_attributes);
   };
 
   void resized() override {

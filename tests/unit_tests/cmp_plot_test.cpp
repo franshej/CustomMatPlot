@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "cmp_datamodels.h"
-#include "cmp_graph_line.h"
+#include "cmp_series.h"
 #include "cmp_test_helper.hpp"
 #include "cmp_lookandfeel.h"
 
@@ -21,62 +21,62 @@ SECTION(PlotClass, "Plot class") {
   const std::vector<float> x_data_random_3 = {5321.f, 4215.f};
   cmp::Plot plot;
 
-  TEST("Empty graph line.") {
-    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-    expect(graph_lines.empty());
+  TEST("Empty series.") {
+    auto series = getChildComponentHelper<cmp::Series>(plot);
+    expect(series.empty());
   }
 
-  TEST("Single graph line") {
+  TEST("Single series") {
     plot.plot({y_data1});
-    const auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-    expectEquals(graph_lines.size(), 1ul);
-    const auto& x_data = graph_lines[0]->getXData();
-    const auto& y_data = graph_lines[0]->getYData();
+    const auto series = getChildComponentHelper<cmp::Series>(plot);
+    expectEquals(series.size(), 1ul);
+    const auto& x_data = series[0]->getXData();
+    const auto& y_data = series[0]->getYData();
     expectEqualVectors(x_data, x_data1, expectEqualsLambda);
     expectEqualVectors(y_data, y_data1, expectEqualsLambda);
   }
 
-  TEST("Several graph line") {
+  TEST("Several series") {
     plot.plot({y_data1, y_data2, y_data3});
-    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-    expectEquals(graph_lines.size(), 3ul);
-    expectEqualVectors(graph_lines[0]->getXData(), x_data1, expectEqualsLambda);
-    expectEqualVectors(graph_lines[0]->getYData(), y_data1, expectEqualsLambda);
-    expectEqualVectors(graph_lines[1]->getXData(), x_data2, expectEqualsLambda);
-    expectEqualVectors(graph_lines[1]->getYData(), y_data2, expectEqualsLambda);
-    expectEqualVectors(graph_lines[2]->getXData(), x_data3, expectEqualsLambda);
-    expectEqualVectors(graph_lines[2]->getYData(), y_data3, expectEqualsLambda);
+    auto series = getChildComponentHelper<cmp::Series>(plot);
+    expectEquals(series.size(), 3ul);
+    expectEqualVectors(series[0]->getXData(), x_data1, expectEqualsLambda);
+    expectEqualVectors(series[0]->getYData(), y_data1, expectEqualsLambda);
+    expectEqualVectors(series[1]->getXData(), x_data2, expectEqualsLambda);
+    expectEqualVectors(series[1]->getYData(), y_data2, expectEqualsLambda);
+    expectEqualVectors(series[2]->getXData(), x_data3, expectEqualsLambda);
+    expectEqualVectors(series[2]->getYData(), y_data3, expectEqualsLambda);
   }
 
   TEST("Horizontal line") {
     cmp::Plot horizontal_plot;
     horizontal_plot.plotHorizontalLines({100.f});
-    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(horizontal_plot);
-    expectEquals(graph_lines.size(), 1ul);
-    expect(graph_lines[0]->getType() == cmp::GraphLineType::horizontal);
-    expectEqualVectors(graph_lines[0]->getYData(), {100.f, 100.f}, expectEqualsLambda);
+    auto series = getChildComponentHelper<cmp::Series>(horizontal_plot);
+    expectEquals(series.size(), 1ul);
+    expect(series[0]->getType() == cmp::SeriesType::horizontal);
+    expectEqualVectors(series[0]->getYData(), {100.f, 100.f}, expectEqualsLambda);
   }
 
   TEST("Vertical line") {
     cmp::Plot vertical_plot;
     vertical_plot.plotVerticalLines({100.f});
-    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(vertical_plot);
-    expectEquals(graph_lines.size(), 1ul);
-    expect(graph_lines[0]->getType() == cmp::GraphLineType::vertical);
-    expectEqualVectors(graph_lines[0]->getXData(), {100.f, 100.f}, expectEqualsLambda);
+    auto series = getChildComponentHelper<cmp::Series>(vertical_plot);
+    expectEquals(series.size(), 1ul);
+    expect(series[0]->getType() == cmp::SeriesType::vertical);
+    expectEqualVectors(series[0]->getXData(), {100.f, 100.f}, expectEqualsLambda);
   }
 
   TEST ("Update Y data only") {
     plot.plot({y_data1, y_data2, y_data3}, {x_data_random_1, x_data_random_2, x_data_random_3});
     plot.plotUpdateYOnly({y_data1, y_data2, y_data3});
-    auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-    expectEquals(graph_lines.size(), 3ul);
-    expectEqualVectors(graph_lines[0]->getXData(), x_data_random_1, expectEqualsLambda);
-    expectEqualVectors(graph_lines[0]->getYData(), y_data1, expectEqualsLambda);
-    expectEqualVectors(graph_lines[1]->getXData(), x_data_random_2, expectEqualsLambda);
-    expectEqualVectors(graph_lines[1]->getYData(), y_data2, expectEqualsLambda);
-    expectEqualVectors(graph_lines[2]->getXData(), x_data_random_3, expectEqualsLambda);
-    expectEqualVectors(graph_lines[2]->getYData(), y_data3, expectEqualsLambda);
+    auto series = getChildComponentHelper<cmp::Series>(plot);
+    expectEquals(series.size(), 3ul);
+    expectEqualVectors(series[0]->getXData(), x_data_random_1, expectEqualsLambda);
+    expectEqualVectors(series[0]->getYData(), y_data1, expectEqualsLambda);
+    expectEqualVectors(series[1]->getXData(), x_data_random_2, expectEqualsLambda);
+    expectEqualVectors(series[1]->getYData(), y_data2, expectEqualsLambda);
+    expectEqualVectors(series[2]->getXData(), x_data_random_3, expectEqualsLambda);
+    expectEqualVectors(series[2]->getYData(), y_data3, expectEqualsLambda);
   }
 
   TEST("Set colour"){

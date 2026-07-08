@@ -210,7 +210,7 @@ void Axes3DBox::paint(juce::Graphics& g) {
       2.0f;
 
   const auto tick_label_margin_px =
-      static_cast<float>(lnf->getGridLabelDistanceFromGraphBound());
+      static_cast<float>(lnf->getGridLabelDistanceFromAxesBound());
 
   const auto drawTickLabel = [&](const float tick, const Vec3f& data_point) {
     const auto pixel = projector.toPixel(data_point);

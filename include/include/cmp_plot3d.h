@@ -17,7 +17,7 @@
 
 namespace cmp {
 
-class GraphLine3D;
+class Series3D;
 class Axes3DBox;
 
 /**
@@ -50,19 +50,19 @@ public:
 
   /**
    * @brief Plot 3-D line data
-   * @details Each entry in the outer vectors describes one graph line. The
+   * @details Each entry in the outer vectors describes one series. The
    *          x/y/z vectors of a line must have the same size. The axis
    *          limits are auto-scaled to the data unless they have been set
    *          explicitly.
    * @param x_data x-values of the lines
    * @param y_data y-values of the lines
    * @param z_data z-values of the lines
-   * @param graph_attributes optional attributes per line
+   * @param series_attributes optional attributes per line
    */
   void plot3(const std::vector<std::vector<float>> &x_data,
              const std::vector<std::vector<float>> &y_data,
              const std::vector<std::vector<float>> &z_data,
-             const GraphAttributeList &graph_attributes = {});
+             const SeriesAttributeList &series_attributes = {});
 
   /**
    * @brief Set the X-limits
@@ -143,7 +143,7 @@ private:
   /** @internal */
   void updateChildrenParameters();
   /** @internal */
-  juce::Rectangle<int> getGraphBounds3D() noexcept;
+  juce::Rectangle<int> getAxesBounds3D() noexcept;
   /** @internal */
   void updateLabelsIntern();
   /** @internal */
@@ -152,10 +152,10 @@ private:
   /** Axes and camera view. */
   Axis_f m_x_axis, m_y_axis, m_z_axis;
   float m_azimuth_degrees, m_elevation_degrees;
-  juce::Rectangle<int> m_graph_bounds;
+  juce::Rectangle<int> m_axes_bounds;
 
   /** Child components */
-  std::vector<std::unique_ptr<GraphLine3D>> m_graph_lines;
+  std::vector<std::unique_ptr<Series3D>> m_series;
   std::unique_ptr<Axes3DBox> m_axes_box;
   juce::Label m_x_label, m_y_label, m_z_label, m_title_label;
 

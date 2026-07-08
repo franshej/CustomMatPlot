@@ -39,8 +39,8 @@ enum class TraceLabelCornerPosition {
 template <class ValueType>
 struct TracePoint : public juce::Component {
   explicit TracePoint(const size_t data_point_index,
-                      const GraphLine* graph_line)
-      : data_point_index(data_point_index), associated_graph_line(graph_line){};
+                      const Series* series)
+      : data_point_index(data_point_index), associated_series(series){};
 
   constexpr bool operator==(const TracePoint<ValueType>& rhs) {
     return this->getPosition() == rhs.getPosition();
@@ -52,7 +52,7 @@ struct TracePoint : public juce::Component {
   }
 
   /** Set the data point. */
-  bool setDataPoint(const size_t data_point_index, const GraphLine* graph_line);
+  bool setDataPoint(const size_t data_point_index, const Series* series);
 
   /** @brief This lambda is triggered when a the data value is changed.
    *
@@ -83,8 +83,8 @@ struct TracePoint : public juce::Component {
   /** The index of the data point that this trace point is associated with. */
   size_t data_point_index{0};
 
-  /** The graph line that this trace point is associated with. */
-  const GraphLine* associated_graph_line{nullptr};
+  /** The series that this trace point is associated with. */
+  const Series* associated_series{nullptr};
 };
 
 /** @brief A struct that defines a tracepoint using floats. */
@@ -93,8 +93,8 @@ typedef TracePoint<float> TracePoint_f;
 /** @brief A struct that defines a trace label. */
 template <class ValueType>
 struct TraceLabel : public juce::Component {
-  /** Set the graph labels from point. */
-  void setGraphLabelFrom(const juce::Point<ValueType>& graph_value);
+  /** Set the series labels from point. */
+  void setSeriesLabelFrom(const juce::Point<ValueType>& series_value);
 
   /** @internal */
   void resized() override;
@@ -172,7 +172,7 @@ typedef TraceLabelPoint<float> TraceLabelPoint_f;
  * \brief A class for drawing tracepoints
  *
  * The idea is to use this class to display the x, y value of a one more
- * points on one or more graphs.
+ * points on one or more series.
  */
 class Trace : public virtual Observer<Lim<float>>,
               public virtual Observer<Scaling>,
@@ -190,12 +190,12 @@ public:
    */
   void clear() noexcept;
 
-  /** @brief Get the associated GraphLine.
+  /** @brief Get the associated Series.
    *
    * @param TracePoint juce::Componenet* a TracePoint component.
-   * @return GraphLine* the associated GraphLine if found else nullptr
+   * @return Series* the associated Series if found else nullptr
    */
-  const GraphLine* getAssociatedGraphLine(
+  const Series* getAssociatedSeries(
       const juce::Component* trace_point) const;
 
   /** @brief Get the data position for a tracepoint or trace label.
@@ -211,13 +211,13 @@ public:
    * The tracepoint is removed if it's already exists. Must be followed by
    * calling 'updateTracePointsBounds' to display the trace-point.
    *
-   * @param graph_line pointer to a graph line.
+   * @param series pointer to a series.
    * @param pixel_point_index the index of the pixel point that is associated
    * with this tracepoint
    * @return void.
    */
   void addOrRemoveTracePoint(
-      const GraphLine* graph_line, const size_t pixel_point_index,
+      const Series* series, const size_t pixel_point_index,
       const TracePointVisibilityType trace_point_visibility =
           TracePointVisibilityType::visible);
 
@@ -226,13 +226,13 @@ public:
    * Add tracepoint. Must be followed by
    * calling 'updateTracePointsBounds' to display the trace-point.
    *
-   * @param graph_line pointer to a graph line.
+   * @param series pointer to a series.
    * @param pixel_point_index the index of the pixel point that is associated
    * with this tracepoint
    * @param trace_point_visibility the visibility of the tracepoint.
    * @return void.
    */
-  void addTracePoint(const GraphLine* graph_line,
+  void addTracePoint(const Series* series,
                      const size_t pixel_point_index,
                      const TracePointVisibilityType trace_point_visibility);
 
@@ -257,7 +257,7 @@ public:
    */
   void updateAllTracePoints();
 
-  /** @brief Update a single tracepoint from graph attributes.
+  /** @brief Update a single tracepoint from series attributes.
    *
    * @param trace_label_or_point either a tracepoint or tracelabel.
    * @return void.
@@ -284,13 +284,13 @@ public:
    * @param tracepoint the tracepoint which data value will be set.
    * @param pixel_point_index the index of the pixel point that is associated
    * with this tracepoint
-   * @param graph_line the graph line that the pixel point belongs to.
+   * @param series the series that the pixel point belongs to.
    *
    * @return true if the value was changed.
    */
   bool setDataPointFor(juce::Component* trace_point,
                        const size_t pixel_point_index,
-                       const GraphLine* graph_line);
+                       const Series* series);
 
   /** @brief Set the coner position of a single tracelabel.
    *
@@ -348,7 +348,7 @@ public:
    */
   void observableValueUpdated(ObserverId id, const Scaling& new_value) override;
 
-  /** @brief Observer function for graph bounds.
+  /** @brief Observer function for axes bounds.
    *
    * @param id the observer id.
    * @param new_value the new value.
@@ -370,11 +370,11 @@ public:
 
   /** @internal */
   void addSingleTracePointInternal(
-      const GraphLine* graph_line, const size_t pixel_point_index,
+      const Series* series, const size_t pixel_point_index,
       const TracePointVisibilityType trace_point_visibility);
 
   /** @internal */
-  void removeSingleTracePointAndLabel(const GraphLine* graph_line,
+  void removeSingleTracePointAndLabel(const Series* series,
                                       const size_t pixel_point_index);
 
   /** @internal */
@@ -385,7 +385,7 @@ public:
   void updateTracePointsLookAndFeel();
 
   /** @internal */
-  bool doesTracePointExist(const GraphLine* graph_line,
+  bool doesTracePointExist(const Series* series,
                            const size_t pixel_point_index) const;
 
   /** @internal */
@@ -399,7 +399,7 @@ public:
   /** @internal */
   Lim<float> m_x_lim, m_y_lim;
   Scaling m_x_scaling, m_y_scaling;
-  juce::Rectangle<int> m_graph_bounds;
+  juce::Rectangle<int> m_axes_bounds;
 };
 
 }  // namespace cmp

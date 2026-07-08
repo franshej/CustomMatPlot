@@ -141,7 +141,7 @@ static auto computeXStartIdx(const ValueType x_min_lim,
                              const std::vector<ValueType>& x_data) {
   int start_x_index{0};
 
-  // The points that are on top of each other or outside the graph area are
+  // The points that are on top of each other or outside the axes area are
   // dicarded.
   for (const auto& x : x_data) {
     if (x >= x_min_lim) {
@@ -193,11 +193,11 @@ static auto computeXEndIdx(const ValueType x_max_lim,
 template <class ValueType, class IndexType, class ForwardIt>
 static auto calculateXIndicesBetweenStartEnd(
     const ForwardIt start_x_idx, const ForwardIt end_x_idx,
-    const Scaling x_scaling, const Lim<ValueType> x_lim, const juce::Rectangle<int> &graph_bounds,
+    const Scaling x_scaling, const Lim<ValueType> x_lim, const juce::Rectangle<int> &axes_bounds,
     const std::vector<ValueType>& x_data,
     std::vector<IndexType>& x_based_idxs_out) {
   const auto [x_scale, x_offset] =
-      getXScaleAndOffset(float(graph_bounds.getWidth()), x_lim, x_scaling);
+      getXScaleAndOffset(float(axes_bounds.getWidth()), x_lim, x_scaling);
 
   float last_added_x = x_data[start_x_idx];
   std::size_t current_index = start_x_idx;
@@ -238,7 +238,7 @@ template <class FloatType>
 void Downsampler<FloatType>::calculateXIndices(
     const Scaling x_scaling, 
     const Lim<FloatType> x_lim, 
-    const juce::Rectangle<int>& graph_bounds,
+    const juce::Rectangle<int>& axes_bounds,
     const std::vector<FloatType>& x_data,
     std::vector<std::size_t>& x_based_idxs_out) 
 {
@@ -263,7 +263,7 @@ void Downsampler<FloatType>::calculateXIndices(
     
     // Calculate scale factors
     const auto [scale, offset] = getXScaleAndOffset(
-        float(graph_bounds.getWidth()), x_lim, x_scaling);
+        float(axes_bounds.getWidth()), x_lim, x_scaling);
     const auto inverse_scale = 1.0f / scale;
 
     size_t output_idx = 1;
