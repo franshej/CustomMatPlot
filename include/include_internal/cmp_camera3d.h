@@ -36,8 +36,11 @@ namespace cmp {
  */
 class Camera3D {
  public:
+  /** @brief Construct a camera with MATLAB's default view(-37.5, 30). */
   Camera3D() noexcept { setView(-37.5f, 30.0f); }
 
+  /** @brief Construct a camera with the given azimuth and elevation, like
+   * MATLAB's view(az, el). */
   Camera3D(const float azimuth_degrees, const float elevation_degrees) noexcept {
     setView(azimuth_degrees, elevation_degrees);
   }
@@ -58,8 +61,11 @@ class Camera3D {
     m_depth_dir = {cos_el * sin_az, -cos_el * cos_az, sin_el};
   }
 
+  /** @brief Get the azimuth (horizontal rotation about the z-axis) in
+   * degrees. */
   float getAzimuthDegrees() const noexcept { return m_azimuth_degrees; }
 
+  /** @brief Get the elevation (angle above the xy-plane) in degrees. */
   float getElevationDegrees() const noexcept { return m_elevation_degrees; }
 
   /** @brief Rotate a point into view space: x = screen right, y = screen up,

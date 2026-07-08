@@ -129,8 +129,8 @@ inline std::pair<CubeFace, CubeFace> getZTickLabelEdge(
 }
 
 /**
- *  \class Axes3DBox
- *  \brief A class component to draw the axes box of a 3D plot. This is a
+ *  @class Axes3DBox
+ *  @brief A class component to draw the axes box of a 3D plot. This is a
  *  subcomponenet to cmp::Plot3D.
  *
  *  Draws grid lines on the back faces of the data cube and tick labels

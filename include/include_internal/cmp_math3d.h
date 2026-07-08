@@ -26,35 +26,43 @@ template <class ValueType>
 struct Vec3 {
   ValueType x{}, y{}, z{};
 
+  /** @brief Component-wise addition. */
   constexpr Vec3 operator+(const Vec3& rhs) const noexcept {
     return {x + rhs.x, y + rhs.y, z + rhs.z};
   }
 
+  /** @brief Component-wise subtraction. */
   constexpr Vec3 operator-(const Vec3& rhs) const noexcept {
     return {x - rhs.x, y - rhs.y, z - rhs.z};
   }
 
+  /** @brief Scale every component by a scalar. */
   constexpr Vec3 operator*(const ValueType scalar) const noexcept {
     return {x * scalar, y * scalar, z * scalar};
   }
 
+  /** @brief Component-wise equality. */
   constexpr bool operator==(const Vec3& rhs) const noexcept {
     return x == rhs.x && y == rhs.y && z == rhs.z;
   }
 
+  /** @brief Component-wise inequality. */
   constexpr bool operator!=(const Vec3& rhs) const noexcept {
     return !(*this == rhs);
   }
 
+  /** @brief The dot (scalar) product with another vector. */
   constexpr ValueType dot(const Vec3& rhs) const noexcept {
     return x * rhs.x + y * rhs.y + z * rhs.z;
   }
 
+  /** @brief The cross (vector) product with another vector. */
   constexpr Vec3 cross(const Vec3& rhs) const noexcept {
     return {y * rhs.z - z * rhs.y, z * rhs.x - x * rhs.z,
             x * rhs.y - y * rhs.x};
   }
 
+  /** @brief The Euclidean length (magnitude) of the vector. */
   ValueType length() const noexcept { return std::sqrt(dot(*this)); }
 };
 
