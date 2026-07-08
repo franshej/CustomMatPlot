@@ -279,9 +279,10 @@ void Plot3D::updateLabelsIntern() {
                            projector.toPixel({xl.max, yl.max, zl.max})) /
                           2.0f;
 
-  // Push just past the tick labels (which sit ~18 px out) so each axis label
-  // sits beside its axis without floating off to the plot edge.
-  const auto label_margin_px = static_cast<float>(label_height) + 12.0f;
+  // Push just past the tick labels so each axis label sits beside its axis
+  // without floating off to the plot edge.
+  const auto label_margin_px =
+      static_cast<float>(lnf->getAxisLabelDistanceFromGraphBound(label_height));
 
   const auto placeAxisLabel = [&](juce::Label& label, const int colour_id,
                                   const Vec3f& edge_a, const Vec3f& edge_b) {

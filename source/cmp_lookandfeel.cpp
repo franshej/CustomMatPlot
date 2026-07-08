@@ -224,6 +224,15 @@ std::size_t PlotLookAndFeel::getMarginSmall() const noexcept { return 5u; }
 
 std::size_t PlotLookAndFeel::getMarkerLength() const noexcept { return 20u; }
 
+int PlotLookAndFeel::getGridLabelDistanceFromGraphBound() const noexcept {
+  return int(getMargin()) + 3;
+}
+
+int PlotLookAndFeel::getAxisLabelDistanceFromGraphBound(
+    const int label_height) const noexcept {
+  return label_height + int(getMarginSmall()) + 7;
+}
+
 std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
 PlotLookAndFeel::getTraceXYLabelBounds(const std::string_view x_text,
                                        const std::string_view y_text) const {

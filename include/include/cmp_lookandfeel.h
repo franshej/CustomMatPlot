@@ -70,6 +70,11 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
 
   std::size_t getMarkerLength() const noexcept override;
 
+  int getGridLabelDistanceFromGraphBound() const noexcept override;
+
+  int getAxisLabelDistanceFromGraphBound(
+      const int label_height) const noexcept override;
+
   std::pair<juce::Rectangle<int>, juce::Rectangle<int>> getTraceXYLabelBounds(
       const std::string_view x_text,
       const std::string_view y_text) const override;
