@@ -17,7 +17,6 @@
 namespace cmp {
 
 static constexpr int num_ticks_per_axis = 5;
-static constexpr float tick_label_margin_px = 18.0f;
 
 /** Auto-generate the ticks within the limits of one axis. */
 static std::vector<float> generateAxisTicks(const Axis_f& axis) {
@@ -209,6 +208,9 @@ void Axes3DBox::paint(juce::Graphics& g) {
       (projector.toPixel({x_lim.min, y_lim.min, z_lim.min}) +
        projector.toPixel({x_lim.max, y_lim.max, z_lim.max})) /
       2.0f;
+
+  const auto tick_label_margin_px =
+      static_cast<float>(lnf->getGridLabelDistanceFromGraphBound());
 
   const auto drawTickLabel = [&](const float tick, const Vec3f& data_point) {
     const auto pixel = projector.toPixel(data_point);

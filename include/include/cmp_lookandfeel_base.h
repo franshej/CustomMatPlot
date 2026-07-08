@@ -116,6 +116,18 @@ public:
   /** Get pixel length of marker symbol. */
   virtual CONSTEXPR20 std::size_t getMarkerLength() const noexcept = 0;
 
+  /** Get the pixel distance a grid/tick label is pushed outside the graph
+   * bound it sits beside. Used by the 3D axes box to space its tick labels
+   * away from the data cube. */
+  virtual CONSTEXPR20 int getGridLabelDistanceFromGraphBound() const noexcept =
+      0;
+
+  /** Get the pixel distance an axis title (the x/y/z label) is pushed outside
+   * the graph bound, given the title's pixel height. Used by the 3D plot to
+   * place the axis titles just past the tick labels. */
+  virtual CONSTEXPR20 int getAxisLabelDistanceFromGraphBound(
+      const int label_height) const noexcept = 0;
+
   /** Get the bounds of the componenet (Local bounds). */
   virtual CONSTEXPR20 juce::Rectangle<int>
   getPlotBounds(juce::Rectangle<int> bounds) const noexcept = 0;
