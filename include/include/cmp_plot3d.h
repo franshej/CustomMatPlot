@@ -20,7 +20,7 @@ namespace cmp {
 class GraphLine3D;
 class Axes3DBox;
 
-/*
+/**
  * @class Plot3D
  * @brief A component to plot 3-D lines
  * @details A sibling component to cmp::Plot for 3D data. The data is
@@ -38,7 +38,12 @@ public:
    * nullptr. */
   ~Plot3D() override;
 
-  /* Constructor **/
+  /**
+   * @brief Construct a 3-D plot with the given per-axis scaling.
+   * @param x_scaling linear or logarithmic scaling for the x-axis
+   * @param y_scaling linear or logarithmic scaling for the y-axis
+   * @param z_scaling linear or logarithmic scaling for the z-axis
+   */
   Plot3D(const Scaling x_scaling = Scaling::linear,
          const Scaling y_scaling = Scaling::linear,
          const Scaling z_scaling = Scaling::linear);

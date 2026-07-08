@@ -24,8 +24,8 @@
 namespace cmp {
 
 /**
- *  \class GraphLine3D
- *  \brief A class component to draw 3D lines/marker symbols. This is
+ *  @class GraphLine3D
+ *  @brief A class component to draw 3D lines/marker symbols. This is
  *  a subcomponenet to cmp::Plot3D.
  *
  *  The (x, y, z) data is projected into graph-area-local pixel points with
