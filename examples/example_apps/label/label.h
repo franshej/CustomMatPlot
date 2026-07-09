@@ -30,7 +30,7 @@ class label : public juce::Component {
     m_plot.setYLabel("Very long Y axis label, very nice!");
 
     // Plot some values.
-    m_plot.plot({{1, 3, 7, 9, 13}});
+    m_plot.plot({{.y = {1, 3, 7, 9, 13}}});
   };
 
   void resized() override {

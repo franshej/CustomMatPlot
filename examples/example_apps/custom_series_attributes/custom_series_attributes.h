@@ -50,7 +50,8 @@ class custom_series_attributes : public juce::Component {
     series_attributes[2].dashed_lengths = {10.0f, 20.0f, 10.0f};
 
     // Plot some values.
-    m_plot.plot(y_data, {x_gen(0), x_gen(1), x_gen(2)}, series_attributes);
+    m_plot.plot(cmp::seriesFrom(y_data, {x_gen(0), x_gen(1), x_gen(2)},
+                                series_attributes));
   };
 
   void resized() override {

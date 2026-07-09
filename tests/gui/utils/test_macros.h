@@ -44,13 +44,13 @@
 #define ADD_SEMI_LOG_Y ADD_PLOT_TYPE(cmp::SemiLogY)
 
 #define PLOT_Y(Y) \
-  { GET_PLOT->plot(Y); }
+  { GET_PLOT->plot(cmp::seriesFrom(Y)); }
 
 #define PLOT_XY(Y, X) \
-  { GET_PLOT->plot(Y, X); }
+  { GET_PLOT->plot(cmp::seriesFrom(Y, X)); }
 
 #define PLOT_XY_ATTRI(Y, X, ATTRI) \
-  { GET_PLOT->plot(Y, X, ATTRI); }
+  { GET_PLOT->plot(cmp::seriesFrom(Y, X, ATTRI)); }
 
 #define REALTIMEPLOT(Y) \
   { GET_PLOT->realTimePlot(Y); }

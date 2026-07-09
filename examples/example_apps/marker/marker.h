@@ -30,11 +30,12 @@ class marker : public juce::Component {
     gal[3].marker = cmp::Marker::Type::Square;
 
     // Plot some values.
-    m_plot.plot({cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
-                 cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
-                 cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
-                 cmp::generateUniformRandomVector(10, -10.0f, 10.0f)},
-                {}, gal);
+    m_plot.plot(cmp::seriesFrom(
+        {cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
+         cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
+         cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
+         cmp::generateUniformRandomVector(10, -10.0f, 10.0f)},
+        {}, gal));
   };
 
   void resized() override {

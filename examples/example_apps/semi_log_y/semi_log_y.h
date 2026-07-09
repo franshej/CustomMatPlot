@@ -26,7 +26,7 @@ class semi_log_y : public juce::Component {
         cmp::generateUniformRandomVector<float>(1024, 0.001f, 0.1f)};
 
     // Plot some values.
-    m_plot.plot(values);
+    m_plot.plot(cmp::seriesFrom(values));
   };
 
   void resized() override {

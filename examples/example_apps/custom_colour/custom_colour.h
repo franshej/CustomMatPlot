@@ -32,7 +32,7 @@ class custom_colour : public juce::Component {
     series_attributes[1].series_colour = juce::Colours::blueviolet;
 
     // Plot some values.
-    m_plot.plot(y_data, {}, series_attributes);
+    m_plot.plot(cmp::seriesFrom(y_data, {}, series_attributes));
   };
 
   void resized() override {

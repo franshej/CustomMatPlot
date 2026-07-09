@@ -503,6 +503,35 @@ struct SeriesData {
   SeriesAttribute attribute{};
 };
 
+/** @brief Build a SeriesDataList from a matrix of y-series.
+ *
+ * Convenience for the common "I already have N y-series" case: each row
+ * becomes one series with an auto x-ramp. @see SeriesData */
+inline SeriesDataList seriesFrom(
+    const std::vector<std::vector<float>>& y_data) {
+  SeriesDataList series;
+  series.reserve(y_data.size());
+  for (const auto& y : y_data) series.push_back({.y = y});
+  return series;
+}
+
+/** @brief Build a SeriesDataList from parallel y, x and (optional) attribute
+ * lists. A bridge for callers that already have data in the old parallel-array
+ * layout; per-series construction (@ref SeriesData) is preferred for new code.
+ * An empty x row gets an auto ramp. @see SeriesData */
+inline SeriesDataList seriesFrom(
+    const std::vector<std::vector<float>>& y_data,
+    const std::vector<std::vector<float>>& x_data,
+    const SeriesAttributeList& attributes = {}) {
+  SeriesDataList series;
+  series.reserve(y_data.size());
+  for (std::size_t i = 0; i < y_data.size(); ++i)
+    series.push_back(
+        {i < x_data.size() ? x_data[i] : std::vector<float>{}, y_data[i],
+         i < attributes.size() ? attributes[i] : SeriesAttribute{}});
+  return series;
+}
+
 /** @brief A struct that defines between which two series the area is
  * filled. */
 struct SpreadIndex {

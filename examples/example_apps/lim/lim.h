@@ -22,7 +22,7 @@ class lim : public juce::Component {
     addAndMakeVisible(m_plot);
 
     // Plot some values.
-    m_plot.plot({{15, 3, 7, 9, 13}});
+    m_plot.plot({{.y = {15, 3, 7, 9, 13}}});
 
     // Set x and y limits
     m_plot.xLim(-1.0f, 3.4f);

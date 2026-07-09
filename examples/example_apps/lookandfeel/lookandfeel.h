@@ -49,8 +49,9 @@ class lookandfeel : public juce::Component {
     series_attributes.front().path_stroke_type = juce::PathStrokeType(15);
 
     // Plot some values.
-    m_plot.plot({cmp::generateSineWaveVector(100, -5.0f, 6.0f, 3.0f)}, {},
-                series_attributes);
+    m_plot.plot(cmp::seriesFrom(
+        {cmp::generateSineWaveVector(100, -5.0f, 6.0f, 3.0f)}, {},
+        series_attributes));
 
     m_plot.setTitle("My cool Phosphate title!!!");
     m_plot.setXLabel("X label wow!");

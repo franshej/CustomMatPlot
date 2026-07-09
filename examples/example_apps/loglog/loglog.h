@@ -25,7 +25,7 @@ class loglog : public juce::Component {
         cmp::generateUniformRandomVector<float>(1024, 1.0f, 1'000.0f)};
 
     // Plot some values.
-    m_plot.plot(values);
+    m_plot.plot(cmp::seriesFrom(values));
   };
 
   void resized() override {
