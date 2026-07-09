@@ -59,7 +59,28 @@ class Plot : public juce::Component {
   void yLim(const float min, const float max);
 
   /**
+   * @brief Plot one or more series.
+   *
+   * Each @ref SeriesData carries its own x, y and optional styling, so the
+   * series can no longer fall out of index-alignment the way three parallel
+   * vectors could. Leave a series' x empty to auto-generate a 0..N-1 ramp.
+   * If a series' attribute has no colour set, 'ColourIdsSeries' from the
+   * look and feel is used.
+   *
+   * @code
+   *   plot({ {.x = t, .y = signal, .attribute = {.series_colour = red}},
+   *          {.y = samples} });   // second series uses an auto x-ramp
+   * @endcode
+   *
+   * @param series the series to plot @see SeriesData
+   */
+  void plot(const SeriesDataList &series);
+
+  /**
    * @brief Plot y-data or y-data/x-data
+   * @deprecated Use plot(const SeriesDataList&). The parameter order is now
+   *             x,y (bundled per series) instead of y,x, and each series
+   *             carries its own x and attributes.
    *
    * Plot y-data or y-data/x-data. Each vector in y-data represents a single
    * series. E.g. If 'y_data.size() == 3', three series will be
@@ -75,6 +96,7 @@ class Plot : public juce::Component {
    * @param series_attribute_list a list of series attributes @see
    * SeriesAttribute
    */
+  [[deprecated("Use plot(const SeriesDataList&); order is now x,y per series")]]
   void plot(const std::vector<std::vector<float>> &y_data,
             const std::vector<std::vector<float>> &x_data = {},
             const SeriesAttributeList &series_attribute_list = {});

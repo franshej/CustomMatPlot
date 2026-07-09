@@ -7,8 +7,10 @@
 
 #include "cmp_plot.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 
@@ -354,6 +356,41 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
   };
 
   return generateRamp();
+}
+
+void Plot::plot(const SeriesDataList& series) {
+  // Unpack the per-series bundles into the parallel vectors the internal
+  // pipeline consumes. The bundle guarantees x/y/attribute stay aligned.
+  std::vector<std::vector<float>> y_data;
+  std::vector<std::vector<float>> x_data;
+  SeriesAttributeList attributes;
+  y_data.reserve(series.size());
+  attributes.reserve(series.size());
+
+  const auto any_x = std::any_of(series.begin(), series.end(),
+                                 [](const auto& s) { return !s.x.empty(); });
+  if (any_x) x_data.reserve(series.size());
+
+  for (const auto& s : series) {
+    y_data.push_back(s.y);
+    attributes.push_back(s.attribute);
+
+    if (any_x) {
+      if (s.x.empty()) {
+        // Keep this series aligned with the others that do have x: give it a
+        // 1..N ramp, matching generateXdataRamp.
+        std::vector<float> ramp(s.y.size());
+        std::iota(ramp.begin(), ramp.end(), 1.0f);
+        x_data.push_back(std::move(ramp));
+      } else {
+        x_data.push_back(s.x);
+      }
+    }
+  }
+  // When no series sets x, x_data stays empty and plotInternal ramps them all.
+
+  plotInternal<SeriesType::normal>(y_data, x_data, attributes);
+  repaint();
 }
 
 void Plot::plot(const std::vector<std::vector<float>>& y_data,

@@ -127,7 +127,7 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
 
     cmp::Plot plot;
     plot.setBounds(0, 0, 500, 400);
-    plot.plot({y_data}, {x_data});
+    plot.plot({{.x = x_data, .y = y_data}});
     plot.xLim(x_lim.min, x_lim.max);
     plot.yLim(y_lim.min, y_lim.max);
 

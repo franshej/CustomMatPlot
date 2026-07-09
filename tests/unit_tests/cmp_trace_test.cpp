@@ -26,7 +26,7 @@ SECTION(TraceClass, "Trace class") {
   }
 
   TEST("Add single trace point") {
-    plot.plot({y_data});
+    plot.plot({{.y = y_data}});
     plot.setTracePoint({1.f, 1.f});
     auto trace_points = getChildComponentHelper<TracePoint_f>(plot);
     expect(!trace_points.empty());
@@ -44,7 +44,7 @@ SECTION(TraceClass, "Trace class") {
   }
 
   TEST("Update existing plot with same plot data") {
-    plot.plot({{1.f, 2.f, 3.f, 4.f}});
+    plot.plot({{.y = {1.f, 2.f, 3.f, 4.f}}});
     auto trace_points = getChildComponentHelper<TracePoint_f>(plot);
     expect(!trace_points.empty());
     expectEquals(trace_points.size(), 2ul);
@@ -53,7 +53,7 @@ SECTION(TraceClass, "Trace class") {
   }
 
   TEST("Update existing plot points") {
-    plot.plot({{0.f, 0.f, 0.f, 0.f}});
+    plot.plot({{.y = {0.f, 0.f, 0.f, 0.f}}});
     auto trace_points = getChildComponentHelper<TracePoint_f>(plot);
     expect(!trace_points.empty());
     expectEquals(trace_points.size(), 2ul);
@@ -121,7 +121,7 @@ SECTION(MoveSelectedTracePointsTest, "Move selected trace points") {
     plot.setBounds(0, 0, 500, 400);
     plot.setVisible(true);
     plot.setMovePointsType(cmp::PixelPointMoveType::horizontal_vertical);
-    plot.plot({y_data}, {x_data});
+    plot.plot({{.x = x_data, .y = y_data}});
     plot.xLim(x_lim.min, x_lim.max);
     plot.yLim(y_lim.min, y_lim.max);
 
