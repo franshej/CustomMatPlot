@@ -3,8 +3,8 @@
 #include <vector>
 
 #include "cmp_axes3dbox.h"
-#include "cmp_series3d.h"
 #include "cmp_lookandfeel.h"
+#include "cmp_series3d.h"
 #include "cmp_test_helper.hpp"
 
 SECTION(Plot3DClass, "Plot3D class") {
@@ -34,12 +34,9 @@ SECTION(Plot3DClass, "Plot3D class") {
 
     const auto series = getChildComponentHelper<cmp::Series3D>(plot);
     expectEquals(series.size(), 1ul);
-    expectEqualVectors(series[0]->getXData(), x_data1,
-                       expectEqualsLambda);
-    expectEqualVectors(series[0]->getYData(), y_data1,
-                       expectEqualsLambda);
-    expectEqualVectors(series[0]->getZData(), z_data1,
-                       expectEqualsLambda);
+    expectEqualVectors(series[0]->getXData(), x_data1, expectEqualsLambda);
+    expectEqualVectors(series[0]->getYData(), y_data1, expectEqualsLambda);
+    expectEqualVectors(series[0]->getZData(), z_data1, expectEqualsLambda);
     // The colour is assigned from the lookandfeel series colours.
     expect(series[0]->getColour() != juce::Colour());
   }
@@ -49,10 +46,8 @@ SECTION(Plot3DClass, "Plot3D class") {
 
     const auto series = getChildComponentHelper<cmp::Series3D>(plot);
     expectEquals(series.size(), 2ul);
-    expectEqualVectors(series[1]->getXData(), x_data2,
-                       expectEqualsLambda);
-    expectEqualVectors(series[1]->getZData(), z_data2,
-                       expectEqualsLambda);
+    expectEqualVectors(series[1]->getXData(), x_data2, expectEqualsLambda);
+    expectEqualVectors(series[1]->getZData(), z_data2, expectEqualsLambda);
     expect(series[0]->getColour() != series[1]->getColour());
   }
 
@@ -74,8 +69,7 @@ SECTION(Plot3DClass, "Plot3D class") {
     top_view_plot.setView(0.f, 90.f);
     top_view_plot.plot3({x_data1}, {y_data1}, {z_data1});
 
-    const auto series =
-        getChildComponentHelper<cmp::Series3D>(top_view_plot);
+    const auto series = getChildComponentHelper<cmp::Series3D>(top_view_plot);
     expectEquals(series.size(), 1ul);
 
     const auto& pixel_points = series[0]->getPixelPoints();
@@ -122,8 +116,7 @@ SECTION(Plot3DClass, "Plot3D class") {
     plot_tmp.xLim(0.f, 20.f);
     plot_tmp.plot3({x_data1}, {y_data1}, {z_data1});
 
-    const auto series =
-        getChildComponentHelper<cmp::Series3D>(plot_tmp);
+    const auto series = getChildComponentHelper<cmp::Series3D>(plot_tmp);
     const auto& pixel_points = series[0]->getPixelPoints();
     const auto axes_bounds = series[0]->getLocalBounds().toFloat();
 
@@ -162,8 +155,8 @@ SECTION(Plot3DClass, "Plot3D class") {
 
     // The labels are positioned within the plot bounds.
     expect(!plot_tmp.getTitleLabel().getBounds().isEmpty());
-    expect(plot_tmp.getLocalBounds().contains(
-        plot_tmp.getXLabel().getBounds()));
+    expect(
+        plot_tmp.getLocalBounds().contains(plot_tmp.getXLabel().getBounds()));
     expect(plot_tmp.getXLabel().getY() > plot_tmp.getTitleLabel().getY());
   }
 

@@ -62,7 +62,8 @@ static std::vector<float> generateAxisGridLines(const Axis_f& axis) {
     const auto decade_value = std::pow(10.0f, decade);
     for (int n = 1; n <= 9; ++n) {
       const auto value = static_cast<float>(n) * decade_value;
-      if (value >= axis.lim.min && value <= axis.lim.max) lines.push_back(value);
+      if (value >= axis.lim.min && value <= axis.lim.max)
+        lines.push_back(value);
     }
   }
 
@@ -229,9 +230,12 @@ void Axes3DBox::paint(juce::Graphics& g) {
 
   g.setFont(lnf->getGridLabelFont());
 
-  const auto x_label_y_value = getFaceValue(getXTickLabelYFace(m_camera), m_axes);
-  const auto y_label_x_value = getFaceValue(getYTickLabelXFace(m_camera), m_axes);
-  const auto xy_label_z_value = getFaceValue(getTickLabelZFace(m_camera), m_axes);
+  const auto x_label_y_value =
+      getFaceValue(getXTickLabelYFace(m_camera), m_axes);
+  const auto y_label_x_value =
+      getFaceValue(getYTickLabelXFace(m_camera), m_axes);
+  const auto xy_label_z_value =
+      getFaceValue(getTickLabelZFace(m_camera), m_axes);
   const auto z_label_edge = getZTickLabelEdge(m_camera);
   const auto z_label_x_value = getFaceValue(z_label_edge.first, m_axes);
   const auto z_label_y_value = getFaceValue(z_label_edge.second, m_axes);

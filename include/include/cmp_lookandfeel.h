@@ -88,7 +88,7 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   juce::Font getTraceFont() const noexcept override;
 
   juce::Point<int> getTracePointPositionFrom(
-      const juce::Rectangle<int>& axes_bounds, const Lim<float> x_lim,
+      const juce::Rectangle<int> &axes_bounds, const Lim<float> x_lim,
       const Scaling x_scaling, const Lim<float> y_lim, const Scaling y_scaling,
       const juce::Point<float> series_values) const noexcept override;
 
@@ -108,7 +108,7 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
       UserInput user_input) const noexcept override;
 
   void drawSeries(juce::Graphics &g, const SeriesDataView series_data,
-                     const juce::Rectangle<int> &series_bounds) override;
+                  const juce::Rectangle<int> &series_bounds) override;
 
   void drawGridLabels(juce::Graphics &g, const LabelVector &x_axis_labels,
                       const LabelVector &y_axis_labels) override;
@@ -146,15 +146,15 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
 
   void updateXPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
-      const Scaling x_scaling, const Lim<float> x_lim, const juce::Rectangle<int> &axes_bounds,
-      const std::vector<float> &x_data,
+      const Scaling x_scaling, const Lim<float> x_lim,
+      const juce::Rectangle<int> &axes_bounds, const std::vector<float> &x_data,
       std::vector<std::size_t> &pixel_points_indices,
       PixelPoints &pixel_points) noexcept override;
 
   void updateYPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
-      const Scaling y_scaling, const Lim<float> y_lim, const juce::Rectangle<int> &axes_bounds,
-      const std::vector<float> &y_data,
+      const Scaling y_scaling, const Lim<float> y_lim,
+      const juce::Rectangle<int> &axes_bounds, const std::vector<float> &y_data,
       const std::vector<std::size_t> &pixel_points_indices,
       PixelPoints &pixel_points) noexcept override;
 

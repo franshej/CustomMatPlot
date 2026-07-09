@@ -38,8 +38,7 @@ enum class TraceLabelCornerPosition {
 /** @brief A struct that defines a tracepoint. */
 template <class ValueType>
 struct TracePoint : public juce::Component {
-  explicit TracePoint(const size_t data_point_index,
-                      const Series* series)
+  explicit TracePoint(const size_t data_point_index, const Series* series)
       : data_point_index(data_point_index), associated_series(series){};
 
   constexpr bool operator==(const TracePoint<ValueType>& rhs) {
@@ -178,7 +177,7 @@ class Trace : public virtual Observer<Lim<float>>,
               public virtual Observer<Scaling>,
               public virtual Observer<juce::Rectangle<int>>,
               public virtual Observer<bool> {
-public:
+ public:
   /** Destructor. Setting lookandfeel to nullptr. */
   ~Trace();
 
@@ -195,8 +194,7 @@ public:
    * @param TracePoint juce::Componenet* a TracePoint component.
    * @return Series* the associated Series if found else nullptr
    */
-  const Series* getAssociatedSeries(
-      const juce::Component* trace_point) const;
+  const Series* getAssociatedSeries(const juce::Component* trace_point) const;
 
   /** @brief Get the data position for a tracepoint or trace label.
    *
@@ -232,8 +230,7 @@ public:
    * @param trace_point_visibility the visibility of the tracepoint.
    * @return void.
    */
-  void addTracePoint(const Series* series,
-                     const size_t pixel_point_index,
+  void addTracePoint(const Series* series, const size_t pixel_point_index,
                      const TracePointVisibilityType trace_point_visibility);
 
   /** @brief Get tracepoint from juce::component.
@@ -289,8 +286,7 @@ public:
    * @return true if the value was changed.
    */
   bool setDataPointFor(juce::Component* trace_point,
-                       const size_t pixel_point_index,
-                       const Series* series);
+                       const size_t pixel_point_index, const Series* series);
 
   /** @brief Set the coner position of a single tracelabel.
    *
@@ -339,7 +335,8 @@ public:
    * @param id the observer id.
    * @param new_value the new value.
    */
-  void observableValueUpdated(ObserverId id, const Lim<float>& new_value) override;
+  void observableValueUpdated(ObserverId id,
+                              const Lim<float>& new_value) override;
 
   /** @brief Observer function for scaling.
    *
@@ -353,7 +350,8 @@ public:
    * @param id the observer id.
    * @param new_value the new value.
    */
-  void observableValueUpdated(ObserverId id, const juce::Rectangle<int>& new_value) override;
+  void observableValueUpdated(ObserverId id,
+                              const juce::Rectangle<int>& new_value) override;
 
   /** @brief Observer function for boolean values.
    *

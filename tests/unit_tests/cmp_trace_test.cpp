@@ -1,12 +1,13 @@
-#include "cmp_plot.h"
+#include "cmp_trace.h"
 
 #include <juce_core/juce_core.h>
+
 #include <memory>
 
 #include "cmp_datamodels.h"
-#include "cmp_series.h"
 #include "cmp_lookandfeel.h"
-#include "cmp_trace.h"
+#include "cmp_plot.h"
+#include "cmp_series.h"
 #include "cmp_test_helper.hpp"
 #include "cmp_utils.h"
 
@@ -101,11 +102,11 @@ SECTION(MoveSelectedTracePointsTest, "Move selected trace points") {
   auto makeMouseEvent = [](juce::Component* component,
                            const juce::Point<float> position,
                            const bool was_dragged) {
-    return juce::MouseEvent(
-        juce::Desktop::getInstance().getMainMouseSource(), position,
-        juce::ModifierKeys::leftButtonModifier, 0.f, 0.f, 0.f, 0.f, 0.f,
-        component, component, juce::Time::getCurrentTime(), position,
-        juce::Time::getCurrentTime(), 1, was_dragged);
+    return juce::MouseEvent(juce::Desktop::getInstance().getMainMouseSource(),
+                            position, juce::ModifierKeys::leftButtonModifier,
+                            0.f, 0.f, 0.f, 0.f, 0.f, component, component,
+                            juce::Time::getCurrentTime(), position,
+                            juce::Time::getCurrentTime(), 1, was_dragged);
   };
 
   TEST("Drag a selected trace point: logarithmic x, linear y") {
@@ -156,18 +157,16 @@ SECTION(MoveSelectedTracePointsTest, "Move selected trace points") {
     // The expected data movement converts the axes-area-local pixel
     // positions with axes-area-local (zero-origin) bounds.
     const auto local_bounds = axes_bounds.withZeroOrigin().toFloat();
-    const auto d_x = cmp::getXDataFromXPixelCoordinate(
-                         new_pos_local.getX(), local_bounds, x_lim,
-                         cmp::Scaling::logarithmic) -
-                     cmp::getXDataFromXPixelCoordinate(
-                         prev_pos_local.getX(), local_bounds, x_lim,
-                         cmp::Scaling::logarithmic);
-    const auto d_y = cmp::getYDataFromYPixelCoordinate(
-                         new_pos_local.getY(), local_bounds, y_lim,
-                         cmp::Scaling::linear) -
-                     cmp::getYDataFromYPixelCoordinate(
-                         prev_pos_local.getY(), local_bounds, y_lim,
-                         cmp::Scaling::linear);
+    const auto d_x =
+        cmp::getXDataFromXPixelCoordinate(new_pos_local.getX(), local_bounds,
+                                          x_lim, cmp::Scaling::logarithmic) -
+        cmp::getXDataFromXPixelCoordinate(prev_pos_local.getX(), local_bounds,
+                                          x_lim, cmp::Scaling::logarithmic);
+    const auto d_y =
+        cmp::getYDataFromYPixelCoordinate(new_pos_local.getY(), local_bounds,
+                                          y_lim, cmp::Scaling::linear) -
+        cmp::getYDataFromYPixelCoordinate(prev_pos_local.getY(), local_bounds,
+                                          y_lim, cmp::Scaling::linear);
     const auto expected_x = x_data[1] + d_x;
     const auto expected_y = y_data[1] + d_y;
 
@@ -177,8 +176,7 @@ SECTION(MoveSelectedTracePointsTest, "Move selected trace points") {
 
     expectWithinAbsoluteError(series[0]->getXData()[1], expected_x,
                               1e-3f * expected_x);
-    expectWithinAbsoluteError(series[0]->getYData()[1], expected_y,
-                              1e-3f);
+    expectWithinAbsoluteError(series[0]->getYData()[1], expected_y, 1e-3f);
 
     // The other data points are untouched.
     expectEquals(series[0]->getXData()[0], x_data[0]);

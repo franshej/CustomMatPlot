@@ -27,8 +27,8 @@
 #endif
 
 #include <functional>
-#include <optional>
 #include <map>
+#include <optional>
 
 #include "juce_gui_basics/juce_gui_basics.h"
 
@@ -490,15 +490,15 @@ struct SpreadIndex {
 /** @brief A view of the data required to draw a series */
 struct SeriesDataView {
   SeriesDataView(const std::vector<float>& _x_data,
-                    const std::vector<float>& _y_data,
-                    const PixelPoints& _pixel_points,
-                    const std::vector<std::size_t>& _pixel_point_indices,
-                    const SeriesAttribute& _series_attribute);
+                 const std::vector<float>& _y_data,
+                 const PixelPoints& _pixel_points,
+                 const std::vector<std::size_t>& _pixel_point_indices,
+                 const SeriesAttribute& _series_attribute);
 
   SeriesDataView(const Series& series);
   SeriesDataView(const std::vector<float>&&, const std::vector<float>&&,
-                    const PixelPoints&&,
-                    const std::vector<std::size_t>&&) =
+                 const PixelPoints&&,
+                 const std::vector<std::size_t>&&) =
       delete;  // prevents rvalue binding
 
   const std::vector<float>&x_data, &y_data;
@@ -604,7 +604,7 @@ template <typename T>
 class Observer {
  public:
   virtual void observableValueUpdated(ObserverId id, const T& newValue) = 0;
-  
+
   void detachFromObservable(ObserverId observableId) {
     auto it = m_observables.find(observableId);
     if (it != m_observables.end()) {
@@ -624,27 +624,27 @@ class Observer {
     }
   }
 
-  virtual ~Observer() {
-    detachFromAllObservables();
-  }
+  virtual ~Observer() { detachFromAllObservables(); }
 
  private:
   friend class Observable<T>;
-  void setObservable(Observable<T>* observable, ObserverId observableId, size_t observerId) {
+  void setObservable(Observable<T>* observable, ObserverId observableId,
+                     size_t observerId) {
     auto it = m_observables.find(observableId);
     if (it != m_observables.end()) {
       detachFromObservable(observableId);
     }
     m_observables[observableId] = std::make_pair(observable, observerId);
   }
-  
+
   std::map<ObserverId, std::pair<Observable<T>*, size_t>> m_observables;
 };
 
 template <typename T>
 class Observable {
  public:
-  Observable(ObserverId id, T value = T()) : id(id), value(value), next_observer_id(0) {}
+  Observable(ObserverId id, T value = T())
+      : id(id), value(value), next_observer_id(0) {}
 
   ~Observable() {
     auto observersCopy = observers;
@@ -670,16 +670,15 @@ class Observable {
   }
 
   void removeObserver(size_t observerId) {
-    auto it = std::find_if(observers.begin(), observers.end(),
-      [observerId](const auto& pair) {
-        return pair.first == observerId;
-      });
-    
+    auto it = std::find_if(
+        observers.begin(), observers.end(),
+        [observerId](const auto& pair) { return pair.first == observerId; });
+
     if (it != observers.end()) {
       observers.erase(it);
     }
   }
-  
+
   operator const T&() const { return value; }
   ObserverId getId() const { return id; }
   const T& getValue() const { return value; }
@@ -689,17 +688,18 @@ class Observable {
   ObserverId id;
   T value;
   size_t next_observer_id;
-  std::vector<std::pair<size_t, std::function<void(ObserverId, const T&)>>> observers;
+  std::vector<std::pair<size_t, std::function<void(ObserverId, const T&)>>>
+      observers;
 
   template <typename ObserverType>
   void addObserverInternal(ObserverType& observer) {
     size_t observerId = next_observer_id++;
     Observer<T>* baseObserver = &observer;
     baseObserver->setObservable(this, id, observerId);
-    observers.push_back(std::make_pair(observerId, 
-      [baseObserver](ObserverId id, const T& value) {
-        baseObserver->observableValueUpdated(id, value);
-      }));
+    observers.push_back(std::make_pair(
+        observerId, [baseObserver](ObserverId id, const T& value) {
+          baseObserver->observableValueUpdated(id, value);
+        }));
   }
 
   void notifyObservers() {

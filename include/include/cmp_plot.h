@@ -2,9 +2,9 @@
  * @file cmp_plot.h
  * @brief Components for plotting 2-D lines and marker symbols
  * @ingroup CustomMatPlot
- * @details This file contains the Plot class and related components for creating
- *          2D plots with features like line plots, scatter plots, zooming, panning,
- *          and customizable axes.
+ * @details This file contains the Plot class and related components for
+ * creating 2D plots with features like line plots, scatter plots, zooming,
+ * panning, and customizable axes.
  * @author Frans Rosencrantz
  * @contact Frans.Rosencrantz@gmail.com
  */
@@ -22,7 +22,8 @@ namespace cmp {
 /**
  * @class Plot
  * @brief A component to plot 2-D lines/marker symbols
- * @details This class provides a flexible plotting component with features including:
+ * @details This class provides a flexible plotting component with features
+ * including:
  *          - Line and scatter plots
  *          - Tracing
  *          - Zooming and panning
@@ -30,11 +31,11 @@ namespace cmp {
  *          - Linear and logarithmic axis scaling
  *          - Legend support
  * @see SemiLogX
- * @see SemiLogY  
+ * @see SemiLogY
  * @see LogLog
  */
 class Plot : public juce::Component {
-public:
+ public:
   /** Destructor, making sure to set the lookandfeel in all subcomponenets to
    * nullptr. */
   ~Plot();
@@ -43,21 +44,21 @@ public:
   Plot(const Scaling x_scaling = Scaling::linear,
        const Scaling y_scaling = Scaling::linear);
 
-  /** 
+  /**
    * @brief Set the X-limits
    * @param min minimum value
    * @param max maximum value
    */
   void xLim(const float min, const float max);
 
-  /** 
+  /**
    * @brief Set the Y-limits
    * @param min minimum value
    * @param max maximum value
    */
   void yLim(const float min, const float max);
 
-  /** 
+  /**
    * @brief Plot y-data or y-data/x-data
    *
    * Plot y-data or y-data/x-data. Each vector in y-data represents a single
@@ -71,16 +72,18 @@ public:
    *
    * @param y_data vector of vectors with the y-values
    * @param x_data vector of vectors with the x-values
-   * @param series_attribute_list a list of series attributes @see SeriesAttribute
+   * @param series_attribute_list a list of series attributes @see
+   * SeriesAttribute
    */
   void plot(const std::vector<std::vector<float>> &y_data,
             const std::vector<std::vector<float>> &x_data = {},
             const SeriesAttributeList &series_attribute_list = {});
 
-  /** 
+  /**
    * @brief Draw horizontal line(s)
    *
-   * Draw horizontal line(s) at the given y-coordinates. Lines can be moved by dragging.
+   * Draw horizontal line(s) at the given y-coordinates. Lines can be moved by
+   * dragging.
    *
    * @param y_coordinates Y-coordinates where lines will be drawn
    * @param series_attributes Series attributes for the lines
@@ -91,7 +94,8 @@ public:
   /**
    * @brief Draw vertical line(s)
    *
-   * Draw vertical line(s) at the given x-coordinates. Lines can be moved by dragging.
+   * Draw vertical line(s) at the given x-coordinates. Lines can be moved by
+   * dragging.
    *
    * @param x_coordinates X-coordinates where lines will be drawn
    * @param series_attributes Series attributes for the lines
@@ -117,7 +121,8 @@ public:
    * 2. Call this function to fill area between specified lines
    *
    * @param spread_indices Indices of series to fill between
-   * @param fill_area_colours Colors for filled areas (uses ColourIdsSeries if empty)
+   * @param fill_area_colours Colors for filled areas (uses ColourIdsSeries if
+   * empty)
    */
   void fillBetween(const std::vector<SpreadIndex> &spread_indices,
                    const std::vector<juce::Colour> &fill_area_colours = {});
@@ -160,19 +165,19 @@ public:
   void setSeriesDataChangedCallback(
       SeriesChangedCallback series_changed_callback);
 
-  /** 
+  /**
    * @brief Set the text for label on the X-axis
    * @param x_label text to be displayed on the x-axis
    */
   void setXLabel(const std::string &x_label);
 
-  /** 
+  /**
    * @brief Set the text for label on the Y-axis
    * @param y_label text to be displayed on the y-axis
    */
   void setYLabel(const std::string &y_label);
 
-  /** 
+  /**
    * @brief Set x & y-axis scaling
    * @param x_scaling x-axis scaling
    * @param y_scaling y-axis scaling
@@ -180,13 +185,13 @@ public:
    */
   void setScaling(Scaling x_scaling, Scaling y_scaling) noexcept;
 
-  /** 
+  /**
    * @brief Set the text for title label
    * @param title text to be displayed as the title
    */
   void setTitle(const std::string &title);
 
-  /** 
+  /**
    * @brief Set trace-point
    *
    * Set a trace-point to the point on a series closest the given
@@ -197,7 +202,7 @@ public:
    */
   void setTracePoint(const juce::Point<float> &trace_point_coordinate);
 
-  /** 
+  /**
    * @brief Set the text for grid labels on the x-axis
    *
    * Set custom text for the grid labels and overrides the labels made based
@@ -255,8 +260,8 @@ public:
   /** @brief Set Legend
    *
    *  Set descriptions for each series. The label 'label1..N' will be used if
-   *  fewers numbers of series_descriptions are provided than existing numbers of
-   *  series.
+   *  fewers numbers of series_descriptions are provided than existing numbers
+   * of series.
    *
    *  @param series_descriptions description of the series
    *  @return void.
@@ -279,11 +284,12 @@ public:
   //==============================================================================
 
   /** @brief Color IDs for customizing plot appearance
-   * @details These IDs can be used with Component::setColour() or LookAndFeel::setColour()
-   *          to customize colors of various plot elements.
-   * @note All color IDs should be passed to setColour() along with the desired Color value
+   * @details These IDs can be used with Component::setColour() or
+   * LookAndFeel::setColour() to customize colors of various plot elements.
+   * @note All color IDs should be passed to setColour() along with the desired
+   * Color value
    * @see Component::setColour
-   * @see Component::findColour  
+   * @see Component::findColour
    * @see LookAndFeel::setColour
    */
   enum ColourIds : int {
@@ -325,7 +331,7 @@ public:
    *   The default implementation can be seen in \see cmp_lookandfeelmethods.h
    */
   class LookAndFeelMethods : public PlotLookAndFeelBase {
-  public:
+   public:
     virtual ~LookAndFeelMethods() = default;
 
     /** This method draws the labels on the x and y axis. */
@@ -350,20 +356,19 @@ public:
         const juce::Point<float> series_values) const noexcept = 0;
 
     /** Get distance from left of grid x-labels to right side of axes bound. */
-    virtual CONSTEXPR20 int
-    getXGridLabelDistanceFromAxesBound() const noexcept = 0;
+    virtual CONSTEXPR20 int getXGridLabelDistanceFromAxesBound()
+        const noexcept = 0;
 
     /** Get distance from top of grid x-labels to bottom of axes bound. */
     virtual CONSTEXPR20 int getYGridLabelDistanceFromAxesBound(
         const int y_grid_label_width) const noexcept = 0;
 
     /** Updates the x-ticks with auto generated ticks. */
-    virtual void
-    updateVerticalGridLineTicksAuto(const juce::Rectangle<int> &bounds,
-                                    const Lim_f &x_lim, const Scaling x_scaling,
-                                    const GridType grid_type,
-                                    const std::vector<float> &previous_ticks,
-                                    std::vector<float> &x_ticks) noexcept = 0;
+    virtual void updateVerticalGridLineTicksAuto(
+        const juce::Rectangle<int> &bounds, const Lim_f &x_lim,
+        const Scaling x_scaling, const GridType grid_type,
+        const std::vector<float> &previous_ticks,
+        std::vector<float> &x_ticks) noexcept = 0;
 
     /** Updates the y-ticks with auto generated ticks. */
     virtual void updateHorizontalGridLineTicksAuto(
@@ -424,23 +429,22 @@ public:
   /** @internal */
   void mouseUp(const juce::MouseEvent &event) override;
   /** @internal */
-  juce::Point<float>
-  getMousePositionRelativeToAxesArea(const juce::MouseEvent &event) const;
+  juce::Point<float> getMousePositionRelativeToAxesArea(
+      const juce::MouseEvent &event) const;
   /** @internal */
   void modifierKeysChanged(const juce::ModifierKeys &modifiers) override;
 
-private:
+ private:
   /** @internal */
   template <bool is_point_data_point = false>
-  std::tuple<size_t, const Series *>
-  findNearestPoint(juce::Point<float> point,
-                   const Series *series = nullptr);
+  std::tuple<size_t, const Series *> findNearestPoint(
+      juce::Point<float> point, const Series *series = nullptr);
   /** @internal */
   PlotLookAndFeel *getDefaultLookAndFeel();
   /** @internal */
   template <SeriesType t_series_type>
   void addSeriesInternal(std::unique_ptr<Series> &series,
-                            const size_t series_index);
+                         const size_t series_index);
   /** @internal */
   void resizeChildrens();
   /** @internal */
@@ -448,7 +452,7 @@ private:
   /** @internal */
   template <SeriesType t_series_type>
   void updateSeriesYData(const std::vector<std::vector<float>> &y_data,
-                            const SeriesAttributeList &series_attribute_list);
+                         const SeriesAttributeList &series_attribute_list);
   /** @internal */
   template <SeriesType t_series_type>
   void updateSeriesXData(const std::vector<std::vector<float>> &x_data);
@@ -472,8 +476,8 @@ private:
                     const SeriesAttributeList &series_attributes,
                     const bool update_y_data_only = false);
   /** @internal */
-  std::vector<std::vector<float>>
-  generateXdataRamp(const std::vector<std::vector<float>> &y_data);
+  std::vector<std::vector<float>> generateXdataRamp(
+      const std::vector<std::vector<float>> &y_data);
   /** @internal */
   void syncDownsamplingModeWithMoveType();
   /** @internal */
@@ -539,8 +543,8 @@ private:
 
   /** Friend functions */
   friend const AreLabelsSet areLabelsSet(const Plot *plot) noexcept;
-  friend const std::pair<int, int>
-  getMaxGridLabelWidth(const Plot *plot) noexcept;
+  friend const std::pair<int, int> getMaxGridLabelWidth(
+      const Plot *plot) noexcept;
 
   /** Other variables */
   PixelPointMoveType m_pixel_point_move_type{PixelPointMoveType::none};
@@ -552,34 +556,35 @@ private:
 /**
  * @class SemiLogX
  * @brief Plot with logarithmic x-axis and linear y-axis scaling
- * @details Convenience class that creates a Plot with logarithmic x-axis scaling.
- *          Useful for data that spans multiple orders of magnitude in x.
+ * @details Convenience class that creates a Plot with logarithmic x-axis
+ * scaling. Useful for data that spans multiple orders of magnitude in x.
  */
 class SemiLogX : public Plot {
-public:
+ public:
   SemiLogX() : Plot(Scaling::logarithmic){};
 };
 
 /**
  * @class SemiLogY
- * @brief Plot with linear x-axis and logarithmic y-axis scaling  
- * @details Convenience class that creates a Plot with logarithmic y-axis scaling.
- *          Useful for data that spans multiple orders of magnitude in y.
+ * @brief Plot with linear x-axis and logarithmic y-axis scaling
+ * @details Convenience class that creates a Plot with logarithmic y-axis
+ * scaling. Useful for data that spans multiple orders of magnitude in y.
  */
 class SemiLogY : public Plot {
-public:
+ public:
   SemiLogY() : Plot(Scaling::linear, Scaling::logarithmic){};
 };
 
 /**
  * @class LogLog
  * @brief Plot with logarithmic scaling on both axes
- * @details Convenience class that creates a Plot with logarithmic scaling on both axes.
- *          Useful for data that spans multiple orders of magnitude in both dimensions.
+ * @details Convenience class that creates a Plot with logarithmic scaling on
+ * both axes. Useful for data that spans multiple orders of magnitude in both
+ * dimensions.
  */
 class LogLog : public Plot {
-public:
+ public:
   LogLog() : Plot(Scaling::logarithmic, Scaling::logarithmic){};
 };
 
-} // namespace cmp
+}  // namespace cmp

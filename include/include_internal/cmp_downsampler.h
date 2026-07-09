@@ -48,9 +48,11 @@ class Downsampler {
    *  @param x_based_idxs_out the output x-indices.
    *  @return void.
    */
-  static void calculateXIndices(const Scaling x_scaling, const Lim<FloatType> x_lim, const juce::Rectangle<int> &axes_bounds,
-                                    const std::vector<FloatType> &x_data,
-                                    std::vector<std::size_t> &x_idxs);
+  static void calculateXIndices(const Scaling x_scaling,
+                                const Lim<FloatType> x_lim,
+                                const juce::Rectangle<int> &axes_bounds,
+                                const std::vector<FloatType> &x_data,
+                                std::vector<std::size_t> &x_idxs);
 
   /** @brief Calculate xy-indices
    *
@@ -64,8 +66,8 @@ class Downsampler {
    *  @param xy_based_idxs_out indices used to downsample the data.
    *  @return void.
    */
-  static void calculateXYBasedIdxs(
-      const std::vector<std::size_t> &x_idxs,
-      const std::vector<FloatType> &y_data, std::vector<std::size_t> &xy_idxs);
+  static void calculateXYBasedIdxs(const std::vector<std::size_t> &x_idxs,
+                                   const std::vector<FloatType> &y_data,
+                                   std::vector<std::size_t> &xy_idxs);
 };
 }  // namespace cmp

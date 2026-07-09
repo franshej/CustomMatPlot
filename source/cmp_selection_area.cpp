@@ -19,7 +19,8 @@ void SelectionArea::setStartPosition(
   m_is_start_pos_set = true;
 }
 
-void SelectionArea::setEndPosition(const juce::Point<int>& end_position) noexcept {
+void SelectionArea::setEndPosition(
+    const juce::Point<int>& end_position) noexcept {
   m_end_pos = end_position;
 }
 
@@ -31,7 +32,9 @@ juce::Point<int> SelectionArea::getEndPosition() const noexcept {
   return m_end_pos;
 }
 
-bool SelectionArea::isStartPosSet() const noexcept { return m_is_start_pos_set; }
+bool SelectionArea::isStartPosSet() const noexcept {
+  return m_is_start_pos_set;
+}
 
 void SelectionArea::reset() noexcept {
   m_start_pos = {0, 0};
@@ -39,8 +42,8 @@ void SelectionArea::reset() noexcept {
   m_is_start_pos_set = false;
 }
 
-void SelectionArea::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
-{
+void SelectionArea::observableValueUpdated(ObserverId id,
+                                           const Lim<float>& new_value) {
   if (id == ObserverId::XLim) {
     m_x_lim = new_value;
   } else if (id == ObserverId::YLim) {
@@ -48,7 +51,8 @@ void SelectionArea::observableValueUpdated(ObserverId id, const Lim<float> &new_
   }
 }
 
-void SelectionArea::observableValueUpdated(ObserverId id, const Scaling &new_value) {
+void SelectionArea::observableValueUpdated(ObserverId id,
+                                           const Scaling& new_value) {
   if (id == ObserverId::XScaling) {
     m_x_scaling = new_value;
   } else if (id == ObserverId::YScaling) {
@@ -84,15 +88,12 @@ juce::Rectangle<ValueType> SelectionArea::getDataBound() const noexcept {
   const auto x_start = getXDataFromXPixelCoordinate(
       float(start_pos.getX()), local_axes_bounds, m_x_lim, m_x_scaling);
   const auto x_end = getXDataFromXPixelCoordinate(
-      float(end_pos.getX()), local_axes_bounds, m_x_lim,
-      m_x_scaling);
+      float(end_pos.getX()), local_axes_bounds, m_x_lim, m_x_scaling);
 
   const auto y_start = getYDataFromYPixelCoordinate(
-      float(start_pos.getY()), local_axes_bounds, m_y_lim,
-      m_y_scaling);
+      float(start_pos.getY()), local_axes_bounds, m_y_lim, m_y_scaling);
   const auto y_end = getYDataFromYPixelCoordinate(
-      float(end_pos.getY()), local_axes_bounds, m_y_lim,
-      m_y_scaling);
+      float(end_pos.getY()), local_axes_bounds, m_y_lim, m_y_scaling);
 
   const auto x_min = std::min(x_start, x_end);
   const auto x_width = std::max(x_start, x_end) - x_min;
@@ -105,7 +106,8 @@ juce::Rectangle<ValueType> SelectionArea::getDataBound() const noexcept {
 template juce::Rectangle<float> SelectionArea::getDataBound() const noexcept;
 
 template <typename ValueType>
-juce::Rectangle<ValueType> SelectionArea::getSelectedAreaBound() const noexcept {
+juce::Rectangle<ValueType> SelectionArea::getSelectedAreaBound()
+    const noexcept {
   const auto start_pos = this->getStartPosition();
   const auto end_pos = this->getEndPosition();
 
@@ -117,6 +119,7 @@ juce::Rectangle<ValueType> SelectionArea::getSelectedAreaBound() const noexcept 
   return juce::Rectangle<ValueType>{x_min, y_min, x_width, y_height};
 };
 
-template juce::Rectangle<int> SelectionArea::getSelectedAreaBound() const noexcept;
+template juce::Rectangle<int> SelectionArea::getSelectedAreaBound()
+    const noexcept;
 
 }  // namespace cmp

@@ -84,8 +84,7 @@ struct AreLabelsSet {
 
 /*============================================================================*/
 
-static SeriesDataViewList createSeriesDataViewList(
-    const SeriesVector& series) {
+static SeriesDataViewList createSeriesDataViewList(const SeriesVector& series) {
   SeriesDataViewList series_data_view_list;
   series_data_view_list.reserve(series.size());
 
@@ -122,13 +121,13 @@ constexpr float getYDataFromYPixelCoordinate(
 }
 
 static juce::Point<float> getDataPointFromPixelCoordinate(
-    const juce::Point<float> pos,
-    const juce::Rectangle<float>& axes_bounds, const Lim_f x_lim,
-    const Scaling x_scaling, const Lim_f y_lim, const Scaling y_scaling) noexcept {
-  const auto x = getXDataFromXPixelCoordinate(
-      pos.getX(), axes_bounds, x_lim, x_scaling);
-  const auto y = getYDataFromYPixelCoordinate(
-      pos.getY(), axes_bounds, y_lim, y_scaling);
+    const juce::Point<float> pos, const juce::Rectangle<float>& axes_bounds,
+    const Lim_f x_lim, const Scaling x_scaling, const Lim_f y_lim,
+    const Scaling y_scaling) noexcept {
+  const auto x =
+      getXDataFromXPixelCoordinate(pos.getX(), axes_bounds, x_lim, x_scaling);
+  const auto y =
+      getYDataFromYPixelCoordinate(pos.getY(), axes_bounds, y_lim, y_scaling);
 
   return juce::Point<float>(x, y);
 }

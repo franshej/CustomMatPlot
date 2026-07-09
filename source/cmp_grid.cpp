@@ -11,8 +11,8 @@
 #include <tuple>
 
 #include "cmp_datamodels.h"
-#include "cmp_series.h"
 #include "cmp_plot.h"
+#include "cmp_series.h"
 #include "cmp_utils.h"
 
 namespace cmp {
@@ -120,8 +120,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
-        return getXScaleAndOffset(axes_bounds.getWidth(), m_x_lim,
-                                  m_x_scaling);
+        return getXScaleAndOffset(axes_bounds.getWidth(), m_x_lim, m_x_scaling);
       }
       return getYScaleAndOffset(axes_bounds.getHeight(), m_y_lim, m_y_scaling);
     };

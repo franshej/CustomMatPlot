@@ -1,6 +1,7 @@
+#include "cmp_projector3d.h"
+
 #include <vector>
 
-#include "cmp_projector3d.h"
 #include "cmp_test_helper.hpp"
 
 /* Tests for the 3D -> 2D projector.
@@ -18,10 +19,9 @@ SECTION(Projector3DTest, "3D projector") {
 
   const auto axes_bounds = juce::Rectangle<int>(0, 0, 500, 400);
 
-  const auto linear_axes =
-      cmp::Axes3{{{0.f, 10.f}, cmp::Scaling::linear},
-                 {{0.f, 10.f}, cmp::Scaling::linear},
-                 {{0.f, 10.f}, cmp::Scaling::linear}};
+  const auto linear_axes = cmp::Axes3{{{0.f, 10.f}, cmp::Scaling::linear},
+                                      {{0.f, 10.f}, cmp::Scaling::linear},
+                                      {{0.f, 10.f}, cmp::Scaling::linear}};
 
   TEST("Top view: x maps across the width, y up the height") {
     const cmp::Camera3D top_view(0.f, 90.f);
@@ -57,7 +57,8 @@ SECTION(Projector3DTest, "3D projector") {
 
     // One decade per third of the series height.
     expectPointNear(projector.toPixel({5.f, 5.f, 1.f}), {250.f, 400.f});
-    expectPointNear(projector.toPixel({5.f, 5.f, 10.f}), {250.f, 400.f * 2.f / 3.f});
+    expectPointNear(projector.toPixel({5.f, 5.f, 10.f}),
+                    {250.f, 400.f * 2.f / 3.f});
     expectPointNear(projector.toPixel({5.f, 5.f, 100.f}), {250.f, 400.f / 3.f});
     expectPointNear(projector.toPixel({5.f, 5.f, 1000.f}), {250.f, 0.f});
   }
@@ -73,7 +74,8 @@ SECTION(Projector3DTest, "3D projector") {
     // x maps across the width, one decade per third.
     expectPointNear(projector.toPixel({1.f, 5.f, 5.f}), {0.f, 200.f});
     expectPointNear(projector.toPixel({10.f, 5.f, 5.f}), {500.f / 3.f, 200.f});
-    expectPointNear(projector.toPixel({100.f, 5.f, 5.f}), {500.f * 2.f / 3.f, 200.f});
+    expectPointNear(projector.toPixel({100.f, 5.f, 5.f}),
+                    {500.f * 2.f / 3.f, 200.f});
     expectPointNear(projector.toPixel({1000.f, 5.f, 5.f}), {500.f, 200.f});
   }
 
@@ -87,14 +89,14 @@ SECTION(Projector3DTest, "3D projector") {
 
     // y maps up the height (inverted), one decade per third.
     expectPointNear(projector.toPixel({5.f, 1.f, 5.f}), {250.f, 400.f});
-    expectPointNear(projector.toPixel({5.f, 10.f, 5.f}), {250.f, 400.f * 2.f / 3.f});
+    expectPointNear(projector.toPixel({5.f, 10.f, 5.f}),
+                    {250.f, 400.f * 2.f / 3.f});
     expectPointNear(projector.toPixel({5.f, 100.f, 5.f}), {250.f, 400.f / 3.f});
     expectPointNear(projector.toPixel({5.f, 1000.f, 5.f}), {250.f, 0.f});
   }
 
   TEST("Default view: the data cube fills the axes bounds") {
-    const cmp::Projector3D projector(linear_axes, cmp::Camera3D(),
-                                     axes_bounds);
+    const cmp::Projector3D projector(linear_axes, cmp::Camera3D(), axes_bounds);
 
     auto min_pixel = juce::Point<float>(1e9f, 1e9f);
     auto max_pixel = juce::Point<float>(-1e9f, -1e9f);
@@ -132,5 +134,4 @@ SECTION(Projector3DTest, "3D projector") {
     expectPointNear(pixel_points[1], {250.f, 200.f});
     expectPointNear(pixel_points[2], {500.f, 0.f});
   }
-}
-;
+};

@@ -5,10 +5,12 @@
  * https://opensource.org/licenses/MIT
  */
 
-#include "cmp_datamodels.h"
-#include <cmp_extras.hpp>
 #include <cmp_plot.h>
 #include <juce_gui_extra/juce_gui_extra.h>
+
+#include <cmp_extras.hpp>
+
+#include "cmp_datamodels.h"
 
 using namespace cmp;
 
@@ -30,7 +32,7 @@ class lookandfeel_timeline : public juce::Component {
     addAndMakeVisible(m_plot);
 
     // Plot some values.
-    m_plot.plot({{0, 3, 7, 9, 2.5}},{{-100, 20, 40, 50, 220}});
+    m_plot.plot({{0, 3, 7, 9, 2.5}}, {{-100, 20, 40, 50, 220}});
 
     // Setting x/y limes.
     m_plot.xLim(-10.f, 200.f);

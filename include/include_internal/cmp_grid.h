@@ -30,9 +30,9 @@ namespace cmp {
  * Grid class implementation of grid component
  *
  * Componenet for creating grids and grid labels. The idea with this componenet
- * is to create the grids behind the actual series(s) together with series labels
- * outside the axes area. It can also be used to only create the grid labels
- * without the grids.
+ * is to create the grids behind the actual series(s) together with series
+ * labels outside the axes area. It can also be used to only create the grid
+ * labels without the grids.
  *
  */
 class Grid : public juce::Component,
@@ -41,7 +41,6 @@ class Grid : public juce::Component,
              public virtual Observer<Lim_f>,
              public virtual Observer<bool> {
  public:
-
   /** @brief Enables grid or tiny grid
    *
    *  Turn on grids or tiny grids. @see GridType in cmp:datamodels.h.

@@ -1,4 +1,5 @@
 #include "cmp_math3d.h"
+
 #include "cmp_test_helper.hpp"
 
 SECTION(Math3DTest, "3D math primitives") {
@@ -64,5 +65,4 @@ SECTION(Math3DTest, "3D math primitives") {
     expect(axes.y == cmp::Axis_f({0.f, 2.f}, cmp::Scaling::linear));
     expect(axes.z == cmp::Axis_f({1.f, 1000.f}, cmp::Scaling::logarithmic));
   }
-}
-;
+};

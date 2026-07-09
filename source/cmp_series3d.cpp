@@ -15,8 +15,8 @@
 namespace cmp {
 
 void Series3D::setValues(const std::vector<float>& x_data,
-                            const std::vector<float>& y_data,
-                            const std::vector<float>& z_data) {
+                         const std::vector<float>& y_data,
+                         const std::vector<float>& z_data) {
   jassert(x_data.size() == y_data.size() && x_data.size() == z_data.size());
 
   m_x_data = x_data;
@@ -106,8 +106,8 @@ void Series3D::resized() { updatePixelPointsIntern(); }
 void Series3D::paint(juce::Graphics& g) {
   if (m_lookandfeel && !m_pixel_points.empty()) {
     const SeriesDataView series_data(m_x_data, m_y_data, m_pixel_points,
-                                            m_pixel_point_indices,
-                                            m_series_attributes);
+                                     m_pixel_point_indices,
+                                     m_series_attributes);
 
     auto* lnf = static_cast<PlotLookAndFeelBase*>(m_lookandfeel);
     lnf->drawSeries(g, series_data, getLocalBounds());

@@ -1,4 +1,5 @@
 #include "cmp_camera3d.h"
+
 #include "cmp_test_helper.hpp"
 
 /* Tests for the 3D camera.
@@ -53,8 +54,8 @@ SECTION(Camera3DTest, "3D camera") {
   }
 
   TEST("View transform is a rotation: lengths are preserved") {
-    for (const auto camera :
-         {cmp::Camera3D(), cmp::Camera3D(123.f, -45.f), cmp::Camera3D(0.f, 0.f)}) {
+    for (const auto camera : {cmp::Camera3D(), cmp::Camera3D(123.f, -45.f),
+                              cmp::Camera3D(0.f, 0.f)}) {
       const auto point = cmp::Vec3f{1.f, 2.f, 3.f};
 
       expectNear(camera.toViewSpace(point).length(), point.length());
@@ -76,5 +77,4 @@ SECTION(Camera3DTest, "3D camera") {
     expectNear(camera.getElevationDegrees(), 90.f);
     expectVecNear(camera.toViewSpace({1.f, 2.f, 3.f}), {1.f, 2.f, 3.f});
   }
-}
-;
+};

@@ -1,8 +1,8 @@
 #include <numeric>
 #include <vector>
 
-#include "cmp_series.h"
 #include "cmp_lookandfeel.h"
+#include "cmp_series.h"
 #include "cmp_test_helper.hpp"
 #include "cmp_utils.h"
 
@@ -104,10 +104,10 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
 
     x_data[2] = 2.5f;
     y_data[2] = 7.5f;
-    lnf.updateXPixelPoints({2u}, cmp::Scaling::linear, {0.f, 10.f},
-                           axes_bounds, x_data, indices, pixel_points);
-    lnf.updateYPixelPoints({2u}, cmp::Scaling::linear, {0.f, 10.f},
-                           axes_bounds, y_data, indices, pixel_points);
+    lnf.updateXPixelPoints({2u}, cmp::Scaling::linear, {0.f, 10.f}, axes_bounds,
+                           x_data, indices, pixel_points);
+    lnf.updateYPixelPoints({2u}, cmp::Scaling::linear, {0.f, 10.f}, axes_bounds,
+                           y_data, indices, pixel_points);
 
     // Index 2 is recalculated from the new data.
     expectNear(pixel_points[2].getX(), 125.f);
@@ -145,10 +145,8 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     expect(!local_bounds.isEmpty());
 
     // Tolerance of one pixel expressed in data units.
-    const auto x_tolerance =
-        (x_lim.max - x_lim.min) / local_bounds.getWidth();
-    const auto y_tolerance =
-        (y_lim.max - y_lim.min) / local_bounds.getHeight();
+    const auto x_tolerance = (x_lim.max - x_lim.min) / local_bounds.getWidth();
+    const auto y_tolerance = (y_lim.max - y_lim.min) / local_bounds.getHeight();
 
     for (std::size_t i = 0; i < pixel_points.size(); ++i) {
       const auto data_point = cmp::getDataPointFromPixelCoordinate(
@@ -161,5 +159,4 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
                                 y_data[pixel_point_indices[i]], y_tolerance);
     }
   }
-}
-;
+};
