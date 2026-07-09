@@ -19,12 +19,12 @@
 
 namespace cmp {
 
-/*
+/**
  * @class Plot
  * @brief A component to plot 2-D lines/marker symbols
  * @details This class provides a flexible plotting component with features including:
  *          - Line and scatter plots
- *          - Series tracing 
+ *          - Tracing
  *          - Zooming and panning
  *          - Customizable x/y limits, ticks and tick labels
  *          - Linear and logarithmic axis scaling

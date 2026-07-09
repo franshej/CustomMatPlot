@@ -357,10 +357,10 @@ typedef Axis<float> Axis_f;
 
 /** @brief A view of some common plot parameters. */
 struct CommonPlotParameterView {
-  CommonPlotParameterView(const juce::Rectangle<int>& gb, const Lim_f& xl,
+  CommonPlotParameterView(const juce::Rectangle<int>& ab, const Lim_f& xl,
                           const Lim_f& yl, const Scaling& xs, const Scaling& ys,
                           const DownsamplingType& ds)
-      : axes_bounds{gb},
+      : axes_bounds{ab},
         x_lim{xl},
         y_lim{yl},
         x_scaling{xs},
@@ -457,8 +457,8 @@ struct SeriesAttribute {
   /** Custom path stroke @see juce::PathStrokeType */
   std::optional<juce::PathStrokeType> path_stroke_type;
 
-  /** Use dash_lengths to draw dashed series. E.g. dashed_lengths = {2,
-   * 2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 3 pixels, skip
+  /** Use dash_lengths to draw a dashed line. E.g. dashed_lengths = {2,
+   * 2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 4 pixels, skip
    * 6 pixels, and then repeat. */
   std::optional<std::vector<float>> dashed_lengths;
 
