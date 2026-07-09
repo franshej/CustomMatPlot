@@ -181,17 +181,19 @@ void Plot3D::plot3(std::vector<Series3DData> series_list) {
     if (x_data[i].size() != y_data[i].size() ||
         x_data[i].size() != z_data[i].size())
       throw std::invalid_argument(
-          "plot3: the x, y and z values of a line must have the same size.");
-
-    m_series[i]->setValues(x_data[i], y_data[i], z_data[i]);
-
-    if (i < series_attributes.size())
-      m_series[i]->setSeriesAttribute(series_attributes[i]);
+          "plot3: the x, y and z values of a series must have the same size.");
   }
 
+  // Read the data for the auto-limits before moving it into the series below.
   if (m_x_autoscale) m_x_axis.lim = findDataLim(x_data);
   if (m_y_autoscale) m_y_axis.lim = findDataLim(y_data);
   if (m_z_autoscale) m_z_axis.lim = findDataLim(z_data);
+
+  for (std::size_t i = 0; i < m_series.size(); ++i) {
+    m_series[i]->setValues(std::move(x_data[i]), std::move(y_data[i]),
+                           std::move(z_data[i]));
+    m_series[i]->setSeriesAttribute(series_attributes[i]);
+  }
 
   updateChildrenParameters();
 }

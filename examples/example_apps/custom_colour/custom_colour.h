@@ -21,18 +21,14 @@ class custom_colour : public juce::Component {
     // Add the plot object as a child component.
     addAndMakeVisible(m_plot);
 
-    // Create some data to visulize.
-    auto y_data = {cmp::generateUniformRandomVector((1 << 11), 10.0f, 100.0f),
-                   cmp::generateSineWaveVector((1 << 11), -3.0f, 14.0f, 3.0f),
-                   cmp::generateSineWaveVector((1 << 11), -5.0f, 2.0f, 6.0f)};
-
-    // Setting new colours on series one and two.
-    auto series_attributes = cmp::SeriesAttributeList(y_data.size());
-    series_attributes[0].series_colour = juce::Colours::pink;
-    series_attributes[1].series_colour = juce::Colours::blueviolet;
-
-    // Plot some values.
-    m_plot.plot(cmp::seriesFrom(y_data, {}, series_attributes));
+    // Plot three series, giving the first two a custom colour. Each series
+    // carries its own attribute right next to its data.
+    m_plot.plot(
+        {{.y = cmp::generateUniformRandomVector((1 << 11), 10.0f, 100.0f),
+          .attribute = {.series_colour = juce::Colours::pink}},
+         {.y = cmp::generateSineWaveVector((1 << 11), -3.0f, 14.0f, 3.0f),
+          .attribute = {.series_colour = juce::Colours::blueviolet}},
+         {.y = cmp::generateSineWaveVector((1 << 11), -5.0f, 2.0f, 6.0f)}});
   };
 
   void resized() override {

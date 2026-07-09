@@ -14,14 +14,13 @@
 
 namespace cmp {
 
-void Series3D::setValues(const std::vector<float>& x_data,
-                         const std::vector<float>& y_data,
-                         const std::vector<float>& z_data) {
+void Series3D::setValues(std::vector<float> x_data, std::vector<float> y_data,
+                         std::vector<float> z_data) {
   jassert(x_data.size() == y_data.size() && x_data.size() == z_data.size());
 
-  m_x_data = x_data;
-  m_y_data = y_data;
-  m_z_data = z_data;
+  m_x_data = std::move(x_data);
+  m_y_data = std::move(y_data);
+  m_z_data = std::move(z_data);
 
   m_pixel_point_indices.resize(m_x_data.size());
   std::iota(m_pixel_point_indices.begin(), m_pixel_point_indices.end(), 0u);
