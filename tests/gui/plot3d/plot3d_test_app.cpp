@@ -180,7 +180,7 @@ static std::unique_ptr<juce::Component> makeHelixScene() {
   const auto helix = makeHelix();
 
   auto& plot = row->add(std::make_unique<cmp::Plot3D>());
-  plot.plot3({{.x = helix.x, .y = helix.y, .z = helix.z}});
+  plot.plot3({.x = helix.x, .y = helix.y, .z = helix.z});
   labelAxes(plot, "Helix");
 
   return row;

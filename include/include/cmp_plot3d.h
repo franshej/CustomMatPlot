@@ -72,7 +72,17 @@ class Plot3D : public juce::Component {
    *          set explicitly.
    * @param series the 3-D series to plot @see Series3DData
    */
-  void plot3(const std::vector<Series3DData> &series);
+  void plot3(std::vector<Series3DData> series);
+
+  /**
+   * @brief Plot a single 3-D series.
+   *
+   * Convenience overload so a single series need not be wrapped in an extra
+   * pair of braces: @code plot3({.x = x, .y = y, .z = z}); @endcode
+   *
+   * @param series the 3-D series to plot @see Series3DData
+   */
+  void plot3(Series3DData series);
 
   /**
    * @brief Set the X-limits

@@ -358,9 +358,10 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
   return generateRamp();
 }
 
-void Plot::plot(const SeriesDataList& series) {
+void Plot::plot(SeriesDataList series) {
   // Unpack the per-series bundles into the parallel vectors the internal
-  // pipeline consumes. The bundle guarantees x/y/attribute stay aligned.
+  // pipeline consumes. 'series' is taken by value and its vectors are moved
+  // out, so this adds no copy over the data the caller already handed us.
   std::vector<std::vector<float>> y_data;
   std::vector<std::vector<float>> x_data;
   SeriesAttributeList attributes;
@@ -371,26 +372,28 @@ void Plot::plot(const SeriesDataList& series) {
                                  [](const auto& s) { return !s.x.empty(); });
   if (any_x) x_data.reserve(series.size());
 
-  for (const auto& s : series) {
-    y_data.push_back(s.y);
-    attributes.push_back(s.attribute);
-
-    if (any_x) {
-      if (s.x.empty()) {
-        // Keep this series aligned with the others that do have x: give it a
-        // 1..N ramp, matching generateXdataRamp.
-        std::vector<float> ramp(s.y.size());
-        std::iota(ramp.begin(), ramp.end(), 1.0f);
-        x_data.push_back(std::move(ramp));
-      } else {
-        x_data.push_back(s.x);
-      }
+  for (auto& s : series) {
+    if (any_x && s.x.empty()) {
+      // Keep this series aligned with the others that do have x: give it a
+      // 1..N ramp, matching generateXdataRamp. (Fill before moving s.y.)
+      s.x.resize(s.y.size());
+      std::iota(s.x.begin(), s.x.end(), 1.0f);
     }
+
+    y_data.push_back(std::move(s.y));
+    attributes.push_back(std::move(s.attribute));
+    if (any_x) x_data.push_back(std::move(s.x));
   }
   // When no series sets x, x_data stays empty and plotInternal ramps them all.
 
   plotInternal<SeriesType::normal>(y_data, x_data, attributes);
   repaint();
+}
+
+void Plot::plot(SeriesData series) {
+  SeriesDataList list;
+  list.push_back(std::move(series));
+  plot(std::move(list));
 }
 
 void Plot::plot(const std::vector<std::vector<float>>& y_data,

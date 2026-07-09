@@ -30,7 +30,8 @@ SECTION(Plot3DClass, "Plot3D class") {
   }
 
   TEST("Single series") {
-    plot.plot3({{.x = x_data1, .y = y_data1, .z = z_data1}});
+    // Uses the single-series overload (no extra braces).
+    plot.plot3({.x = x_data1, .y = y_data1, .z = z_data1});
 
     const auto series = getChildComponentHelper<cmp::Series3D>(plot);
     expectEquals(series.size(), 1ul);

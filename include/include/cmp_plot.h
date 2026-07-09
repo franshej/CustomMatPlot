@@ -74,7 +74,17 @@ class Plot : public juce::Component {
    *
    * @param series the series to plot @see SeriesData
    */
-  void plot(const SeriesDataList &series);
+  void plot(SeriesDataList series);
+
+  /**
+   * @brief Plot a single series.
+   *
+   * Convenience overload so a single series need not be wrapped in an extra
+   * pair of braces: @code plot({.y = samples}); @endcode
+   *
+   * @param series the series to plot @see SeriesData
+   */
+  void plot(SeriesData series);
 
   /**
    * @brief Plot y-data or y-data/x-data

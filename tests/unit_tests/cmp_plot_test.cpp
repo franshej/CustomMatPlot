@@ -28,7 +28,8 @@ SECTION(PlotClass, "Plot class") {
   }
 
   TEST("Single series") {
-    plot.plot({{.y = y_data1}});
+    // Uses the single-series overload (no extra braces).
+    plot.plot({.y = y_data1});
     const auto series = getChildComponentHelper<cmp::Series>(plot);
     expectEquals(series.size(), 1ul);
     const auto& x_data = series[0]->getXData();

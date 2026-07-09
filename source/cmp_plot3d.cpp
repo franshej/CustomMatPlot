@@ -134,21 +134,22 @@ const juce::Label& Plot3D::getTitleLabel() const noexcept {
   return m_title_label;
 }
 
-void Plot3D::plot3(const std::vector<Series3DData>& series_list) {
+void Plot3D::plot3(std::vector<Series3DData> series_list) {
   // Unpack the per-series bundles into the parallel vectors the internal
   // pipeline consumes. Because every series carries its own x/y/z, the outer
   // vectors can no longer differ in length the way three separate arrays could.
+  // 'series_list' is taken by value and moved from, so this adds no copy.
   std::vector<std::vector<float>> x_data, y_data, z_data;
   SeriesAttributeList series_attributes;
   x_data.reserve(series_list.size());
   y_data.reserve(series_list.size());
   z_data.reserve(series_list.size());
   series_attributes.reserve(series_list.size());
-  for (const auto& s : series_list) {
-    x_data.push_back(s.x);
-    y_data.push_back(s.y);
-    z_data.push_back(s.z);
-    series_attributes.push_back(s.attribute);
+  for (auto& s : series_list) {
+    x_data.push_back(std::move(s.x));
+    y_data.push_back(std::move(s.y));
+    z_data.push_back(std::move(s.z));
+    series_attributes.push_back(std::move(s.attribute));
   }
 
   auto* lnf = getPlotLookAndFeelBase();
@@ -193,6 +194,12 @@ void Plot3D::plot3(const std::vector<Series3DData>& series_list) {
   if (m_z_autoscale) m_z_axis.lim = findDataLim(z_data);
 
   updateChildrenParameters();
+}
+
+void Plot3D::plot3(Series3DData series) {
+  std::vector<Series3DData> list;
+  list.push_back(std::move(series));
+  plot3(std::move(list));
 }
 
 void Plot3D::setView(const float azimuth_degrees,

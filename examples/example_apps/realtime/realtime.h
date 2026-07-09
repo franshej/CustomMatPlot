@@ -24,8 +24,8 @@ class realtime : public juce::Component, private juce::Timer {
     startTimerHz(30);
 
     // Always plot atleast ones before calling realTimePlot
-    m_plot.plot({{.y = cmp::generateSineWaveVector<float>((1 << 10), -1.0f,
-                                                          1.0f, 1, 1)}});
+    m_plot.plot({.y = cmp::generateSineWaveVector<float>((1 << 10), -1.0f, 1.0f,
+                                                         1, 1)});
   };
 
   void timerCallback() override {
