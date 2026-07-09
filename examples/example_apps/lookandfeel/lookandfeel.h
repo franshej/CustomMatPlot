@@ -44,13 +44,13 @@ class lookandfeel : public juce::Component {
     // Add the plot object as a child component.
     addAndMakeVisible(m_plot);
 
-    auto graph_attributes = cmp::GraphAttributeList(1);
-    graph_attributes.front().graph_colour = juce::Colours::blueviolet;
-    graph_attributes.front().path_stroke_type = juce::PathStrokeType(15);
+    auto series_attributes = cmp::SeriesAttributeList(1);
+    series_attributes.front().series_colour = juce::Colours::blueviolet;
+    series_attributes.front().path_stroke_type = juce::PathStrokeType(15);
 
     // Plot some values.
     m_plot.plot({cmp::generateSineWaveVector(100, -5.0f, 6.0f, 3.0f)}, {},
-                graph_attributes);
+                series_attributes);
 
     m_plot.setTitle("My cool Phosphate title!!!");
     m_plot.setXLabel("X label wow!");

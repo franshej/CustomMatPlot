@@ -22,7 +22,7 @@ class marker : public juce::Component {
     addAndMakeVisible(m_plot);
 
     // Create some marker.
-    cmp::GraphAttributeList gal(4u);
+    cmp::SeriesAttributeList gal(4u);
 
     gal[0].marker = cmp::Marker::Type::Circle;
     gal[1].marker = cmp::Marker::Type::LeftTriangle;

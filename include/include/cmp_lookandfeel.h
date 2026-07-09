@@ -42,27 +42,27 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
 
   std::pair<juce::Rectangle<int>, juce::Rectangle<int>>
   getTraceAndZoomButtonBounds(
-      juce::Rectangle<int> graph_bounds) const noexcept override;
+      juce::Rectangle<int> axes_bounds) const noexcept override;
 
-  juce::Rectangle<int> getGraphBounds(
+  juce::Rectangle<int> getAxesBounds(
       const juce::Rectangle<int> bounds,
       const juce::Component *const plot_comp = nullptr) const noexcept override;
 
   std::size_t getMaximumAllowedCharacterGridLabel() const noexcept override;
 
   juce::Point<int> getLegendPosition(
-      const juce::Rectangle<int> &graph_bounds,
+      const juce::Rectangle<int> &axes_bounds,
       const juce::Rectangle<int> &legend_bounds) const noexcept override;
 
   juce::Rectangle<int> getLegendBounds(
-      [[maybe_unused]] const juce::Rectangle<int> &graph_bounds,
+      [[maybe_unused]] const juce::Rectangle<int> &axes_bounds,
       const std::vector<std::string> &label_texts) const noexcept override;
 
   juce::Font getLegendFont() const noexcept override;
 
   juce::Font getButtonFont() const noexcept override;
 
-  int getColourFromGraphID(const std::size_t graph_index) const override;
+  int getColourFromSeriesID(const std::size_t series_index) const override;
 
   std::size_t getMargin() const noexcept override;
 
@@ -70,9 +70,9 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
 
   std::size_t getMarkerLength() const noexcept override;
 
-  int getGridLabelDistanceFromGraphBound() const noexcept override;
+  int getGridLabelDistanceFromAxesBound() const noexcept override;
 
-  int getAxisLabelDistanceFromGraphBound(
+  int getAxisLabelDistanceFromAxesBound(
       const int label_height) const noexcept override;
 
   std::pair<juce::Rectangle<int>, juce::Rectangle<int>> getTraceXYLabelBounds(
@@ -88,13 +88,13 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   juce::Font getTraceFont() const noexcept override;
 
   juce::Point<int> getTracePointPositionFrom(
-      const juce::Rectangle<int>& graph_bounds, const Lim<float> x_lim,
+      const juce::Rectangle<int>& axes_bounds, const Lim<float> x_lim,
       const Scaling x_scaling, const Lim<float> y_lim, const Scaling y_scaling,
-      const juce::Point<float> graph_values) const noexcept override;
+      const juce::Point<float> series_values) const noexcept override;
 
-  int getXGridLabelDistanceFromGraphBound() const noexcept override;
+  int getXGridLabelDistanceFromAxesBound() const noexcept override;
 
-  int getYGridLabelDistanceFromGraphBound(
+  int getYGridLabelDistanceFromAxesBound(
       const int y_grid_label_width) const noexcept override;
 
   std::map<UserInput, UserInputAction> getDefaultUserInputMapAction()
@@ -107,8 +107,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   UserInputAction getUserInputAction(
       UserInput user_input) const noexcept override;
 
-  void drawGraphLine(juce::Graphics &g, const GraphLineDataView graph_line_data,
-                     const juce::Rectangle<int> &graph_line_bounds) override;
+  void drawSeries(juce::Graphics &g, const SeriesDataView series_data,
+                     const juce::Rectangle<int> &series_bounds) override;
 
   void drawGridLabels(juce::Graphics &g, const LabelVector &x_axis_labels,
                       const LabelVector &y_axis_labels) override;
@@ -124,8 +124,8 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   void drawLegendBackground(juce::Graphics &g,
                             const juce::Rectangle<int> &legend_bound) override;
 
-  void drawSpread(juce::Graphics &g, const GraphLine *first_graph,
-                  const GraphLine *second_graph,
+  void drawSpread(juce::Graphics &g, const Series *first_series,
+                  const Series *second_series,
                   const juce::Colour &spread_colour) override;
 
   void drawTraceLabel(juce::Graphics &g, const cmp::Label &x_label,
@@ -142,18 +142,18 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
   void drawSelectionArea(
       juce::Graphics &g, juce::Point<int> &start_coordinates,
       const juce::Point<int> &end_coordinates,
-      const juce::Rectangle<int> &graph_bounds) noexcept override;
+      const juce::Rectangle<int> &axes_bounds) noexcept override;
 
   void updateXPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
-      const Scaling x_scaling, const Lim<float> x_lim, const juce::Rectangle<int> &graph_bounds,
+      const Scaling x_scaling, const Lim<float> x_lim, const juce::Rectangle<int> &axes_bounds,
       const std::vector<float> &x_data,
       std::vector<std::size_t> &pixel_points_indices,
       PixelPoints &pixel_points) noexcept override;
 
   void updateYPixelPoints(
       const std::vector<std::size_t> &update_only_these_indices,
-      const Scaling y_scaling, const Lim<float> y_lim, const juce::Rectangle<int> &graph_bounds,
+      const Scaling y_scaling, const Lim<float> y_lim, const juce::Rectangle<int> &axes_bounds,
       const std::vector<float> &y_data,
       const std::vector<std::size_t> &pixel_points_indices,
       PixelPoints &pixel_points) noexcept override;
@@ -174,7 +174,7 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
 
   juce::Font getXYTitleFont() const noexcept override;
 
-  void updateGridLabels(const juce::Rectangle<int> &graph_bounds,
+  void updateGridLabels(const juce::Rectangle<int> &axes_bounds,
                         const std::vector<GridLine> &grid_lines,
                         StringVector &x_custom_label_ticks,
                         StringVector &y_custom_label_ticks,
@@ -182,11 +182,11 @@ class PlotLookAndFeel : public Plot::LookAndFeelMethods {
                         LabelVector &y_axis_labels_out) override;
 
   void updateXYTitleLabels(const juce::Rectangle<int> &bounds,
-                           const juce::Rectangle<int> &graph_bounds,
+                           const juce::Rectangle<int> &axes_bounds,
                            juce::Label &x_label, juce::Label &y_label,
                            juce::Label &title_label) override;
 
-  bool isXAxisLabelsBelowGraph() const noexcept override;
+  bool isXAxisLabelsBelowAxesArea() const noexcept override;
 };  // class PlotLookAndFeel
 
 }  // namespace cmp

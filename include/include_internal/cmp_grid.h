@@ -30,8 +30,8 @@ namespace cmp {
  * Grid class implementation of grid component
  *
  * Componenet for creating grids and grid labels. The idea with this componenet
- * is to create the grids behind the actual graph(s) together with graph labels
- * outside the graph area. It can also be used to only create the grid labels
+ * is to create the grids behind the actual series(s) together with series labels
+ * outside the axes area. It can also be used to only create the grid labels
  * without the grids.
  *
  */
@@ -169,7 +169,7 @@ class Grid : public juce::Component,
                     const GridLine::Direction direction);
   void addTranslucentGridLines();
 
-  juce::Rectangle<int> m_graph_bounds;
+  juce::Rectangle<int> m_axes_bounds;
   Scaling m_x_scaling, m_y_scaling;
   Lim_f m_x_lim, m_y_lim;
 

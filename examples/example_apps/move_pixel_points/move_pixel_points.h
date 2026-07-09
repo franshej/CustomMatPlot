@@ -24,7 +24,7 @@ class move_pixel_points : public juce::Component {
       auto new_user_input_map_action = default_user_input_map_action;
 
       new_user_input_map_action[UserInput::left | UserInput::drag |
-                                UserInput::end | UserInput::graph_area] =
+                                UserInput::end | UserInput::axes_area] =
           UserInputAction::select_tracepoints_within_selected_area;
       new_user_input_map_action[UserInput::left | UserInput::drag |
                                 UserInput::tracepoint] =
@@ -49,15 +49,15 @@ class move_pixel_points : public juce::Component {
     // Set the pixel point move type to vertical.
     m_plot.setMovePointsType(cmp::PixelPointMoveType::vertical);
 
-    // Write the y data from the graph lines to the terminal.
-    m_plot.setGraphLineDataChangedCallback(
-        [](const cmp::GraphLineDataViewList graph_line_list) {
-          // y_data from graph_lines to string.
+    // Write the y data from the series to the terminal.
+    m_plot.setSeriesDataChangedCallback(
+        [](const cmp::SeriesDataViewList series_list) {
+          // y_data from series to string.
           auto textToWrite = std::string();
           auto i = 0;
-          for (const auto& graph_line : graph_line_list) {
-            textToWrite += "Graphline " + std::to_string(++i) + " : ";
-            for (const auto& y : graph_line.y_data) {
+          for (const auto& series : series_list) {
+            textToWrite += "Series " + std::to_string(++i) + " : ";
+            for (const auto& y : series.y_data) {
               textToWrite += std::to_string(y) + " ";
             }
             textToWrite += "\n";

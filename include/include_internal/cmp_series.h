@@ -6,9 +6,9 @@
  */
 
 /**
- * @file cmp_graph_line.h
+ * @file cmp_series.h
  *
- * @brief Componenets for drawing graph lines.
+ * @brief Componenets for drawing series.
  *
  * @ingroup CustomMatPlotInternal
  *
@@ -29,23 +29,23 @@
 namespace cmp {
 
 /**
- *  \class GraphLine
+ *  \class Series
  *  \brief A class component to draw 2-D lines/marker symbols. This is
  *  a subcomponenet to cmp::Plot.
  */
-class GraphLine : public juce::Component,
+class Series : public juce::Component,
                   public virtual Observer<Scaling>,
                   public virtual Observer<Lim<float>>,
                   public virtual Observer<juce::Rectangle<int>>,
                   public virtual Observer<DownsamplingType>,
                   public virtual Observer<bool> {
 public:
-  /** @brief Find closest point on graph from pixel point.
+  /** @brief Find closest point on series from pixel point.
    *
-   * @param this_pixel_point the point on the graph.
+   * @param this_pixel_point the point on the series.
    * @param check_only_distance_from_x check the absolut distance if false else
    * only the x distance.
-   * @return {closest point on graph, closest data point value, data point
+   * @return {closest point on series, closest data point value, data point
    * index}
    */
   std::tuple<juce::Point<float>, juce::Point<float>, size_t>
@@ -83,29 +83,29 @@ public:
   juce::Point<float> getDataPointFromDataPointIndex(
       size_t data_point_index) const;
 
-  /** @brief Get the colour of the graph.
+  /** @brief Get the colour of the series.
    *
-   *  @param graph_colour the colour of the graph
+   *  @param series_colour the colour of the series
    *  @return void.
    */
   juce::Colour getColour() const noexcept;
 
-  /** @brief Set the graph attributes.
+  /** @brief Set the series attributes.
    *
-   *  @see GraphAttribute.
+   *  @see SeriesAttribute.
    *
-   *  @param graph_attributes the graph_attributes.
+   *  @param series_attributes the series_attributes.
    *  @return void.
    */
-  void setGraphAttribute(const GraphAttribute& graph_attribute);
+  void setSeriesAttribute(const SeriesAttribute& series_attribute);
 
-  /** @brief Get the graph attributes.
+  /** @brief Get the series attributes.
    *
-   *  @see GraphAttribute.
+   *  @see SeriesAttribute.
    *
-   *  @return the graph_attributes.
+   *  @return the series_attributes.
    */
-  const GraphAttribute& getGraphAttribute() const noexcept;
+  const SeriesAttribute& getSeriesAttribute() const noexcept;
 
   /** @brief Set the indices to update.
    *
@@ -114,21 +114,21 @@ public:
    */
   void setIndicesToUpdate(const std::vector<std::size_t> indices);
 
-  /** @brief Set the y-values for the graph-line
+  /** @brief Set the y-values for the series
    *
    *  @param y_values vector of y-values.
    *  @return void.
    */
   void setYValues(const std::vector<float>& y_values);
 
-  /** @brief Set the x-values for the graph-line
+  /** @brief Set the x-values for the series
    *
    *  @param x_values vector of x-values.
    *  @return void.
    */
   void setXValues(const std::vector<float>& x_values);
 
-  /** @brief Set a single x/y value for the graph-line
+  /** @brief Set a single x/y value for the series
    *
    *  @param juce::Point<float> the x/y value.
    *  @param index the index of the x/y value.
@@ -168,19 +168,19 @@ public:
    */
   const std::vector<size_t>& getPixelPointIndices() const noexcept;
 
-  /** @brief Set the colour of graph
+  /** @brief Set the colour of series
    *
-   *  Set the colour of graph.
+   *  Set the colour of series.
    *
-   *  @param graph_colour the colour of the graph
+   *  @param series_colour the colour of the series
    *  @return void.
    */
-  void setColour(const juce::Colour graph_colour);
+  void setColour(const juce::Colour series_colour);
 
   /** @brief Update the pixel points indices x-value in the pixel points.
    *
    *  This function updates the pixel points if any new parameter is set. Should
-   *  be called after an parameter changed to update the graph. However, call
+   *  be called after an parameter changed to update the series. However, call
    *  updateXY() if the min/max x/y-limits are move equally.
    *
    *  @return void.
@@ -190,14 +190,14 @@ public:
   /** @brief Update the pixel points indices and y-value in the pixel points.
    *
    *  This function updates the pixel points if any new parameter is set. Should
-   *  be called after an parameter changed to update the graph. However, call
+   *  be called after an parameter changed to update the series. However, call
    *  updateXY() if the min/max x/y-limits are move equally.
    *
    *  @return void.
    */
   void updateY();
 
-  /** @brief move pixel point in graphline
+  /** @brief move pixel point in series
    *
    * @param d_pixel_point the delta pixel point.
    * @param pixel_point_index the pixel point index.
@@ -218,22 +218,22 @@ public:
    */
   void updateXY();
 
-  /** @brief Set GraphLine type
+  /** @brief Set Series type
    *
-   * Set the type of GraphLine. @see GraphLineType.
+   * Set the type of Series. @see SeriesType.
    *
-   * @param graph_line_type the type of GraphLine.
+   * @param series_type the type of Series.
    * @return void.
    */
-  void setType(const GraphLineType graph_line_type);
+  void setType(const SeriesType series_type);
 
-  /** @brief Get GraphLine type
+  /** @brief Get Series type
    *
-   * Get the type of GraphLine. @see GraphLineType.
+   * Get the type of Series. @see SeriesType.
    *
-   * @return the type of GraphLine.
+   * @return the type of Series.
    */
-  GraphLineType getType() const noexcept;
+  SeriesType getType() const noexcept;
 
   /** @brief Observer function for scaling.
    *
@@ -251,7 +251,7 @@ public:
    */
   void observableValueUpdated(ObserverId id, const Lim<float>& new_value) override;
 
-  /** @brief Observer function for graph bounds.
+  /** @brief Observer function for axes bounds.
    *
    * @param id the id of the observer.
    * @param new_value the new value of the observer.
@@ -293,62 +293,62 @@ public:
   std::vector<float> m_x_data, m_y_data;
   std::vector<std::size_t> m_x_based_ds_indices, m_xy_indices, m_indices_to_update;
   PixelPoints m_pixel_points;
-  GraphLineType m_graph_line_type{GraphLineType::normal};
+  SeriesType m_series_type{SeriesType::normal};
 
   Scaling m_x_scaling, m_y_scaling;
   Lim<float> m_x_lim, m_y_lim;
-  juce::Rectangle<int> m_graph_bounds;
+  juce::Rectangle<int> m_axes_bounds;
   DownsamplingType m_downsampling_type{DownsamplingType::xy_downsampling};
   juce::LookAndFeel* m_lookandfeel{nullptr};
-  GraphAttribute m_graph_attributes;
+  SeriesAttribute m_series_attributes;
 };
 
 /**
- *  \struct GraphLineList
- *  \brief a class to hold a list of graph lines.
+ *  \struct SeriesList
+ *  \brief a class to hold a list of series.
  */
-struct GraphLineList : public std::vector<std::unique_ptr<GraphLine>> {
+struct SeriesList : public std::vector<std::unique_ptr<Series>> {
 
-  /** @brief Get the number of graph lines for a specific type.
+  /** @brief Get the number of series for a specific type.
    *
-   * @tparam t_graph_line_type the type of graph line.
-   * @return the number of graph lines.
+   * @tparam t_series_type the type of series.
+   * @return the number of series.
    */
-  template <GraphLineType t_graph_line_type>
+  template <SeriesType t_series_type>
   size_t size() const noexcept;
 
-  /** @brief Resize the number of graph lines for a specific type.
+  /** @brief Resize the number of series for a specific type.
    * 
-   * @tparam t_graph_line_type the type of graph line.
-   * @param new_size the new size of the graph line list.
+   * @tparam t_series_type the type of series.
+   * @param new_size the new size of the series list.
    * @return void.
    */
-  template <GraphLineType t_graph_line_type>
+  template <SeriesType t_series_type>
   void resize(size_t new_size);
 
  private:
   /** @internal */
-  template <GraphLineType t_graph_line_type>
-  std::vector<GraphLine*> getGraphLinesOfType();
+  template <SeriesType t_series_type>
+  std::vector<Series*> getSeriesOfType();
 };
 
 /**
- *  \struct GraphSpread
- *  \brief a class to fill the area between two graph lines.
+ *  \struct Spread
+ *  \brief a class to fill the area between two series.
  */
-struct GraphSpread : public juce::Component {
-  /**@brief Set the upper and lower bounds of the graph spread to be drawn.
+struct Spread : public juce::Component {
+  /**@brief Set the upper and lower bounds of the spread to be drawn.
    *
-   * @param upper_bound graph_line that decribes the upper boundary.
-   * @param lower_bound graph_line that decribes the lower boundary.
+   * @param upper_bound series that decribes the upper boundary.
+   * @param lower_bound series that decribes the lower boundary.
    */
-  GraphSpread(const GraphLine* upper_bound, const GraphLine* lower_bound,
+  Spread(const Series* upper_bound, const Series* lower_bound,
               const juce::Colour spread_colour)
       : m_upper_bound{upper_bound},
         m_lower_bound{lower_bound},
         m_spread_colour{spread_colour} {}
 
-  const GraphLine *m_upper_bound, *m_lower_bound;
+  const Series *m_upper_bound, *m_lower_bound;
   juce::Colour m_spread_colour;
 
  private:

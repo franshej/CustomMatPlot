@@ -8,28 +8,28 @@
 #include "cmp_legend.h"
 
 #include "cmp_datamodels.h"
-#include "cmp_graph_line.h"
+#include "cmp_series.h"
 #include "cmp_plot.h"
 
-void cmp::Legend::setLegend(const StringVector &graph_descriptions) {
-  m_label_texts = graph_descriptions;
+void cmp::Legend::setLegend(const StringVector &series_descriptions) {
+  m_label_texts = series_descriptions;
   m_label_texts_is_changed = true;
 
   update();
 }
 
-void cmp::Legend::setGraphLines(const GraphLines &graph_lines) {
-  m_graph_lines = &graph_lines;
+void cmp::Legend::setSeries(const SeriesVector &series) {
+  m_series = &series;
 
   update();
 }
 
 void cmp::Legend::update() {
-  if (!m_graph_lines) {
+  if (!m_series) {
     return;
   }
 
-  if ((m_legend_labels.size() != m_graph_lines->size() ||
+  if ((m_legend_labels.size() != m_series->size() ||
        m_label_texts_is_changed)) {
     m_label_texts_is_changed = false;
     m_legend_labels.resize(m_label_texts.size());
@@ -39,11 +39,11 @@ void cmp::Legend::update() {
       it_legend++->description = label;
     }
 
-    m_legend_labels.resize(m_graph_lines->size());
+    m_legend_labels.resize(m_series->size());
 
     it_legend = m_legend_labels.begin();
-    for (const auto &gl : *m_graph_lines) {
-      it_legend++->description_colour = gl->getColour();
+    for (const auto &series : *m_series) {
+      it_legend++->description_colour = series->getColour();
     }
 
     if (onNumberOfDescriptionsChanged) {

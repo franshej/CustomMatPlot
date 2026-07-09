@@ -35,7 +35,7 @@ class Downsampler {
  public:
   /** @brief Calculate x-based downsample indices
    *
-   * Calculate ds indices based on the x_data, x_lims and the graph_bounds. The
+   * Calculate ds indices based on the x_data, x_lims and the axes_bounds. The
    * output indices is used to get the x/y-data to only plot one value per
    * x-pixel. If several x/y-points share the same x-pixel value, the first
    * index is stored whereas the following indices are discarded until next
@@ -43,12 +43,12 @@ class Downsampler {
    *
    *  @param x_scaling the x-scaling.
    *  @param x_lim the x-limits.
-   *  @param graph_bounds the graph bounds.
+   *  @param axes_bounds the axes bounds.
    *  @param x_data the x_data to be plotted.
    *  @param x_based_idxs_out the output x-indices.
    *  @return void.
    */
-  static void calculateXIndices(const Scaling x_scaling, const Lim<FloatType> x_lim, const juce::Rectangle<int> &graph_bounds,
+  static void calculateXIndices(const Scaling x_scaling, const Lim<FloatType> x_lim, const juce::Rectangle<int> &axes_bounds,
                                     const std::vector<FloatType> &x_data,
                                     std::vector<std::size_t> &x_idxs);
 
@@ -56,7 +56,7 @@ class Downsampler {
    *
    * Calculate the indices that can be used to get the data_points to be
    * plotted without loosing any resolution in the plot. Calculate xy-indices
-   * based on the y_data, y_lims, graph_bounds and the pre-calculated x-indices
+   * based on the y_data, y_lims, axes_bounds and the pre-calculated x-indices
    * @see calculateXIdxs.
    *
    *  @param x_idxs the x-indices calculated in @see CalculateXIdxs.

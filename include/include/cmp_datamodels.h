@@ -36,13 +36,13 @@ namespace cmp {
 
 /*============================================================================*/
 
-class GraphLine;
+class Series;
 class Grid;
 class Frame;
 class PlotLabel;
 class Legend;
 class Trace;
-class GraphArea;
+class SelectionArea;
 class PlotLookAndFeel;
 template <typename T>
 class Observable;
@@ -50,15 +50,15 @@ template <typename T>
 class Observer;
 
 struct LegendLabel;
-struct GraphAttribute;
+struct SeriesAttribute;
 struct Marker;
-struct GraphSpread;
-struct GraphSpreadIndex;
+struct Spread;
+struct SpreadIndex;
 struct GridLine;
-struct GraphLineList;
+struct SeriesList;
 struct AreLabelsSet;
 struct CommonPlotParameterView;
-struct GraphLineDataView;
+struct SeriesDataView;
 template <class ValueType>
 struct Lim;
 template <class ValueType>
@@ -66,28 +66,28 @@ struct Axis;
 
 /*============================================================================*/
 
-typedef std::vector<std::unique_ptr<GraphLine>> GraphLines;
+typedef std::vector<std::unique_ptr<Series>> SeriesVector;
 typedef std::vector<juce::Point<float>> PixelPoints;
-typedef std::vector<GraphLineDataView> GraphLineDataViewList;
+typedef std::vector<SeriesDataView> SeriesDataViewList;
 typedef std::pair<std::string, juce::Rectangle<int>> Label;
 typedef std::vector<Label> LabelVector;
 typedef std::vector<std::string> StringVector;
 typedef std::vector<juce::Colour> ColourVector;
-typedef std::vector<GraphAttribute> GraphAttributeList;
-typedef std::vector<std::unique_ptr<GraphSpread>> GraphSpreadList;
+typedef std::vector<SeriesAttribute> SeriesAttributeList;
+typedef std::vector<std::unique_ptr<Spread>> SpreadList;
 typedef Lim<float> Lim_f;
-// Callback function for when a graph line is changed. E.g. when it is changed
-// when a pixel point is moved. void GraphLinesChangedCallback(const
-// "GraphLineDataViewList &graph_line) { ... };""
-typedef std::function<void(const GraphLineDataViewList& graph_line)>
-    GraphLinesChangedCallback;
+// Callback function for when a series is changed. E.g. when it is changed
+// when a pixel point is moved. void SeriesChangedCallback(const
+// "SeriesDataViewList &series) { ... };""
+typedef std::function<void(const SeriesDataViewList& series)>
+    SeriesChangedCallback;
 
 /*============================================================================*/
 
 /** Enum to define the scaling of an axis. */
 enum class Scaling : uint32_t {
-  linear,     /** Linear scaling of the graph line. */
-  logarithmic /** Logarithmic scaling of the graph line. */
+  linear,     /** Linear scaling of the series. */
+  logarithmic /** Logarithmic scaling of the series. */
 };
 
 /** Enum to define the type of downsampling. */
@@ -123,7 +123,7 @@ enum class UserInput : uint64_t {
   alt = 1ULL << 34,
 
   // Event component
-  graph_area = 1ULL << 46,
+  axes_area = 1ULL << 46,
   legend = 1ULL << 47,
   tracepoint = 1ULL << 48,
   trace_label = 1ULL << 49,
@@ -204,15 +204,15 @@ enum class PixelPointMoveType : uint32_t {
   horizontal_vertical,
 };
 
-/** Enum to define what type of GraphLine. */
-enum class GraphLineType : uint32_t {
-  /** GraphLine is any type. */
+/** Enum to define what type of Series. */
+enum class SeriesType : uint32_t {
+  /** Series is any type. */
   any,
-  /** GraphLine is a normal graph line. */
+  /** Series is a normal series. */
   normal,
-  /** GraphLine is a horizontal line. */
+  /** Series is a horizontal line. */
   horizontal,
-  /** GraphLine is a vertical line. */
+  /** Series is a vertical line. */
   vertical,
 };
 
@@ -233,7 +233,7 @@ enum class GridType : uint32_t {
 /** Enum to define which type of value to be observed. */
 enum class ObserverId : uint32_t {
   Undefined,
-  GraphBounds,
+  AxesBounds,
   XLim,
   YLim,
   XScaling,
@@ -357,10 +357,10 @@ typedef Axis<float> Axis_f;
 
 /** @brief A view of some common plot parameters. */
 struct CommonPlotParameterView {
-  CommonPlotParameterView(const juce::Rectangle<int>& gb, const Lim_f& xl,
+  CommonPlotParameterView(const juce::Rectangle<int>& ab, const Lim_f& xl,
                           const Lim_f& yl, const Scaling& xs, const Scaling& ys,
                           const DownsamplingType& ds)
-      : graph_bounds{gb},
+      : axes_bounds{ab},
         x_lim{xl},
         y_lim{yl},
         x_scaling{xs},
@@ -370,7 +370,7 @@ struct CommonPlotParameterView {
                           const Lim_f&&, const Scaling&&, const Scaling&&,
                           const DownsamplingType&&) =
       delete;  // prevents rvalue binding
-  const juce::Rectangle<int>& graph_bounds;
+  const juce::Rectangle<int>& axes_bounds;
   const Lim_f &x_lim, &y_lim;
   const Scaling &x_scaling, &y_scaling;
   const DownsamplingType& downsampling_type;
@@ -449,22 +449,22 @@ struct Marker {
   }
 };
 
-/** Attributes of a single graph. */
-struct GraphAttribute {
-  /** Colour of the graph_line. */
-  std::optional<juce::Colour> graph_colour;
+/** Attributes of a single series. */
+struct SeriesAttribute {
+  /** Colour of the series. */
+  std::optional<juce::Colour> series_colour;
 
   /** Custom path stroke @see juce::PathStrokeType */
   std::optional<juce::PathStrokeType> path_stroke_type;
 
-  /** Use dash_lengths to draw dashed graph_line. E.g. dashed_lengths = {2,
-   * 2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 3 pixels, skip
+  /** Use dash_lengths to draw a dashed line. E.g. dashed_lengths = {2,
+   * 2, 4, 6} will draw a line of 2 pixels, skip 2 pixels, draw 4 pixels, skip
    * 6 pixels, and then repeat. */
   std::optional<std::vector<float>> dashed_lengths;
 
-  /** Set the opacity of the graph_line. Value must be between 0 (transparent)
+  /** Set the opacity of the series. Value must be between 0 (transparent)
    * and 1.0 (opaque). */
-  std::optional<float> graph_line_opacity;
+  std::optional<float> series_opacity;
 
   /** The type of marker drawn on each pixel point. */
   std::optional<cmp::Marker> marker;
@@ -475,28 +475,28 @@ struct GraphAttribute {
                      juce::Point<float> pixel_point)>
       on_pixel_point_paint{nullptr};
 
-  /** Creates a vertical linear gradient between top and bottom of the graph
-   * area. Only the gradient below the graph line is visible.  */
+  /** Creates a vertical linear gradient between top and bottom of the series
+   * area. Only the gradient below the series is visible.  */
   std::optional<std::pair<juce::Colour, juce::Colour>> gradient_colours;
 };
 
-/** @brief A struct that defines between which two graph_lines the area is
+/** @brief A struct that defines between which two series the area is
  * filled. */
-struct GraphSpreadIndex {
-  std::size_t first_graph;
-  std::size_t second_graph;
+struct SpreadIndex {
+  std::size_t first_series;
+  std::size_t second_series;
 };
 
-/** @brief A view of the data required to draw a graph_line */
-struct GraphLineDataView {
-  GraphLineDataView(const std::vector<float>& _x_data,
+/** @brief A view of the data required to draw a series */
+struct SeriesDataView {
+  SeriesDataView(const std::vector<float>& _x_data,
                     const std::vector<float>& _y_data,
                     const PixelPoints& _pixel_points,
                     const std::vector<std::size_t>& _pixel_point_indices,
-                    const GraphAttribute& _graph_attribute);
+                    const SeriesAttribute& _series_attribute);
 
-  GraphLineDataView(const GraphLine& graph_line);
-  GraphLineDataView(const std::vector<float>&&, const std::vector<float>&&,
+  SeriesDataView(const Series& series);
+  SeriesDataView(const std::vector<float>&&, const std::vector<float>&&,
                     const PixelPoints&&,
                     const std::vector<std::size_t>&&) =
       delete;  // prevents rvalue binding
@@ -504,7 +504,7 @@ struct GraphLineDataView {
   const std::vector<float>&x_data, &y_data;
   const PixelPoints& pixel_points;
   const std::vector<std::size_t>& pixel_point_indices;
-  const GraphAttribute& graph_attribute;
+  const SeriesAttribute& series_attribute;
 };
 
 /**

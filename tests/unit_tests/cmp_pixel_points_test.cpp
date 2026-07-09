@@ -1,7 +1,7 @@
 #include <numeric>
 #include <vector>
 
-#include "cmp_graph_line.h"
+#include "cmp_series.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_test_helper.hpp"
 #include "cmp_utils.h"
@@ -10,12 +10,12 @@
  *
  * These tests pin down the current behaviour of
  * PlotLookAndFeel::updateXPixelPoints/updateYPixelPoints and the full
- * data -> pixel-point pipeline in cmp::Plot/GraphLine before the pipeline is
+ * data -> pixel-point pipeline in cmp::Plot/Series before the pipeline is
  * routed through a shared per-axis transform (see docs/3d-plan.md, Phase 0).
  *
  * Conventions pinned down here:
- * - Pixel points are produced in graph-area-local coordinates (only the
- *   width/height of the graph bounds are used).
+ * - Pixel points are produced in axes-area-local coordinates (only the
+ *   width/height of the axes bounds are used).
  * - The caller owns the sizing of the pixel-point vector;
  *   updateXPixelPoints/updateYPixelPoints only write coordinates, so they
  *   can run in any order.
@@ -26,7 +26,7 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
                               1e-3f * (1.0f + std::abs(expected)));
   };
 
-  const auto graph_bounds = juce::Rectangle<int>(0, 0, 500, 400);
+  const auto axes_bounds = juce::Rectangle<int>(0, 0, 500, 400);
 
   auto makeIotaIndices = [](const std::size_t size) {
     std::vector<std::size_t> indices(size);
@@ -40,7 +40,7 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     auto indices = makeIotaIndices(x_data.size());
     cmp::PixelPoints pixel_points(indices.size());
 
-    lnf.updateXPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, graph_bounds,
+    lnf.updateXPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, axes_bounds,
                            x_data, indices, pixel_points);
 
     const std::vector<float> expected = {0.f, 125.f, 250.f, 375.f, 500.f};
@@ -57,9 +57,9 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     auto indices = makeIotaIndices(y_data.size());
     cmp::PixelPoints pixel_points(indices.size());
 
-    lnf.updateXPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, graph_bounds,
+    lnf.updateXPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, axes_bounds,
                            x_data, indices, pixel_points);
-    lnf.updateYPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, graph_bounds,
+    lnf.updateYPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, axes_bounds,
                            y_data, indices, pixel_points);
 
     const std::vector<float> expected = {400.f, 200.f, 0.f};
@@ -97,17 +97,17 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     auto indices = makeIotaIndices(x_data.size());
     cmp::PixelPoints pixel_points(indices.size());
 
-    lnf.updateXPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, graph_bounds,
+    lnf.updateXPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, axes_bounds,
                            x_data, indices, pixel_points);
-    lnf.updateYPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, graph_bounds,
+    lnf.updateYPixelPoints({}, cmp::Scaling::linear, {0.f, 10.f}, axes_bounds,
                            y_data, indices, pixel_points);
 
     x_data[2] = 2.5f;
     y_data[2] = 7.5f;
     lnf.updateXPixelPoints({2u}, cmp::Scaling::linear, {0.f, 10.f},
-                           graph_bounds, x_data, indices, pixel_points);
+                           axes_bounds, x_data, indices, pixel_points);
     lnf.updateYPixelPoints({2u}, cmp::Scaling::linear, {0.f, 10.f},
-                           graph_bounds, y_data, indices, pixel_points);
+                           axes_bounds, y_data, indices, pixel_points);
 
     // Index 2 is recalculated from the new data.
     expectNear(pixel_points[2].getX(), 125.f);
@@ -131,17 +131,17 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     plot.xLim(x_lim.min, x_lim.max);
     plot.yLim(y_lim.min, y_lim.max);
 
-    const auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-    expectEquals(graph_lines.size(), 1ul);
+    const auto series = getChildComponentHelper<cmp::Series>(plot);
+    expectEquals(series.size(), 1ul);
 
-    const auto& pixel_points = graph_lines[0]->getPixelPoints();
-    const auto& pixel_point_indices = graph_lines[0]->getPixelPointIndices();
+    const auto& pixel_points = series[0]->getPixelPoints();
+    const auto& pixel_point_indices = series[0]->getPixelPointIndices();
     expectEquals(pixel_points.size(), x_data.size());
     expectEquals(pixel_point_indices.size(), pixel_points.size());
 
-    // Pixel points are local to the graph area, so the inverse conversion
-    // uses the graph line's local bounds.
-    const auto local_bounds = graph_lines[0]->getLocalBounds().toFloat();
+    // Pixel points are local to the axes area, so the inverse conversion
+    // uses the series's local bounds.
+    const auto local_bounds = series[0]->getLocalBounds().toFloat();
     expect(!local_bounds.isEmpty());
 
     // Tolerance of one pixel expressed in data units.

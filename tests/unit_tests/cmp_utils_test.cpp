@@ -113,8 +113,8 @@ TEST("Float to string: 0.0") {
  * docs/3d-plan.md). Two conventions worth noting:
  *
  * - The forward functions (getX/YPixelValue* together with
- *   getX/YScaleAndOffset) produce pixel values in graph-area-local
- *   coordinates, i.e. they only use the width/height of the graph bounds.
+ *   getX/YScaleAndOffset) produce pixel values in axes-area-local
+ *   coordinates, i.e. they only use the width/height of the axes bounds.
  * - The inverse functions (getX/YDataFromX/YPixelCoordinate) take absolute
  *   bounds and use the bounds origin.
  */

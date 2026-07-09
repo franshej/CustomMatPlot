@@ -12,13 +12,13 @@ PlotLookAndFeelTimeline::PlotLookAndFeelTimeline() : PlotLookAndFeel() {
   overridePlotColours();
 }
 
-juce::Rectangle<int> PlotLookAndFeelTimeline::getGraphBounds(
+juce::Rectangle<int> PlotLookAndFeelTimeline::getAxesBounds(
     const juce::Rectangle<int> bounds,
     const juce::Component* const plot_comp) const noexcept {
   const auto estimated_grid_label_width = getGridLabelFont().getStringWidth(
       std::string(getMaximumAllowedCharacterGridLabel(), 'W'));
 
-  auto graph_bounds = juce::Rectangle<int>();
+  auto axes_bounds = juce::Rectangle<int>();
 
   if (const auto* plot = dynamic_cast<const Plot*>(plot_comp)) {
     const auto are_labels_set = areLabelsSet(plot);
@@ -27,14 +27,14 @@ juce::Rectangle<int> PlotLookAndFeelTimeline::getGraphBounds(
 
     auto top = getMarginSmall() * 2 + getGridLabelFont().getHeight();
 
-    const auto is_x_axis_label_below_graph = isXAxisLabelsBelowGraph();
+    const auto is_x_axis_label_below_axes = isXAxisLabelsBelowAxesArea();
     auto bottom =
-        is_x_axis_label_below_graph
+        is_x_axis_label_below_axes
             ? bounds.getHeight() -
                   (getGridLabelFont().getHeight() + getMargin() +
-                   getXGridLabelDistanceFromGraphBound())
+                   getXGridLabelDistanceFromAxesBound())
             : bounds.getHeight() -
-                  (getMargin() + getXGridLabelDistanceFromGraphBound());
+                  (getMargin() + getXGridLabelDistanceFromAxesBound());
 
     if (are_labels_set.x_label) {
       bottom -= (getXYTitleFont().getHeight() + getMargin());
@@ -44,13 +44,13 @@ juce::Rectangle<int> PlotLookAndFeelTimeline::getGraphBounds(
       top += getXYTitleFont().getHeight() + getMargin();
     }
 
-    graph_bounds.setLeft(0);
-    graph_bounds.setTop(int(top));
-    graph_bounds.setRight(bounds.getWidth());
-    graph_bounds.setBottom(bounds.getHeight());
+    axes_bounds.setLeft(0);
+    axes_bounds.setTop(int(top));
+    axes_bounds.setRight(bounds.getWidth());
+    axes_bounds.setBottom(bounds.getHeight());
   }
 
-  return std::move(graph_bounds);
+  return std::move(axes_bounds);
 }
 
 void PlotLookAndFeelTimeline::drawFrame(juce::Graphics& g [[maybe_unused]],
@@ -63,7 +63,7 @@ void PlotLookAndFeelTimeline::updateGridLabels(
     StringVector& y_custom_label_ticks, LabelVector& x_axis_labels_out,
     LabelVector& y_axis_labels_out) {
   const auto [x, y, width, height] =
-      getRectangleMeasures<int>(common_plot_params.graph_bounds);
+      getRectangleMeasures<int>(common_plot_params.axes_bounds);
   const auto font = getGridLabelFont();
 
   const std::size_t num_horizonal_lines =
@@ -147,12 +147,12 @@ void PlotLookAndFeelTimeline::updateGridLabels(
         const auto [label_width, label_height] =
             getLabelWidthAndHeight(font, label);
 
-        const auto is_x_axis_label_below_graph = isXAxisLabelsBelowGraph();
+        const auto is_x_axis_label_below_axes = isXAxisLabelsBelowAxesArea();
         const auto bound_y =
-            is_x_axis_label_below_graph
-                ? common_plot_params.graph_bounds.getBottom() +
-                      getXGridLabelDistanceFromGraphBound()
-                : common_plot_params.graph_bounds.getTopLeft().y -
+            is_x_axis_label_below_axes
+                ? common_plot_params.axes_bounds.getBottom() +
+                      getXGridLabelDistanceFromAxesBound()
+                : common_plot_params.axes_bounds.getTopLeft().y -
                       label_height - getMarginSmall() / 2;
 
         const auto bound =
@@ -185,7 +185,7 @@ void PlotLookAndFeelTimeline::updateGridLabels(
   }
 }
 
-bool PlotLookAndFeelTimeline::isXAxisLabelsBelowGraph() const noexcept {
+bool PlotLookAndFeelTimeline::isXAxisLabelsBelowAxesArea() const noexcept {
   return false;
 }
 

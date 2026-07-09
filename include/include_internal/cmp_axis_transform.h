@@ -28,7 +28,7 @@ namespace cmp {
  * 'axis.lim.min' and 'pixel_max' is the pixel coordinate of 'axis.lim.max'.
  * This makes the coordinate frame explicit at every call site and expresses
  * an inverted axis (like the y-axis, where the minimum value is at the
- * bottom of the graph area) by passing 'pixel_min > pixel_max'.
+ * bottom of the axes area) by passing 'pixel_min > pixel_max'.
  */
 class AxisTransform {
  public:

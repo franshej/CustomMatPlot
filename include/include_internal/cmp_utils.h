@@ -47,7 +47,7 @@ struct LegendLabel {
       : description{"Unknown data serie."},
         description_colour{juce::Colours::pink} {}
 
-  /** The description text of the associated graph_line. */
+  /** The description text of the associated series. */
   std::string description;
 
   /** The colour of the description text. */
@@ -84,16 +84,16 @@ struct AreLabelsSet {
 
 /*============================================================================*/
 
-static GraphLineDataViewList createGraphLineDataViewList(
-    const GraphLines& graph_lines) {
-  GraphLineDataViewList graph_line_data_view_list;
-  graph_line_data_view_list.reserve(graph_lines.size());
+static SeriesDataViewList createSeriesDataViewList(
+    const SeriesVector& series) {
+  SeriesDataViewList series_data_view_list;
+  series_data_view_list.reserve(series.size());
 
-  for (const auto& gl : graph_lines) {
-    graph_line_data_view_list.emplace_back(GraphLineDataView(*gl));
+  for (const auto& s : series) {
+    series_data_view_list.emplace_back(SeriesDataView(*s));
   }
 
-  return graph_line_data_view_list;
+  return series_data_view_list;
 };
 
 template <class value_type>
@@ -123,12 +123,12 @@ constexpr float getYDataFromYPixelCoordinate(
 
 static juce::Point<float> getDataPointFromPixelCoordinate(
     const juce::Point<float> pos,
-    const juce::Rectangle<float>& graph_bounds, const Lim_f x_lim,
+    const juce::Rectangle<float>& axes_bounds, const Lim_f x_lim,
     const Scaling x_scaling, const Lim_f y_lim, const Scaling y_scaling) noexcept {
   const auto x = getXDataFromXPixelCoordinate(
-      pos.getX(), graph_bounds, x_lim, x_scaling);
+      pos.getX(), axes_bounds, x_lim, x_scaling);
   const auto y = getYDataFromYPixelCoordinate(
-      pos.getY(), graph_bounds, y_lim, y_scaling);
+      pos.getY(), axes_bounds, y_lim, y_scaling);
 
   return juce::Point<float>(x, y);
 }

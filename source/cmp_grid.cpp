@@ -11,7 +11,7 @@
 #include <tuple>
 
 #include "cmp_datamodels.h"
-#include "cmp_graph_line.h"
+#include "cmp_series.h"
 #include "cmp_plot.h"
 #include "cmp_utils.h"
 
@@ -33,7 +33,7 @@ static juce::Rectangle<float> getMarginGridBounds(
 void Grid::createLabels() {
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
-    lnf->updateGridLabels(m_graph_bounds, m_grid_lines, m_custom_x_labels,
+    lnf->updateGridLabels(m_axes_bounds, m_grid_lines, m_custom_x_labels,
                           m_custom_y_labels, m_x_axis_labels, m_y_axis_labels);
   }
 }
@@ -116,18 +116,18 @@ void Grid::addGridLines(const std::vector<float> &ticks,
   if (m_lookandfeel) {
     auto lnf = static_cast<Plot::LookAndFeelMethods *>(m_lookandfeel);
 
-    const auto graph_bounds = m_graph_bounds.toFloat();
+    const auto axes_bounds = m_axes_bounds.toFloat();
 
     const auto getScaleOffset = [&]() {
       if (direction == GridLine::Direction::vertical) {
-        return getXScaleAndOffset(graph_bounds.getWidth(), m_x_lim,
+        return getXScaleAndOffset(axes_bounds.getWidth(), m_x_lim,
                                   m_x_scaling);
       }
-      return getYScaleAndOffset(graph_bounds.getHeight(), m_y_lim, m_y_scaling);
+      return getYScaleAndOffset(axes_bounds.getHeight(), m_y_lim, m_y_scaling);
     };
 
     const auto [scale, offset] = getScaleOffset();
-    const auto margin_grid_bounds = getMarginGridBounds(graph_bounds);
+    const auto margin_grid_bounds = getMarginGridBounds(axes_bounds);
 
     switch (direction) {
       case GridLine::Direction::vertical:
@@ -135,18 +135,18 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           GridLine grid_line;
 
           grid_line.position = {
-              graph_bounds.getX() +
+              axes_bounds.getX() +
                   (m_x_scaling == Scaling::linear
                        ? getXPixelValueLinear(t, scale, offset)
                        : getXPixelValueLogarithmic(t, scale, offset)),
-              graph_bounds.getY()};
+              axes_bounds.getY()};
 
           if (!margin_grid_bounds.contains(grid_line.position)) {
             continue;
           }
 
           grid_line.tick = t;
-          grid_line.length = graph_bounds.getHeight();
+          grid_line.length = axes_bounds.getHeight();
           grid_line.direction = GridLine::Direction::vertical;
 
           m_grid_lines.emplace_back(grid_line);
@@ -158,8 +158,8 @@ void Grid::addGridLines(const std::vector<float> &ticks,
           GridLine grid_line;
 
           grid_line.position = {
-              graph_bounds.getX(),
-              std::ceil(graph_bounds.getY() +
+              axes_bounds.getX(),
+              std::ceil(axes_bounds.getY() +
                         (m_y_scaling == Scaling::linear
                              ? getYPixelValueLinear(t, scale, offset)
                              : getYPixelValueLogarithmic(t, scale, offset)))};
@@ -170,7 +170,7 @@ void Grid::addGridLines(const std::vector<float> &ticks,
 
           grid_line.tick = t;
           grid_line.direction = GridLine::Direction::horizontal;
-          grid_line.length = graph_bounds.getWidth();
+          grid_line.length = axes_bounds.getWidth();
 
           m_grid_lines.emplace_back(grid_line);
         }
@@ -207,7 +207,7 @@ void Grid::addTranslucentGridLines() {
   for (auto grid_line = m_grid_lines.begin(); grid_line != m_grid_lines.end();
        ++grid_line) {
     auto addGridWithinBound = [&](const GridLine &grid_line) {
-      const auto margin_grid_bound = m_graph_bounds.toFloat();
+      const auto margin_grid_bound = m_axes_bounds.toFloat();
       if (margin_grid_bound.contains(grid_line.position)) {
         translucent_gridlines.emplace_back(grid_line);
       }
@@ -308,8 +308,8 @@ void Grid::update() { updateInternal(); }
 
 void Grid::observableValueUpdated(ObserverId id,
                                   const juce::Rectangle<int> &new_value) {
-  if (id == ObserverId::GraphBounds && m_graph_bounds != new_value) {
-    m_graph_bounds = new_value;
+  if (id == ObserverId::AxesBounds && m_axes_bounds != new_value) {
+    m_axes_bounds = new_value;
     updateInternal();
   }
 }

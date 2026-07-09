@@ -26,26 +26,26 @@
 namespace cmp {
 
 /**
- * @brief Projects (x, y, z) data points into graph-area-local pixel points.
+ * @brief Projects (x, y, z) data points into axes-area-local pixel points.
  *
  * The data cube spanned by the three axis limits is normalized into a unit
  * cube centered on the origin (logarithmic axes are normalized in log
- * space), rotated into view space by the camera, and fitted into the graph
+ * space), rotated into view space by the camera, and fitted into the series
  * bounds: the view-space bounding box of the data cube is stretched to fill
- * the graph area, like the 2D pipeline stretches the x/y limits and like
+ * the axes area, like the 2D pipeline stretches the x/y limits and like
  * MATLAB's default 'stretch' camera mode.
  *
- * Pixel points are graph-area-local, matching the 2D pixel-point pipeline,
+ * Pixel points are axes-area-local, matching the 2D pixel-point pipeline,
  * so everything downstream of pixel points can be reused.
  */
 class Projector3D {
  public:
   Projector3D(const Axes3& axes, const Camera3D& camera,
-              const juce::Rectangle<int>& graph_bounds) noexcept
-      : Projector3D(axes, camera, graph_bounds, viewSpaceBoundingBox(camera)) {
+              const juce::Rectangle<int>& axes_bounds) noexcept
+      : Projector3D(axes, camera, axes_bounds, viewSpaceBoundingBox(camera)) {
   }
 
-  /** @brief Project a single data point to its graph-area-local pixel
+  /** @brief Project a single data point to its axes-area-local pixel
    * point. */
   juce::Point<float> toPixel(const Vec3f& data_point) const noexcept {
     const auto view_point = m_camera.toViewSpace(toCenteredUnitCube(data_point));
@@ -73,16 +73,16 @@ class Projector3D {
 
  private:
   Projector3D(const Axes3& axes, const Camera3D& camera,
-              const juce::Rectangle<int>& graph_bounds,
+              const juce::Rectangle<int>& axes_bounds,
               const std::pair<Lim_f, Lim_f>& view_bounding_box) noexcept
       : m_axes{axes},
         m_camera{camera},
         m_screen_x{{view_bounding_box.first, Scaling::linear}, 0.0f,
-                   static_cast<float>(graph_bounds.getWidth())},
+                   static_cast<float>(axes_bounds.getWidth())},
         // The y-axis is inverted: the bottom of the view-space bounding box
-        // maps to the graph-area height.
+        // maps to the series-area height.
         m_screen_y{{view_bounding_box.second, Scaling::linear},
-                   static_cast<float>(graph_bounds.getHeight()), 0.0f} {}
+                   static_cast<float>(axes_bounds.getHeight()), 0.0f} {}
 
   /** Normalize a value into [0, 1] along one axis. */
   static float toUnitRange(const float value, const Axis_f& axis) noexcept {

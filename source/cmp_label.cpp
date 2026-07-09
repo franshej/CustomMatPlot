@@ -54,9 +54,9 @@ void PlotLabel::resized() { updateLabels(); }
 
 void PlotLabel::updateLabels() {
   if (auto *lnf = dynamic_cast<Plot::LookAndFeelMethods *>(&getLookAndFeel())) {
-    const auto graph_bounds =
-        lnf->getGraphBounds(getBounds(), getParentComponent());
-    lnf->updateXYTitleLabels(getBounds(), graph_bounds, m_x_label, m_y_label,
+    const auto axes_bounds =
+        lnf->getAxesBounds(getBounds(), getParentComponent());
+    lnf->updateXYTitleLabels(getBounds(), axes_bounds, m_x_label, m_y_label,
                              m_title_label);
   }
 }

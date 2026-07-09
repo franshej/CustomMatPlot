@@ -6,9 +6,9 @@
  */
 
 /**
- * @file cmp_graph_line3d.h
+ * @file cmp_series3d.h
  *
- * @brief Componenet for drawing 3D graph lines.
+ * @brief Componenet for drawing 3D series.
  *
  * @ingroup CustomMatPlotInternal
  */
@@ -24,17 +24,17 @@
 namespace cmp {
 
 /**
- *  @class GraphLine3D
+ *  @class Series3D
  *  @brief A class component to draw 3D lines/marker symbols. This is
  *  a subcomponenet to cmp::Plot3D.
  *
- *  The (x, y, z) data is projected into graph-area-local pixel points with
- *  Projector3D and drawn with the same lookandfeel method as the 2D graph
+ *  The (x, y, z) data is projected into axes-area-local pixel points with
+ *  Projector3D and drawn with the same lookandfeel method as the 2D series
  *  lines.
  */
-class GraphLine3D : public juce::Component {
+class Series3D : public juce::Component {
  public:
-  /** @brief Set the data values for the graph line.
+  /** @brief Set the data values for the series.
    *
    *  @param x_data vector of x-values.
    *  @param y_data vector of y-values.
@@ -54,16 +54,16 @@ class GraphLine3D : public juce::Component {
   /** @brief Get z-values. */
   const std::vector<float>& getZData() const noexcept;
 
-  /** @brief Set the graph attributes. @see GraphAttribute. */
-  void setGraphAttribute(const GraphAttribute& graph_attribute);
+  /** @brief Set the series attributes. @see SeriesAttribute. */
+  void setSeriesAttribute(const SeriesAttribute& series_attribute);
 
-  /** @brief Get the graph attributes. @see GraphAttribute. */
-  const GraphAttribute& getGraphAttribute() const noexcept;
+  /** @brief Get the series attributes. @see SeriesAttribute. */
+  const SeriesAttribute& getSeriesAttribute() const noexcept;
 
-  /** @brief Set the colour of the graph. */
-  void setColour(const juce::Colour graph_colour);
+  /** @brief Set the colour of the series. */
+  void setColour(const juce::Colour series_colour);
 
-  /** @brief Get the colour of the graph. */
+  /** @brief Get the colour of the series. */
   juce::Colour getColour() const noexcept;
 
   /** @brief Project the data into pixel points for the given axes and
@@ -105,7 +105,7 @@ class GraphLine3D : public juce::Component {
   Camera3D m_camera;
 
   juce::LookAndFeel* m_lookandfeel{nullptr};
-  GraphAttribute m_graph_attributes;
+  SeriesAttribute m_series_attributes;
 };
 
 }  // namespace cmp

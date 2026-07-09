@@ -153,7 +153,7 @@ TEST(test_linear_dashed_lines, non_real_time) {
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
   const std::vector<float> dashed_lengths = {4, 8};
 
-  cmp::GraphAttribute ga;
+  cmp::SeriesAttribute ga;
   ga.dashed_lengths = dashed_lengths;
 
   PLOT_XY_ATTRI({y_test_data}, {}, {ga});
@@ -344,10 +344,10 @@ TEST(look_and_feel, non_real_time) {
 }
 
 class MyLnf_2 : public cmp::PlotLookAndFeel {
-  bool isXAxisLabelsBelowGraph() const noexcept override { return false; }
+  bool isXAxisLabelsBelowAxesArea() const noexcept override { return false; }
 };
 
-TEST(x_axis_above_graph, non_real_time) {
+TEST(x_axis_above_axes, non_real_time) {
   ADD_SEMI_LOG_Y;
 
   std::vector<float> y_test_data(1000);
@@ -375,8 +375,8 @@ TEST(set_custom_colour, non_real_time) {
     i++;
   }
 
-  cmp::GraphAttributeList ga(6);
-  ga[3].graph_colour = juce::Colours::pink;
+  cmp::SeriesAttributeList ga(6);
+  ga[3].series_colour = juce::Colours::pink;
 
   PLOT_XY_ATTRI(test_data_y, {}, ga);
   LEGEND(legends);
@@ -388,8 +388,8 @@ TEST(opacity, non_real_time) {
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
 
-  cmp::GraphAttributeList ga(1);
-  ga[0].graph_line_opacity = 0.5f;
+  cmp::SeriesAttributeList ga(1);
+  ga[0].series_opacity = 0.5f;
 
   PLOT_XY_ATTRI({y_test_data}, {}, ga);
   GRID_ON;
@@ -401,7 +401,7 @@ TEST(path_stroke_path, non_real_time) {
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
 
-  cmp::GraphAttributeList ga(1);
+  cmp::SeriesAttributeList ga(1);
   ga[0].path_stroke_type = juce::PathStrokeType(10);
 
   PLOT_XY_ATTRI({y_test_data}, {}, ga);
@@ -423,7 +423,7 @@ TEST(markers, non_real_time) {
     }
     ++i;
   }
-  cmp::GraphAttributeList ga(test_data_y.size());
+  cmp::SeriesAttributeList ga(test_data_y.size());
   ga[0].marker = cmp::Marker::Type::Circle;
 
   ga[1].marker = cmp::Marker::Type::Square;
@@ -458,14 +458,14 @@ TEST(spread, non_real_time) {
     i += 10;
   }
 
-  const std::vector<cmp::GraphSpreadIndex> spread_indices = {{0, 1}, {2, 3}};
+  const std::vector<cmp::SpreadIndex> spread_indices = {{0, 1}, {2, 3}};
 
   PLOT_Y(test_data_y);
   FILL_BETWEEN(spread_indices);
 
   X_LABEL("Logarithmic x-axis");
   Y_LABEL("Linear y-axis");
-  TITLE("Nice looking fills between graph lines!");
+  TITLE("Nice looking fills between series!");
 }
 
 TEST(xy_downsampling, non_real_time) {
@@ -644,7 +644,7 @@ TEST(gradient, non_real_time) {
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
 
-  cmp::GraphAttributeList ga(1);
+  cmp::SeriesAttributeList ga(1);
   juce::Colour colour0 = juce::Colours::red;
   juce::Colour colour1 = juce::Colours::green;
   ga[0].gradient_colours = std::make_pair(colour0, colour1);

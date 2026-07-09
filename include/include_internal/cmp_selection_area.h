@@ -6,9 +6,9 @@
  */
 
 /**
- * @file cmp_graph_area.h
+ * @file cmp_selection_area.h
  *
- * @brief A class for drawing selection overlay on the graph area.
+ * @brief A class for drawing selection overlay on the axes area.
  *
  * @ingroup CustomMatPlotInternal
  *
@@ -24,14 +24,13 @@
 
 namespace cmp {
 /**
- * \class GraphArea #TODO find a better name for this class. Maybe GraphOverlay,
- * GraphSelectionArea? \brief A component for drawing the graph selection on the
- * graph area.
+ * @class SelectionArea
+ * @brief A component for drawing the selection on the axes area.
  *
  * The idea is to use this component to draw the zoom area, selection area or
  * move a trace point.
  */
-class GraphArea : public juce::Component,
+class SelectionArea : public juce::Component,
                   public virtual Observer<Lim<float>>,
                   public virtual Observer<Scaling> {
 public:
@@ -88,7 +87,7 @@ public:
 
   /** @brief Get data bound of selected area.
    *
-   *  The data bound can be compare with the graph values.
+   *  The data bound can be compare with the series values.
    *
    *  @return rectangle of the selected area.
    */

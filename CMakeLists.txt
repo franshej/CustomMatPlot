@@ -23,8 +23,8 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/include/include/cmp_version.h.in
                ${CMAKE_CURRENT_BINARY_DIR}/include/include/cmp_version.h @ONLY)
 
 set(SOURCE source/cmp_plot.cpp
-           source/cmp_graph_line.cpp
-           source/cmp_graph_line3d.cpp
+           source/cmp_series.cpp
+           source/cmp_series3d.cpp
            source/cmp_axes3dbox.cpp
            source/cmp_plot3d.cpp
            source/cmp_grid.cpp
@@ -32,12 +32,12 @@ set(SOURCE source/cmp_plot.cpp
            source/cmp_frame.cpp
            source/cmp_legend.cpp
            source/cmp_trace.cpp
-           source/cmp_graph_area.cpp
+           source/cmp_selection_area.cpp
            source/cmp_lookandfeel.cpp
            source/cmp_downsampler.cpp)
 
-set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
-                     include/include_internal/cmp_graph_line3d.h
+set(INTERNAL_HEADERS include/include_internal/cmp_series.h
+                     include/include_internal/cmp_series3d.h
                      include/include_internal/cmp_axis_transform.h
                      include/include_internal/cmp_math3d.h
                      include/include_internal/cmp_camera3d.h
@@ -49,7 +49,7 @@ set(INTERNAL_HEADERS include/include_internal/cmp_graph_line.h
                      include/include_internal/cmp_frame.h
                      include/include_internal/cmp_legend.h
                      include/include_internal/cmp_trace.h
-                     include/include_internal/cmp_graph_area.h
+                     include/include_internal/cmp_selection_area.h
                      include/include_internal/cmp_downsampler.h)
 
 set(PUBLIC_HEADERS include/include/cmp_plot.h

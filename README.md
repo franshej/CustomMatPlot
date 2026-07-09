@@ -11,7 +11,7 @@ CustomMatPlot (CMP) is a plotting library for C++. It provides an API for embedd
   - [Requirements](#requirements)
   - [Controls](#controls)
   - [LookAndFeel](#lookandfeel)
-  - [Graph line attributes](#graph-line-attributes)
+  - [Series attributes](#series-attributes)
   - [Examples](#examples)
   - [Realtime frequency response example](#realtime-frequency-response-example)
   - [Tests](#tests)
@@ -28,7 +28,7 @@ Below is the feature list of CMP:
 - Legend.
 - Zoom.
 - Trace.
-- Fill area between two graphs.
+- Fill area between two series.
 - Axis labels.
 - Ticks and Tick-labels.
 - Grids and tiny grids.
@@ -37,7 +37,7 @@ Below is the feature list of CMP:
 - Callback for every visible data point.
 - Callback for trace points.
 - Two different downsampler levels.
-- Move points in the graph with mouse.
+- Move points in the plot with mouse.
 - Customizable user input mapping using lookandfeel class.
 
 ![Image](img/heart.png) 
@@ -53,11 +53,11 @@ Below is the feature list of CMP:
 
 The CMP component implements MouseEvents to interact with the plot using the mouse. Below is a list of default mouse commands which can be overridden using a custom lookandfeel class (see "move_pixel_points" example):
 
-1. Left-click and drag anywhere in the graph area to zoom into the plot. The zoom area is displayed as a traced rectangle.
+1. Left-click and drag anywhere in the axes area to zoom into the plot. The zoom area is displayed as a traced rectangle.
 2. Right click to zoom out to home.
-3. Double-click to add a trace-point to the graph lines closest to the mouse pointer.
+3. Double-click to add a trace-point to the series closest to the mouse pointer.
 4. Double-click on a trace-point to remove it.
-5. Drag the trace point to move it along the graph-line.
+5. Drag the trace point to move it along the series.
 6. Move the trace point label by dragging it.
 7. Move the legend by dragging it.
 8. Move pixel points.
@@ -70,12 +70,12 @@ Customize the plot to your liking by overriding the lookandfeel functions. See t
 
 ![Image](img/lookandfeel.png)
 
-## Graph line attributes
-<a name="graph-line-attributes"></a>
+## Series attributes
+<a name="series-attributes"></a>
 
-Use the graph line attributes to change the appearance of the graph lines. See custom_graph_attributes example.
+Use the series attributes to change the appearance of the series. See custom_series_attributes example.
 
-![Image](img/graph_line_attributes.png)
+![Image](img/series_attributes.png)
 
 ## Examples
 <a name="examples"></a>
@@ -114,12 +114,12 @@ The `juce::UnitTest` class is wrapped into macros to make it easier to write new
 SECTION(PlotTest, "Plot class") {
   cmp::Plot plot;
 
-  TEST("Part 1: empty graph line.") {
-    const auto graph_lines = getChildComponentHelper<cmp::GraphLine>(plot);
-    expect(graph_lines.empty());
+  TEST("Part 1: empty series.") {
+    const auto series = getChildComponentHelper<cmp::Series>(plot);
+    expect(series.empty());
   }
 
-  TEST("Part 2: single graph line") {
+  TEST("Part 2: single series") {
     plot.plot({y_data1});
     ...
   }
