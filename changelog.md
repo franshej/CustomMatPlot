@@ -4,8 +4,24 @@
 - plotUpdateYOnly (realTimePlot).
 
 ### Added
+- `plot(SeriesDataList)` / `SeriesData`: plot one or more series bundled per
+  series, where each carries its own x, y and attributes (order is now x, y).
+  Use the `seriesFrom()` helpers to build a `SeriesDataList` from
+  parallel-array data.
+- `Plot3D`: 3D line plotting with per-axis linear/logarithmic scaling.
 - Renamed realTimePlot to plotUpdateYOnly.
 - Gradient below series using SeriesAttribute
+
+### Deprecated
+- `plot(y_data, x_data, series_attributes)`: use `plot(SeriesDataList)`.
+
+### Breaking Changes
+- **Breaking:** Dropped the `Graph` prefix from the data-series API.
+  `GraphLine` → `Series`, `GraphAttribute` → `SeriesAttribute`,
+  `GraphSpread` → `Spread`, `drawGraphLine` → `drawSeries` and
+  `ColourIdsGraph` → `ColourIdsSeries`. Update your code accordingly.
+- **Breaking:** `Plot3D::plot3` now takes `std::vector<Series3DData>` instead
+  of separate x, y and z vectors.
 
 ## 1.3.0 (2024-9-12)
 
