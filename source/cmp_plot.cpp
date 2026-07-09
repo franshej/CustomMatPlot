@@ -67,8 +67,8 @@ std::tuple<size_t, const Series*> Plot::findNearestPoint(
 
   const auto series_exsists =
       std::find_if(m_series->begin(), m_series->end(),
-                   [&series](const auto& gl) {
-                     return gl.get() == series;
+                   [&series](const auto& s) {
+                     return s.get() == series;
                    }) != m_series->end();
 
   const Series* nearest_series{series_exsists ? series : nullptr};

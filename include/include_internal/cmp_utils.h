@@ -89,8 +89,8 @@ static SeriesDataViewList createSeriesDataViewList(
   SeriesDataViewList series_data_view_list;
   series_data_view_list.reserve(series.size());
 
-  for (const auto& gl : series) {
-    series_data_view_list.emplace_back(SeriesDataView(*gl));
+  for (const auto& s : series) {
+    series_data_view_list.emplace_back(SeriesDataView(*s));
   }
 
   return series_data_view_list;

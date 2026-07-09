@@ -42,8 +42,8 @@ void cmp::Legend::update() {
     m_legend_labels.resize(m_series->size());
 
     it_legend = m_legend_labels.begin();
-    for (const auto &gl : *m_series) {
-      it_legend++->description_colour = gl->getColour();
+    for (const auto &series : *m_series) {
+      it_legend++->description_colour = series->getColour();
     }
 
     if (onNumberOfDescriptionsChanged) {
