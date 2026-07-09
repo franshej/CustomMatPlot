@@ -121,8 +121,9 @@ static std::unique_ptr<juce::Component> makeLinearVsLogScene() {
   const Line3D edge{{-1.0f, -1.0f}, {1.0f, 1.0f}, diag_z};
 
   const auto plot_both = [&](cmp::Plot3D& plot, const std::string& title) {
-    plot.plot3({helix.x, diag.x, edge.x}, {helix.y, diag.y, edge.y},
-               {helix.z, diag.z, edge.z});
+    plot.plot3({{.x = helix.x, .y = helix.y, .z = helix.z},
+                {.x = diag.x, .y = diag.y, .z = diag.z},
+                {.x = edge.x, .y = edge.y, .z = edge.z}});
     labelAxes(plot, title);
   };
 
@@ -146,8 +147,9 @@ static std::unique_ptr<juce::Component> makeAllLogScene() {
   auto& plot = row->add(std::make_unique<cmp::Plot3D>(
       cmp::Scaling::logarithmic, cmp::Scaling::logarithmic,
       cmp::Scaling::logarithmic));
-  plot.plot3({curve.x, diag.x, anti.x}, {curve.y, diag.y, anti.y},
-             {curve.z, diag.z, anti.z});
+  plot.plot3({{.x = curve.x, .y = curve.y, .z = curve.z},
+              {.x = diag.x, .y = diag.y, .z = diag.z},
+              {.x = anti.x, .y = anti.y, .z = anti.z}});
   labelAxes(plot, "x, y, z all logarithmic");
 
   return row;
@@ -164,8 +166,9 @@ static std::unique_ptr<juce::Component> makeMixedLogScene() {
   auto& plot = row->add(std::make_unique<cmp::Plot3D>(
       cmp::Scaling::linear, cmp::Scaling::logarithmic,
       cmp::Scaling::logarithmic));
-  plot.plot3({curve.x, diag.x, anti.x}, {curve.y, diag.y, anti.y},
-             {curve.z, diag.z, anti.z});
+  plot.plot3({{.x = curve.x, .y = curve.y, .z = curve.z},
+              {.x = diag.x, .y = diag.y, .z = diag.z},
+              {.x = anti.x, .y = anti.y, .z = anti.z}});
   labelAxes(plot, "x linear, y & z logarithmic");
 
   return row;
@@ -177,7 +180,7 @@ static std::unique_ptr<juce::Component> makeHelixScene() {
   const auto helix = makeHelix();
 
   auto& plot = row->add(std::make_unique<cmp::Plot3D>());
-  plot.plot3({helix.x}, {helix.y}, {helix.z});
+  plot.plot3({{.x = helix.x, .y = helix.y, .z = helix.z}});
   labelAxes(plot, "Helix");
 
   return row;

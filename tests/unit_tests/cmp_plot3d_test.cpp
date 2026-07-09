@@ -30,7 +30,7 @@ SECTION(Plot3DClass, "Plot3D class") {
   }
 
   TEST("Single series") {
-    plot.plot3({x_data1}, {y_data1}, {z_data1});
+    plot.plot3({{.x = x_data1, .y = y_data1, .z = z_data1}});
 
     const auto series = getChildComponentHelper<cmp::Series3D>(plot);
     expectEquals(series.size(), 1ul);
@@ -42,7 +42,8 @@ SECTION(Plot3DClass, "Plot3D class") {
   }
 
   TEST("Several series") {
-    plot.plot3({x_data1, x_data2}, {y_data1, y_data2}, {z_data1, z_data2});
+    plot.plot3({{.x = x_data1, .y = y_data1, .z = z_data1},
+                {.x = x_data2, .y = y_data2, .z = z_data2}});
 
     const auto series = getChildComponentHelper<cmp::Series3D>(plot);
     expectEquals(series.size(), 2ul);
@@ -51,11 +52,12 @@ SECTION(Plot3DClass, "Plot3D class") {
     expect(series[0]->getColour() != series[1]->getColour());
   }
 
-  TEST("Mismatched number of lines throws") {
+  TEST("Mismatched x/y/z lengths within a series throws") {
     auto exception_thrown = false;
 
     try {
-      plot.plot3({x_data1}, {y_data1, y_data2}, {z_data1});
+      // x has two points, y only one: the series is malformed.
+      plot.plot3({{.x = {1.f, 2.f}, .y = {1.f}, .z = {1.f, 2.f}}});
     } catch (const std::invalid_argument&) {
       exception_thrown = true;
     }
@@ -67,7 +69,7 @@ SECTION(Plot3DClass, "Plot3D class") {
     cmp::Plot3D top_view_plot;
     top_view_plot.setBounds(0, 0, 600, 500);
     top_view_plot.setView(0.f, 90.f);
-    top_view_plot.plot3({x_data1}, {y_data1}, {z_data1});
+    top_view_plot.plot3({{.x = x_data1, .y = y_data1, .z = z_data1}});
 
     const auto series = getChildComponentHelper<cmp::Series3D>(top_view_plot);
     expectEquals(series.size(), 1ul);
@@ -87,7 +89,7 @@ SECTION(Plot3DClass, "Plot3D class") {
   TEST("Axes box gets the axes parameters") {
     cmp::Plot3D plot_tmp;
     plot_tmp.setBounds(0, 0, 600, 500);
-    plot_tmp.plot3({x_data1}, {y_data1}, {z_data1});
+    plot_tmp.plot3({{.x = x_data1, .y = y_data1, .z = z_data1}});
 
     const auto axes_boxes = getChildComponentHelper<cmp::Axes3DBox>(plot_tmp);
     expectEquals(axes_boxes.size(), 1ul);
@@ -114,7 +116,7 @@ SECTION(Plot3DClass, "Plot3D class") {
     plot_tmp.setBounds(0, 0, 600, 500);
     plot_tmp.setView(0.f, 90.f);
     plot_tmp.xLim(0.f, 20.f);
-    plot_tmp.plot3({x_data1}, {y_data1}, {z_data1});
+    plot_tmp.plot3({{.x = x_data1, .y = y_data1, .z = z_data1}});
 
     const auto series = getChildComponentHelper<cmp::Series3D>(plot_tmp);
     const auto& pixel_points = series[0]->getPixelPoints();

@@ -134,14 +134,22 @@ const juce::Label& Plot3D::getTitleLabel() const noexcept {
   return m_title_label;
 }
 
-void Plot3D::plot3(const std::vector<std::vector<float>>& x_data,
-                   const std::vector<std::vector<float>>& y_data,
-                   const std::vector<std::vector<float>>& z_data,
-                   const SeriesAttributeList& series_attributes) {
-  if (x_data.size() != y_data.size() || x_data.size() != z_data.size())
-    throw std::invalid_argument(
-        "plot3: x_data, y_data and z_data must contain the same number of "
-        "lines.");
+void Plot3D::plot3(const std::vector<Series3DData>& series_list) {
+  // Unpack the per-series bundles into the parallel vectors the internal
+  // pipeline consumes. Because every series carries its own x/y/z, the outer
+  // vectors can no longer differ in length the way three separate arrays could.
+  std::vector<std::vector<float>> x_data, y_data, z_data;
+  SeriesAttributeList series_attributes;
+  x_data.reserve(series_list.size());
+  y_data.reserve(series_list.size());
+  z_data.reserve(series_list.size());
+  series_attributes.reserve(series_list.size());
+  for (const auto& s : series_list) {
+    x_data.push_back(s.x);
+    y_data.push_back(s.y);
+    z_data.push_back(s.z);
+    series_attributes.push_back(s.attribute);
+  }
 
   auto* lnf = getPlotLookAndFeelBase();
 

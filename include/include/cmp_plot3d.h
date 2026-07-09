@@ -20,6 +20,22 @@ namespace cmp {
 class Series3D;
 class Axes3DBox;
 
+/** @brief One 3-D series to plot: its data plus optional styling.
+ *
+ * The fields are ordered x, y, z; all three are required and must have the
+ * same size. With C++20 designated initializers a series reads clearly at the
+ * call site, e.g.
+ * @code
+ *   plot3({ {.x = x, .y = y, .z = z} });
+ * @endcode
+ */
+struct Series3DData {
+  std::vector<float> x;
+  std::vector<float> y;
+  std::vector<float> z;
+  SeriesAttribute attribute{};
+};
+
 /**
  * @class Plot3D
  * @brief A component to plot 3-D lines
@@ -49,20 +65,14 @@ class Plot3D : public juce::Component {
          const Scaling z_scaling = Scaling::linear);
 
   /**
-   * @brief Plot 3-D line data
-   * @details Each entry in the outer vectors describes one series. The
-   *          x/y/z vectors of a line must have the same size. The axis
-   *          limits are auto-scaled to the data unless they have been set
-   *          explicitly.
-   * @param x_data x-values of the lines
-   * @param y_data y-values of the lines
-   * @param z_data z-values of the lines
-   * @param series_attributes optional attributes per line
+   * @brief Plot one or more 3-D series.
+   * @details Each @ref Series3DData carries its own x, y, z and optional
+   *          styling. The x/y/z vectors of a series must have the same size.
+   *          The axis limits are auto-scaled to the data unless they have been
+   *          set explicitly.
+   * @param series the 3-D series to plot @see Series3DData
    */
-  void plot3(const std::vector<std::vector<float>> &x_data,
-             const std::vector<std::vector<float>> &y_data,
-             const std::vector<std::vector<float>> &z_data,
-             const SeriesAttributeList &series_attributes = {});
+  void plot3(const std::vector<Series3DData> &series);
 
   /**
    * @brief Set the X-limits
