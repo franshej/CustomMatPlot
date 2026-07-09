@@ -41,7 +41,8 @@ class Camera3D {
 
   /** @brief Construct a camera with the given azimuth and elevation, like
    * MATLAB's view(az, el). */
-  Camera3D(const float azimuth_degrees, const float elevation_degrees) noexcept {
+  Camera3D(const float azimuth_degrees,
+           const float elevation_degrees) noexcept {
     setView(azimuth_degrees, elevation_degrees);
   }
 

@@ -14,9 +14,9 @@
 
 #include "cmp_axis_transform.h"
 #include "cmp_datamodels.h"
-#include "cmp_series.h"
 #include "cmp_grid.h"
 #include "cmp_label.h"
+#include "cmp_series.h"
 #include "cmp_utils.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 
@@ -204,7 +204,8 @@ juce::Font PlotLookAndFeel::getButtonFont() const noexcept {
   return juce::Font(14.0f, juce::Font::plain);
 }
 
-int PlotLookAndFeel::getColourFromSeriesID(const std::size_t series_index) const {
+int PlotLookAndFeel::getColourFromSeriesID(
+    const std::size_t series_index) const {
   /**< Colour vector which is useful when iterating over the six series
    * colours.*/
   static const std::vector<int> SeriesColours{
@@ -278,11 +279,11 @@ juce::Point<int> PlotLookAndFeel::getTracePointPositionFrom(
     const juce::Rectangle<int>& axes_bounds, const Lim<float> x_lim,
     const Scaling x_scaling, const Lim<float> y_lim, const Scaling y_scaling,
     const juce::Point<float> series_values) const noexcept {
-  const auto [x_scale, x_offset] = getXScaleAndOffset(
-      float(axes_bounds.getWidth()), x_lim, x_scaling);
+  const auto [x_scale, x_offset] =
+      getXScaleAndOffset(float(axes_bounds.getWidth()), x_lim, x_scaling);
 
-  const auto [y_scale, y_offset] = getYScaleAndOffset(
-      float(axes_bounds.getHeight()), y_lim, y_scaling);
+  const auto [y_scale, y_offset] =
+      getYScaleAndOffset(float(axes_bounds.getHeight()), y_lim, y_scaling);
 
   float x;
   float y;
@@ -301,9 +302,9 @@ juce::Point<int> PlotLookAndFeel::getTracePointPositionFrom(
   return juce::Point<float>(x, y).toInt();
 }
 
-void PlotLookAndFeel::drawSeries(
-    juce::Graphics& g, const SeriesDataView series_data,
-    const juce::Rectangle<int>& series_bounds) {
+void PlotLookAndFeel::drawSeries(juce::Graphics& g,
+                                 const SeriesDataView series_data,
+                                 const juce::Rectangle<int>& series_bounds) {
   juce::Path series_path;
   const juce::PathStrokeType stroke_type =
       series_data.series_attribute.path_stroke_type
@@ -375,10 +376,9 @@ void PlotLookAndFeel::drawSeries(
           gradient_colours.first, 0.f, gradient_colours.second,
           series_bounds_f.getHeight());
 
-      series_path.lineTo(pixel_points.back().getX(),
-                        series_bounds.getBottom());
+      series_path.lineTo(pixel_points.back().getX(), series_bounds.getBottom());
       series_path.lineTo(pixel_points.front().getX(),
-                        series_bounds.getBottom());
+                         series_bounds.getBottom());
       series_path.closeSubPath();
       g.setGradientFill(gradient);
       g.fillPath(series_path);
@@ -495,8 +495,7 @@ void PlotLookAndFeel::drawLegendBackground(
   g.fillRect(legend_bound);
 }
 
-void PlotLookAndFeel::drawSpread(juce::Graphics& g,
-                                 const Series* first_series,
+void PlotLookAndFeel::drawSpread(juce::Graphics& g, const Series* first_series,
                                  const Series* second_series,
                                  const juce::Colour& spread_colour) {
   juce::Path path;
@@ -615,15 +614,15 @@ void PlotLookAndFeel::drawSelectionArea(
 
 void PlotLookAndFeel::updateXPixelPoints(
     const std::vector<std::size_t>& update_only_these_indices,
-    const Scaling x_scaling, const Lim<float> x_lim, const juce::Rectangle<int> &axes_bounds,
-    const std::vector<float>& x_data,
+    const Scaling x_scaling, const Lim<float> x_lim,
+    const juce::Rectangle<int>& axes_bounds, const std::vector<float>& x_data,
     std::vector<std::size_t>& pixel_points_indices,
     PixelPoints& pixel_points) noexcept {
   // Pixel points are axes-area-local: x_lim.min maps to pixel 0 and
   // x_lim.max to the series-area width. The caller owns the sizing of
   // 'pixel_points'; this method only writes coordinates.
-  const auto transform = AxisTransform({x_lim, x_scaling}, 0.0f,
-                                       axes_bounds.toFloat().getWidth());
+  const auto transform =
+      AxisTransform({x_lim, x_scaling}, 0.0f, axes_bounds.toFloat().getWidth());
 
   if (!update_only_these_indices.empty()) {
     if (pixel_points_indices.size() != x_data.size()) {
@@ -646,16 +645,16 @@ void PlotLookAndFeel::updateXPixelPoints(
 
 void PlotLookAndFeel::updateYPixelPoints(
     const std::vector<std::size_t>& update_only_these_indices,
-    const Scaling y_scaling, const Lim<float> y_lim, const juce::Rectangle<int> &axes_bounds,
-    const std::vector<float>& y_data,
+    const Scaling y_scaling, const Lim<float> y_lim,
+    const juce::Rectangle<int>& axes_bounds, const std::vector<float>& y_data,
     const std::vector<std::size_t>& pixel_points_indices,
     PixelPoints& pixel_points) noexcept {
   // Pixel points are axes-area-local and the y-axis is inverted: y_lim.min
   // maps to the series-area height (bottom) and y_lim.max to pixel 0 (top).
   // The caller owns the sizing of 'pixel_points'; this method only writes
   // coordinates.
-  const auto transform = AxisTransform(
-      {y_lim, y_scaling}, axes_bounds.toFloat().getHeight(), 0.0f);
+  const auto transform = AxisTransform({y_lim, y_scaling},
+                                       axes_bounds.toFloat().getHeight(), 0.0f);
 
   if (!update_only_these_indices.empty()) {
     if (pixel_points_indices.size() != y_data.size()) {
@@ -679,10 +678,9 @@ void PlotLookAndFeel::updateYPixelPoints(
 }
 
 void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
-    const juce::Rectangle<int>& bounds,
-    const Lim_f& x_lim,
-    const Scaling x_scaling,
-    const GridType grid_type, const std::vector<float>& previous_ticks,
+    const juce::Rectangle<int>& bounds, const Lim_f& x_lim,
+    const Scaling x_scaling, const GridType grid_type,
+    const std::vector<float>& previous_ticks,
     std::vector<float>& x_ticks) noexcept {
   x_ticks.clear();
 
@@ -715,8 +713,7 @@ void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
     num_ticks_per_power = std::size_t(tiny_grids ? num_ticks_per_power * 1.5
                                                  : num_ticks_per_power);
 
-    x_ticks = getLogarithmicTicks(
-        num_ticks_per_power, x_lim, previous_ticks);
+    x_ticks = getLogarithmicTicks(num_ticks_per_power, x_lim, previous_ticks);
   };
 
   if (x_scaling == Scaling::linear) {
@@ -727,10 +724,9 @@ void PlotLookAndFeel::updateVerticalGridLineTicksAuto(
 }
 
 void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
-    const juce::Rectangle<int>& bounds,
-    const Lim_f& y_lim,
-    const Scaling y_scaling,
-    const GridType grid_type, const std::vector<float>& previous_ticks,
+    const juce::Rectangle<int>& bounds, const Lim_f& y_lim,
+    const Scaling y_scaling, const GridType grid_type,
+    const std::vector<float>& previous_ticks,
     std::vector<float>& y_ticks) noexcept {
   y_ticks.clear();
 
@@ -747,7 +743,7 @@ void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
     }
     num_horizontal_lines = tiny_grids ? std::size_t(num_horizontal_lines * 1.5)
                                       : num_horizontal_lines;
-    
+
     y_ticks = TicksGenerator::generateTicks(
         y_lim.min, y_lim.max, num_horizontal_lines, previous_ticks);
   };
@@ -762,8 +758,7 @@ void PlotLookAndFeel::updateHorizontalGridLineTicksAuto(
     num_ticks_per_power = tiny_grids ? std::size_t(num_ticks_per_power * 1.5)
                                      : num_ticks_per_power;
 
-    y_ticks = getLogarithmicTicks(
-        num_ticks_per_power, y_lim, previous_ticks);
+    y_ticks = getLogarithmicTicks(num_ticks_per_power, y_lim, previous_ticks);
   };
 
   if (y_scaling == Scaling::linear) {
@@ -927,10 +922,10 @@ void PlotLookAndFeel::updateGridLabels(const juce::Rectangle<int>& axes_bounds,
             getLabelWidthAndHeight(font, label);
 
         const auto is_x_axis_label_below_axes = isXAxisLabelsBelowAxesArea();
-        const auto bound_y = is_x_axis_label_below_axes
-                                 ? axes_bounds.getBottom() +
-                                       getXGridLabelDistanceFromAxesBound()
-                                 : axes_bounds.getTopLeft().y - label_height;
+        const auto bound_y =
+            is_x_axis_label_below_axes
+                ? axes_bounds.getBottom() + getXGridLabelDistanceFromAxesBound()
+                : axes_bounds.getTopLeft().y - label_height;
 
         const auto bound =
             juce::Rectangle<int>(int(position.x) - label_width / 2, bound_y,
@@ -962,9 +957,8 @@ void PlotLookAndFeel::updateGridLabels(const juce::Rectangle<int>& axes_bounds,
 }
 
 void PlotLookAndFeel::updateXYTitleLabels(
-    const juce::Rectangle<int>& bounds,
-    const juce::Rectangle<int>& axes_bounds, juce::Label& x_label,
-    juce::Label& y_label, juce::Label& title_label) {
+    const juce::Rectangle<int>& bounds, const juce::Rectangle<int>& axes_bounds,
+    juce::Label& x_label, juce::Label& y_label, juce::Label& title_label) {
   const auto font = getXYTitleFont();
 
   const auto x_margin = int(getMargin());
@@ -1001,8 +995,7 @@ void PlotLookAndFeel::updateXYTitleLabels(
       float(y_area.getY())));
 
   const auto y_mid_point_bottom =
-      (bounds.getHeight() - (axes_bounds.getY() + axes_bounds.getHeight())) /
-      2;
+      (bounds.getHeight() - (axes_bounds.getY() + axes_bounds.getHeight())) / 2;
 
   y_label.setBounds(y_area);
 
@@ -1023,6 +1016,8 @@ void PlotLookAndFeel::updateXYTitleLabels(
       bound_y, title_width, font_height);
 }
 
-bool PlotLookAndFeel::isXAxisLabelsBelowAxesArea() const noexcept { return true; }
+bool PlotLookAndFeel::isXAxisLabelsBelowAxesArea() const noexcept {
+  return true;
+}
 
 }  // namespace cmp

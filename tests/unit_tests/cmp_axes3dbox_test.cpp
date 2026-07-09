@@ -1,6 +1,7 @@
+#include "cmp_axes3dbox.h"
+
 #include <algorithm>
 
-#include "cmp_axes3dbox.h"
 #include "cmp_test_helper.hpp"
 
 /* Tests for the 3D axes box.
@@ -124,8 +125,7 @@ SECTION(Axes3DBoxTest, "3D axes box") {
   }
 
   TEST("Grid lines: logarithmic scaling adds minor lines on any axis") {
-    const auto log_axis =
-        cmp::Axis_f{{1.f, 1000.f}, cmp::Scaling::logarithmic};
+    const auto log_axis = cmp::Axis_f{{1.f, 1000.f}, cmp::Scaling::logarithmic};
     const auto lin_axis = cmp::Axis_f{{0.f, 10.f}, cmp::Scaling::linear};
 
     // A log axis spanning 1..1000 has the minor lines 1..9, 10..90, 100..900
@@ -169,5 +169,4 @@ SECTION(Axes3DBoxTest, "3D axes box") {
     expect(axes_box.getYTicks().empty());
     expect(axes_box.getZTicks().empty());
   }
-}
-;
+};

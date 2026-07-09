@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -29,4 +29,4 @@ class simple : public juce::Component {
     m_plot.setBounds(getBounds());
   };
 };
-}
+}  // namespace examples

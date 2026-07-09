@@ -1,4 +1,5 @@
 #include "cmp_axis_transform.h"
+
 #include "cmp_test_helper.hpp"
 
 /* Tests for the per-axis value <-> pixel transform.
@@ -18,8 +19,8 @@ SECTION(AxisTransformTest, "Axis transform") {
   };
 
   TEST("Linear: value to pixel") {
-    const cmp::AxisTransform transform({{0.f, 10.f}, cmp::Scaling::linear},
-                                       0.f, 500.f);
+    const cmp::AxisTransform transform({{0.f, 10.f}, cmp::Scaling::linear}, 0.f,
+                                       500.f);
 
     expectNear(transform.toPixel(0.f), 0.f);
     expectNear(transform.toPixel(5.f), 250.f);
@@ -27,8 +28,8 @@ SECTION(AxisTransformTest, "Axis transform") {
   }
 
   TEST("Linear: pixel to value") {
-    const cmp::AxisTransform transform({{0.f, 10.f}, cmp::Scaling::linear},
-                                       0.f, 500.f);
+    const cmp::AxisTransform transform({{0.f, 10.f}, cmp::Scaling::linear}, 0.f,
+                                       500.f);
 
     expectNear(transform.fromPixel(0.f), 0.f);
     expectNear(transform.fromPixel(250.f), 5.f);
@@ -36,8 +37,8 @@ SECTION(AxisTransformTest, "Axis transform") {
   }
 
   TEST("Linear: negative limits") {
-    const cmp::AxisTransform transform({{-5.f, 5.f}, cmp::Scaling::linear},
-                                       0.f, 500.f);
+    const cmp::AxisTransform transform({{-5.f, 5.f}, cmp::Scaling::linear}, 0.f,
+                                       500.f);
 
     expectNear(transform.toPixel(-5.f), 0.f);
     expectNear(transform.toPixel(0.f), 250.f);
@@ -66,8 +67,8 @@ SECTION(AxisTransformTest, "Axis transform") {
   }
 
   TEST("Inverted axis: pixel_min > pixel_max (y-axis convention)") {
-    const cmp::AxisTransform linear({{0.f, 10.f}, cmp::Scaling::linear},
-                                    400.f, 0.f);
+    const cmp::AxisTransform linear({{0.f, 10.f}, cmp::Scaling::linear}, 400.f,
+                                    0.f);
 
     expectNear(linear.toPixel(0.f), 400.f);
     expectNear(linear.toPixel(2.5f), 300.f);
@@ -105,5 +106,4 @@ SECTION(AxisTransformTest, "Axis transform") {
       }
     }
   }
-}
-;
+};

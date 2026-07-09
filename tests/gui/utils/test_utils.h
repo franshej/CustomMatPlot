@@ -1,14 +1,14 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
 
 #pragma once
 
-#include <juce_gui_extra/juce_gui_extra.h>
 #include <cmp_plot.h>
+#include <juce_gui_extra/juce_gui_extra.h>
 
 template <class ContainerType>
 static ContainerType& getPlotFromID(
@@ -28,7 +28,10 @@ static ContainerType& getPlotFromID(
 }
 
 static juce::Rectangle<int> getScreenArea() {
-  return juce::Desktop::getInstance().getDisplays().getPrimaryDisplay()->userArea;
+  return juce::Desktop::getInstance()
+      .getDisplays()
+      .getPrimaryDisplay()
+      ->userArea;
 }
 
 struct TimerCallback : public juce::Timer {

@@ -8,8 +8,8 @@
 #include "cmp_legend.h"
 
 #include "cmp_datamodels.h"
-#include "cmp_series.h"
 #include "cmp_plot.h"
+#include "cmp_series.h"
 
 void cmp::Legend::setLegend(const StringVector &series_descriptions) {
   m_label_texts = series_descriptions;

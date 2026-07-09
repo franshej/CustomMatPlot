@@ -33,7 +33,7 @@ class Axes3DBox;
  * @see Plot
  */
 class Plot3D : public juce::Component {
-public:
+ public:
   /** Destructor, making sure to set the lookandfeel in all subcomponenets to
    * nullptr. */
   ~Plot3D() override;
@@ -135,7 +135,7 @@ public:
   /** @internal */
   void lookAndFeelChanged() override;
 
-private:
+ private:
   /** @internal */
   void resizeChildrens();
   /** @internal */

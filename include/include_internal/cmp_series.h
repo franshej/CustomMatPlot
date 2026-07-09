@@ -34,12 +34,12 @@ namespace cmp {
  *  a subcomponenet to cmp::Plot.
  */
 class Series : public juce::Component,
-                  public virtual Observer<Scaling>,
-                  public virtual Observer<Lim<float>>,
-                  public virtual Observer<juce::Rectangle<int>>,
-                  public virtual Observer<DownsamplingType>,
-                  public virtual Observer<bool> {
-public:
+               public virtual Observer<Scaling>,
+               public virtual Observer<Lim<float>>,
+               public virtual Observer<juce::Rectangle<int>>,
+               public virtual Observer<DownsamplingType>,
+               public virtual Observer<bool> {
+ public:
   /** @brief Find closest point on series from pixel point.
    *
    * @param this_pixel_point the point on the series.
@@ -249,7 +249,8 @@ public:
    * @param new_value the new value of the observer.
    * @return void.
    */
-  void observableValueUpdated(ObserverId id, const Lim<float>& new_value) override;
+  void observableValueUpdated(ObserverId id,
+                              const Lim<float>& new_value) override;
 
   /** @brief Observer function for axes bounds.
    *
@@ -257,7 +258,8 @@ public:
    * @param new_value the new value of the observer.
    * @return void.
    */
-  void observableValueUpdated(ObserverId id, const juce::Rectangle<int>& new_value) override;
+  void observableValueUpdated(ObserverId id,
+                              const juce::Rectangle<int>& new_value) override;
 
   /** @brief Observer function for downsampling type.
    *
@@ -265,7 +267,8 @@ public:
    * @param new_value the new value of the observer.
    * @return void.
    */
-  void observableValueUpdated(ObserverId id, const DownsamplingType& new_value) override;
+  void observableValueUpdated(ObserverId id,
+                              const DownsamplingType& new_value) override;
 
   /** @brief Observer function for notify components on update.
    *
@@ -291,7 +294,8 @@ public:
       const std::vector<size_t>& update_only_these_indices);
 
   std::vector<float> m_x_data, m_y_data;
-  std::vector<std::size_t> m_x_based_ds_indices, m_xy_indices, m_indices_to_update;
+  std::vector<std::size_t> m_x_based_ds_indices, m_xy_indices,
+      m_indices_to_update;
   PixelPoints m_pixel_points;
   SeriesType m_series_type{SeriesType::normal};
 
@@ -308,7 +312,6 @@ public:
  *  \brief a class to hold a list of series.
  */
 struct SeriesList : public std::vector<std::unique_ptr<Series>> {
-
   /** @brief Get the number of series for a specific type.
    *
    * @tparam t_series_type the type of series.
@@ -318,7 +321,7 @@ struct SeriesList : public std::vector<std::unique_ptr<Series>> {
   size_t size() const noexcept;
 
   /** @brief Resize the number of series for a specific type.
-   * 
+   *
    * @tparam t_series_type the type of series.
    * @param new_size the new size of the series list.
    * @return void.
@@ -343,7 +346,7 @@ struct Spread : public juce::Component {
    * @param lower_bound series that decribes the lower boundary.
    */
   Spread(const Series* upper_bound, const Series* lower_bound,
-              const juce::Colour spread_colour)
+         const juce::Colour spread_colour)
       : m_upper_bound{upper_bound},
         m_lower_bound{lower_bound},
         m_spread_colour{spread_colour} {}

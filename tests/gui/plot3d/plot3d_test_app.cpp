@@ -127,9 +127,9 @@ static std::unique_ptr<juce::Component> makeLinearVsLogScene() {
   };
 
   plot_both(row->add(std::make_unique<cmp::Plot3D>()), "Linear z-axis");
-  plot_both(row->add(std::make_unique<cmp::Plot3D>(
-                cmp::Scaling::linear, cmp::Scaling::linear,
-                cmp::Scaling::logarithmic)),
+  plot_both(row->add(std::make_unique<cmp::Plot3D>(cmp::Scaling::linear,
+                                                   cmp::Scaling::linear,
+                                                   cmp::Scaling::logarithmic)),
             "Logarithmic z-axis");
 
   return row;
@@ -212,8 +212,8 @@ class Plot3DTestHandler : public juce::Component {
   }
 
   void paint(juce::Graphics& g) override {
-    g.fillAll(getLookAndFeel().findColour(
-        juce::ResizableWindow::backgroundColourId));
+    g.fillAll(
+        getLookAndFeel().findColour(juce::ResizableWindow::backgroundColourId));
   }
 
   void resized() override {
@@ -236,8 +236,7 @@ class Plot3DTestHandler : public juce::Component {
     }
 
     for (std::size_t i = 0; i < m_scenes.size(); ++i) {
-      if (juce::String(m_scenes[i].name)
-              .containsIgnoreCase(trimmed))
+      if (juce::String(m_scenes[i].name).containsIgnoreCase(trimmed))
         return static_cast<int>(i);
     }
 
@@ -289,9 +288,8 @@ class Plot3DTestApp : public juce::JUCEApplication {
     MainWindow(juce::String name, const juce::String& commandLine)
         : DocumentWindow(
               name,
-              juce::Desktop::getInstance()
-                  .getDefaultLookAndFeel()
-                  .findColour(ResizableWindow::backgroundColourId),
+              juce::Desktop::getInstance().getDefaultLookAndFeel().findColour(
+                  ResizableWindow::backgroundColourId),
               DocumentWindow::allButtons),
           m_handler(commandLine) {
       setUsingNativeTitleBar(true);

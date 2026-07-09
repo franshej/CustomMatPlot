@@ -42,13 +42,13 @@ class Projector3D {
  public:
   Projector3D(const Axes3& axes, const Camera3D& camera,
               const juce::Rectangle<int>& axes_bounds) noexcept
-      : Projector3D(axes, camera, axes_bounds, viewSpaceBoundingBox(camera)) {
-  }
+      : Projector3D(axes, camera, axes_bounds, viewSpaceBoundingBox(camera)) {}
 
   /** @brief Project a single data point to its axes-area-local pixel
    * point. */
   juce::Point<float> toPixel(const Vec3f& data_point) const noexcept {
-    const auto view_point = m_camera.toViewSpace(toCenteredUnitCube(data_point));
+    const auto view_point =
+        m_camera.toViewSpace(toCenteredUnitCube(data_point));
 
     return {m_screen_x.toPixel(view_point.x), m_screen_y.toPixel(view_point.y)};
   }
@@ -61,8 +61,7 @@ class Projector3D {
                          PixelPoints& pixel_points) const {
     // The x/y/z data must be equal length; the caller (the public plot3 API)
     // guarantees this. There is a bug in the code if this assert happens.
-    jassert(x_data.size() == y_data.size() &&
-            y_data.size() == z_data.size());
+    jassert(x_data.size() == y_data.size() && y_data.size() == z_data.size());
 
     pixel_points.resize(x_data.size());
 
@@ -77,12 +76,14 @@ class Projector3D {
               const std::pair<Lim_f, Lim_f>& view_bounding_box) noexcept
       : m_axes{axes},
         m_camera{camera},
-        m_screen_x{{view_bounding_box.first, Scaling::linear}, 0.0f,
+        m_screen_x{{view_bounding_box.first, Scaling::linear},
+                   0.0f,
                    static_cast<float>(axes_bounds.getWidth())},
         // The y-axis is inverted: the bottom of the view-space bounding box
         // maps to the series-area height.
         m_screen_y{{view_bounding_box.second, Scaling::linear},
-                   static_cast<float>(axes_bounds.getHeight()), 0.0f} {}
+                   static_cast<float>(axes_bounds.getHeight()),
+                   0.0f} {}
 
   /** Normalize a value into [0, 1] along one axis. */
   static float toUnitRange(const float value, const Axis_f& axis) noexcept {

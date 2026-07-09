@@ -1,16 +1,16 @@
+#include "cmp_utils.h"
+
 #include <string>
 #include <vector>
 
 #include "cmp_test_helper.hpp"
 #include "juce_core/system/juce_PlatformDefs.h"
 
-#include "cmp_utils.h"
-
 SECTION(UtilsTest, "Utils class"){
 
-TEST("Generate ticks: 0.0f -> 1000.0f"){
-    std::vector<float> result = cmp::TicksGenerator::generateTicks(
-        0.0f, 1000.0f, 10, std::vector<float>());
+    TEST("Generate ticks: 0.0f -> 1000.0f"){
+        std::vector<float> result = cmp::TicksGenerator::generateTicks(
+            0.0f, 1000.0f, 10, std::vector<float>());
 
 std::vector<float> expected = {
     -500.0f, -400.0f, -300.0f, -200.0f, -100.0f, 0.0f,    100.0f,
@@ -224,8 +224,8 @@ SECTION(CoordinateConversionTest, "Coordinate conversions") {
   }
 
   TEST("X-data to pixel: logarithmic") {
-    const auto [x_scale, x_offset] =
-        cmp::getXScaleAndOffset(300.f, {1.f, 1000.f}, cmp::Scaling::logarithmic);
+    const auto [x_scale, x_offset] = cmp::getXScaleAndOffset(
+        300.f, {1.f, 1000.f}, cmp::Scaling::logarithmic);
 
     expectNear(cmp::getXPixelValueLogarithmic(1.f, x_scale, x_offset), 0.f);
     expectNear(cmp::getXPixelValueLogarithmic(10.f, x_scale, x_offset), 100.f);
@@ -243,8 +243,8 @@ SECTION(CoordinateConversionTest, "Coordinate conversions") {
   }
 
   TEST("Y-data to pixel: logarithmic") {
-    const auto [y_scale, y_offset] =
-        cmp::getYScaleAndOffset(300.f, {1.f, 1000.f}, cmp::Scaling::logarithmic);
+    const auto [y_scale, y_offset] = cmp::getYScaleAndOffset(
+        300.f, {1.f, 1000.f}, cmp::Scaling::logarithmic);
 
     expectNear(cmp::getYPixelValueLogarithmic(1.f, y_scale, y_offset), 300.f);
     expectNear(cmp::getYPixelValueLogarithmic(100.f, y_scale, y_offset), 100.f);
@@ -316,5 +316,4 @@ SECTION(CoordinateConversionTest, "Coordinate conversions") {
       }
     }
   }
-}
-;
+};

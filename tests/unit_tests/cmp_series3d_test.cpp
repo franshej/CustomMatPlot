@@ -1,6 +1,7 @@
+#include "cmp_series3d.h"
+
 #include <vector>
 
-#include "cmp_series3d.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_projector3d.h"
 #include "cmp_test_helper.hpp"
@@ -46,8 +47,7 @@ SECTION(Series3DTest, "3D series") {
     const auto& pixel_points = series.getPixelPoints();
     expectEquals(pixel_points.size(), x_data.size());
 
-    const cmp::Projector3D projector(axes, top_view,
-                                     series.getLocalBounds());
+    const cmp::Projector3D projector(axes, top_view, series.getLocalBounds());
     for (std::size_t i = 0; i < pixel_points.size(); ++i) {
       expectPointNear(pixel_points[i],
                       projector.toPixel({x_data[i], y_data[i], z_data[i]}));
@@ -94,5 +94,4 @@ SECTION(Series3DTest, "3D series") {
     // Setting one attribute does not reset the colour.
     expect(series.getColour() == juce::Colours::red);
   }
-}
-;
+};

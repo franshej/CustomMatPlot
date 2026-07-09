@@ -40,7 +40,7 @@ const SeriesAttribute& Series::getSeriesAttribute() const noexcept {
   return m_series_attributes;
 }
 
-void Series::setIndicesToUpdate(const std::vector<std::size_t> indices){
+void Series::setIndicesToUpdate(const std::vector<std::size_t> indices) {
   m_indices_to_update = indices;
   updateXY();
   m_indices_to_update.clear();
@@ -52,7 +52,7 @@ void Series::setColour(const juce::Colour series_colour) {
 
 std::tuple<juce::Point<float>, juce::Point<float>, size_t>
 Series::findClosestPixelPointTo(const juce::Point<float>& this_pixel_point,
-                                   bool check_only_distance_from_x) const {
+                                bool check_only_distance_from_x) const {
   // No pixel points.
   jassert(!m_pixel_points.empty());
 
@@ -71,15 +71,13 @@ Series::findClosestPixelPointTo(const juce::Point<float>& this_pixel_point,
       closest_distance = current_distance;
       closest_pixel_point = pixel_point;
       closest_i = i;
-      closest_data_point =
-          juce::Point<float>(m_x_data[m_xy_indices[i]],
-                             m_y_data[m_xy_indices[i]]);
+      closest_data_point = juce::Point<float>(m_x_data[m_xy_indices[i]],
+                                              m_y_data[m_xy_indices[i]]);
     }
     i++;
   }
 
-  return {closest_pixel_point, closest_data_point,
-          m_xy_indices[closest_i]};
+  return {closest_pixel_point, closest_data_point, m_xy_indices[closest_i]};
 }
 
 std::pair<juce::Point<float>, size_t> Series::findClosestDataPointTo(
@@ -137,12 +135,11 @@ juce::Point<float> Series::getDataPointFromDataPointIndex(
                             m_y_data[data_point_index]);
 };
 
-void Series::observableValueUpdated(ObserverId id, const bool &new_value)
-{
+void Series::observableValueUpdated(ObserverId id, const bool& new_value) {
   updateXY();
 }
 
-void Series::resized() {};
+void Series::resized(){};
 
 void Series::paint(juce::Graphics& g) {
   const SeriesDataView series_data(*this);
@@ -209,20 +206,16 @@ bool Series::setXYValue(const juce::Point<float>& xy_value, size_t index) {
 }
 
 void Series::movePixelPoint(const juce::Point<float>& d_pixel_point,
-                               size_t pixel_point_index) {
+                            size_t pixel_point_index) {
   if (pixel_point_index >= m_x_data.size()) return;
 
   m_x_data[pixel_point_index] += d_pixel_point.getX();
   m_y_data[pixel_point_index] += d_pixel_point.getY();
 }
 
-const std::vector<float>& Series::getYData() const noexcept {
-  return m_y_data;
-}
+const std::vector<float>& Series::getYData() const noexcept { return m_y_data; }
 
-const std::vector<float>& Series::getXData() const noexcept {
-  return m_x_data;
-}
+const std::vector<float>& Series::getXData() const noexcept { return m_x_data; }
 
 const PixelPoints& Series::getPixelPoints() const noexcept {
   return m_pixel_points;
@@ -234,7 +227,7 @@ const std::vector<size_t>& Series::getPixelPointIndices() const noexcept {
 
 void Series::updateX() {
   // x_lim must be set to calculate the xdata.
-  if(!m_x_lim || m_x_data.empty()) return;
+  if (!m_x_lim || m_x_data.empty()) return;
 
   updateXIndicesAndPixelPointsIntern(m_indices_to_update);
 }
@@ -257,14 +250,14 @@ void Series::updateXIndicesAndPixelPointsIntern(
       break;
 
     case DownsamplingType::x_downsampling:
-      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_axes_bounds, m_x_data,
-                                                m_x_based_ds_indices);
+      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_axes_bounds,
+                                            m_x_data, m_x_based_ds_indices);
 
       break;
 
     case DownsamplingType::xy_downsampling:
-      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_axes_bounds, m_x_data,
-                                                m_x_based_ds_indices);
+      Downsampler<float>::calculateXIndices(m_x_scaling, m_x_lim, m_axes_bounds,
+                                            m_x_data, m_x_based_ds_indices);
       return;
       break;
 
@@ -274,8 +267,9 @@ void Series::updateXIndicesAndPixelPointsIntern(
 
   auto lnf = static_cast<Plot::LookAndFeelMethods*>(m_lookandfeel);
   m_pixel_points.resize(m_x_based_ds_indices.size());
-  lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_axes_bounds,
-                          m_x_data, m_x_based_ds_indices, m_pixel_points);
+  lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim,
+                          m_axes_bounds, m_x_data, m_x_based_ds_indices,
+                          m_pixel_points);
 }
 
 void Series::updateYIndicesAndPixelPointsIntern(
@@ -297,8 +291,9 @@ void Series::updateYIndicesAndPixelPointsIntern(
                                                m_xy_indices);
 
       m_pixel_points.resize(m_xy_indices.size());
-      lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim, m_axes_bounds,
-                              m_x_data, m_xy_indices, m_pixel_points);
+      lnf->updateXPixelPoints(update_only_these_indices, m_x_scaling, m_x_lim,
+                              m_axes_bounds, m_x_data, m_xy_indices,
+                              m_pixel_points);
       break;
 
     default:
@@ -306,8 +301,9 @@ void Series::updateYIndicesAndPixelPointsIntern(
   }
 
   m_pixel_points.resize(m_xy_indices.size());
-  lnf->updateYPixelPoints(update_only_these_indices, m_y_scaling, m_y_lim, m_axes_bounds,
-                          m_y_data, m_xy_indices, m_pixel_points);
+  lnf->updateYPixelPoints(update_only_these_indices, m_y_scaling, m_y_lim,
+                          m_axes_bounds, m_y_data, m_xy_indices,
+                          m_pixel_points);
 }
 
 void Series::updateXY() {
@@ -319,24 +315,20 @@ void Series::setType(const SeriesType series_type) {
   m_series_type = series_type;
 }
 
-SeriesType Series::getType() const noexcept {
-  return m_series_type;
-}
+SeriesType Series::getType() const noexcept { return m_series_type; }
 
-void Series::observableValueUpdated(ObserverId id, const Scaling &new_value)
-{
+void Series::observableValueUpdated(ObserverId id, const Scaling& new_value) {
   if (id == ObserverId::XScaling) {
     m_x_scaling = new_value;
     updateX();
-  }
-  else if (id == ObserverId::YScaling) {
+  } else if (id == ObserverId::YScaling) {
     m_y_scaling = new_value;
     updateY();
   }
 }
 
-void Series::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
-{
+void Series::observableValueUpdated(ObserverId id,
+                                    const Lim<float>& new_value) {
   if (id == ObserverId::XLim) {
     m_x_lim = new_value;
     if (m_series_type == SeriesType::horizontal) {
@@ -345,8 +337,7 @@ void Series::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
       m_x_data.back() = m_x_lim.max;
     }
     updateXY();
-  }
-  else if (id == ObserverId::YLim) {
+  } else if (id == ObserverId::YLim) {
     m_y_lim = new_value;
     if (m_series_type == SeriesType::vertical) {
       m_y_data.resize(2);
@@ -357,16 +348,16 @@ void Series::observableValueUpdated(ObserverId id, const Lim<float> &new_value)
   }
 }
 
-void Series::observableValueUpdated(ObserverId id, const juce::Rectangle<int> &new_value)
-{
+void Series::observableValueUpdated(ObserverId id,
+                                    const juce::Rectangle<int>& new_value) {
   if (id == ObserverId::AxesBounds) {
     m_axes_bounds = new_value;
     updateXY();
   }
 }
 
-void Series::observableValueUpdated(ObserverId id, const DownsamplingType &new_value)
-{
+void Series::observableValueUpdated(ObserverId id,
+                                    const DownsamplingType& new_value) {
   if (id == ObserverId::DownsamplingType) {
     m_downsampling_type = new_value;
     updateXY();
@@ -378,11 +369,10 @@ void Series::observableValueUpdated(ObserverId id, const DownsamplingType &new_v
 /************************************************************************************/
 
 size_t size_from_series_type(const SeriesList& SeriesList,
-                                 const SeriesType series_type) {
+                             const SeriesType series_type) {
   return std::count_if(SeriesList.begin(), SeriesList.end(),
                        [series_type](const auto& series) {
-                         return series->getType() ==
-                                series_type;
+                         return series->getType() == series_type;
                        });
 }
 
@@ -408,7 +398,7 @@ size_t SeriesList::size<SeriesType::horizontal>() const noexcept {
 }
 
 template <SeriesType t_series_type>
-void SeriesList::resize(size_t new_size_of_type){
+void SeriesList::resize(size_t new_size_of_type) {
   const auto current_size = size<t_series_type>();
 
   if (current_size == new_size_of_type) return;
@@ -423,30 +413,31 @@ void SeriesList::resize(size_t new_size_of_type){
 
     const auto num_to_erase = current_size - new_size_of_type;
     const auto erase_begin = std::find_if(
-        begin(), end(), [](const auto& series) {
-          return series->getType() == t_series_type;
-        });
+        begin(), end(),
+        [](const auto& series) { return series->getType() == t_series_type; });
 
     erase(erase_begin, erase_begin + num_to_erase);
   } else {
-    const auto new_size =  size<SeriesType::any>() - current_size + new_size_of_type;
+    const auto new_size =
+        size<SeriesType::any>() - current_size + new_size_of_type;
     std::vector<std::unique_ptr<Series>>::resize(new_size);
   }
 }
 
 template void SeriesList::resize<SeriesType::normal>(size_t new_size_of_type);
 template void SeriesList::resize<SeriesType::vertical>(size_t new_size_of_type);
-template void SeriesList::resize<SeriesType::horizontal>(size_t new_size_of_type);
+template void SeriesList::resize<SeriesType::horizontal>(
+    size_t new_size_of_type);
 
 template <SeriesType t_series_type>
-std::vector<Series*> SeriesList::getSeriesOfType(){
-    std::vector<Series*> result;
-    for (auto &line : *this) {
-        if (line->getType() == t_series_type) {
-            result.push_back(line.get());
-        }
+std::vector<Series*> SeriesList::getSeriesOfType() {
+  std::vector<Series*> result;
+  for (auto& line : *this) {
+    if (line->getType() == t_series_type) {
+      result.push_back(line.get());
     }
-    return result;
+  }
+  return result;
 }
 
 /************************************************************************************/

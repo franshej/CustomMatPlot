@@ -85,9 +85,8 @@ inline bool isBackFace(const CubeFace face, const Camera3D& camera) noexcept {
 inline std::vector<CubeFace> selectBackFaces(const Camera3D& camera) {
   auto back_faces = std::vector<CubeFace>();
 
-  for (const auto face :
-       {CubeFace::x_min, CubeFace::x_max, CubeFace::y_min, CubeFace::y_max,
-        CubeFace::z_min, CubeFace::z_max}) {
+  for (const auto face : {CubeFace::x_min, CubeFace::x_max, CubeFace::y_min,
+                          CubeFace::y_max, CubeFace::z_min, CubeFace::z_max}) {
     if (isBackFace(face, camera)) back_faces.push_back(face);
   }
 
@@ -120,10 +119,10 @@ inline CubeFace getTickLabelZFace(const Camera3D& camera) noexcept {
  * z-axis. Returns {x-side face, y-side face}. */
 inline std::pair<CubeFace, CubeFace> getZTickLabelEdge(
     const Camera3D& camera) noexcept {
-  const auto x_face = isBackFace(CubeFace::x_min, camera) ? CubeFace::x_max
-                                                          : CubeFace::x_min;
-  const auto y_face = isBackFace(CubeFace::y_max, camera) ? CubeFace::y_max
-                                                          : CubeFace::y_min;
+  const auto x_face =
+      isBackFace(CubeFace::x_min, camera) ? CubeFace::x_max : CubeFace::x_min;
+  const auto y_face =
+      isBackFace(CubeFace::y_max, camera) ? CubeFace::y_max : CubeFace::y_min;
 
   return {x_face, y_face};
 }

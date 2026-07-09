@@ -1,6 +1,8 @@
 #include "cmp_datamodels.h"
-#include "cmp_test_helper.hpp"
+
 #include <string>
+
+#include "cmp_test_helper.hpp"
 
 using namespace cmp;
 
@@ -19,7 +21,6 @@ class TestObserver : public Observer<int> {
 };
 
 SECTION(ObservableTest, "Observable class tests") {
-
   TEST("Single observer receives updates") {
     // Create an Observable with initial value 0
     Observable<int> observable(ObserverId::XLim, 0);
@@ -82,7 +83,7 @@ SECTION(ObservableTest, "Observable class tests") {
     Observable<std::string> observable(ObserverId::XLim, "initial");
     expectEquals(*(observable.operator->()), std::string("initial"));
 
-    // Modify the value 
+    // Modify the value
     observable = std::string("updated");
     expectEquals(*observable.operator->(), std::string("updated"));
   }
@@ -91,20 +92,22 @@ SECTION(ObservableTest, "Observable class tests") {
     TestObserver observer;
     Observable<int> observable1(ObserverId::XLim, 0);
     Observable<int> observable2(ObserverId::YLim, 0);
-    
+
     observable1.addObserver(observer);
     expectEquals(observer.updateCount, 1);
-    
+
     observable2.addObserver(observer);
     expectEquals(observer.updateCount, 2);
-    
+
     observable1 = 42;
-    expectEquals(static_cast<int>(observer.lastUpdatedId), static_cast<int>(ObserverId::XLim));
+    expectEquals(static_cast<int>(observer.lastUpdatedId),
+                 static_cast<int>(ObserverId::XLim));
     expectEquals(observer.lastValue, 42);
     expectEquals(observer.updateCount, 3);
 
     observable2 = 100;
-    expectEquals(static_cast<int>(observer.lastUpdatedId), static_cast<int>(ObserverId::YLim));
+    expectEquals(static_cast<int>(observer.lastUpdatedId),
+                 static_cast<int>(ObserverId::YLim));
     expectEquals(observer.lastValue, 100);
     expectEquals(observer.updateCount, 4);
   }

@@ -1,12 +1,13 @@
 #include "cmp_plot.h"
 
 #include <juce_core/juce_core.h>
+
 #include <memory>
 
 #include "cmp_datamodels.h"
+#include "cmp_lookandfeel.h"
 #include "cmp_series.h"
 #include "cmp_test_helper.hpp"
-#include "cmp_lookandfeel.h"
 
 SECTION(PlotClass, "Plot class") {
   auto expectEqualsLambda = [&](auto a, auto b) { expectEquals(a, b); };
@@ -54,7 +55,8 @@ SECTION(PlotClass, "Plot class") {
     auto series = getChildComponentHelper<cmp::Series>(horizontal_plot);
     expectEquals(series.size(), 1ul);
     expect(series[0]->getType() == cmp::SeriesType::horizontal);
-    expectEqualVectors(series[0]->getYData(), {100.f, 100.f}, expectEqualsLambda);
+    expectEqualVectors(series[0]->getYData(), {100.f, 100.f},
+                       expectEqualsLambda);
   }
 
   TEST("Vertical line") {
@@ -63,32 +65,40 @@ SECTION(PlotClass, "Plot class") {
     auto series = getChildComponentHelper<cmp::Series>(vertical_plot);
     expectEquals(series.size(), 1ul);
     expect(series[0]->getType() == cmp::SeriesType::vertical);
-    expectEqualVectors(series[0]->getXData(), {100.f, 100.f}, expectEqualsLambda);
+    expectEqualVectors(series[0]->getXData(), {100.f, 100.f},
+                       expectEqualsLambda);
   }
 
-  TEST ("Update Y data only") {
-    plot.plot({y_data1, y_data2, y_data3}, {x_data_random_1, x_data_random_2, x_data_random_3});
+  TEST("Update Y data only") {
+    plot.plot({y_data1, y_data2, y_data3},
+              {x_data_random_1, x_data_random_2, x_data_random_3});
     plot.plotUpdateYOnly({y_data1, y_data2, y_data3});
     auto series = getChildComponentHelper<cmp::Series>(plot);
     expectEquals(series.size(), 3ul);
-    expectEqualVectors(series[0]->getXData(), x_data_random_1, expectEqualsLambda);
+    expectEqualVectors(series[0]->getXData(), x_data_random_1,
+                       expectEqualsLambda);
     expectEqualVectors(series[0]->getYData(), y_data1, expectEqualsLambda);
-    expectEqualVectors(series[1]->getXData(), x_data_random_2, expectEqualsLambda);
+    expectEqualVectors(series[1]->getXData(), x_data_random_2,
+                       expectEqualsLambda);
     expectEqualVectors(series[1]->getYData(), y_data2, expectEqualsLambda);
-    expectEqualVectors(series[2]->getXData(), x_data_random_3, expectEqualsLambda);
+    expectEqualVectors(series[2]->getXData(), x_data_random_3,
+                       expectEqualsLambda);
     expectEqualVectors(series[2]->getYData(), y_data3, expectEqualsLambda);
   }
 
-  TEST("Set colour"){
+  TEST("Set colour") {
     cmp::Plot plot_tmp;
-    plot_tmp.getLookAndFeel().setColour(cmp::Plot::grid_colour, juce::Colours::red);
-    const auto red = plot_tmp.getLookAndFeel().findColour(cmp::Plot::grid_colour);
+    plot_tmp.getLookAndFeel().setColour(cmp::Plot::grid_colour,
+                                        juce::Colours::red);
+    const auto red =
+        plot_tmp.getLookAndFeel().findColour(cmp::Plot::grid_colour);
     expect(red == juce::Colours::red);
   }
 
-  TEST("Custom look and feel"){
+  TEST("Custom look and feel") {
     cmp::Plot plot_tmp;
-    std::unique_ptr<cmp::PlotLookAndFeel> look_and_feel = std::make_unique<cmp::PlotLookAndFeel>();
+    std::unique_ptr<cmp::PlotLookAndFeel> look_and_feel =
+        std::make_unique<cmp::PlotLookAndFeel>();
     plot_tmp.setLookAndFeel(look_and_feel.get());
     expect(&plot_tmp.getLookAndFeel() == look_and_feel.get());
     plot_tmp.setLookAndFeel(nullptr);

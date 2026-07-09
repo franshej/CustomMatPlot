@@ -10,8 +10,8 @@
 #include <cstddef>
 
 #include "cmp_datamodels.h"
-#include "cmp_series.h"
 #include "cmp_plot.h"
+#include "cmp_series.h"
 
 namespace cmp {
 
@@ -133,8 +133,7 @@ void Trace::addOrRemoveTracePoint(const Series* series,
                                   const size_t data_point_index,
                                   const TracePointVisibilityType visibility) {
   if (!doesTracePointExist(series, data_point_index)) {
-    addSingleTracePointInternal(series, data_point_index,
-                                        visibility);
+    addSingleTracePointInternal(series, data_point_index, visibility);
   } else {
     removeSingleTracePointAndLabel(series, data_point_index);
   }
@@ -221,22 +220,19 @@ bool Trace::isComponentTraceLabel(const juce::Component* component) const {
              m_trace_labelpoints.end();
 }
 
-void Trace::tracePointCbHelper(const juce::Component *trace_point,
+void Trace::tracePointCbHelper(const juce::Component* trace_point,
                                const juce::Point<float> previous_data_point,
-                               const juce::Point<float> new_data_point)
-{
-    if (onTracePointChanged)
-    {
-        onTracePointChanged(trace_point, previous_data_point, new_data_point);
-    }
+                               const juce::Point<float> new_data_point) {
+  if (onTracePointChanged) {
+    onTracePointChanged(trace_point, previous_data_point, new_data_point);
+  }
 }
 
 void Trace::addSingleTracePointInternal(
     const Series* series, const size_t data_point_index,
     const TracePointVisibilityType trace_point_visibility) {
   auto trace_label = std::make_unique<TraceLabel_f>();
-  auto trace_point =
-      std::make_unique<TracePoint_f>(data_point_index, series);
+  auto trace_point = std::make_unique<TracePoint_f>(data_point_index, series);
 
   if (m_lookandfeel) trace_label->setLookAndFeel(m_lookandfeel);
   if (m_lookandfeel) trace_point->setLookAndFeel(m_lookandfeel);
@@ -263,12 +259,10 @@ bool Trace::doesTracePointExist(const Series* series,
              }) != m_trace_labelpoints.end();
 }
 
-void Trace::addTracePoint(const Series* series,
-                          const size_t data_point_index,
+void Trace::addTracePoint(const Series* series, const size_t data_point_index,
                           const TracePointVisibilityType visibility_type) {
   if (!doesTracePointExist(series, data_point_index)) {
-    addSingleTracePointInternal(series, data_point_index,
-                                        visibility_type);
+    addSingleTracePointInternal(series, data_point_index, visibility_type);
   }
 }
 
@@ -279,8 +273,7 @@ void Trace::selectTracePoint(const juce::Component* component,
   updateSingleTracePoint(&(*it));
 }
 
-void Trace::observableValueUpdated(ObserverId id, const bool &new_value)
-{
+void Trace::observableValueUpdated(ObserverId id, const bool& new_value) {
   updateAllTracePoints();
 }
 
@@ -305,7 +298,7 @@ void Trace::observableValueUpdated(ObserverId id, const Scaling& new_value) {
 }
 
 void Trace::observableValueUpdated(ObserverId id,
-                                    const juce::Rectangle<int>& new_value) {
+                                   const juce::Rectangle<int>& new_value) {
   if (id == ObserverId::AxesBounds) {
     m_axes_bounds = new_value;
     updateAllTracePoints();
@@ -346,7 +339,7 @@ void Trace::updateSingleTracePoint(TraceLabelPoint_f* tlp,
 
     const auto trace_position =
         lnf->getTracePointPositionFrom(m_axes_bounds, m_x_lim, m_x_scaling,
-                                        m_y_lim, m_y_scaling, data_value) +
+                                       m_y_lim, m_y_scaling, data_value) +
         m_axes_bounds.getPosition();
 
     auto trace_label_bounds =
@@ -355,8 +348,7 @@ void Trace::updateSingleTracePoint(TraceLabelPoint_f* tlp,
     auto trace_label_corner_pos =
         force_corner_position
             ? tlp->trace_label->trace_label_corner_pos
-            : getCornerPosition(m_axes_bounds.getCentre(),
-                                trace_position);
+            : getCornerPosition(m_axes_bounds.getCentre(), trace_position);
 
     switch (trace_label_corner_pos) {
       case TraceLabelCornerPosition::top_left:

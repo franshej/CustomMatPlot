@@ -138,11 +138,10 @@ void PlotLookAndFeelTimeline::updateGridLabels(
 
     switch (direction) {
       case GridLine::Direction::vertical: {
-        const auto label =
-            use_custom_x_labels
-                ? getNextCustomLabel(custom_x_labels_reverse_it,
-                                     x_custom_label_ticks.rend())
-                : valueToStringWithoutTrailingZeros(tick);
+        const auto label = use_custom_x_labels
+                               ? getNextCustomLabel(custom_x_labels_reverse_it,
+                                                    x_custom_label_ticks.rend())
+                               : valueToStringWithoutTrailingZeros(tick);
 
         const auto [label_width, label_height] =
             getLabelWidthAndHeight(font, label);
@@ -152,8 +151,8 @@ void PlotLookAndFeelTimeline::updateGridLabels(
             is_x_axis_label_below_axes
                 ? common_plot_params.axes_bounds.getBottom() +
                       getXGridLabelDistanceFromAxesBound()
-                : common_plot_params.axes_bounds.getTopLeft().y -
-                      label_height - getMarginSmall() / 2;
+                : common_plot_params.axes_bounds.getTopLeft().y - label_height -
+                      getMarginSmall() / 2;
 
         const auto bound =
             juce::Rectangle<int>(int(position.x) - label_width / 2, bound_y,
@@ -163,11 +162,10 @@ void PlotLookAndFeelTimeline::updateGridLabels(
                                             x_axis_labels_out, label, bound);
       } break;
       case GridLine::Direction::horizontal: {
-        const auto label =
-            use_custom_y_labels
-                ? getNextCustomLabel(custom_y_labels_reverse_it,
-                                     y_custom_label_ticks.rend())
-                : valueToStringWithoutTrailingZeros(tick);
+        const auto label = use_custom_y_labels
+                               ? getNextCustomLabel(custom_y_labels_reverse_it,
+                                                    y_custom_label_ticks.rend())
+                               : valueToStringWithoutTrailingZeros(tick);
 
         const auto [label_width, label_height] =
             getLabelWidthAndHeight(font, label);

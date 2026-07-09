@@ -31,9 +31,9 @@ namespace cmp {
  * move a trace point.
  */
 class SelectionArea : public juce::Component,
-                  public virtual Observer<Lim<float>>,
-                  public virtual Observer<Scaling> {
-public:
+                      public virtual Observer<Lim<float>>,
+                      public virtual Observer<Scaling> {
+ public:
   /** @brief Get the start postion.
    *
    *  Get the start postion.
@@ -110,7 +110,8 @@ public:
    *  @param id the observer id.
    *  @param new_value the new value.
    */
-  void observableValueUpdated(ObserverId id, const Lim<float>& new_value) override;
+  void observableValueUpdated(ObserverId id,
+                              const Lim<float> &new_value) override;
 
   /** @brief Observer function for scaling.
    *
@@ -128,7 +129,7 @@ public:
   /** @internal */
   void lookAndFeelChanged() override;
 
-private:
+ private:
   juce::LookAndFeel *m_lookandfeel = nullptr;
 
   juce::Point<int> m_start_pos, m_end_pos;
@@ -139,4 +140,4 @@ private:
 
   const CommonPlotParameterView *m_common_plot_params;
 };
-} // namespace cmp
+}  // namespace cmp

@@ -12,11 +12,11 @@
 
 #include "cmp_axes3dbox.h"
 #include "cmp_camera3d.h"
-#include "cmp_series3d.h"
 #include "cmp_lookandfeel.h"
 #include "cmp_math3d.h"
 #include "cmp_plot.h"
 #include "cmp_projector3d.h"
+#include "cmp_series3d.h"
 
 namespace cmp {
 
@@ -224,8 +224,7 @@ juce::Rectangle<int> Plot3D::getAxesBounds3D() noexcept {
       static_cast<int>(2.0f * lnf->getGridLabelFont().getHeight());
   const auto axis_label_space =
       static_cast<int>(lnf->getXYTitleFont().getHeight());
-  const auto label_space =
-      2 * margin + tick_label_space + axis_label_space;
+  const auto label_space = 2 * margin + tick_label_space + axis_label_space;
 
   return getLocalBounds().reduced(label_space);
 }

@@ -17,8 +17,9 @@ class plot3d : public juce::Component {
   cmp::Plot3D m_plot_linear, m_plot_log;
 
  public:
-  plot3d() : m_plot_log(cmp::Scaling::linear, cmp::Scaling::linear,
-                          cmp::Scaling::logarithmic) {
+  plot3d()
+      : m_plot_log(cmp::Scaling::linear, cmp::Scaling::linear,
+                   cmp::Scaling::logarithmic) {
     setSize(1600, 800);
 
     // Add the plot objects as child components.

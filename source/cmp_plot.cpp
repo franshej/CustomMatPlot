@@ -14,12 +14,12 @@
 
 #include "cmp_datamodels.h"
 #include "cmp_frame.h"
-#include "cmp_selection_area.h"
-#include "cmp_series.h"
 #include "cmp_grid.h"
 #include "cmp_label.h"
 #include "cmp_legend.h"
 #include "cmp_lookandfeel.h"
+#include "cmp_selection_area.h"
+#include "cmp_series.h"
 #include "cmp_trace.h"
 #include "cmp_utils.h"
 #include "juce_core/system/juce_PlatformDefs.h"
@@ -65,11 +65,10 @@ std::tuple<size_t, const Series*> Plot::findNearestPoint(
   size_t data_point_index{0};
   size_t closest_data_point_index{0};
 
-  const auto series_exsists =
-      std::find_if(m_series->begin(), m_series->end(),
-                   [&series](const auto& s) {
-                     return s.get() == series;
-                   }) != m_series->end();
+  const auto series_exsists = std::find_if(m_series->begin(), m_series->end(),
+                                           [&series](const auto& s) {
+                                             return s.get() == series;
+                                           }) != m_series->end();
 
   const Series* nearest_series{series_exsists ? series : nullptr};
 
@@ -166,9 +165,9 @@ Plot::Plot(const Scaling x_scaling, const Scaling y_scaling)
   };
 
   m_legend->onNumberOfDescriptionsChanged = [this](const auto& desc) {
-      const auto *lnf = getPlotLookAndFeel();
-      const auto legend_bounds = lnf->getLegendBounds(m_axes_bounds, desc);
-      m_legend->setBounds(legend_bounds);
+    const auto* lnf = getPlotLookAndFeel();
+    const auto legend_bounds = lnf->getLegendBounds(m_axes_bounds, desc);
+    m_legend->setBounds(legend_bounds);
   };
 
   m_trace->onTracePointChanged = [this](const auto* trace_point,
@@ -369,9 +368,8 @@ void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
   repaint(m_axes_bounds);
 }
 
-void Plot::fillBetween(
-    const std::vector<SpreadIndex>& spread_indices,
-    const std::vector<juce::Colour>& fill_area_colours) {
+void Plot::fillBetween(const std::vector<SpreadIndex>& spread_indices,
+                       const std::vector<juce::Colour>& fill_area_colours) {
   m_spread_list.resize(spread_indices.size());
   auto spread_it = m_spread_list.begin();
 
@@ -391,8 +389,7 @@ void Plot::fillBetween(
 
     auto& spread = *spread_it++;
     if (!spread) {
-      spread =
-          std::make_unique<Spread>(first_series, second_series, colour);
+      spread = std::make_unique<Spread>(first_series, second_series, colour);
       spread->setBounds(m_axes_bounds);
       spread->setLookAndFeel(getPlotLookAndFeel());
       addAndMakeVisible(spread.get());
@@ -438,7 +435,8 @@ static auto jassetLogLimBelowZero(const cmp::Scaling scaling,
 
 void Plot::setScaling(const Scaling x_scaling,
                       const Scaling y_scaling) noexcept {
-  if (x_scaling != m_x_scaling.getValue() || y_scaling != m_y_scaling.getValue()) {
+  if (x_scaling != m_x_scaling.getValue() ||
+      y_scaling != m_y_scaling.getValue()) {
     jassetLogLimBelowZero(x_scaling, m_x_lim_start);
     jassetLogLimBelowZero(y_scaling, m_y_lim_start);
 
@@ -504,7 +502,7 @@ void Plot::setGridType(const GridType grid_type) {
 void Plot::clearTracePoints() noexcept { m_trace->clear(); }
 
 void Plot::resizeChildrens() {
-  const auto *lnf = getPlotLookAndFeel();
+  const auto* lnf = getPlotLookAndFeel();
   const auto plot_bound = lnf->getPlotBounds(getBounds());
   const auto axes_bound = lnf->getAxesBounds(getBounds(), this);
 
@@ -543,7 +541,7 @@ void Plot::resizeChildrens() {
 void Plot::resized() { resizeChildrens(); }
 
 void Plot::paint(juce::Graphics& g) {
-  auto *lnf = getPlotLookAndFeel();
+  auto* lnf = getPlotLookAndFeel();
   lnf->drawBackground(g, m_axes_bounds);
 }
 
@@ -572,8 +570,8 @@ void Plot::lookAndFeelChanged() {
 
 template <SeriesType t_series_type>
 void Plot::addSeriesInternal(std::unique_ptr<Series>& series,
-                                const size_t series_index) {
-  auto *lnf = getPlotLookAndFeel();
+                             const size_t series_index) {
+  auto* lnf = getPlotLookAndFeel();
   series = std::make_unique<Series>();
 
   m_axes_bounds.addObserver(*series);
@@ -597,9 +595,8 @@ void Plot::addSeriesInternal(std::unique_ptr<Series>& series,
 }
 
 template <SeriesType t_series_type>
-void Plot::updateSeriesYData(
-    const std::vector<std::vector<float>>& y_data,
-    const SeriesAttributeList& series_attribute_list) {
+void Plot::updateSeriesYData(const std::vector<std::vector<float>>& y_data,
+                             const SeriesAttributeList& series_attribute_list) {
   if (y_data.empty()) return;
 
   UNLIKELY if (y_data.size() != m_series->size<t_series_type>()) {
@@ -798,8 +795,7 @@ void Plot::moveSelectedTracePoints(const juce::MouseEvent& event) {
   std::map<Series*, std::vector<size_t>> series_data_point_map;
   for (const auto& trace_label_point : m_trace->getTraceLabelPoints()) {
     if (!trace_label_point.isSelected()) continue;
-    const auto target_series =
-        trace_label_point.trace_point->associated_series;
+    const auto target_series = trace_label_point.trace_point->associated_series;
     const auto data_point_index =
         trace_label_point.trace_point->data_point_index;
 
@@ -913,7 +909,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
   if (isVisible()) {
     m_prev_mouse_position = getMousePositionRelativeToAxesArea(event);
 
-    const auto *lnf = getPlotLookAndFeel();
+    const auto* lnf = getPlotLookAndFeel();
     if (m_selected_area.get() == event.eventComponent) {
       if (event.mods.isRightButtonDown()) {
         mouseHandler(
@@ -944,7 +940,7 @@ void Plot::mouseDown(const juce::MouseEvent& event) {
 
 void Plot::mouseDrag(const juce::MouseEvent& event) {
   if (isVisible()) {
-    const auto *lnf = getPlotLookAndFeel();
+    const auto* lnf = getPlotLookAndFeel();
     if (m_legend.get() == event.eventComponent) {
       mouseHandler(event,
                    lnf->getUserInputAction(UserInput::left | UserInput::drag |
@@ -982,7 +978,7 @@ void Plot::mouseDrag(const juce::MouseEvent& event) {
 
 void Plot::mouseUp(const juce::MouseEvent& event) {
   if (isVisible()) {
-    const auto *lnf = getPlotLookAndFeel();
+    const auto* lnf = getPlotLookAndFeel();
     if (m_selected_area.get() == event.eventComponent &&
         m_mouse_drag_state == MouseDragState::drag) {
       if (!event.mods.isRightButtonDown()) {

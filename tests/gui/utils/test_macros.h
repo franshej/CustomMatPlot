@@ -1,6 +1,6 @@
 /**
  * Copyright (c) 2022 Frans Rosencrantz
- * 
+ *
  * This software is released under the MIT License.
  * https://opensource.org/licenses/MIT
  */
@@ -89,4 +89,5 @@
 
 #define CLEAR_TRACE_POINTS GET_PLOT->clearTracePoints();
 
-#define SET_SCALING(X_SCALING, Y_SCALING) GET_PLOT->setScaling(X_SCALING, Y_SCALING);
+#define SET_SCALING(X_SCALING, Y_SCALING) \
+  GET_PLOT->setScaling(X_SCALING, Y_SCALING);
