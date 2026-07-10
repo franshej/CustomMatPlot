@@ -358,7 +358,7 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
   return generateRamp();
 }
 
-void Plot::plot(const SeriesDataList& series) {
+void Plot::plotSeries(std::span<const SeriesData> series) {
   if (series.empty()) return;
 
   ensureSeriesCount<SeriesType::normal>(series.size());
@@ -393,7 +393,9 @@ void Plot::plot(const SeriesDataList& series) {
   repaint();
 }
 
-void Plot::plot(const SeriesData& series) { plot(SeriesDataList{series}); }
+void Plot::plot(const SeriesDataList& series) { plotSeries(series); }
+
+void Plot::plot(const SeriesData& series) { plotSeries({&series, 1}); }
 
 void Plot::plot(const std::vector<std::vector<float>>& y_data,
                 const std::vector<std::vector<float>>& x_data,

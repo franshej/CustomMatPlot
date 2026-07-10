@@ -21,7 +21,7 @@
 namespace cmp {
 
 /** The limits spanning one axis (x, y or z) across all series. */
-static Lim_f findSeriesLim(const std::vector<Series3DData>& series,
+static Lim_f findSeriesLim(std::span<const Series3DData> series,
                            std::vector<float> Series3DData::*axis) {
   auto min = std::numeric_limits<float>::max();
   auto max = std::numeric_limits<float>::lowest();
@@ -135,7 +135,7 @@ const juce::Label& Plot3D::getTitleLabel() const noexcept {
   return m_title_label;
 }
 
-void Plot3D::plot3(const std::vector<Series3DData>& series) {
+void Plot3D::plot3Series(std::span<const Series3DData> series) {
   auto* lnf = getPlotLookAndFeelBase();
 
   if (m_series.size() != series.size()) {
@@ -180,9 +180,11 @@ void Plot3D::plot3(const std::vector<Series3DData>& series) {
   updateChildrenParameters();
 }
 
-void Plot3D::plot3(const Series3DData& series) {
-  plot3(std::vector<Series3DData>{series});
+void Plot3D::plot3(const std::vector<Series3DData>& series) {
+  plot3Series(series);
 }
+
+void Plot3D::plot3(const Series3DData& series) { plot3Series({&series, 1}); }
 
 void Plot3D::setView(const float azimuth_degrees,
                      const float elevation_degrees) {

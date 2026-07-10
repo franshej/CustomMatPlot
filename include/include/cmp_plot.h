@@ -12,6 +12,7 @@
 #pragma once
 
 #include <memory>
+#include <span>
 
 #include "cmp_datamodels.h"
 #include "cmp_lookandfeel_base.h"
@@ -505,6 +506,10 @@ class Plot : public juce::Component {
    * creating any that are missing. */
   template <SeriesType t_series_type>
   void ensureSeriesCount(std::size_t count);
+  /** @internal Copy the given series' data into the plot's components (one
+   * copy each); shared by the plot(SeriesData) and plot(SeriesDataList)
+   * overloads. */
+  void plotSeries(std::span<const SeriesData> series);
   /** @internal */
   template <SeriesType t_series_type>
   void plotInternal(const std::vector<std::vector<float>> &y_data,

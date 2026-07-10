@@ -11,6 +11,8 @@
 #pragma once
 
 #include <memory>
+#include <span>
+#include <vector>
 
 #include "cmp_datamodels.h"
 #include "cmp_lookandfeel_base.h"
@@ -156,6 +158,10 @@ class Plot3D : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
+  /** @internal Copy the given series' data into the plot's components (one
+   * copy each); shared by the plot3(Series3DData) and
+   * plot3(std::vector<Series3DData>) overloads. */
+  void plot3Series(std::span<const Series3DData> series);
   /** @internal */
   void resizeChildrens();
   /** @internal */
