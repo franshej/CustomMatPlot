@@ -214,23 +214,24 @@ TEST(test_ramp, non_real_time) {
 TEST(test_two_sine, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(2, std::vector<float>(100));
+  cmp::SeriesDataList series(2);
+
+  // x-values: two sine waves.
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = std::sin(y * PI2 / y_vec.size()) + i;
-    }
+  for (auto &s : series) {
+    s.x.resize(100);
+    std::iota(s.x.begin(), s.x.end(), 0);
+    for (auto &x : s.x) x = std::sin(x * PI2 / s.x.size()) + i;
     i++;
   }
 
-  std::vector<std::vector<float>> test_data_x =
-      std::vector<std::vector<float>>(2, std::vector<float>(100));
-  std::iota(test_data_x.front().begin(), test_data_x.front().end(), 0);
-  std::iota(test_data_x.back().begin(), test_data_x.back().end(), -50);
+  // y-values: two ramps.
+  series[0].y.resize(100);
+  std::iota(series[0].y.begin(), series[0].y.end(), 0);
+  series[1].y.resize(100);
+  std::iota(series[1].y.begin(), series[1].y.end(), -50);
 
-  GET_PLOT->plot(cmp::seriesFrom(test_data_x, test_data_y));
+  GET_PLOT->plot(series);
 }
 
 TEST(test_x_lim, non_real_time) {
@@ -265,15 +266,15 @@ TEST(test_y_lim, non_real_time) {
 TEST(test_legend_6, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(6, std::vector<float>(100));
+  cmp::SeriesDataList series(6);
   std::vector<std::string> legends;
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+  for (auto &s : series) {
+    s.y.resize(100);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = (i + 1) * std::sin(y * PI2 / s.y.size()) + i;
     }
 
     std::stringstream stream;
@@ -282,7 +283,7 @@ TEST(test_legend_6, non_real_time) {
     i++;
   }
 
-  GET_PLOT->plot(cmp::seriesFrom(test_data_y));
+  GET_PLOT->plot(series);
   LEGEND(legends);
 
   TITLE("Some good looking sines!")
@@ -295,15 +296,15 @@ TEST(test_legend_6, non_real_time) {
 TEST(test_legend_2, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(2, std::vector<float>(100));
+  cmp::SeriesDataList series(2);
   std::vector<std::string> legends;
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+  for (auto &s : series) {
+    s.y.resize(100);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = (i + 1) * std::sin(y * PI2 / s.y.size()) + i;
     }
     std::stringstream stream;
     stream << std::fixed << std::setprecision(0) << (i + 1);
@@ -311,7 +312,7 @@ TEST(test_legend_2, non_real_time) {
     i++;
   }
 
-  GET_PLOT->plot(cmp::seriesFrom(test_data_y));
+  GET_PLOT->plot(series);
   LEGEND(legends);
 }
 
@@ -362,23 +363,22 @@ TEST(x_axis_above_axes, non_real_time) {
 TEST(set_custom_colour, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(6, std::vector<float>(100));
+  cmp::SeriesDataList series(6);
   std::vector<std::string> legends;
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+  for (auto &s : series) {
+    s.y.resize(100);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = (i + 1) * std::sin(y * PI2 / s.y.size()) + i;
     }
     i++;
   }
 
-  cmp::SeriesAttributeList ga(6);
-  ga[3].series_colour = juce::Colours::pink;
+  series[3].attribute.series_colour = juce::Colours::pink;
 
-  GET_PLOT->plot(cmp::seriesFrom(test_data_y, {}, ga));
+  GET_PLOT->plot(series);
   LEGEND(legends);
 }
 
@@ -411,56 +411,55 @@ TEST(path_stroke_path, non_real_time) {
 TEST(markers, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(7, std::vector<float>(10));
+  cmp::SeriesDataList series(7);
   std::vector<std::string> legends;
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+  for (auto &s : series) {
+    s.y.resize(10);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = (i + 1) * std::sin(y * PI2 / s.y.size()) + i;
     }
     ++i;
   }
-  cmp::SeriesAttributeList ga(test_data_y.size());
-  ga[0].marker = cmp::Marker::Type::Circle;
+  series[0].attribute.marker = cmp::Marker::Type::Circle;
 
-  ga[1].marker = cmp::Marker::Type::Square;
-  ga[1].marker.value().FaceColour = juce::Colours::lightpink;
+  series[1].attribute.marker = cmp::Marker::Type::Square;
+  series[1].attribute.marker.value().FaceColour = juce::Colours::lightpink;
 
-  ga[2].marker = cmp::Marker::Type::Pentagram;
+  series[2].attribute.marker = cmp::Marker::Type::Pentagram;
 
-  ga[3].marker = cmp::Marker::Type::UpTriangle;
+  series[3].attribute.marker = cmp::Marker::Type::UpTriangle;
 
-  ga[4].marker = cmp::Marker::Type::RightTriangle;
+  series[4].attribute.marker = cmp::Marker::Type::RightTriangle;
 
-  ga[5].marker = cmp::Marker::Type::DownTriangle;
+  series[5].attribute.marker = cmp::Marker::Type::DownTriangle;
 
-  ga[6].marker = cmp::Marker::Type::LeftTriangle;
+  series[6].attribute.marker = cmp::Marker::Type::LeftTriangle;
 
-  GET_PLOT->plot(cmp::seriesFrom(test_data_y, {}, ga));
+  GET_PLOT->plot(series);
   GRID_ON;
 }
 
 TEST(spread, non_real_time) {
   ADD_SEMI_LOG_X;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(4, std::vector<float>(1000));
+  cmp::SeriesDataList series(4);
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = i * std::sin(y * PI2 / y_vec.size());
+  for (auto &s : series) {
+    s.y.resize(1000);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = i * std::sin(y * PI2 / s.y.size());
     }
     i += 10;
   }
 
   const std::vector<cmp::SpreadIndex> spread_indices = {{0, 1}, {2, 3}};
 
-  GET_PLOT->plot(cmp::seriesFrom(test_data_y));
+  GET_PLOT->plot(series);
   FILL_BETWEEN(spread_indices);
 
   X_LABEL("Logarithmic x-axis");
@@ -489,9 +488,7 @@ TEST(set_trace_point, non_real_time) {
   std::vector<float> y_data_2(1'000u, 0.0f);
   std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
 
-  const auto y = {y_data_1, y_data_2};
-
-  GET_PLOT->plot(cmp::seriesFrom(y));
+  GET_PLOT->plot({{.y = y_data_1}, {.y = y_data_2}});
 
   SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 }
@@ -505,9 +502,7 @@ TEST(clear_all_tracepoints, non_real_time) {
   std::vector<float> y_data_2(1'000u, 0.0f);
   std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
 
-  const auto y = {y_data_1, y_data_2};
-
-  GET_PLOT->plot(cmp::seriesFrom(y));
+  GET_PLOT->plot({{.y = y_data_1}, {.y = y_data_2}});
 
   SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 
@@ -523,9 +518,7 @@ TEST(set_scaling_dynamic, non_real_time) {
   std::vector<float> y_data_2(1'000u, 0.0f);
   std::iota(y_data_2.begin(), y_data_2.end(), 100.0f);
 
-  const auto y = {y_data_1, y_data_2};
-
-  GET_PLOT->plot(cmp::seriesFrom(y));
+  GET_PLOT->plot({{.y = y_data_1}, {.y = y_data_2}});
 
   SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 
@@ -560,9 +553,7 @@ TEST(trace_point_cb, non_real_time) {
   std::vector<float> y_data_2(1'000u, 0.0f);
   std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
 
-  const auto y = {y_data_1, y_data_2};
-
-  GET_PLOT->plot(cmp::seriesFrom(y));
+  GET_PLOT->plot({{.y = y_data_1}, {.y = y_data_2}});
 
   SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 
@@ -599,17 +590,17 @@ static auto create_heart(const T amplitude, const std::size_t N) {
 TEST(heart, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> xs, ys;
-
   constexpr auto num_hearts = 10;
+  cmp::SeriesDataList series(num_hearts);
+
   for (size_t i = 0; i < num_hearts; ++i) {
     const auto [x, y] = create_heart(float(i), 5000u);
 
-    xs.push_back(y);
-    ys.push_back(x);
+    series[i].x = x;
+    series[i].y = y;
   }
 
-  GET_PLOT->plot(cmp::seriesFrom(xs, ys));
+  GET_PLOT->plot(series);
 }
 
 TEST(test_vertical_line, non_real_time) {
