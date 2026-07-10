@@ -21,21 +21,16 @@ class marker : public juce::Component {
     // Add the plot object as a child component.
     addAndMakeVisible(m_plot);
 
-    // Create some marker.
-    cmp::SeriesAttributeList gal(4u);
-
-    gal[0].marker = cmp::Marker::Type::Circle;
-    gal[1].marker = cmp::Marker::Type::LeftTriangle;
-    gal[2].marker = cmp::Marker::Type::Pentagram;
-    gal[3].marker = cmp::Marker::Type::Square;
-
-    // Plot some values.
-    m_plot.plot(cmp::seriesFrom(
-        {cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
-         cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
-         cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
-         cmp::generateUniformRandomVector(10, -10.0f, 10.0f)},
-        {}, gal));
+    // Plot some values, each series with its own marker.
+    m_plot.plot(
+        {{.y = cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
+          .attribute = {.marker = cmp::Marker::Type::Circle}},
+         {.y = cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
+          .attribute = {.marker = cmp::Marker::Type::LeftTriangle}},
+         {.y = cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
+          .attribute = {.marker = cmp::Marker::Type::Pentagram}},
+         {.y = cmp::generateUniformRandomVector(10, -10.0f, 10.0f),
+          .attribute = {.marker = cmp::Marker::Type::Square}}});
   };
 
   void resized() override {

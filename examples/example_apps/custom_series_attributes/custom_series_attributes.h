@@ -24,34 +24,28 @@ class custom_series_attributes : public juce::Component {
     const auto length = (1 << 11);
     constexpr auto length_1st_series = 10;
 
-    // Create some data to visulise.
-    const auto y_data = {
-        cmp::generateSineWaveVector(length_1st_series, -17.0f, 14.0f, 1.0f),
-        cmp::generateSineWaveVector(length, -5.0f, 6.0f, 3.0f),
-        cmp::generateSineWaveVector(length, -5.0f, 2.0f, 6.0f)};
-
-    auto x_gen = [&y_data](const auto index) {
-      static const std::vector<std::vector<float>> y_data_vec(y_data);
-      auto v = std::vector<float>(y_data_vec[index].size());
-      cmp::iota_delta(v.begin(), v.end(), 1.0f,
-                      float(length) / float(v.size()));
+    // An x-ramp spanning 1..length for a series of the given size.
+    auto x_ramp = [length](const std::size_t size) {
+      auto v = std::vector<float>(size);
+      cmp::iota_delta(v.begin(), v.end(), 1.0f, float(length) / float(size));
       return v;
     };
 
-    // Setting series attributes.
-    auto series_attributes = cmp::SeriesAttributeList(y_data.size());
-    series_attributes[0].series_colour = juce::Colours::pink;
-    series_attributes[0].marker = cmp::Marker::Type::Pentagram;
-    series_attributes[0].series_opacity = 0.0f;
-
-    series_attributes[1].series_colour = juce::Colours::blueviolet;
-    series_attributes[1].path_stroke_type = juce::PathStrokeType(10.0f);
-
-    series_attributes[2].dashed_lengths = {10.0f, 20.0f, 10.0f};
-
-    // Plot some values.
-    m_plot.plot(cmp::seriesFrom(y_data, {x_gen(0), x_gen(1), x_gen(2)},
-                                series_attributes));
+    // Plot three series, each with its own x, y and attributes.
+    m_plot.plot(
+        {{.x = x_ramp(length_1st_series),
+          .y = cmp::generateSineWaveVector(length_1st_series, -17.0f, 14.0f,
+                                           1.0f),
+          .attribute = {.series_colour = juce::Colours::pink,
+                        .series_opacity = 0.0f,
+                        .marker = cmp::Marker::Type::Pentagram}},
+         {.x = x_ramp(length),
+          .y = cmp::generateSineWaveVector(length, -5.0f, 6.0f, 3.0f),
+          .attribute = {.series_colour = juce::Colours::blueviolet,
+                        .path_stroke_type = juce::PathStrokeType(10.0f)}},
+         {.x = x_ramp(length),
+          .y = cmp::generateSineWaveVector(length, -5.0f, 2.0f, 6.0f),
+          .attribute = {.dashed_lengths = {{10.0f, 20.0f, 10.0f}}}}});
   };
 
   void resized() override {
