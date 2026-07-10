@@ -28,7 +28,7 @@ TEST(random_amount_y_data, real_time) {
             static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
       }
     }
-    PLOT_Y({y_test_data});
+    GET_PLOT->plot(cmp::seriesFrom(y_test_data));
   };
 }
 
@@ -43,7 +43,7 @@ TEST(random_y_values, real_time) {
       y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     }
 
-    PLOT_Y({y_test_data});
+    GET_PLOT->plot({.y = y_test_data});
   };
 }
 
@@ -54,7 +54,7 @@ TEST(real_time_plot_function, real_time) {
   X_LIM(1.f, 10.f);
   Y_LIM(0.f, 1.f);
 
-  PLOT_Y({std::vector<float>(10)});
+  GET_PLOT->plot({.y = std::vector<float>(10)});
   GET_TIMER_CB = [=](const int dt_ms) {
     static std::vector<float> y_test_data(10);
 
@@ -90,7 +90,7 @@ TEST(spread, real_time) {
     return test_data_y;
   };
 
-  PLOT_Y(getYData());
+  GET_PLOT->plot(cmp::seriesFrom(getYData()));
 
   const std::vector<cmp::SpreadIndex> spread_indices = {{0, 1}};
   FILL_BETWEEN(spread_indices);
@@ -121,6 +121,6 @@ TEST(random_yx_values, real_time) {
             static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
       }
     }
-    PLOT_XY({y_test_data}, {x_test_data});
+    GET_PLOT->plot(cmp::seriesFrom(y_test_data, x_test_data));
   };
 }
