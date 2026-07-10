@@ -41,8 +41,9 @@ class Series3D : public juce::Component {
    *  @param z_data vector of z-values.
    *  @return void.
    */
-  void setValues(std::vector<float> x_data, std::vector<float> y_data,
-                 std::vector<float> z_data);
+  void setValues(const std::vector<float>& x_data,
+                 const std::vector<float>& y_data,
+                 const std::vector<float>& z_data);
 
   /** @brief Get x-values. */
   const std::vector<float>& getXData() const noexcept;

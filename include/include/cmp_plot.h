@@ -74,7 +74,7 @@ class Plot : public juce::Component {
    *
    * @param series the series to plot @see SeriesData
    */
-  void plot(SeriesDataList series);
+  void plot(const SeriesDataList &series);
 
   /**
    * @brief Plot a single series.
@@ -84,7 +84,7 @@ class Plot : public juce::Component {
    *
    * @param series the series to plot @see SeriesData
    */
-  void plot(SeriesData series);
+  void plot(const SeriesData &series);
 
   /**
    * @brief Plot y-data or y-data/x-data
@@ -501,6 +501,10 @@ class Plot : public juce::Component {
   /** @internal */
   void setTracePointInternal(const juce::Point<float> &trace_point_coordinate,
                              bool is_point_data_point);
+  /** @internal Ensure there are exactly 'count' series of the given type,
+   * creating any that are missing. */
+  template <SeriesType t_series_type>
+  void ensureSeriesCount(std::size_t count);
   /** @internal */
   template <SeriesType t_series_type>
   void plotInternal(const std::vector<std::vector<float>> &y_data,

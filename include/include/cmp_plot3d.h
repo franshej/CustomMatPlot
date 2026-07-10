@@ -72,7 +72,7 @@ class Plot3D : public juce::Component {
    *          set explicitly.
    * @param series the 3-D series to plot @see Series3DData
    */
-  void plot3(std::vector<Series3DData> series);
+  void plot3(const std::vector<Series3DData> &series);
 
   /**
    * @brief Plot a single 3-D series.
@@ -82,7 +82,7 @@ class Plot3D : public juce::Component {
    *
    * @param series the 3-D series to plot @see Series3DData
    */
-  void plot3(Series3DData series);
+  void plot3(const Series3DData &series);
 
   /**
    * @brief Set the X-limits

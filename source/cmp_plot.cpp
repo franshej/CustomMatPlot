@@ -358,43 +358,42 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
   return generateRamp();
 }
 
-void Plot::plot(SeriesDataList series) {
-  // Unpack the per-series bundles into the parallel vectors the internal
-  // pipeline consumes. 'series' is taken by value and its vectors are moved
-  // out, so this adds no copy over the data the caller already handed us.
-  std::vector<std::vector<float>> y_data;
-  std::vector<std::vector<float>> x_data;
-  SeriesAttributeList attributes;
-  y_data.reserve(series.size());
-  attributes.reserve(series.size());
+void Plot::plot(const SeriesDataList& series) {
+  if (series.empty()) return;
 
-  const auto any_x = std::any_of(series.begin(), series.end(),
-                                 [](const auto& s) { return !s.x.empty(); });
-  if (any_x) x_data.reserve(series.size());
+  ensureSeriesCount<SeriesType::normal>(series.size());
 
-  for (auto& s : series) {
-    if (any_x && s.x.empty()) {
-      // Keep this series aligned with the others that do have x: give it a
-      // 1..N ramp, matching generateXdataRamp. (Fill before moving s.y.)
-      s.x.resize(s.y.size());
-      std::iota(s.x.begin(), s.x.end(), 1.0f);
+  // Copy each series' data straight into its component: one copy of the
+  // caller's data, with no intermediate parallel arrays and without touching
+  // the caller's bundle.
+  auto series_it = series.begin();
+  for (const auto& component : *m_series) {
+    if (component->getType() != SeriesType::normal) continue;
+    if (series_it == series.end()) break;
+
+    const auto& s = *series_it++;
+    component->setYValues(s.y);
+
+    if (s.x.empty()) {
+      // No x supplied: use a 1..N ramp, matching generateXdataRamp.
+      std::vector<float> ramp(s.y.size());
+      std::iota(ramp.begin(), ramp.end(), 1.0f);
+      component->setXValues(ramp);
+    } else {
+      component->setXValues(s.x);
     }
 
-    y_data.push_back(std::move(s.y));
-    attributes.push_back(std::move(s.attribute));
-    if (any_x) x_data.push_back(std::move(s.x));
+    component->setSeriesAttribute(s.attribute);
   }
-  // When no series sets x, x_data stays empty and plotInternal ramps them all.
 
-  plotInternal<SeriesType::normal>(y_data, x_data, attributes);
+  if (m_y_autoscale && !m_is_panning_or_zoomed_active) setAutoYScale();
+  if (m_x_autoscale && !m_is_panning_or_zoomed_active) setAutoXScale();
+
+  m_notify_components_on_update.notify();
   repaint();
 }
 
-void Plot::plot(SeriesData series) {
-  SeriesDataList list;
-  list.push_back(std::move(series));
-  plot(std::move(list));
-}
+void Plot::plot(const SeriesData& series) { plot(SeriesDataList{series}); }
 
 void Plot::plot(const std::vector<std::vector<float>>& y_data,
                 const std::vector<std::vector<float>>& x_data,
@@ -635,12 +634,9 @@ void Plot::addSeriesInternal(std::unique_ptr<Series>& series,
 }
 
 template <SeriesType t_series_type>
-void Plot::updateSeriesYData(const std::vector<std::vector<float>>& y_data,
-                             const SeriesAttributeList& series_attribute_list) {
-  if (y_data.empty()) return;
-
-  UNLIKELY if (y_data.size() != m_series->size<t_series_type>()) {
-    m_series->resize<t_series_type>(y_data.size());
+void Plot::ensureSeriesCount(std::size_t count) {
+  UNLIKELY if (count != m_series->size<t_series_type>()) {
+    m_series->resize<t_series_type>(count);
     std::size_t series_index = 0u;
     for (auto& series : *m_series) {
       if (series == nullptr) {
@@ -650,6 +646,14 @@ void Plot::updateSeriesYData(const std::vector<std::vector<float>>& y_data,
     }
     m_legend->setSeries(*m_series);
   }
+}
+
+template <SeriesType t_series_type>
+void Plot::updateSeriesYData(const std::vector<std::vector<float>>& y_data,
+                             const SeriesAttributeList& series_attribute_list) {
+  if (y_data.empty()) return;
+
+  ensureSeriesCount<t_series_type>(y_data.size());
 
   auto y_data_it = y_data.begin();
   for (const auto& series : *m_series) {
