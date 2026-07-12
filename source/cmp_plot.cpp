@@ -359,8 +359,6 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
 }
 
 void Plot::plotSeries(std::span<const SeriesData> series) {
-  if (series.empty()) return;
-
   // Validate before mutating any state, so a throw leaves the plot untouched.
   // An empty x is allowed: it auto-generates a 1..N ramp below.
   for (const auto& s : series)
@@ -368,6 +366,8 @@ void Plot::plotSeries(std::span<const SeriesData> series) {
       throw std::invalid_argument(
           "plot: the x and y values of a series must have the same size.");
 
+  // plot() sets the plot to exactly the given series; an empty list clears
+  // them (there is no separate clear method).
   ensureSeriesCount<SeriesType::normal>(series.size());
 
   // Copy each series' data straight into its component: one copy of the
@@ -393,8 +393,11 @@ void Plot::plotSeries(std::span<const SeriesData> series) {
     component->setSeriesAttribute(s.attribute);
   }
 
-  if (m_y_autoscale && !m_is_panning_or_zoomed_active) setAutoYScale();
-  if (m_x_autoscale && !m_is_panning_or_zoomed_active) setAutoXScale();
+  // Only auto-scale when there is data; scaling to zero series gives no range.
+  if (!series.empty()) {
+    if (m_y_autoscale && !m_is_panning_or_zoomed_active) setAutoYScale();
+    if (m_x_autoscale && !m_is_panning_or_zoomed_active) setAutoXScale();
+  }
 
   m_notify_components_on_update.notify();
   repaint();
@@ -674,11 +677,11 @@ void Plot::updateSeriesYData(const std::vector<std::vector<float>>& y_data,
   }
 
   if (!series_attribute_list.empty()) {
-    auto it_gal = series_attribute_list.begin();
+    auto it_sal = series_attribute_list.begin();
     for (const auto& series : *m_series) {
-      if (it_gal != series_attribute_list.end() &&
+      if (it_sal != series_attribute_list.end() &&
           series->getType() == t_series_type) {
-        series->setSeriesAttribute(*it_gal++);
+        series->setSeriesAttribute(*it_sal++);
       }
     }
   }

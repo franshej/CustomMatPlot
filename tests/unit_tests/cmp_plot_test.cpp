@@ -85,6 +85,15 @@ SECTION(PlotClass, "Plot class") {
     expect(getChildComponentHelper<cmp::Series>(mismatch_plot).empty());
   }
 
+  TEST("SeriesData API: an empty list clears the series") {
+    cmp::Plot clear_plot;
+    clear_plot.plot({{.y = y_data1}, {.y = y_data2}});
+    expectEquals(getChildComponentHelper<cmp::Series>(clear_plot).size(), 2ul);
+
+    clear_plot.plot(cmp::SeriesDataList{});
+    expect(getChildComponentHelper<cmp::Series>(clear_plot).empty());
+  }
+
   TEST("Horizontal line") {
     cmp::Plot horizontal_plot;
     horizontal_plot.plotHorizontalLines({100.f});

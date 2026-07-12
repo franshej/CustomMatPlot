@@ -32,9 +32,16 @@ class Axes3DBox;
  * @endcode
  */
 struct Series3DData {
+  /** x-values. Must have the same size as y and z. */
   std::vector<float> x;
+
+  /** y-values. Must have the same size as x and z. */
   std::vector<float> y;
+
+  /** z-values. Must have the same size as x and y. */
   std::vector<float> z;
+
+  /** Optional per-series styling. @see SeriesAttribute */
   SeriesAttribute attribute{};
 };
 
@@ -71,7 +78,7 @@ class Plot3D : public juce::Component {
    * @details Each @ref Series3DData carries its own x, y, z and optional
    *          styling. The x/y/z vectors of a series must have the same size.
    *          The axis limits are auto-scaled to the data unless they have been
-   *          set explicitly.
+   *          set explicitly. Passing an empty list clears the series.
    * @param series the 3-D series to plot @see Series3DData
    */
   void plot3(const std::vector<Series3DData> &series);

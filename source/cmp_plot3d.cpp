@@ -167,9 +167,12 @@ void Plot3D::plot3Series(std::span<const Series3DData> series) {
     m_axes_box->toBack();
   }
 
-  if (m_x_autoscale) m_x_axis.lim = findSeriesLim(series, &Series3DData::x);
-  if (m_y_autoscale) m_y_axis.lim = findSeriesLim(series, &Series3DData::y);
-  if (m_z_autoscale) m_z_axis.lim = findSeriesLim(series, &Series3DData::z);
+  // Only auto-scale when there is data; an empty series list just clears.
+  if (!series.empty()) {
+    if (m_x_autoscale) m_x_axis.lim = findSeriesLim(series, &Series3DData::x);
+    if (m_y_autoscale) m_y_axis.lim = findSeriesLim(series, &Series3DData::y);
+    if (m_z_autoscale) m_z_axis.lim = findSeriesLim(series, &Series3DData::z);
+  }
 
   // Copy each series' data straight into its component: one copy of the
   // caller's data, with no intermediate parallel arrays.

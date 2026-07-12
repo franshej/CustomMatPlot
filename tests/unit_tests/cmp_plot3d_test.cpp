@@ -53,6 +53,15 @@ SECTION(Plot3DClass, "Plot3D class") {
     expect(series[0]->getColour() != series[1]->getColour());
   }
 
+  TEST("Empty list clears the series") {
+    cmp::Plot3D clear_plot;
+    clear_plot.plot3({{.x = x_data1, .y = y_data1, .z = z_data1}});
+    expectEquals(getChildComponentHelper<cmp::Series3D>(clear_plot).size(), 1ul);
+
+    clear_plot.plot3(std::vector<cmp::Series3DData>{});
+    expect(getChildComponentHelper<cmp::Series3D>(clear_plot).empty());
+  }
+
   TEST("Mismatched x/y/z lengths within a series throws") {
     auto exception_thrown = false;
 

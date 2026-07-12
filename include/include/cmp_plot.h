@@ -66,7 +66,7 @@ class Plot : public juce::Component {
    * series can no longer fall out of index-alignment the way three parallel
    * vectors could. Leave a series' x empty to auto-generate a 1..N ramp.
    * If a series' attribute has no colour set, 'ColourIdsSeries' from the
-   * look and feel is used.
+   * look and feel is used. Passing an empty list clears the series.
    *
    * @code
    *   plot({ {.x = t, .y = signal, .attribute = {.series_colour = red}},
