@@ -69,6 +69,22 @@ SECTION(PlotClass, "Plot class") {
     expectEqualVectors(series[1]->getYData(), y_data1, expectEqualsLambda);
   }
 
+  TEST("SeriesData API: mismatched x/y lengths within a series throws") {
+    cmp::Plot mismatch_plot;
+    auto exception_thrown = false;
+
+    try {
+      // x has two points, y has three: the series is malformed.
+      mismatch_plot.plot({.x = {1.f, 2.f}, .y = {1.f, 2.f, 3.f}});
+    } catch (const std::invalid_argument&) {
+      exception_thrown = true;
+    }
+
+    expect(exception_thrown);
+    // The throw must leave the plot untouched: no series were created.
+    expect(getChildComponentHelper<cmp::Series>(mismatch_plot).empty());
+  }
+
   TEST("Horizontal line") {
     cmp::Plot horizontal_plot;
     horizontal_plot.plotHorizontalLines({100.f});

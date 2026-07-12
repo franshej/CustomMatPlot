@@ -6,8 +6,7 @@
 ### Added
 - `plot(SeriesDataList)` / `SeriesData`: plot one or more series bundled per
   series, where each carries its own x, y and attributes (order is now x, y).
-  Use the `seriesFrom()` helpers to build a `SeriesDataList` from
-  parallel-array data.
+  A single series can be plotted without the list: `plot({.y = samples})`.
 - `Plot3D`: 3D line plotting with per-axis linear/logarithmic scaling.
 - Renamed realTimePlot to plotUpdateYOnly.
 - Gradient below series using SeriesAttribute

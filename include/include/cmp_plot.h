@@ -64,7 +64,7 @@ class Plot : public juce::Component {
    *
    * Each @ref SeriesData carries its own x, y and optional styling, so the
    * series can no longer fall out of index-alignment the way three parallel
-   * vectors could. Leave a series' x empty to auto-generate a 0..N-1 ramp.
+   * vectors could. Leave a series' x empty to auto-generate a 1..N ramp.
    * If a series' attribute has no colour set, 'ColourIdsSeries' from the
    * look and feel is used.
    *

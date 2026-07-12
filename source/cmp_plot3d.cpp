@@ -136,6 +136,12 @@ const juce::Label& Plot3D::getTitleLabel() const noexcept {
 }
 
 void Plot3D::plot3Series(std::span<const Series3DData> series) {
+  // Validate before mutating any state, so a throw leaves the plot untouched.
+  for (const auto& s : series)
+    if (s.x.size() != s.y.size() || s.x.size() != s.z.size())
+      throw std::invalid_argument(
+          "plot3: the x, y and z values of a series must have the same size.");
+
   auto* lnf = getPlotLookAndFeelBase();
 
   if (m_series.size() != series.size()) {
@@ -160,11 +166,6 @@ void Plot3D::plot3Series(std::span<const Series3DData> series) {
 
     m_axes_box->toBack();
   }
-
-  for (const auto& s : series)
-    if (s.x.size() != s.y.size() || s.x.size() != s.z.size())
-      throw std::invalid_argument(
-          "plot3: the x, y and z values of a series must have the same size.");
 
   if (m_x_autoscale) m_x_axis.lim = findSeriesLim(series, &Series3DData::x);
   if (m_y_autoscale) m_y_axis.lim = findSeriesLim(series, &Series3DData::y);

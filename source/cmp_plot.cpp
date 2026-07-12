@@ -361,6 +361,13 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
 void Plot::plotSeries(std::span<const SeriesData> series) {
   if (series.empty()) return;
 
+  // Validate before mutating any state, so a throw leaves the plot untouched.
+  // An empty x is allowed: it auto-generates a 1..N ramp below.
+  for (const auto& s : series)
+    if (!s.x.empty() && s.x.size() != s.y.size())
+      throw std::invalid_argument(
+          "plot: the x and y values of a series must have the same size.");
+
   ensureSeriesCount<SeriesType::normal>(series.size());
 
   // Copy each series' data straight into its component: one copy of the

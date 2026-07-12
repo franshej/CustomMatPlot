@@ -493,7 +493,7 @@ struct SeriesAttribute {
  * @endcode
  */
 struct SeriesData {
-  /** x-values. Optional: an empty vector auto-generates a 0..N-1 ramp. */
+  /** x-values. Optional: an empty vector auto-generates a 1..N ramp. */
   std::vector<float> x;
 
   /** y-values. */
