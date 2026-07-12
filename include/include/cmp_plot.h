@@ -88,31 +88,6 @@ class Plot : public juce::Component {
   void plot(const SeriesData &series);
 
   /**
-   * @brief Plot y-data or y-data/x-data
-   * @deprecated Use plot(const SeriesDataList&). The parameter order is now
-   *             x,y (bundled per series) instead of y,x, and each series
-   *             carries its own x and attributes.
-   *
-   * Plot y-data or y-data/x-data. Each vector in y-data represents a single
-   * series. E.g. If 'y_data.size() == 3', three series will be
-   * plotted. If 'x_data' is empty the x-values will be set to linearly
-   * increasing from 1 to the size of y-data.
-   *
-   * The list of series_attributes are applied per series. E.g.
-   * series_attribute_list[0] is applied to series[0]. If 'series_colours' is
-   * not set then 'ColourIdsSeries' is used for the lookandfeel.
-   *
-   * @param y_data vector of vectors with the y-values
-   * @param x_data vector of vectors with the x-values
-   * @param series_attribute_list a list of series attributes @see
-   * SeriesAttribute
-   */
-  [[deprecated("Use plot(const SeriesDataList&); order is now x,y per series")]]
-  void plot(const std::vector<std::vector<float>> &y_data,
-            const std::vector<std::vector<float>> &x_data = {},
-            const SeriesAttributeList &series_attribute_list = {});
-
-  /**
    * @brief Draw horizontal line(s)
    *
    * Draw horizontal line(s) at the given y-coordinates. Lines can be moved by

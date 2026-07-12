@@ -11,14 +11,14 @@
 - Renamed realTimePlot to plotUpdateYOnly.
 - Gradient below series using SeriesAttribute
 
-### Deprecated
-- `plot(y_data, x_data, series_attributes)`: use `plot(SeriesDataList)`.
-
 ### Breaking Changes
 - **Breaking:** Dropped the `Graph` prefix from the data-series API.
   `GraphLine` → `Series`, `GraphAttribute` → `SeriesAttribute`,
   `GraphSpread` → `Spread`, `drawGraphLine` → `drawSeries` and
   `ColourIdsGraph` → `ColourIdsSeries`. Update your code accordingly.
+- **Breaking:** Removed `plot(y_data, x_data, series_attributes)`. Use
+  `plot(SeriesDataList)` / `plot(SeriesData)`; each series now bundles its own
+  x, y and attributes (order is x, y).
 - **Breaking:** `Plot3D::plot3` now takes `std::vector<Series3DData>` instead
   of separate x, y and z vectors.
 

@@ -404,13 +404,6 @@ void Plot::plot(const SeriesDataList& series) { plotSeries(series); }
 
 void Plot::plot(const SeriesData& series) { plotSeries({&series, 1}); }
 
-void Plot::plot(const std::vector<std::vector<float>>& y_data,
-                const std::vector<std::vector<float>>& x_data,
-                const SeriesAttributeList& series_attributes) {
-  plotInternal<SeriesType::normal>(y_data, x_data, series_attributes);
-  repaint();
-}
-
 void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
   plotInternal<SeriesType::normal>(y_data, {}, {}, true);
   repaint(m_axes_bounds);
