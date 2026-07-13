@@ -88,6 +88,13 @@ class Plot : public juce::Component {
   void plot(const SeriesData &series);
 
   /**
+   * @brief Remove all plotted series, clearing the plot.
+   *
+   * A named alias for plotting an empty list: @code plot({}); @endcode
+   */
+  void clear();
+
+  /**
    * @brief Draw horizontal line(s)
    *
    * Draw horizontal line(s) at the given y-coordinates. Lines can be moved by

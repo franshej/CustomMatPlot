@@ -60,6 +60,11 @@ SECTION(Plot3DClass, "Plot3D class") {
 
     clear_plot.plot3(std::vector<cmp::Series3DData>{});
     expect(getChildComponentHelper<cmp::Series3D>(clear_plot).empty());
+
+    // clear() is a named alias for plotting an empty list.
+    clear_plot.plot3({{.x = x_data1, .y = y_data1, .z = z_data1}});
+    clear_plot.clear();
+    expect(getChildComponentHelper<cmp::Series3D>(clear_plot).empty());
   }
 
   TEST("Mismatched x/y/z lengths within a series throws") {

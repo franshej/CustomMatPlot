@@ -190,6 +190,8 @@ void Plot3D::plot3(const std::vector<Series3DData>& series) {
 
 void Plot3D::plot3(const Series3DData& series) { plot3Series({&series, 1}); }
 
+void Plot3D::clear() { plot3Series({}); }
+
 void Plot3D::setView(const float azimuth_degrees,
                      const float elevation_degrees) {
   m_azimuth_degrees = azimuth_degrees;

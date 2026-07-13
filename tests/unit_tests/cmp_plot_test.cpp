@@ -92,6 +92,11 @@ SECTION(PlotClass, "Plot class") {
 
     clear_plot.plot(cmp::SeriesDataList{});
     expect(getChildComponentHelper<cmp::Series>(clear_plot).empty());
+
+    // clear() is a named alias for plotting an empty list.
+    clear_plot.plot({{.y = y_data1}});
+    clear_plot.clear();
+    expect(getChildComponentHelper<cmp::Series>(clear_plot).empty());
   }
 
   TEST("Horizontal line") {

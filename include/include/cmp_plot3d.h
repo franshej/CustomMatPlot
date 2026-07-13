@@ -94,6 +94,13 @@ class Plot3D : public juce::Component {
   void plot3(const Series3DData &series);
 
   /**
+   * @brief Remove all plotted series, clearing the plot.
+   *
+   * A named alias for plotting an empty list: @code plot3({}); @endcode
+   */
+  void clear();
+
+  /**
    * @brief Set the X-limits
    * @details Disables x-axis auto-scaling.
    * @param min minimum value

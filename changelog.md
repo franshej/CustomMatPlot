@@ -8,6 +8,8 @@
   series, where each carries its own x, y and attributes (order is now x, y).
   A single series can be plotted without the list: `plot({.y = samples})`.
 - `Plot3D`: 3D line plotting with per-axis linear/logarithmic scaling.
+- `clear()` (and `Plot3D::clear()`): remove all series. Plotting an empty
+  list does the same.
 - Renamed realTimePlot to plotUpdateYOnly.
 - Gradient below series using SeriesAttribute
 
