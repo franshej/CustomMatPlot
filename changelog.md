@@ -4,8 +4,25 @@
 - plotUpdateYOnly (realTimePlot).
 
 ### Added
+- `plot(SeriesDataList)` / `SeriesData`: plot one or more series bundled per
+  series, where each carries its own x, y and attributes (order is now x, y).
+  A single series can be plotted without the list: `plot({.y = samples})`.
+- `Plot3D`: 3D line plotting with per-axis linear/logarithmic scaling.
+- `clear()` (and `Plot3D::clear()`): remove all series. Plotting an empty
+  list does the same.
 - Renamed realTimePlot to plotUpdateYOnly.
 - Gradient below series using SeriesAttribute
+
+### Breaking Changes
+- **Breaking:** Dropped the `Graph` prefix from the data-series API.
+  `GraphLine` → `Series`, `GraphAttribute` → `SeriesAttribute`,
+  `GraphSpread` → `Spread`, `drawGraphLine` → `drawSeries` and
+  `ColourIdsGraph` → `ColourIdsSeries`. Update your code accordingly.
+- **Breaking:** Removed `plot(y_data, x_data, series_attributes)`. Use
+  `plot(SeriesDataList)` / `plot(SeriesData)`; each series now bundles its own
+  x, y and attributes (order is x, y).
+- **Breaking:** `Plot3D::plot3` now takes `std::vector<Series3DData>` instead
+  of separate x, y and z vectors.
 
 ## 1.3.0 (2024-9-12)
 

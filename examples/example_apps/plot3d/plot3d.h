@@ -57,18 +57,18 @@ class plot3d : public juce::Component {
     const std::vector<float> edge_z = {1.0f, 1000.0f};
 
     // Linear plot (left side): same data on a linear z-axis.
-    m_plot_linear.plot3({helix_x, diagonal_x, edge_x},
-                        {helix_y, diagonal_y, edge_y},
-                        {helix_z, diagonal_z, edge_z});
+    m_plot_linear.plot3({{.x = helix_x, .y = helix_y, .z = helix_z},
+                         {.x = diagonal_x, .y = diagonal_y, .z = diagonal_z},
+                         {.x = edge_x, .y = edge_y, .z = edge_z}});
     m_plot_linear.setTitle("Linear Z-axis");
     m_plot_linear.setXLabel("x");
     m_plot_linear.setYLabel("y");
     m_plot_linear.setZLabel("z");
 
     // Logarithmic plot (right side): identical data on a log z-axis.
-    m_plot_log.plot3({helix_x, diagonal_x, edge_x},
-                     {helix_y, diagonal_y, edge_y},
-                     {helix_z, diagonal_z, edge_z});
+    m_plot_log.plot3({{.x = helix_x, .y = helix_y, .z = helix_z},
+                      {.x = diagonal_x, .y = diagonal_y, .z = diagonal_z},
+                      {.x = edge_x, .y = edge_y, .z = edge_z}});
     m_plot_log.setTitle("Logarithmic Z-axis");
     m_plot_log.setXLabel("x");
     m_plot_log.setYLabel("y");

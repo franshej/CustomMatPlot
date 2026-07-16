@@ -12,6 +12,7 @@
 #pragma once
 
 #include <memory>
+#include <span>
 
 #include "cmp_datamodels.h"
 #include "cmp_lookandfeel_base.h"
@@ -59,25 +60,39 @@ class Plot : public juce::Component {
   void yLim(const float min, const float max);
 
   /**
-   * @brief Plot y-data or y-data/x-data
+   * @brief Plot one or more series.
    *
-   * Plot y-data or y-data/x-data. Each vector in y-data represents a single
-   * series. E.g. If 'y_data.size() == 3', three series will be
-   * plotted. If 'x_data' is empty the x-values will be set to linearly
-   * increasing from 1 to the size of y-data.
+   * Each @ref SeriesData carries its own x, y and optional styling, so the
+   * series can no longer fall out of index-alignment the way three parallel
+   * vectors could. Leave a series' x empty to auto-generate a 1..N ramp.
+   * If a series' attribute has no colour set, 'ColourIdsSeries' from the
+   * look and feel is used. Passing an empty list clears the series.
    *
-   * The list of series_attributes are applied per series. E.g.
-   * series_attribute_list[0] is applied to series[0]. If 'series_colours' is
-   * not set then 'ColourIdsSeries' is used for the lookandfeel.
+   * @code
+   *   plot({ {.x = t, .y = signal, .attribute = {.series_colour = red}},
+   *          {.y = samples} });   // second series uses an auto x-ramp
+   * @endcode
    *
-   * @param y_data vector of vectors with the y-values
-   * @param x_data vector of vectors with the x-values
-   * @param series_attribute_list a list of series attributes @see
-   * SeriesAttribute
+   * @param series the series to plot @see SeriesData
    */
-  void plot(const std::vector<std::vector<float>> &y_data,
-            const std::vector<std::vector<float>> &x_data = {},
-            const SeriesAttributeList &series_attribute_list = {});
+  void plot(const SeriesDataList &series);
+
+  /**
+   * @brief Plot a single series.
+   *
+   * Convenience overload so a single series need not be wrapped in an extra
+   * pair of braces: @code plot({.y = samples}); @endcode
+   *
+   * @param series the series to plot @see SeriesData
+   */
+  void plot(const SeriesData &series);
+
+  /**
+   * @brief Remove all plotted series, clearing the plot.
+   *
+   * A named alias for plotting an empty list: @code plot({}); @endcode
+   */
+  void clear();
 
   /**
    * @brief Draw horizontal line(s)
@@ -469,6 +484,14 @@ class Plot : public juce::Component {
   /** @internal */
   void setTracePointInternal(const juce::Point<float> &trace_point_coordinate,
                              bool is_point_data_point);
+  /** @internal Ensure there are exactly 'count' series of the given type,
+   * creating any that are missing. */
+  template <SeriesType t_series_type>
+  void ensureSeriesCount(std::size_t count);
+  /** @internal Copy the given series' data into the plot's components (one
+   * copy each); shared by the plot(SeriesData) and plot(SeriesDataList)
+   * overloads. */
+  void plotSeries(std::span<const SeriesData> series);
   /** @internal */
   template <SeriesType t_series_type>
   void plotInternal(const std::vector<std::vector<float>> &y_data,

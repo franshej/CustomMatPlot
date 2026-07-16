@@ -11,6 +11,8 @@
 #pragma once
 
 #include <memory>
+#include <span>
+#include <vector>
 
 #include "cmp_datamodels.h"
 #include "cmp_lookandfeel_base.h"
@@ -19,6 +21,29 @@ namespace cmp {
 
 class Series3D;
 class Axes3DBox;
+
+/** @brief One 3-D series to plot: its data plus optional styling.
+ *
+ * The fields are ordered x, y, z; all three are required and must have the
+ * same size. With C++20 designated initializers a series reads clearly at the
+ * call site, e.g.
+ * @code
+ *   plot3({ {.x = x, .y = y, .z = z} });
+ * @endcode
+ */
+struct Series3DData {
+  /** x-values. Must have the same size as y and z. */
+  std::vector<float> x;
+
+  /** y-values. Must have the same size as x and z. */
+  std::vector<float> y;
+
+  /** z-values. Must have the same size as x and y. */
+  std::vector<float> z;
+
+  /** Optional per-series styling. @see SeriesAttribute */
+  SeriesAttribute attribute{};
+};
 
 /**
  * @class Plot3D
@@ -49,20 +74,31 @@ class Plot3D : public juce::Component {
          const Scaling z_scaling = Scaling::linear);
 
   /**
-   * @brief Plot 3-D line data
-   * @details Each entry in the outer vectors describes one series. The
-   *          x/y/z vectors of a line must have the same size. The axis
-   *          limits are auto-scaled to the data unless they have been set
-   *          explicitly.
-   * @param x_data x-values of the lines
-   * @param y_data y-values of the lines
-   * @param z_data z-values of the lines
-   * @param series_attributes optional attributes per line
+   * @brief Plot one or more 3-D series.
+   * @details Each @ref Series3DData carries its own x, y, z and optional
+   *          styling. The x/y/z vectors of a series must have the same size.
+   *          The axis limits are auto-scaled to the data unless they have been
+   *          set explicitly. Passing an empty list clears the series.
+   * @param series the 3-D series to plot @see Series3DData
    */
-  void plot3(const std::vector<std::vector<float>> &x_data,
-             const std::vector<std::vector<float>> &y_data,
-             const std::vector<std::vector<float>> &z_data,
-             const SeriesAttributeList &series_attributes = {});
+  void plot3(const std::vector<Series3DData> &series);
+
+  /**
+   * @brief Plot a single 3-D series.
+   *
+   * Convenience overload so a single series need not be wrapped in an extra
+   * pair of braces: @code plot3({.x = x, .y = y, .z = z}); @endcode
+   *
+   * @param series the 3-D series to plot @see Series3DData
+   */
+  void plot3(const Series3DData &series);
+
+  /**
+   * @brief Remove all plotted series, clearing the plot.
+   *
+   * A named alias for plotting an empty list: @code plot3({}); @endcode
+   */
+  void clear();
 
   /**
    * @brief Set the X-limits
@@ -136,6 +172,10 @@ class Plot3D : public juce::Component {
   void lookAndFeelChanged() override;
 
  private:
+  /** @internal Copy the given series' data into the plot's components (one
+   * copy each); shared by the plot3(Series3DData) and
+   * plot3(std::vector<Series3DData>) overloads. */
+  void plot3Series(std::span<const Series3DData> series);
   /** @internal */
   void resizeChildrens();
   /** @internal */

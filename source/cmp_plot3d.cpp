@@ -20,13 +20,14 @@
 
 namespace cmp {
 
-/** The limits spanning all values of all lines. */
-static Lim_f findDataLim(const std::vector<std::vector<float>>& data) {
+/** The limits spanning one axis (x, y or z) across all series. */
+static Lim_f findSeriesLim(std::span<const Series3DData> series,
+                           std::vector<float> Series3DData::*axis) {
   auto min = std::numeric_limits<float>::max();
   auto max = std::numeric_limits<float>::lowest();
 
-  for (const auto& line_data : data) {
-    for (const auto value : line_data) {
+  for (const auto& s : series) {
+    for (const auto value : s.*axis) {
       min = std::min(min, value);
       max = std::max(max, value);
     }
@@ -134,58 +135,62 @@ const juce::Label& Plot3D::getTitleLabel() const noexcept {
   return m_title_label;
 }
 
-void Plot3D::plot3(const std::vector<std::vector<float>>& x_data,
-                   const std::vector<std::vector<float>>& y_data,
-                   const std::vector<std::vector<float>>& z_data,
-                   const SeriesAttributeList& series_attributes) {
-  if (x_data.size() != y_data.size() || x_data.size() != z_data.size())
-    throw std::invalid_argument(
-        "plot3: x_data, y_data and z_data must contain the same number of "
-        "lines.");
+void Plot3D::plot3Series(std::span<const Series3DData> series) {
+  // Validate before mutating any state, so a throw leaves the plot untouched.
+  for (const auto& s : series)
+    if (s.x.size() != s.y.size() || s.x.size() != s.z.size())
+      throw std::invalid_argument(
+          "plot3: the x, y and z values of a series must have the same size.");
 
   auto* lnf = getPlotLookAndFeelBase();
 
-  if (m_series.size() != x_data.size()) {
-    m_series.resize(x_data.size());
+  if (m_series.size() != series.size()) {
+    m_series.resize(series.size());
 
     for (std::size_t i = 0; i < m_series.size(); ++i) {
       if (m_series[i]) continue;
 
-      auto series = std::make_unique<Series3D>();
+      auto s = std::make_unique<Series3D>();
 
       if (lnf) {
         const auto colour_id = lnf->getColourFromSeriesID(i);
-        series->setColour(lnf->findAndGetColourFromId(colour_id));
+        s->setColour(lnf->findAndGetColourFromId(colour_id));
       }
 
-      series->setLookAndFeel(&getLookAndFeel());
-      series->setBounds(m_axes_bounds);
-      addAndMakeVisible(series.get());
+      s->setLookAndFeel(&getLookAndFeel());
+      s->setBounds(m_axes_bounds);
+      addAndMakeVisible(s.get());
 
-      m_series[i] = std::move(series);
+      m_series[i] = std::move(s);
     }
 
     m_axes_box->toBack();
   }
 
-  for (std::size_t i = 0; i < m_series.size(); ++i) {
-    if (x_data[i].size() != y_data[i].size() ||
-        x_data[i].size() != z_data[i].size())
-      throw std::invalid_argument(
-          "plot3: the x, y and z values of a line must have the same size.");
-
-    m_series[i]->setValues(x_data[i], y_data[i], z_data[i]);
-
-    if (i < series_attributes.size())
-      m_series[i]->setSeriesAttribute(series_attributes[i]);
+  // Only auto-scale when there is data; an empty series list just clears.
+  if (!series.empty()) {
+    if (m_x_autoscale) m_x_axis.lim = findSeriesLim(series, &Series3DData::x);
+    if (m_y_autoscale) m_y_axis.lim = findSeriesLim(series, &Series3DData::y);
+    if (m_z_autoscale) m_z_axis.lim = findSeriesLim(series, &Series3DData::z);
   }
 
-  if (m_x_autoscale) m_x_axis.lim = findDataLim(x_data);
-  if (m_y_autoscale) m_y_axis.lim = findDataLim(y_data);
-  if (m_z_autoscale) m_z_axis.lim = findDataLim(z_data);
+  // Copy each series' data straight into its component: one copy of the
+  // caller's data, with no intermediate parallel arrays.
+  for (std::size_t i = 0; i < series.size(); ++i) {
+    m_series[i]->setValues(series[i].x, series[i].y, series[i].z);
+    m_series[i]->setSeriesAttribute(series[i].attribute);
+  }
 
   updateChildrenParameters();
 }
+
+void Plot3D::plot3(const std::vector<Series3DData>& series) {
+  plot3Series(series);
+}
+
+void Plot3D::plot3(const Series3DData& series) { plot3Series({&series, 1}); }
+
+void Plot3D::clear() { plot3Series({}); }
 
 void Plot3D::setView(const float azimuth_degrees,
                      const float elevation_degrees) {

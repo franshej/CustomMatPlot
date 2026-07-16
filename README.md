@@ -120,7 +120,7 @@ SECTION(PlotTest, "Plot class") {
   }
 
   TEST("Part 2: single series") {
-    plot.plot({y_data1});
+    plot.plot({.y = y_data1});
     ...
   }
 }
@@ -139,7 +139,7 @@ TEST(ramp, non_real_time) {
   std::vector<float> y_test_data(10u);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.0f);
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
 }
 ```
 

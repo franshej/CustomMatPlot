@@ -15,20 +15,20 @@ TEST(random_amount_y_data, real_time) {
   ADD_TIMER(1000);
 
   GET_TIMER_CB = [=](const int dt_ms) {
-    static std::vector<std::vector<float>> y_test_data;
+    static cmp::SeriesDataList series;
     size_t points_count =
         2 + (size_t)((float(rand()) / float(RAND_MAX)) * 1000.0);
     size_t curve_count = 1 + (size_t)((float(rand()) / float(RAND_MAX)) * 10.0);
 
-    y_test_data.resize(curve_count);
+    series.resize(curve_count);
     for (size_t i = 0; i < curve_count; ++i) {
-      y_test_data[i].resize(points_count);
+      series[i].y.resize(points_count);
       for (size_t j = 0; j < points_count; ++j) {
-        y_test_data[i][j] =
+        series[i].y[j] =
             static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
       }
     }
-    PLOT_Y({y_test_data});
+    GET_PLOT->plot(series);
   };
 }
 
@@ -43,7 +43,7 @@ TEST(random_y_values, real_time) {
       y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     }
 
-    PLOT_Y({y_test_data});
+    GET_PLOT->plot({.y = y_test_data});
   };
 }
 
@@ -54,7 +54,7 @@ TEST(real_time_plot_function, real_time) {
   X_LIM(1.f, 10.f);
   Y_LIM(0.f, 1.f);
 
-  PLOT_Y({std::vector<float>(10)});
+  GET_PLOT->plot({.y = std::vector<float>(10)});
   GET_TIMER_CB = [=](const int dt_ms) {
     static std::vector<float> y_test_data(10);
 
@@ -90,7 +90,9 @@ TEST(spread, real_time) {
     return test_data_y;
   };
 
-  PLOT_Y(getYData());
+  cmp::SeriesDataList series;
+  for (const auto& y : getYData()) series.push_back({.y = y});
+  GET_PLOT->plot(series);
 
   const std::vector<cmp::SpreadIndex> spread_indices = {{0, 1}};
   FILL_BETWEEN(spread_indices);
@@ -105,22 +107,21 @@ TEST(random_yx_values, real_time) {
   ADD_TIMER(1000);
 
   GET_TIMER_CB = [=](const int dt_ms) {
-    static std::vector<std::vector<float>> x_test_data, y_test_data;
+    static cmp::SeriesDataList series;
     size_t points_count =
         2 + (size_t)((float(rand()) / float(RAND_MAX)) * 1000.0);
     size_t curve_count = 1 + (size_t)((float(rand()) / float(RAND_MAX)) * 10.0);
 
-    x_test_data.resize(curve_count);
-    y_test_data.resize(curve_count);
+    series.resize(curve_count);
     for (size_t i = 0; i < curve_count; ++i) {
-      x_test_data[i].resize(points_count);
-      y_test_data[i].resize(points_count);
+      series[i].x.resize(points_count);
+      series[i].y.resize(points_count);
       for (size_t j = 0; j < points_count; ++j) {
-        x_test_data[i][j] = (float)j;  // Linear curve
-        y_test_data[i][j] =
+        series[i].x[j] = (float)j;  // Linear curve
+        series[i].y[j] =
             static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
       }
     }
-    PLOT_XY({y_test_data}, {x_test_data});
+    GET_PLOT->plot(series);
   };
 }

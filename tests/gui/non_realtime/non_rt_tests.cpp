@@ -23,7 +23,7 @@ TEST(test_xy_ticks, non_real_time) {
   std::vector<float> x_ticks = {0, 1, 7};
   std::vector<float> y_ticks = {3, 2, 9};
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   X_TICKS(x_ticks);
   Y_TICKS(y_ticks);
 }
@@ -37,7 +37,7 @@ TEST(test_custom_x_labels, non_real_time) {
                                            "Fem", "Sex", "Sju",   "Atta",
                                            "Nio", "Tio", "Elva",  "Tolv"};
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   X_LABELS(labels)
   X_LABEL("X LABEL");
   Y_LABEL("Y LABEL");
@@ -52,7 +52,7 @@ TEST(test_custom_x_labels_ticks, non_real_time) {
   const std::vector<std::string> labels = {"MMM", "Two", "Three", "Fyra"};
   std::vector<float> x_ticks = {0, 3000, 7000, 10000};
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   X_LABELS(labels)
   X_TICKS(x_ticks);
   X_LABEL("X LABEL");
@@ -70,7 +70,7 @@ TEST(test_custom_y_labels, non_real_time) {
       "Sju",     "Atta",    "Nio",    "Tio",    "Elva",   "Tolv",
       "Tretton", "Fjorton", "Femton", "Sexton", "sjutton"};
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   Y_LABELS(labels)
   X_LABEL("X LABEL");
   Y_LABEL("Y LABEL");
@@ -86,7 +86,7 @@ TEST(test_semi_log_x_1000, non_real_time) {
   y_test_data[9] = 1000;
   y_test_data[99] = 1000;
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   GRID_ON;
 }
 
@@ -103,7 +103,7 @@ TEST(test_semi_log_xy_1000, non_real_time) {
   std::iota(x_test_data.begin(), x_test_data.end(), 1.f);
   for (auto &x : x_test_data) x = x * 1e-3f;
 
-  PLOT_XY({y_test_data}, {x_test_data});
+  GET_PLOT->plot({.x = x_test_data, .y = y_test_data});
   GRID_ON;
 }
 
@@ -113,7 +113,7 @@ TEST(test_grid_on, non_real_time) {
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   GRID_ON;
 }
 
@@ -123,7 +123,7 @@ TEST(test_tiny_grid_on, non_real_time) {
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 0.0f);
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   TINY_GRID_ON;
 }
 
@@ -132,7 +132,7 @@ TEST(test_semi_plot_x_tiny_grid_on, non_real_time) {
 
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   TINY_GRID_ON;
 };
 
@@ -142,7 +142,7 @@ TEST(test_draw_flat_line, non_real_time) {
   std::vector<float> y_data{1, 1};
   std::vector<float> x_data{0, 9};
 
-  PLOT_XY({y_data}, {x_data});
+  GET_PLOT->plot({.x = x_data, .y = y_data});
   Y_LIM(0, 2);
 }
 
@@ -156,7 +156,7 @@ TEST(test_linear_dashed_lines, non_real_time) {
   cmp::SeriesAttribute ga;
   ga.dashed_lengths = dashed_lengths;
 
-  PLOT_XY_ATTRI({y_test_data}, {}, {ga});
+  GET_PLOT->plot({.y = y_test_data, .attribute = ga});
 }
 
 TEST(test_flat_curve_10000, non_real_time) {
@@ -165,7 +165,7 @@ TEST(test_flat_curve_10000, non_real_time) {
   std::vector<float> y_test_data(100000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
 }
 
 TEST(test_flat_curve_0p0001, non_real_time) {
@@ -175,7 +175,7 @@ TEST(test_flat_curve_0p0001, non_real_time) {
   std::iota(y_test_data.begin(), y_test_data.end(), 0.f);
   for (auto &val : y_test_data) val *= 0.00001f;
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
 }
 
 TEST(test_labels, non_real_time) {
@@ -184,7 +184,7 @@ TEST(test_labels, non_real_time) {
   std::vector<float> y_test_data(10000);
   std::iota(y_test_data.begin(), y_test_data.end(), -100000.f);
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   X_LABEL("X LABEL");
   Y_LABEL("Y LABEL");
   TITLE("TITLE");
@@ -199,7 +199,7 @@ TEST(test_sinus_auto_lim, non_real_time) {
     y = std::sin(y * PI2 / test_data.size());
   }
 
-  PLOT_Y({test_data});
+  GET_PLOT->plot({.y = test_data});
 }
 
 TEST(test_ramp, non_real_time) {
@@ -208,29 +208,30 @@ TEST(test_ramp, non_real_time) {
   std::vector<float> y_test_data(10);
   std::iota(y_test_data.begin(), y_test_data.end(), 0);
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
 }
 
 TEST(test_two_sine, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(2, std::vector<float>(100));
+  cmp::SeriesDataList series(2);
+
+  // x-values: two sine waves.
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = std::sin(y * PI2 / y_vec.size()) + i;
-    }
+  for (auto &s : series) {
+    s.x.resize(100);
+    std::iota(s.x.begin(), s.x.end(), 0);
+    for (auto &x : s.x) x = std::sin(x * PI2 / s.x.size()) + i;
     i++;
   }
 
-  std::vector<std::vector<float>> test_data_x =
-      std::vector<std::vector<float>>(2, std::vector<float>(100));
-  std::iota(test_data_x.front().begin(), test_data_x.front().end(), 0);
-  std::iota(test_data_x.back().begin(), test_data_x.back().end(), -50);
+  // y-values: two ramps.
+  series[0].y.resize(100);
+  std::iota(series[0].y.begin(), series[0].y.end(), 0);
+  series[1].y.resize(100);
+  std::iota(series[1].y.begin(), series[1].y.end(), -50);
 
-  PLOT_XY(test_data_x, test_data_y);
+  GET_PLOT->plot(series);
 }
 
 TEST(test_x_lim, non_real_time) {
@@ -245,7 +246,7 @@ TEST(test_x_lim, non_real_time) {
   std::vector<float> test_data_x = std::vector<float>(100);
   std::iota(test_data_x.begin(), test_data_x.end(), -49);
 
-  PLOT_XY({test_data_x}, {test_data_y});
+  GET_PLOT->plot({.x = test_data_y, .y = test_data_x});
   X_LIM(0, 50);
 }
 
@@ -258,22 +259,22 @@ TEST(test_y_lim, non_real_time) {
     y = std::sin(y * PI2 / test_data_y.size());
   }
 
-  PLOT_Y({test_data_y});
+  GET_PLOT->plot({.y = test_data_y});
   Y_LIM(0, 1);
 }
 
 TEST(test_legend_6, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(6, std::vector<float>(100));
+  cmp::SeriesDataList series(6);
   std::vector<std::string> legends;
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+  for (auto &s : series) {
+    s.y.resize(100);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = (i + 1) * std::sin(y * PI2 / s.y.size()) + i;
     }
 
     std::stringstream stream;
@@ -282,7 +283,7 @@ TEST(test_legend_6, non_real_time) {
     i++;
   }
 
-  PLOT_Y(test_data_y);
+  GET_PLOT->plot(series);
   LEGEND(legends);
 
   TITLE("Some good looking sines!")
@@ -295,15 +296,15 @@ TEST(test_legend_6, non_real_time) {
 TEST(test_legend_2, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(2, std::vector<float>(100));
+  cmp::SeriesDataList series(2);
   std::vector<std::string> legends;
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+  for (auto &s : series) {
+    s.y.resize(100);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = (i + 1) * std::sin(y * PI2 / s.y.size()) + i;
     }
     std::stringstream stream;
     stream << std::fixed << std::setprecision(0) << (i + 1);
@@ -311,7 +312,7 @@ TEST(test_legend_2, non_real_time) {
     i++;
   }
 
-  PLOT_Y(test_data_y);
+  GET_PLOT->plot(series);
   LEGEND(legends);
 }
 
@@ -321,7 +322,7 @@ TEST(plot_semi_log_y, non_real_time) {
   std::vector<float> y_test_data(1000);
   std::iota(y_test_data.begin(), y_test_data.end(), 1.f);
 
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   GRID_ON;
 }
 
@@ -339,7 +340,7 @@ TEST(look_and_feel, non_real_time) {
   auto lnf = std::make_shared<MyLnf>();
 
   PARENT->lnf.emplace_back(lnf);
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   GET_PLOT->setLookAndFeel(lnf.get());
 }
 
@@ -355,30 +356,29 @@ TEST(x_axis_above_axes, non_real_time) {
   auto lnf = std::make_shared<MyLnf_2>();
 
   PARENT->lnf.emplace_back(lnf);
-  PLOT_Y({y_test_data});
+  GET_PLOT->plot({.y = y_test_data});
   GET_PLOT->setLookAndFeel(lnf.get());
 }
 
 TEST(set_custom_colour, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(6, std::vector<float>(100));
+  cmp::SeriesDataList series(6);
   std::vector<std::string> legends;
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+  for (auto &s : series) {
+    s.y.resize(100);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = (i + 1) * std::sin(y * PI2 / s.y.size()) + i;
     }
     i++;
   }
 
-  cmp::SeriesAttributeList ga(6);
-  ga[3].series_colour = juce::Colours::pink;
+  series[3].attribute.series_colour = juce::Colours::pink;
 
-  PLOT_XY_ATTRI(test_data_y, {}, ga);
+  GET_PLOT->plot(series);
   LEGEND(legends);
 }
 
@@ -391,7 +391,7 @@ TEST(opacity, non_real_time) {
   cmp::SeriesAttributeList ga(1);
   ga[0].series_opacity = 0.5f;
 
-  PLOT_XY_ATTRI({y_test_data}, {}, ga);
+  GET_PLOT->plot({.y = y_test_data, .attribute = ga[0]});
   GRID_ON;
 }
 
@@ -404,63 +404,62 @@ TEST(path_stroke_path, non_real_time) {
   cmp::SeriesAttributeList ga(1);
   ga[0].path_stroke_type = juce::PathStrokeType(10);
 
-  PLOT_XY_ATTRI({y_test_data}, {}, ga);
+  GET_PLOT->plot({.y = y_test_data, .attribute = ga[0]});
   GRID_ON;
 }
 
 TEST(markers, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(7, std::vector<float>(10));
+  cmp::SeriesDataList series(7);
   std::vector<std::string> legends;
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = (i + 1) * std::sin(y * PI2 / y_vec.size()) + i;
+  for (auto &s : series) {
+    s.y.resize(10);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = (i + 1) * std::sin(y * PI2 / s.y.size()) + i;
     }
     ++i;
   }
-  cmp::SeriesAttributeList ga(test_data_y.size());
-  ga[0].marker = cmp::Marker::Type::Circle;
+  series[0].attribute.marker = cmp::Marker::Type::Circle;
 
-  ga[1].marker = cmp::Marker::Type::Square;
-  ga[1].marker.value().FaceColour = juce::Colours::lightpink;
+  series[1].attribute.marker = cmp::Marker::Type::Square;
+  series[1].attribute.marker.value().FaceColour = juce::Colours::lightpink;
 
-  ga[2].marker = cmp::Marker::Type::Pentagram;
+  series[2].attribute.marker = cmp::Marker::Type::Pentagram;
 
-  ga[3].marker = cmp::Marker::Type::UpTriangle;
+  series[3].attribute.marker = cmp::Marker::Type::UpTriangle;
 
-  ga[4].marker = cmp::Marker::Type::RightTriangle;
+  series[4].attribute.marker = cmp::Marker::Type::RightTriangle;
 
-  ga[5].marker = cmp::Marker::Type::DownTriangle;
+  series[5].attribute.marker = cmp::Marker::Type::DownTriangle;
 
-  ga[6].marker = cmp::Marker::Type::LeftTriangle;
+  series[6].attribute.marker = cmp::Marker::Type::LeftTriangle;
 
-  PLOT_XY_ATTRI({test_data_y}, {}, ga);
+  GET_PLOT->plot(series);
   GRID_ON;
 }
 
 TEST(spread, non_real_time) {
   ADD_SEMI_LOG_X;
 
-  std::vector<std::vector<float>> test_data_y =
-      std::vector<std::vector<float>>(4, std::vector<float>(1000));
+  cmp::SeriesDataList series(4);
 
   float i = 0;
-  for (auto &y_vec : test_data_y) {
-    std::iota(y_vec.begin(), y_vec.end(), 0);
-    for (auto &y : y_vec) {
-      y = i * std::sin(y * PI2 / y_vec.size());
+  for (auto &s : series) {
+    s.y.resize(1000);
+    std::iota(s.y.begin(), s.y.end(), 0);
+    for (auto &y : s.y) {
+      y = i * std::sin(y * PI2 / s.y.size());
     }
     i += 10;
   }
 
   const std::vector<cmp::SpreadIndex> spread_indices = {{0, 1}, {2, 3}};
 
-  PLOT_Y(test_data_y);
+  GET_PLOT->plot(series);
   FILL_BETWEEN(spread_indices);
 
   X_LABEL("Logarithmic x-axis");
@@ -477,7 +476,7 @@ TEST(xy_downsampling, non_real_time) {
   y_data[500'004u] = -31.0f;
   y_data[500'006u] = 14.0f;
 
-  PLOT_Y({y_data});
+  GET_PLOT->plot({.y = y_data});
 }
 
 TEST(set_trace_point, non_real_time) {
@@ -489,9 +488,7 @@ TEST(set_trace_point, non_real_time) {
   std::vector<float> y_data_2(1'000u, 0.0f);
   std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
 
-  const auto y = {y_data_1, y_data_2};
-
-  PLOT_Y(y);
+  GET_PLOT->plot({{.y = y_data_1}, {.y = y_data_2}});
 
   SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 }
@@ -505,9 +502,7 @@ TEST(clear_all_tracepoints, non_real_time) {
   std::vector<float> y_data_2(1'000u, 0.0f);
   std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
 
-  const auto y = {y_data_1, y_data_2};
-
-  PLOT_Y(y);
+  GET_PLOT->plot({{.y = y_data_1}, {.y = y_data_2}});
 
   SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 
@@ -523,9 +518,7 @@ TEST(set_scaling_dynamic, non_real_time) {
   std::vector<float> y_data_2(1'000u, 0.0f);
   std::iota(y_data_2.begin(), y_data_2.end(), 100.0f);
 
-  const auto y = {y_data_1, y_data_2};
-
-  PLOT_Y(y);
+  GET_PLOT->plot({{.y = y_data_1}, {.y = y_data_2}});
 
   SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 
@@ -548,7 +541,7 @@ TEST(step_function_downsample, non_real_time) {
   x[3] = 4.f;
   x[6] = 5.f;
 
-  PLOT_XY({y}, {x});
+  GET_PLOT->plot({.x = x, .y = y});
 }
 
 TEST(trace_point_cb, non_real_time) {
@@ -560,9 +553,7 @@ TEST(trace_point_cb, non_real_time) {
   std::vector<float> y_data_2(1'000u, 0.0f);
   std::iota(y_data_2.begin(), y_data_2.end(), -100.0f);
 
-  const auto y = {y_data_1, y_data_2};
-
-  PLOT_Y(y);
+  GET_PLOT->plot({{.y = y_data_1}, {.y = y_data_2}});
 
   SET_TRACE_POINT(juce::Point<float>(100.0f, 100.0f));
 
@@ -599,17 +590,17 @@ static auto create_heart(const T amplitude, const std::size_t N) {
 TEST(heart, non_real_time) {
   ADD_PLOT;
 
-  std::vector<std::vector<float>> xs, ys;
-
   constexpr auto num_hearts = 10;
+  cmp::SeriesDataList series(num_hearts);
+
   for (size_t i = 0; i < num_hearts; ++i) {
     const auto [x, y] = create_heart(float(i), 5000u);
 
-    xs.push_back(y);
-    ys.push_back(x);
+    series[i].x = x;
+    series[i].y = y;
   }
 
-  PLOT_XY(xs, ys);
+  GET_PLOT->plot(series);
 }
 
 TEST(test_vertical_line, non_real_time) {
@@ -619,7 +610,7 @@ TEST(test_vertical_line, non_real_time) {
   {
     std::vector<float> y_test_data(10);
     std::iota(y_test_data.begin(), y_test_data.end(), 0);
-    PLOT_Y({y_test_data});
+    GET_PLOT->plot({.y = y_test_data});
   }
 
   { GET_PLOT->plotVerticalLines({3.0f, 10.0f, 5.0f}); }
@@ -632,7 +623,7 @@ TEST(test_horizontal_line, non_real_time) {
   {
     std::vector<float> y_test_data(10);
     std::iota(y_test_data.begin(), y_test_data.end(), 0);
-    PLOT_Y({y_test_data});
+    GET_PLOT->plot({.y = y_test_data});
   }
 
   { GET_PLOT->plotHorizontalLines({3.0f, 10.0f, 5.0f}); }
@@ -649,6 +640,6 @@ TEST(gradient, non_real_time) {
   juce::Colour colour1 = juce::Colours::green;
   ga[0].gradient_colours = std::make_pair(colour0, colour1);
 
-  PLOT_XY_ATTRI({y_test_data}, {}, ga);
+  GET_PLOT->plot({.y = y_test_data, .attribute = ga[0]});
   GRID_ON;
 }

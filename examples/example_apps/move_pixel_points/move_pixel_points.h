@@ -68,7 +68,8 @@ class move_pixel_points : public juce::Component {
 
     // Plot some values.
     m_plot.plot(
-        {{1, 3, 7, 9, 13}, {9, 21, 4, 9, 32, 4, 5, 6, 7, 8, 9, 10, 11}});
+        {{.y = {1, 3, 7, 9, 13}},
+         {.y = {9, 21, 4, 9, 32, 4, 5, 6, 7, 8, 9, 10, 11}}});
 
     // Set the lookandfeel of the plot.
     m_plot.setLookAndFeel(&custom_lnf);

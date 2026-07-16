@@ -51,6 +51,7 @@ class Observer;
 
 struct LegendLabel;
 struct SeriesAttribute;
+struct SeriesData;
 struct Marker;
 struct Spread;
 struct SpreadIndex;
@@ -74,6 +75,7 @@ typedef std::vector<Label> LabelVector;
 typedef std::vector<std::string> StringVector;
 typedef std::vector<juce::Colour> ColourVector;
 typedef std::vector<SeriesAttribute> SeriesAttributeList;
+typedef std::vector<SeriesData> SeriesDataList;
 typedef std::vector<std::unique_ptr<Spread>> SpreadList;
 typedef Lim<float> Lim_f;
 // Callback function for when a series is changed. E.g. when it is changed
@@ -478,6 +480,27 @@ struct SeriesAttribute {
   /** Creates a vertical linear gradient between top and bottom of the series
    * area. Only the gradient below the series is visible.  */
   std::optional<std::pair<juce::Colour, juce::Colour>> gradient_colours;
+};
+
+/** @brief One series to plot: its data plus optional styling.
+ *
+ * The fields are ordered x, y. Leave @ref x empty to auto-generate a
+ * 1..N ramp for that series. With C++20 designated initializers a series
+ * reads clearly at the call site, e.g.
+ * @code
+ *   plot({ {.x = t, .y = signal, .attribute = {.series_colour = red}},
+ *          {.y = samples} });   // second series uses an auto x-ramp
+ * @endcode
+ */
+struct SeriesData {
+  /** x-values. Optional: an empty vector auto-generates a 1..N ramp. */
+  std::vector<float> x;
+
+  /** y-values. */
+  std::vector<float> y;
+
+  /** Optional per-series styling. @see SeriesAttribute */
+  SeriesAttribute attribute{};
 };
 
 /** @brief A struct that defines between which two series the area is

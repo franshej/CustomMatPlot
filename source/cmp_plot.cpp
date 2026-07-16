@@ -7,8 +7,10 @@
 
 #include "cmp_plot.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 
@@ -356,12 +358,56 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
   return generateRamp();
 }
 
-void Plot::plot(const std::vector<std::vector<float>>& y_data,
-                const std::vector<std::vector<float>>& x_data,
-                const SeriesAttributeList& series_attributes) {
-  plotInternal<SeriesType::normal>(y_data, x_data, series_attributes);
+void Plot::plotSeries(std::span<const SeriesData> series) {
+  // Validate before mutating any state, so a throw leaves the plot untouched.
+  // An empty x is allowed: it auto-generates a 1..N ramp below.
+  for (const auto& s : series)
+    if (!s.x.empty() && s.x.size() != s.y.size())
+      throw std::invalid_argument(
+          "plot: the x and y values of a series must have the same size.");
+
+  // plot() sets the plot to exactly the given series; an empty list clears
+  // them (there is no separate clear method).
+  ensureSeriesCount<SeriesType::normal>(series.size());
+
+  // Copy each series' data straight into its component: one copy of the
+  // caller's data, with no intermediate parallel arrays and without touching
+  // the caller's bundle.
+  auto series_it = series.begin();
+  for (const auto& component : *m_series) {
+    if (component->getType() != SeriesType::normal) continue;
+    if (series_it == series.end()) break;
+
+    const auto& s = *series_it++;
+    component->setYValues(s.y);
+
+    if (s.x.empty()) {
+      // No x supplied: use a 1..N ramp, matching generateXdataRamp.
+      std::vector<float> ramp(s.y.size());
+      std::iota(ramp.begin(), ramp.end(), 1.0f);
+      component->setXValues(ramp);
+    } else {
+      component->setXValues(s.x);
+    }
+
+    component->setSeriesAttribute(s.attribute);
+  }
+
+  // Only auto-scale when there is data; scaling to zero series gives no range.
+  if (!series.empty()) {
+    if (m_y_autoscale && !m_is_panning_or_zoomed_active) setAutoYScale();
+    if (m_x_autoscale && !m_is_panning_or_zoomed_active) setAutoXScale();
+  }
+
+  m_notify_components_on_update.notify();
   repaint();
 }
+
+void Plot::plot(const SeriesDataList& series) { plotSeries(series); }
+
+void Plot::plot(const SeriesData& series) { plotSeries({&series, 1}); }
+
+void Plot::clear() { plotSeries({}); }
 
 void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
   plotInternal<SeriesType::normal>(y_data, {}, {}, true);
@@ -595,12 +641,9 @@ void Plot::addSeriesInternal(std::unique_ptr<Series>& series,
 }
 
 template <SeriesType t_series_type>
-void Plot::updateSeriesYData(const std::vector<std::vector<float>>& y_data,
-                             const SeriesAttributeList& series_attribute_list) {
-  if (y_data.empty()) return;
-
-  UNLIKELY if (y_data.size() != m_series->size<t_series_type>()) {
-    m_series->resize<t_series_type>(y_data.size());
+void Plot::ensureSeriesCount(std::size_t count) {
+  UNLIKELY if (count != m_series->size<t_series_type>()) {
+    m_series->resize<t_series_type>(count);
     std::size_t series_index = 0u;
     for (auto& series : *m_series) {
       if (series == nullptr) {
@@ -610,6 +653,14 @@ void Plot::updateSeriesYData(const std::vector<std::vector<float>>& y_data,
     }
     m_legend->setSeries(*m_series);
   }
+}
+
+template <SeriesType t_series_type>
+void Plot::updateSeriesYData(const std::vector<std::vector<float>>& y_data,
+                             const SeriesAttributeList& series_attribute_list) {
+  if (y_data.empty()) return;
+
+  ensureSeriesCount<t_series_type>(y_data.size());
 
   auto y_data_it = y_data.begin();
   for (const auto& series : *m_series) {
@@ -628,11 +679,11 @@ void Plot::updateSeriesYData(const std::vector<std::vector<float>>& y_data,
   }
 
   if (!series_attribute_list.empty()) {
-    auto it_gal = series_attribute_list.begin();
+    auto it_sal = series_attribute_list.begin();
     for (const auto& series : *m_series) {
-      if (it_gal != series_attribute_list.end() &&
+      if (it_sal != series_attribute_list.end() &&
           series->getType() == t_series_type) {
-        series->setSeriesAttribute(*it_gal++);
+        series->setSeriesAttribute(*it_sal++);
       }
     }
   }
