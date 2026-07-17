@@ -59,7 +59,7 @@ struct Series3DData {
  */
 class Plot3D : public juce::Component {
  public:
-  /** Destructor, making sure to set the lookandfeel in all subcomponenets to
+  /** Destructor, making sure to set the lookandfeel in all subcomponents to
    * nullptr. */
   ~Plot3D() override;
 

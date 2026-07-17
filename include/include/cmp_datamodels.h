@@ -88,19 +88,19 @@ typedef std::function<void(const SeriesDataViewList& series)>
 
 /** Enum to define the scaling of an axis. */
 enum class Scaling : uint32_t {
-  linear,     /** Linear scaling of the series. */
-  logarithmic /** Logarithmic scaling of the series. */
+  linear,     /**< Linear scaling of the series. */
+  logarithmic /**< Logarithmic scaling of the series. */
 };
 
 /** Enum to define the type of downsampling. */
 enum class DownsamplingType : uint32_t {
-  no_downsampling, /** No downsampling. Slow when plotting alot of values. */
-  x_downsampling,  /** Downsampling only based on the x-values, makes sure that
+  no_downsampling, /**< No downsampling. Slow when plotting a lot of values. */
+  x_downsampling,  /**< Downsampling only based on the x-values, makes sure that
                     there is only one plotted value per x-pixel value. Fastest,
                     but will discard x-values that are located with the same
                     x-pixel value near each other. Recommended for real-time
                     plotting. */
-  xy_downsampling, /** Skips x- & y-values that shares the same pixel on the
+  xy_downsampling, /**< Skips x- & y-values that share the same pixel on the
                       screen. It's quicker than 'no_downsampling' but slower
                       than 'x_downsampling'. */
 };
@@ -140,46 +140,46 @@ constexpr enum UserInput operator|(const enum UserInput selfValue,
 /** Enum to define a type of action that will occur for a input. */
 enum class UserInputAction : uint32_t {
   /** Tracepoint related actions. */
-  create_tracepoint,                /** Creates a tracepoint. */
-  move_tracepoint_to_closest_point, /** Move a tracepoint to closest point to
+  create_tracepoint,                /**< Creates a tracepoint. */
+  move_tracepoint_to_closest_point, /**< Move a tracepoint to closest point to
                                        the mouse. */
-  move_tracepoint_label,            /** Move a tracepoint label. */
-  move_selected_trace_points,       /** Move a pixel point. */
-  select_tracepoint,                /** Selecting a tracepoint. */
-  select_tracepoints_within_selected_area, /** Selecting multiple tracepoints.
+  move_tracepoint_label,            /**< Move a tracepoint label. */
+  move_selected_trace_points,       /**< Move a pixel point. */
+  select_tracepoint,                /**< Selecting a tracepoint. */
+  select_tracepoints_within_selected_area, /**< Selecting multiple tracepoints.
                                             */
-  deselect_tracepoint,                     /** Deselecting a tracepoint. */
+  deselect_tracepoint,                     /**< Deselecting a tracepoint. */
 
   /** Zoom related actions. */
-  zoom_selected_area, /** Zoom in on selected area. */
-  zoom_in,            /** Zoom in. */
-  zoom_out,           /** Zoom out. */
-  zoom_reset,         /** Reset the zoom. */
+  zoom_selected_area, /**< Zoom in on selected area. */
+  zoom_in,            /**< Zoom in. */
+  zoom_out,           /**< Zoom out. */
+  zoom_reset,         /**< Reset the zoom. */
 
   /** Selection area related actions. */
-  select_area_start, /** Set start positon for selected area. */
-  select_area_draw,  /** Set end position of selected are and draw the area. */
+  select_area_start, /**< Set start positon for selected area. */
+  select_area_draw,  /**< Set end position of selected area and draw it. */
 
   /** Pixel point related actions. */
-  create_movable_pixel_point, /** Create a movable pixel point. */
-  remove_movable_pixel_point, /** Remove a pixel point. */
+  create_movable_pixel_point, /**< Create a movable pixel point. */
+  remove_movable_pixel_point, /**< Remove a pixel point. */
 
   /** Legend related actions. */
-  move_legend, /** Move a legend. */
+  move_legend, /**< Move a legend. */
 
   /** Panning */
-  panning, /** Panning. */
+  panning, /**< Panning. */
 
   /** No action */
-  none /** No action. */
+  none /**< No action. */
 };
 
 /** Enum to define if the mouse has just start currently dragging or does not
  * drag. */
 enum class MouseDragState : uint32_t {
-  start, /** Start of a mouse drag. */
-  drag,  /** Mouse is currently dragging. */
-  none   /** No drag state. */
+  start, /**< Start of a mouse drag. */
+  drag,  /**< Mouse is currently dragging. */
+  none   /**< No drag state. */
 };
 
 /** Enum to define when the tracepoint/Label should be visible or not. */
@@ -393,10 +393,10 @@ struct Marker {
   /** Contructor marker type only. */
   Marker(const Marker::Type t) : type{t} {};
 
-  /** Marker outline color. */
+  /** Marker outline colour. */
   std::optional<juce::Colour> EdgeColour;
 
-  /** Marker interior color. */
+  /** Marker interior colour. */
   std::optional<juce::Colour> FaceColour;
 
   /** PathStrokeType used when drawing the edge line of the marker. */

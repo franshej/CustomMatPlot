@@ -37,11 +37,15 @@ namespace cmp {
  */
 class Plot : public juce::Component {
  public:
-  /** Destructor, making sure to set the lookandfeel in all subcomponenets to
+  /** Destructor, making sure to set the lookandfeel in all subcomponents to
    * nullptr. */
   ~Plot();
 
-  /* Constructor **/
+  /**
+   * @brief Construct a 2-D plot with the given per-axis scaling.
+   * @param x_scaling linear or logarithmic scaling for the x-axis
+   * @param y_scaling linear or logarithmic scaling for the y-axis
+   */
   Plot(const Scaling x_scaling = Scaling::linear,
        const Scaling y_scaling = Scaling::linear);
 
@@ -132,11 +136,11 @@ class Plot : public juce::Component {
   /** @brief Fill the area between two data lines
    *
    * Steps to use:
-   * 1. Draw series using plot() or realTimePlot()
+   * 1. Draw series using plot() or plotUpdateYOnly()
    * 2. Call this function to fill area between specified lines
    *
    * @param spread_indices Indices of series to fill between
-   * @param fill_area_colours Colors for filled areas (uses ColourIdsSeries if
+   * @param fill_area_colours Colours for filled areas (uses ColourIdsSeries if
    * empty)
    */
   void fillBetween(const std::vector<SpreadIndex> &spread_indices,
@@ -164,7 +168,6 @@ class Plot : public juce::Component {
    * PixelPointMoveType::none.
    *
    * @param move_points_type the type of pixel point movement.
-   * @return void.
    */
   void setMovePointsType(const PixelPointMoveType move_points_type);
 
@@ -175,7 +178,6 @@ class Plot : public juce::Component {
    *
    * @see cmp::SeriesChangedCallback for more information.
    * @param series_changed_callback the callback function.
-   * @return void.
    */
   void setSeriesDataChangedCallback(
       SeriesChangedCallback series_changed_callback);
@@ -196,7 +198,7 @@ class Plot : public juce::Component {
    * @brief Set x & y-axis scaling
    * @param x_scaling x-axis scaling
    * @param y_scaling y-axis scaling
-   * @see cmp::Scaling in cmp:datamodels.h
+   * @see cmp::Scaling in cmp_datamodels.h
    */
   void setScaling(Scaling x_scaling, Scaling y_scaling) noexcept;
 
@@ -233,34 +235,30 @@ class Plot : public juce::Component {
    *  the y-data.
    *
    *  @param y_labels text for the labels displayed as the y-axis
-   *  @return void.
    */
   void setYTickLabels(const std::vector<std::string> &y_labels);
 
   /** @brief Set the ticks values
    *
-   *  Use custom ticks to draw the grid lines and tick labels where you wanted.
+   *  Use custom ticks to draw the grid lines and tick labels where you want.
    *
-   *  @param x_ticks x-postions of ticks
-   *  @return void.
+   *  @param x_ticks x-positions of ticks
    */
   void setXTicks(const std::vector<float> &x_ticks);
 
   /** @brief Set the ticks values
    *
-   *  Use custom ticks to draw the grid lines and tick labels where you wanted.
+   *  Use custom ticks to draw the grid lines and tick labels where you want.
    *
-   *  @param y_ticks y-postions of ticks
-   *  @return void.
+   *  @param y_ticks y-positions of ticks
    */
   void setYTicks(const std::vector<float> &y_ticks);
 
   /** @brief Enables grid or tiny grid
    *
-   *  Turn on grids or tiny grids. @see GridType in cmp:datamodels.h.
+   *  Turn on grids or tiny grids. @see GridType in cmp_datamodels.h.
    *
-   *  @param grid_type typ of grid to be drawn.
-   *  @return void.
+   *  @param grid_type type of grid to be drawn.
    */
   void setGridType(const GridType grid_type);
 
@@ -268,18 +266,15 @@ class Plot : public juce::Component {
    *
    * Removes all tracepoints.
    *
-   * @return void.
    */
   void clearTracePoints() noexcept;
 
   /** @brief Set Legend
    *
-   *  Set descriptions for each series. The label 'label1..N' will be used if
-   *  fewers numbers of series_descriptions are provided than existing numbers
-   * of series.
+   *  Set a description for each series. The label 'label1..N' is used when
+   *  fewer descriptions are provided than there are series.
    *
    *  @param series_descriptions description of the series
-   *  @return void.
    */
   void setLegend(const std::vector<std::string> &series_descriptions);
 
@@ -287,7 +282,7 @@ class Plot : public juce::Component {
 
   /** @brief This lambda is triggered when a tracepoint value is changed.
    *
-   * @param current_plot poiter to this plot.
+   * @param current_plot pointer to this plot.
    * @param previous_trace_point previous tracepoint value.
    * @param new_trace_point the new tracepoint value.
    */
@@ -298,52 +293,53 @@ class Plot : public juce::Component {
 
   //==============================================================================
 
-  /** @brief Color IDs for customizing plot appearance
+  /** @brief Colour IDs for customizing plot appearance
    * @details These IDs can be used with Component::setColour() or
-   * LookAndFeel::setColour() to customize colors of various plot elements.
-   * @note All color IDs should be passed to setColour() along with the desired
-   * Color value
+   * LookAndFeel::setColour() to customize colours of various plot elements.
+   * @note All colour IDs should be passed to setColour() along with the desired
+   * Colour value
    * @see Component::setColour
    * @see Component::findColour
    * @see LookAndFeel::setColour
    */
   enum ColourIds : int {
-    background_colour,        /** Colour of the background. */
-    grid_colour,              /** Colour of the grids. */
-    transluent_grid_colour,   /** Colour of the transulent grids. */
-    x_grid_label_colour,      /** Colour of the label for each x-grid line. */
-    y_grid_label_colour,      /** Colour of the label for each y-grid line. */
-    frame_colour,             /** Colour of the frame around the axes area. */
-    x_label_colour,           /** Colour of the text on the x-axis. */
-    y_label_colour,           /** Colour of the label on the y-axis. */
-    title_label_colour,       /** Colour of the title label. */
-    trace_background_colour,  /** Colour of the trace background colour. */
-    trace_label_frame_colour, /** Colour of the trace label frame. */
-    trace_label_colour,       /** Colour of the trace label. */
-    trace_point_colour,       /** Colour of the trace point colour. */
-    trace_point_frame_colour, /** Colour of the trace point frame colour. */
-    legend_label_colour,      /** Colour of the legend label(s). */
-    legend_background_colour, /** Colour of the legend background. */
-    zoom_frame_colour         /** Colour of the dashed zoom rectangle. */
+    background_colour,        /**< Colour of the background. */
+    grid_colour,              /**< Colour of the grids. */
+    transluent_grid_colour,   /**< Colour of the translucent grids. */
+    x_grid_label_colour,      /**< Colour of the label for each x-grid line. */
+    y_grid_label_colour,      /**< Colour of the label for each y-grid line. */
+    frame_colour,             /**< Colour of the frame around the axes area. */
+    x_label_colour,           /**< Colour of the text on the x-axis. */
+    y_label_colour,           /**< Colour of the label on the y-axis. */
+    title_label_colour,       /**< Colour of the title label. */
+    trace_background_colour,  /**< Colour of the trace background colour. */
+    trace_label_frame_colour, /**< Colour of the trace label frame. */
+    trace_label_colour,       /**< Colour of the trace label. */
+    trace_point_colour,       /**< Colour of the trace point colour. */
+    trace_point_frame_colour, /**< Colour of the trace point frame colour. */
+    legend_label_colour,      /**< Colour of the legend label(s). */
+    legend_background_colour, /**< Colour of the legend background. */
+    zoom_frame_colour         /**< Colour of the dashed zoom rectangle. */
   };
 
   /** @brief A set of colour IDs to use to change the colour of each plot
    * line.*/
   enum ColourIdsSeries : int {
-    first_series_colour = (1u << 16u), /** Colour of the first series. */
-    second_series_colour,              /** Colour of the second series. */
-    third_series_colour,               /** Colour of the third series. */
-    fourth_series_colour,              /** Colour of the fourth series. */
-    fifth_series_colour,               /** Colour of the fifth series. */
-    sixth_series_colour                /** Colour of the sixth series. */
+    first_series_colour = (1u << 16u), /**< Colour of the first series. */
+    second_series_colour,              /**< Colour of the second series. */
+    third_series_colour,               /**< Colour of the third series. */
+    fourth_series_colour,              /**< Colour of the fourth series. */
+    fifth_series_colour,               /**< Colour of the fifth series. */
+    sixth_series_colour                /**< Colour of the sixth series. */
   };
 
   /**
-   *   These methods define a interface for the LookAndFeel class of juce.
-   *   The Plot class needs a LookAndFeel, that implements these methods.
-   *   The dimension-agnostic part of the interface is defined in
-   *   \see PlotLookAndFeelBase; this class adds the 2D-specific methods.
-   *   The default implementation can be seen in \see cmp_lookandfeelmethods.h
+   * @brief The 2D-specific look-and-feel interface for the Plot class.
+   *
+   * A Plot needs a juce::LookAndFeel that implements these methods. The
+   * dimension-agnostic part of the interface is defined in
+   * @ref PlotLookAndFeelBase; this class adds the 2D-specific methods. The
+   * default implementation is @ref PlotLookAndFeel in cmp_lookandfeel.h.
    */
   class LookAndFeelMethods : public PlotLookAndFeelBase {
    public:
