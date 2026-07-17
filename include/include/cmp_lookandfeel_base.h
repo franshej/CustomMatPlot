@@ -125,7 +125,7 @@ class PlotLookAndFeelBase : public juce::LookAndFeel_V4 {
   virtual CONSTEXPR20 int getAxisLabelDistanceFromAxesBound(
       const int label_height) const noexcept = 0;
 
-  /** Get the bounds of the componenet (Local bounds). */
+  /** Get the bounds of the component (Local bounds). */
   virtual CONSTEXPR20 juce::Rectangle<int> getPlotBounds(
       juce::Rectangle<int> bounds) const noexcept = 0;
 
