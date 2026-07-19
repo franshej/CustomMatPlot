@@ -54,7 +54,7 @@ class TerrenceLookAndFeel : public cmp::PlotLookAndFeelTimeline {
 
   void overridePlotColours() noexcept override {
     setColour(Plot::grid_colour, juce::Colour(0xff181818));
-    setColour(Plot::transluent_grid_colour, juce::Colour(0xff252525));
+    setColour(Plot::translucent_grid_colour, juce::Colour(0xff252525));
     // Override more colurs...
   };
 };

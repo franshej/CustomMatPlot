@@ -54,14 +54,14 @@ class Plot : public juce::Component {
    * @param min minimum value
    * @param max maximum value
    */
-  void xLim(const float min, const float max);
+  void setXLim(const float min, const float max);
 
   /**
    * @brief Set the Y-limits
    * @param min minimum value
    * @param max maximum value
    */
-  void yLim(const float min, const float max);
+  void setYLim(const float min, const float max);
 
   /**
    * @brief Plot one or more series.
@@ -211,11 +211,11 @@ class Plot : public juce::Component {
   /**
    * @brief Set trace-point
    *
-   * Set a trace-point to the point on a series closest the given
-   * coordinate. The tracepoint will be removed if it already exists.
+   * Set a trace-point to the point on a series closest to the given
+   * coordinate. The tracepoint is removed if it already exists.
    *
-   * @param trace_point_coordinate the coordinate of where the trace-point is
-   * wish to be set
+   * @param trace_point_coordinate the coordinate where the trace-point should
+   * be set
    */
   void setTracePoint(const juce::Point<float> &trace_point_coordinate);
 
@@ -305,7 +305,7 @@ class Plot : public juce::Component {
   enum ColourIds : int {
     background_colour,        /**< Colour of the background. */
     grid_colour,              /**< Colour of the grids. */
-    transluent_grid_colour,   /**< Colour of the translucent grids. */
+    translucent_grid_colour,   /**< Colour of the translucent grids. */
     x_grid_label_colour,      /**< Colour of the label for each x-grid line. */
     y_grid_label_colour,      /**< Colour of the label for each y-grid line. */
     frame_colour,             /**< Colour of the frame around the axes area. */

@@ -157,7 +157,7 @@ enum class UserInputAction : uint32_t {
   zoom_reset,         /**< Reset the zoom. */
 
   /** Selection area related actions. */
-  select_area_start, /**< Set start positon for selected area. */
+  select_area_start, /**< Set start position for selected area. */
   select_area_draw,  /**< Set end position of selected area and draw it. */
 
   /** Pixel point related actions. */

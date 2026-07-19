@@ -42,7 +42,7 @@ void PlotLookAndFeel::setDefaultPlotColours() noexcept {
   setColour(Plot::zoom_frame_colour, juce::Colour(0xff99A3A4));
 
   setColour(Plot::grid_colour, juce::Colour(0x7F99A3A4));
-  setColour(Plot::transluent_grid_colour, juce::Colour(0x4099A3A4));
+  setColour(Plot::translucent_grid_colour, juce::Colour(0x4099A3A4));
 
   setColour(Plot::x_grid_label_colour, juce::Colour(0xffaab7b8));
   setColour(Plot::y_grid_label_colour, juce::Colour(0xffaab7b8));
@@ -421,7 +421,7 @@ void PlotLookAndFeel::drawGridLine(juce::Graphics& g, const GridLine& grid_line,
   const auto x_and_len = grid_line.length + grid_line.position.getX();
 
   if (grid_line.type == GridLine::Type::translucent)
-    g.setColour(findColour(Plot::transluent_grid_colour));
+    g.setColour(findColour(Plot::translucent_grid_colour));
   else if (grid_line.type == GridLine::Type::normal)
     g.setColour(findColour(Plot::grid_colour));
 

@@ -25,8 +25,8 @@ class lim : public juce::Component {
     m_plot.plot({.y = {15, 3, 7, 9, 13}});
 
     // Set x and y limits
-    m_plot.xLim(-1.0f, 3.4f);
-    m_plot.yLim(3.14f, 42.0f);
+    m_plot.setXLim(-1.0f, 3.4f);
+    m_plot.setYLim(3.14f, 42.0f);
   };
 
   void resized() override {

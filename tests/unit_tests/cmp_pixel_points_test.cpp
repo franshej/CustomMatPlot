@@ -128,8 +128,8 @@ SECTION(PixelPointsPipelineTest, "Pixel points pipeline") {
     cmp::Plot plot;
     plot.setBounds(0, 0, 500, 400);
     plot.plot({{.x = x_data, .y = y_data}});
-    plot.xLim(x_lim.min, x_lim.max);
-    plot.yLim(y_lim.min, y_lim.max);
+    plot.setXLim(x_lim.min, x_lim.max);
+    plot.setYLim(y_lim.min, y_lim.max);
 
     const auto series = getChildComponentHelper<cmp::Series>(plot);
     expectEquals(series.size(), 1ul);

@@ -130,14 +130,14 @@ SECTION(Plot3DClass, "Plot3D class") {
     cmp::Plot3D plot_tmp;
     plot_tmp.setBounds(0, 0, 600, 500);
     plot_tmp.setView(0.f, 90.f);
-    plot_tmp.xLim(0.f, 20.f);
+    plot_tmp.setXLim(0.f, 20.f);
     plot_tmp.plot3({{.x = x_data1, .y = y_data1, .z = z_data1}});
 
     const auto series = getChildComponentHelper<cmp::Series3D>(plot_tmp);
     const auto& pixel_points = series[0]->getPixelPoints();
     const auto axes_bounds = series[0]->getLocalBounds().toFloat();
 
-    // x data 0..10 with xLim 0..20 only reaches the middle of the series
+    // x data 0..10 with setXLim 0..20 only reaches the middle of the series
     // area; the auto-scaled y still spans the full height.
     expectWithinAbsoluteError(pixel_points[2].getX(),
                               axes_bounds.getWidth() / 2.f, 1e-2f);
@@ -149,7 +149,7 @@ SECTION(Plot3DClass, "Plot3D class") {
     auto exception_thrown = false;
 
     try {
-      plot_tmp.zLim(1.f, 1.f);
+      plot_tmp.setZLim(1.f, 1.f);
     } catch (const std::invalid_argument&) {
       exception_thrown = true;
     }
