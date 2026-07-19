@@ -71,7 +71,7 @@ Plot3D::Plot3D(const Scaling x_scaling, const Scaling y_scaling,
   resetLookAndFeelChildrens(&getLookAndFeel());
 }
 
-void Plot3D::xLim(const float min, const float max) {
+void Plot3D::setXLim(const float min, const float max) {
   if (min >= max)
     throw std::invalid_argument("Min value must be lower than max value.");
 
@@ -81,7 +81,7 @@ void Plot3D::xLim(const float min, const float max) {
   updateChildrenParameters();
 }
 
-void Plot3D::yLim(const float min, const float max) {
+void Plot3D::setYLim(const float min, const float max) {
   if (min >= max)
     throw std::invalid_argument("Min value must be lower than max value.");
 
@@ -91,7 +91,7 @@ void Plot3D::yLim(const float min, const float max) {
   updateChildrenParameters();
 }
 
-void Plot3D::zLim(const float min, const float max) {
+void Plot3D::setZLim(const float min, const float max) {
   if (min >= max)
     throw std::invalid_argument("Min value must be lower than max value.");
 

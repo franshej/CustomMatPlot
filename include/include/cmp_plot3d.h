@@ -106,7 +106,7 @@ class Plot3D : public juce::Component {
    * @param min minimum value
    * @param max maximum value
    */
-  void xLim(const float min, const float max);
+  void setXLim(const float min, const float max);
 
   /**
    * @brief Set the Y-limits
@@ -114,7 +114,7 @@ class Plot3D : public juce::Component {
    * @param min minimum value
    * @param max maximum value
    */
-  void yLim(const float min, const float max);
+  void setYLim(const float min, const float max);
 
   /**
    * @brief Set the Z-limits
@@ -122,7 +122,7 @@ class Plot3D : public juce::Component {
    * @param min minimum value
    * @param max maximum value
    */
-  void zLim(const float min, const float max);
+  void setZLim(const float min, const float max);
 
   /** @brief Set the text on the x-axis. */
   void setXLabel(const std::string &x_label);

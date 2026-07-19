@@ -200,7 +200,7 @@ void Plot::updateXLim(const Lim_f& new_x_lim) {
   UNLIKELY if (m_x_scaling.getValue() == Scaling::logarithmic &&
                new_x_lim.isMinOrMaxZero()) {
     throw std::invalid_argument(
-        "The min/max x-value is zero or 'xLim' has been called with a zero "
+        "The min/max x-value is zero or 'setXLim' has been called with a zero "
         "value. 10log(0) = -inf");
   }
 
@@ -221,7 +221,7 @@ void Plot::updateYLim(const Lim_f& new_y_lim) {
   UNLIKELY if (m_y_scaling.getValue() == Scaling::logarithmic &&
                new_y_lim.isMinOrMaxZero()) {
     throw std::invalid_argument(
-        "The min/max y-value is zero or 'yLim' has been called with a zero "
+        "The min/max y-value is zero or 'setYLim' has been called with a zero "
         "value. 10log(0) = -inf");
   }
 
@@ -265,13 +265,13 @@ void Plot::setAutoYScale() {
   updateYLim(m_y_lim_start);
 }
 
-void Plot::xLim(const float min, const float max) {
+void Plot::setXLim(const float min, const float max) {
   updateXLim({min, max});
   m_x_lim_start = {min, max};
   m_x_autoscale = false;
 }
 
-void Plot::yLim(const float min, const float max) {
+void Plot::setYLim(const float min, const float max) {
   updateYLim({min, max});
   m_y_lim_start = {min, max};
   m_y_autoscale = false;

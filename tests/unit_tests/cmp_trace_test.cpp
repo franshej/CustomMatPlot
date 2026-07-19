@@ -17,8 +17,8 @@ SECTION(TraceClass, "Trace class") {
   const std::vector<float> y_data = {1.f, 2.f, 3.f, 4.f};
   cmp::Plot plot;
   plot.setBounds(0, 0, 100, 100);
-  plot.xLim(1.f, 4.f);
-  plot.yLim(1.f, 4.f);
+  plot.setXLim(1.f, 4.f);
+  plot.setYLim(1.f, 4.f);
 
   TEST("Empty trace points") {
     auto trace_points = getChildComponentHelper<TracePoint_f>(plot);
@@ -122,8 +122,8 @@ SECTION(MoveSelectedTracePointsTest, "Move selected trace points") {
     plot.setVisible(true);
     plot.setMovePointsType(cmp::PixelPointMoveType::horizontal_vertical);
     plot.plot({{.x = x_data, .y = y_data}});
-    plot.xLim(x_lim.min, x_lim.max);
-    plot.yLim(y_lim.min, y_lim.max);
+    plot.setXLim(x_lim.min, x_lim.max);
+    plot.setYLim(y_lim.min, y_lim.max);
 
     // Create a tracepoint on the data point (10, 2) (data index 1).
     plot.setTracePoint({10.f, 2.f});

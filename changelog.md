@@ -23,6 +23,10 @@
   x, y and attributes (order is x, y).
 - **Breaking:** `Plot3D::plot3` now takes `std::vector<Series3DData>` instead
   of separate x, y and z vectors.
+- **Breaking:** Renamed the axis-limit setters to follow the `set*` convention:
+  `xLim`/`yLim` → `setXLim`/`setYLim` (and `Plot3D::zLim` → `setZLim`).
+- **Breaking:** Fixed a typo in a public colour id:
+  `ColourIds::transluent_grid_colour` → `translucent_grid_colour`.
 
 ## 1.3.0 (2024-9-12)
 

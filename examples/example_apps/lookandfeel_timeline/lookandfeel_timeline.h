@@ -35,8 +35,8 @@ class lookandfeel_timeline : public juce::Component {
     m_plot.plot({.x = {-100, 20, 40, 50, 220}, .y = {0, 3, 7, 9, 2.5}});
 
     // Setting x/y limes.
-    m_plot.xLim(-10.f, 200.f);
-    m_plot.yLim(-10.f, 10.f);
+    m_plot.setXLim(-10.f, 200.f);
+    m_plot.setYLim(-10.f, 10.f);
 
     m_plot.setGridType(GridType::grid_translucent);
   };

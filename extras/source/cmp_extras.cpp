@@ -256,6 +256,6 @@ void PlotLookAndFeelTimeline::drawBackground(
 
 void PlotLookAndFeelTimeline::overridePlotColours() noexcept {
   setColour(Plot::grid_colour, juce::Colour(0xff181818));
-  setColour(Plot::transluent_grid_colour, juce::Colour(0xff252525));
+  setColour(Plot::translucent_grid_colour, juce::Colour(0xff252525));
 }
 }  // namespace cmp

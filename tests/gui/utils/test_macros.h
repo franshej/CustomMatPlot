@@ -52,9 +52,9 @@
 #define FILL_BETWEEN_C(INDICES, COLOUR) \
   { GET_PLOT->fillBetween(INDICES, COLOUR); }
 
-#define X_LIM(MIN, MAX) GET_PLOT->xLim(MIN, MAX);
+#define X_LIM(MIN, MAX) GET_PLOT->setXLim(MIN, MAX);
 
-#define Y_LIM(MIN, MAX) GET_PLOT->yLim(MIN, MAX);
+#define Y_LIM(MIN, MAX) GET_PLOT->setYLim(MIN, MAX);
 
 #define GRID_ON GET_PLOT->setGridType(cmp::GridType::grid);
 
