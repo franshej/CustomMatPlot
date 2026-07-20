@@ -62,7 +62,7 @@ TEST(real_time_plot_function, real_time) {
       y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     }
 
-    GET_PLOT->plotUpdateYOnly({y_test_data});
+    GET_PLOT->plotUpdateYOnly(y_test_data);
   };
 }
 

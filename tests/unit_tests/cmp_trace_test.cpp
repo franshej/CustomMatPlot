@@ -62,7 +62,7 @@ SECTION(TraceClass, "Trace class") {
   }
 
   TEST("Update existing plot Y only") {
-    plot.plotUpdateYOnly({{4.f, 3.f, 2.f, 1.f}});
+    plot.plotUpdateYOnly({4.f, 3.f, 2.f, 1.f});
     auto trace_points = getChildComponentHelper<TracePoint_f>(plot);
     expect(!trace_points.empty());
     expectEquals(trace_points.size(), 2ul);

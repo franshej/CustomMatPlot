@@ -23,7 +23,7 @@ class realtime : public juce::Component, private juce::Timer {
 
     startTimerHz(30);
 
-    // Always plot atleast ones before calling realTimePlot
+    // Always plot at least once before calling plotUpdateYOnly.
     m_plot.plot({.y = cmp::generateSineWaveVector<float>((1 << 10), -1.0f, 1.0f,
                                                          1, 1)});
   };
@@ -37,9 +37,10 @@ class realtime : public juce::Component, private juce::Timer {
       return juce::MathConstants<float>::pi * 0.01f;
     };
 
-    // Plot some values.
-    m_plot.plotUpdateYOnly({cmp::generateSineWaveVector<float>(
-        (1 << 10), -1.0f, 1.0f, periods, phase)});
+    // Update only the y-values of the single series (no extra braces).
+    m_plot.plotUpdateYOnly(
+        cmp::generateSineWaveVector<float>((1 << 10), -1.0f, 1.0f, periods,
+                                           phase));
 
     if (periods >= 75.f) {
       f_period = []() { return -1.0f; };
