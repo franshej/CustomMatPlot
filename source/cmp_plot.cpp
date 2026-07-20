@@ -414,6 +414,12 @@ void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
   repaint(m_axes_bounds);
 }
 
+void Plot::plotUpdateYOnly(std::vector<float> y_data) {
+  std::vector<std::vector<float>> data;
+  data.push_back(std::move(y_data));
+  plotUpdateYOnly(data);
+}
+
 void Plot::fillBetween(const std::vector<SpreadIndex>& spread_indices,
                        const std::vector<juce::Colour>& fill_area_colours) {
   m_spread_list.resize(spread_indices.size());

@@ -10,6 +10,8 @@
 - `Plot3D`: 3D line plotting with per-axis linear/logarithmic scaling.
 - `clear()` (and `Plot3D::clear()`): remove all series. Plotting an empty
   list does the same.
+- `plotUpdateYOnly(std::vector<float>)`: single-series overload for the common
+  real-time case, matching the single-series `plot({.y = ...})`.
 - Renamed realTimePlot to plotUpdateYOnly.
 - Gradient below series using SeriesAttribute
 
