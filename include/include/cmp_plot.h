@@ -133,6 +133,16 @@ class Plot : public juce::Component {
    */
   void plotUpdateYOnly(const std::vector<std::vector<float>> &y_data);
 
+  /** @brief Update only the y-data of a single series.
+   *
+   * Convenience overload for the common real-time case of one series, so the
+   * y-values need not be wrapped in an extra pair of braces:
+   * @code plotUpdateYOnly(samples); @endcode
+   *
+   * @param y_data the new y-values for the first series.
+   */
+  void plotUpdateYOnly(std::vector<float> y_data);
+
   /** @brief Fill the area between two data lines
    *
    * Steps to use:
