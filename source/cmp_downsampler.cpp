@@ -8,7 +8,9 @@
 #include "cmp_downsampler.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstddef>
+#include <numeric>
 
 #include "cmp_datamodels.h"
 #include "cmp_utils.h"
@@ -333,6 +335,49 @@ void Downsampler<FloatType>::calculateXYBasedIdxs(
 
   // Transfer results back to output vector
   xy_indices_out = xy_indices.get();
+}
+
+template <class FloatType>
+void Downsampler<FloatType>::calculatePixelBasedIdxs(
+    const PixelPoints& pixel_points, std::vector<std::size_t>& idxs_out) {
+  if (pixel_points.empty()) {
+    idxs_out.clear();
+    return;
+  }
+
+  // Handle small datasets without downsampling.
+  if (pixel_points.size() < MIN_POINTS_FOR_DOWNSAMPLING) {
+    idxs_out.resize(pixel_points.size());
+    std::iota(idxs_out.begin(), idxs_out.end(), 0u);
+    return;
+  }
+
+  idxs_out.clear();
+  idxs_out.reserve(pixel_points.size());
+
+  // The first point is always kept, and seeds the pixel being compared
+  // against.
+  idxs_out.push_back(0u);
+
+  auto last_x = std::lround(pixel_points.front().getX());
+  auto last_y = std::lround(pixel_points.front().getY());
+
+  // Dropping a point that shares a pixel with its predecessor only removes a
+  // sub-pixel line segment, so the drawn path is unchanged.
+  for (std::size_t i = 1; i < pixel_points.size() - 1u; ++i) {
+    const auto x = std::lround(pixel_points[i].getX());
+    const auto y = std::lround(pixel_points[i].getY());
+
+    if (x != last_x || y != last_y) {
+      idxs_out.push_back(i);
+
+      last_x = x;
+      last_y = y;
+    }
+  }
+
+  // The last point is always kept, so the path still ends where the data does.
+  idxs_out.push_back(pixel_points.size() - 1u);
 }
 
 template class Downsampler<float>;

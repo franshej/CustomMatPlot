@@ -319,6 +319,10 @@ void PlotLookAndFeel::drawSeries(juce::Graphics& g,
   auto series_colour = series_data.series_attribute.series_colour.value();
 
   if (pixel_points.size() > 1) {
+    // Each subpath start and line segment stores a marker plus an x/y pair, so
+    // the path is grown once here instead of reallocating as it is built.
+    series_path.preallocateSpace(int(pixel_points.size()) * 3);
+
     series_path.startNewSubPath(pixel_points[0]);
     std::for_each(
         pixel_points.begin() + 1, pixel_points.end(),
