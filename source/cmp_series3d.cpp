@@ -9,6 +9,7 @@
 
 #include <numeric>
 
+#include "cmp_downsampler.h"
 #include "cmp_lookandfeel_base.h"
 #include "cmp_projector3d.h"
 
@@ -99,6 +100,20 @@ void Series3D::updatePixelPointsIntern() {
 
   const Projector3D projector(m_axes, m_camera, getLocalBounds());
   projector.updatePixelPoints(m_x_data, m_y_data, m_z_data, m_pixel_points);
+
+  // Points sharing a pixel with their predecessor cost path-building and
+  // stroking time without changing what is drawn, so they are dropped here.
+  // The projection itself is cheap compared to the drawing, so every point is
+  // projected first and the pixel points are then compacted in place, keeping
+  // 'm_pixel_points' aligned with 'm_pixel_point_indices' like the 2D series.
+  Downsampler<float>::calculatePixelBasedIdxs(m_pixel_points,
+                                              m_pixel_point_indices);
+
+  for (std::size_t i = 0; i < m_pixel_point_indices.size(); ++i) {
+    m_pixel_points[i] = m_pixel_points[m_pixel_point_indices[i]];
+  }
+
+  m_pixel_points.resize(m_pixel_point_indices.size());
 }
 
 void Series3D::resized() { updatePixelPointsIntern(); }

@@ -69,5 +69,22 @@ class Downsampler {
   static void calculateXYBasedIdxs(const std::vector<std::size_t> &x_idxs,
                                    const std::vector<FloatType> &y_data,
                                    std::vector<std::size_t> &xy_idxs);
+
+  /** @brief Calculate downsample indices from already-projected pixel points.
+   *
+   * Keeps a point whenever it lands on a different pixel than the last kept
+   * point, so runs of points sharing a pixel collapse into one. The first and
+   * last points are always kept.
+   *
+   * Unlike @see calculateXIndices, this works in screen space and makes no
+   * assumption that the points are sorted along either axis, so it suits
+   * projected 3D curves that double back on themselves.
+   *
+   *  @param pixel_points the already-projected pixel points.
+   *  @param idxs_out the output indices into 'pixel_points'.
+   *  @return void.
+   */
+  static void calculatePixelBasedIdxs(const PixelPoints &pixel_points,
+                                      std::vector<std::size_t> &idxs_out);
 };
 }  // namespace cmp
