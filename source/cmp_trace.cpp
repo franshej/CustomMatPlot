@@ -479,6 +479,7 @@ bool TraceLabelPoint<ValueType>::isSelected() const {
   return selected;
 }
 
+template struct TracePoint<float>;
 template struct TraceLabelPoint<float>;
 
 template <class ValueType>
