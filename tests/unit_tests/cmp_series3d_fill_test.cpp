@@ -7,9 +7,10 @@
 /* Tests for the baseline a 3D gradient fill is closed along.
  *
  * The fill follows the floor of the data cube rather than the flat bottom of
- * the series bounds, so each point is projected a second time at the
- * z-minimum. These tests pin down that projection: the floor point of a
- * sample sits where that sample's (x, y) meets the xy-plane.
+ * the series bounds: the floor point of a sample sits where that sample's
+ * (x, y) meets the xy-plane. Series3D derives that point from the already
+ * projected one rather than projecting it again, so these tests pin down both
+ * the geometry and the equivalence of the shortcut.
  */
 SECTION(Series3DFillTest, "3D fill baseline") {
   const auto axes_bounds = juce::Rectangle<int>(0, 0, 500, 400);
