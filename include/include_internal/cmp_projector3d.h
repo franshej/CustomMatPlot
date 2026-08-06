@@ -53,6 +53,30 @@ class Projector3D {
     return {m_screen_x.toPixel(view_point.x), m_screen_y.toPixel(view_point.y)};
   }
 
+  /** @brief Normalize a z-value to its height in the unit cube, in [0, 1]. */
+  float toUnitHeight(const float z_value) const noexcept {
+    return toUnitRange(z_value, m_axes.z);
+  }
+
+  /** @brief The screen-space distance a point sits above its own floor point,
+   * per unit of normalized height.
+   *
+   * The camera's screen-x direction has no z-component, so changing only the
+   * z of a point cannot move it horizontally on screen: a point and its
+   * projection onto the xy-plane share a pixel x, and differ in pixel y by
+   * this value times the point's normalized height. That makes the floor of a
+   * series derivable from the points already projected, instead of projecting
+   * everything a second time.
+   */
+  float pixelsPerUnitHeight() const noexcept {
+    // The x/y contribution is identical for both and cancels in the
+    // difference, so a point on the z-axis gives the whole span.
+    const auto bottom = m_camera.toViewSpace({0.0f, 0.0f, -0.5f});
+    const auto top = m_camera.toViewSpace({0.0f, 0.0f, 0.5f});
+
+    return m_screen_y.toPixel(bottom.y) - m_screen_y.toPixel(top.y);
+  }
+
   /** @brief Project the given data to pixel points. The pixel-point vector
    * is resized to the data size. */
   void updatePixelPoints(const std::vector<float>& x_data,

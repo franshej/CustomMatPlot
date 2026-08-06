@@ -23,6 +23,8 @@
 
 namespace cmp {
 
+class Projector3D;
+
 /**
  *  @class Series3D
  *  @brief A class component to draw 3D lines/marker symbols. This is
@@ -96,10 +98,18 @@ class Series3D : public juce::Component {
  private:
   /** @internal */
   void updatePixelPointsIntern();
+  /** @internal */
+  void updateFloorPixelPointsIntern(const Projector3D& projector);
 
   std::vector<float> m_x_data, m_y_data, m_z_data;
   PixelPoints m_pixel_points;
   std::vector<std::size_t> m_pixel_point_indices;
+
+  /** Every pixel point projected again at the z-minimum, i.e. dropped onto
+   * the xy-plane. Used as the baseline of a gradient fill so the fill follows
+   * the floor of the data cube. Only filled in when the series has a
+   * gradient. */
+  PixelPoints m_floor_pixel_points;
 
   Axes3 m_axes;
   Camera3D m_camera;

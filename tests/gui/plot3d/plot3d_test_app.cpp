@@ -186,6 +186,69 @@ static std::unique_ptr<juce::Component> makeHelixScene() {
   return row;
 }
 
+/** A waterfall of traces, each gradient-filled down to the xy-plane. The same
+ * data is shown from the default view and from the opposite side, where the
+ * painting order (series order, not depth order) becomes visible. */
+static std::unique_ptr<juce::Component> makeFilledWaterfallScene() {
+  auto row = std::make_unique<PlotRow>();
+
+  constexpr std::size_t num_points = 300u;
+  constexpr int num_traces = 6;
+
+  std::vector<Line3D> lines;
+  for (int trace = 0; trace < num_traces; ++trace) {
+    Line3D line;
+    line.x.resize(num_points);
+    line.y.resize(num_points);
+    line.z.resize(num_points);
+
+    for (std::size_t i = 0; i < num_points; ++i) {
+      const auto f = float(i) / float(num_points - 1) * 10.0f;
+
+      line.x[i] = f;
+      line.y[i] = float(trace);
+      line.z[i] =
+          0.2f +
+          2.0f * std::exp(-std::pow(f - 2.0f - 0.6f * float(trace), 2.f)) +
+          1.2f * std::exp(-std::pow(f - 6.5f + 0.4f * float(trace), 2.f));
+    }
+
+    lines.push_back(std::move(line));
+  }
+
+  const auto build = [&](cmp::Plot3D& plot) {
+    std::vector<cmp::Series3DData> series;
+
+    for (int trace = 0; trace < num_traces; ++trace) {
+      const auto hue = 0.55f + 0.06f * float(trace);
+
+      cmp::SeriesAttribute attribute;
+      attribute.series_colour = juce::Colour::fromHSV(hue, 0.6f, 1.0f, 1.0f);
+      attribute.gradient_colours =
+          std::make_pair(juce::Colour::fromHSV(hue, 0.7f, 1.0f, 0.75f),
+                         juce::Colour::fromHSV(hue, 0.4f, 0.6f, 0.15f));
+
+      series.push_back({.x = lines[trace].x,
+                        .y = lines[trace].y,
+                        .z = lines[trace].z,
+                        .attribute = attribute});
+    }
+
+    plot.plot3(series);
+  };
+
+  auto& front = row->add(std::make_unique<cmp::Plot3D>());
+  build(front);
+  labelAxes(front, "Filled waterfall");
+
+  auto& back = row->add(std::make_unique<cmp::Plot3D>());
+  build(back);
+  back.setView(142.5f, 30.0f);
+  labelAxes(back, "Same, viewed from the opposite side");
+
+  return row;
+}
+
 /*============================== Test handler ===============================*/
 
 struct Scene {
@@ -200,6 +263,7 @@ class Plot3DTestHandler : public juce::Component {
     m_scenes.push_back({"All axes logarithmic", makeAllLogScene});
     m_scenes.push_back({"x linear, y & z logarithmic", makeMixedLogScene});
     m_scenes.push_back({"Helix", makeHelixScene});
+    m_scenes.push_back({"Filled waterfall", makeFilledWaterfallScene});
 
     setSize(1600, 800);
 
