@@ -114,15 +114,44 @@ void Series3D::updatePixelPointsIntern() {
   }
 
   m_pixel_points.resize(m_pixel_point_indices.size());
+
+  // After compaction, so the floor is only built for the points that are
+  // actually drawn.
+  updateFloorPixelPointsIntern(projector);
+}
+
+void Series3D::updateFloorPixelPointsIntern(const Projector3D& projector) {
+  // The floor is only needed to close a gradient fill.
+  if (!m_series_attributes.gradient_colours) {
+    m_floor_pixel_points.clear();
+    return;
+  }
+
+  // Projecting each point again at the z-minimum drops it onto the xy-plane,
+  // straight below where it is drawn.
+  const auto z_floor = m_axes.z.lim.min;
+
+  m_floor_pixel_points.resize(m_pixel_points.size());
+
+  for (std::size_t i = 0; i < m_pixel_points.size(); ++i) {
+    const auto idx = m_pixel_point_indices[i];
+
+    m_floor_pixel_points[i] =
+        projector.toPixel({m_x_data[idx], m_y_data[idx], z_floor});
+  }
 }
 
 void Series3D::resized() { updatePixelPointsIntern(); }
 
 void Series3D::paint(juce::Graphics& g) {
   if (m_lookandfeel && !m_pixel_points.empty()) {
-    const SeriesDataView series_data(m_x_data, m_y_data, m_pixel_points,
-                                     m_pixel_point_indices,
-                                     m_series_attributes);
+    SeriesDataView series_data(m_x_data, m_y_data, m_pixel_points,
+                               m_pixel_point_indices, m_series_attributes);
+
+    // Close a gradient fill along the xy-plane rather than the flat bottom of
+    // the series bounds, which has no meaning in 3D.
+    if (!m_floor_pixel_points.empty())
+      series_data.fill_baseline = &m_floor_pixel_points;
 
     auto* lnf = static_cast<PlotLookAndFeelBase*>(m_lookandfeel);
     lnf->drawSeries(g, series_data, getLocalBounds());

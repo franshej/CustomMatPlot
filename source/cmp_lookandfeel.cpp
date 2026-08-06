@@ -380,12 +380,40 @@ void PlotLookAndFeel::drawSeries(juce::Graphics& g,
           gradient_colours.first, 0.f, gradient_colours.second,
           series_bounds_f.getHeight());
 
-      series_path.lineTo(pixel_points.back().getX(), series_bounds.getBottom());
-      series_path.lineTo(pixel_points.front().getX(),
-                         series_bounds.getBottom());
+      const auto* baseline = series_data.fill_baseline;
+      const auto has_baseline =
+          baseline && baseline->size() == pixel_points.size();
+
+      // The series line is stroked on top of a baseline fill, so keep a copy
+      // before the path is closed into a filled shape.
+      juce::Path line_path;
+      if (has_baseline) line_path = series_path;
+
+      if (has_baseline) {
+        // Close the fill along the supplied baseline, walked backwards so the
+        // path stays a simple ribbon between the series and the baseline.
+        for (auto it = baseline->rbegin(); it != baseline->rend(); ++it) {
+          series_path.lineTo(*it);
+        }
+      } else {
+        // No baseline: fill down to the bottom of the series bounds.
+        series_path.lineTo(pixel_points.back().getX(),
+                           series_bounds.getBottom());
+        series_path.lineTo(pixel_points.front().getX(),
+                           series_bounds.getBottom());
+      }
+
       series_path.closeSubPath();
       g.setGradientFill(gradient);
       g.fillPath(series_path);
+
+      // A fill to a flat screen edge reads fine on its own, but a fill to a
+      // baseline that follows the data needs the series line drawn over it to
+      // stay legible where several fills overlap.
+      if (has_baseline) {
+        g.setColour(series_colour);
+        g.strokePath(line_path, stroke_type);
+      }
     } else {
       g.strokePath(series_path, stroke_type);
     }

@@ -1,0 +1,76 @@
+#include <vector>
+
+#include "cmp_camera3d.h"
+#include "cmp_projector3d.h"
+#include "cmp_test_helper.hpp"
+
+/* Tests for the baseline a 3D gradient fill is closed along.
+ *
+ * The fill follows the floor of the data cube rather than the flat bottom of
+ * the series bounds, so each point is projected a second time at the
+ * z-minimum. These tests pin down that projection: the floor point of a
+ * sample sits where that sample's (x, y) meets the xy-plane.
+ */
+SECTION(Series3DFillTest, "3D fill baseline") {
+  const auto axes_bounds = juce::Rectangle<int>(0, 0, 500, 400);
+
+  const auto axes = cmp::Axes3{{{0.f, 10.f}, cmp::Scaling::linear},
+                               {{0.f, 10.f}, cmp::Scaling::linear},
+                               {{0.f, 10.f}, cmp::Scaling::linear}};
+
+  const auto expectPointNear = [&](const juce::Point<float> result,
+                                   const juce::Point<float> expected) {
+    expectWithinAbsoluteError(result.getX(), expected.getX(), 1e-2f);
+    expectWithinAbsoluteError(result.getY(), expected.getY(), 1e-2f);
+  };
+
+  TEST("A point already on the floor is its own baseline") {
+    const cmp::Projector3D projector(axes, cmp::Camera3D(), axes_bounds);
+
+    // z is already at the minimum, so dropping it to the floor is a no-op.
+    const auto point = juce::Point<float>(projector.toPixel({3.f, 7.f, 0.f}));
+    const auto floor = juce::Point<float>(projector.toPixel({3.f, 7.f, 0.f}));
+
+    expectPointNear(floor, point);
+  }
+
+  TEST("The floor point keeps the x/y of its sample") {
+    const cmp::Projector3D projector(axes, cmp::Camera3D(), axes_bounds);
+
+    // Two samples sharing (x, y) but at different heights must drop onto the
+    // same point of the xy-plane.
+    const auto floor_a = projector.toPixel({4.f, 6.f, 0.f});
+    const auto floor_b = projector.toPixel({4.f, 6.f, 0.f});
+
+    expectPointNear(floor_a, floor_b);
+
+    // ...and that point differs from the sample drawn above it.
+    const auto raised = projector.toPixel({4.f, 6.f, 10.f});
+    expect(std::abs(raised.getY() - floor_a.getY()) > 1.0f,
+           "a raised sample must not sit on its own floor point");
+  }
+
+  TEST("Height maps to screen height only, seen from the front") {
+    // Front view: the screen y-axis is the z-axis, so the floor of every
+    // sample lands at the bottom of the axes area.
+    const cmp::Camera3D front_view(0.f, 0.f);
+    const cmp::Projector3D projector(axes, front_view, axes_bounds);
+
+    for (const auto x : {0.f, 5.f, 10.f}) {
+      const auto floor = projector.toPixel({x, 5.f, 0.f});
+      expectWithinAbsoluteError(floor.getY(), 400.f, 1e-2f);
+    }
+  }
+
+  TEST("Seen from the top, a sample and its floor point coincide") {
+    // Top view looks straight down the z-axis, so height is not visible and
+    // the fill collapses onto the line.
+    const cmp::Camera3D top_view(0.f, 90.f);
+    const cmp::Projector3D projector(axes, top_view, axes_bounds);
+
+    const auto point = projector.toPixel({2.f, 8.f, 10.f});
+    const auto floor = projector.toPixel({2.f, 8.f, 0.f});
+
+    expectPointNear(floor, point);
+  }
+}
