@@ -21,9 +21,7 @@ SECTION(DownsamplerPixelTest, "Pixel-based downsampler") {
     return indices;
   };
 
-  TEST("Empty input gives no indices") {
-    expect(makeIndices({}).empty());
-  }
+  TEST("Empty input gives no indices") { expect(makeIndices({}).empty()); }
 
   TEST("Small inputs are kept in full") {
     cmp::PixelPoints points(min_points - 1u, {0.0f, 0.0f});
@@ -31,7 +29,8 @@ SECTION(DownsamplerPixelTest, "Pixel-based downsampler") {
     const auto indices = makeIndices(points);
 
     expectEquals(indices.size(), points.size());
-    for (std::size_t i = 0; i < indices.size(); ++i) expectEquals(indices[i], i);
+    for (std::size_t i = 0; i < indices.size(); ++i)
+      expectEquals(indices[i], i);
   }
 
   TEST("Points sharing a pixel collapse to the first and last") {
@@ -53,7 +52,8 @@ SECTION(DownsamplerPixelTest, "Pixel-based downsampler") {
     const auto indices = makeIndices(points);
 
     expectEquals(indices.size(), points.size());
-    for (std::size_t i = 0; i < indices.size(); ++i) expectEquals(indices[i], i);
+    for (std::size_t i = 0; i < indices.size(); ++i)
+      expectEquals(indices[i], i);
   }
 
   TEST("Indices are strictly increasing and in range") {
