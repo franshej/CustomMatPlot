@@ -160,9 +160,7 @@ void runForPointCount(const std::size_t num_points,
   std::size_t covered_only_in_one = 0u;
   std::size_t isolated_diffs = 0u;
 
-  const auto isCovered = [](const juce::Colour c) {
-    return c.getAlpha() > 0;
-  };
+  const auto isCovered = [](const juce::Colour c) { return c.getAlpha() > 0; };
 
   for (int y = 0; y < bounds_height; ++y) {
     for (int x = 0; x < bounds_width; ++x) {
@@ -258,8 +256,8 @@ int main(int argc, char* argv[]) {
 
   std::printf("3D plot per-repaint cost, best of N runs (%dx%d axes area)\n\n",
               bounds_width, bounds_height);
-  std::printf("%10s %9s %11s %11s %11s %10s\n", "points", "kept",
-              "project[us]", "before[us]", "after[us]", "speedup");
+  std::printf("%10s %9s %11s %11s %11s %10s\n", "points", "kept", "project[us]",
+              "before[us]", "after[us]", "speedup");
   std::printf("%10s %9s %11s %11s %11s %10s\n", "------", "----", "-----------",
               "----------", "---------", "-------");
 
