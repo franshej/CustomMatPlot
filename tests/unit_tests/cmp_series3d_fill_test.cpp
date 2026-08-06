@@ -62,6 +62,46 @@ SECTION(Series3DFillTest, "3D fill baseline") {
     }
   }
 
+  TEST("The derived floor matches projecting the floor point directly") {
+    // Series3D derives the floor from the already-projected points instead of
+    // projecting every point a second time. The shortcut must be exact, for
+    // any camera and either axis scaling.
+    const auto log_axes =
+        cmp::Axes3{{{1.f, 1000.f}, cmp::Scaling::logarithmic},
+                   {{0.f, 10.f}, cmp::Scaling::linear},
+                   {{1.f, 1000.f}, cmp::Scaling::logarithmic}};
+
+    for (const auto& current_axes : {axes, log_axes}) {
+      const auto is_log = current_axes.z.scaling == cmp::Scaling::logarithmic;
+
+      for (const auto azimuth : {-37.5f, 0.f, 45.f, 142.5f, -90.f}) {
+        for (const auto elevation : {0.f, 30.f, 60.f, 90.f, -20.f}) {
+          const cmp::Camera3D camera(azimuth, elevation);
+          const cmp::Projector3D projector(current_axes, camera, axes_bounds);
+
+          const auto pixels_per_unit_height = projector.pixelsPerUnitHeight();
+          const auto z_floor = current_axes.z.lim.min;
+
+          for (const auto t : {0.f, 0.25f, 0.5f, 0.75f, 1.f}) {
+            const auto x = is_log ? std::pow(10.f, 3.f * t) : t * 10.f;
+            const auto y = t * 10.f;
+            const auto z = is_log ? std::pow(10.f, 3.f * t) : t * 10.f;
+
+            const auto point = projector.toPixel({x, y, z});
+
+            const auto derived = juce::Point<float>(
+                point.getX(), point.getY() + projector.toUnitHeight(z) *
+                                                 pixels_per_unit_height);
+
+            const auto projected = projector.toPixel({x, y, z_floor});
+
+            expectPointNear(derived, projected);
+          }
+        }
+      }
+    }
+  }
+
   TEST("Seen from the top, a sample and its floor point coincide") {
     // Top view looks straight down the z-axis, so height is not visible and
     // the fill collapses onto the line.

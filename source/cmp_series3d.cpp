@@ -127,17 +127,22 @@ void Series3D::updateFloorPixelPointsIntern(const Projector3D& projector) {
     return;
   }
 
-  // Projecting each point again at the z-minimum drops it onto the xy-plane,
-  // straight below where it is drawn.
-  const auto z_floor = m_axes.z.lim.min;
+  // A point and its projection onto the xy-plane share a pixel x and differ
+  // in pixel y in proportion to the point's height, so the floor is derived
+  // from the points already projected rather than projected again. The scale
+  // factor only depends on the camera and the bounds, so it is hoisted out of
+  // the loop.
+  const auto pixels_per_unit_height = projector.pixelsPerUnitHeight();
 
   m_floor_pixel_points.resize(m_pixel_points.size());
 
   for (std::size_t i = 0; i < m_pixel_points.size(); ++i) {
     const auto idx = m_pixel_point_indices[i];
+    const auto unit_height = projector.toUnitHeight(m_z_data[idx]);
 
-    m_floor_pixel_points[i] =
-        projector.toPixel({m_x_data[idx], m_y_data[idx], z_floor});
+    m_floor_pixel_points[i] = {
+        m_pixel_points[i].getX(),
+        m_pixel_points[i].getY() + unit_height * pixels_per_unit_height};
   }
 }
 
