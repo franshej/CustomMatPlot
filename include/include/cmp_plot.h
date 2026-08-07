@@ -164,6 +164,71 @@ class Plot : public juce::Component {
    */
   void plotUpdateYOnly(std::initializer_list<float> y_data);
 
+  /**
+   * @brief Scoped write access to one series' y-values.
+   *
+   * 'values()' is a span over the series' own y-buffer, so writing through it
+   * copies nothing. It is exactly as long as the series' x-data, which means
+   * the number of values cannot be got wrong: to change how many points a
+   * series has, call 'plot'.
+   *
+   * The update and the repaint happen when the handle is destroyed, so keep
+   * it to the smallest scope that covers the writing:
+   *
+   * @code
+   *   {
+   *     auto y = plot.writeY();
+   *     dsp.renderMagnitudesInto(y.values());
+   *   }   // series updated and repainted here
+   * @endcode
+   *
+   * The handle refers to its series by index and re-resolves it on use, so a
+   * 'plot' call that replaces the series while a handle is alive leaves
+   * 'values()' empty rather than dangling. It must not outlive its Plot.
+   */
+  class ScopedYWrite {
+   public:
+    ~ScopedYWrite();
+
+    ScopedYWrite(const ScopedYWrite &) = delete;
+    ScopedYWrite &operator=(const ScopedYWrite &) = delete;
+    ScopedYWrite(ScopedYWrite &&) = delete;
+    ScopedYWrite &operator=(ScopedYWrite &&) = delete;
+
+    /** @brief The series' y-values, ready to be written.
+     *
+     * As long as the series' x-data. Empty if the series no longer exists.
+     */
+    std::span<float> values() const noexcept;
+
+    /** @brief Whether the series still exists. */
+    bool isValid() const noexcept { return !values().empty(); }
+
+   private:
+    friend class Plot;
+
+    ScopedYWrite(Plot &plot, std::size_t series_index) noexcept
+        : m_plot{&plot}, m_series_index{series_index} {}
+
+    Plot *m_plot;
+    std::size_t m_series_index;
+  };
+
+  /** @brief Take scoped write access to a series' y-values, without copying.
+   *
+   * The cheapest way to push new y-values in: the caller writes straight into
+   * the series' own buffer, so nothing is copied and nothing is allocated,
+   * which suits an audio callback. @see ScopedYWrite
+   *
+   * 'plot' must have been called first, to establish how many points the
+   * series has.
+   *
+   * @param series_index which series to write, in the order they were
+   * plotted.
+   * @return a scoped handle that commits on destruction.
+   */
+  ScopedYWrite writeY(const std::size_t series_index = 0u);
+
   /** @brief Fill the area between two data lines
    *
    * Steps to use:
@@ -519,6 +584,12 @@ class Plot : public juce::Component {
    * copy each); shared by the plot(SeriesData) and plot(SeriesDataList)
    * overloads. */
   void plotSeries(std::span<const SeriesData> series);
+  /** @internal The y-buffer of the n-th series of this type, empty if there
+   * is no such series. Shared by ScopedYWrite. */
+  std::span<float> seriesYBuffer(std::size_t series_index) noexcept;
+  /** @internal Autoscale, notify and repaint after the y-values of a series
+   * were written in place. */
+  void commitYWrite();
   /** @internal Whether every series of this type already holds exactly as
    * many x-values as the matching entry of 'y_data' has y-values. Must be
    * asked before the y-data is written, since writing it changes the sizes

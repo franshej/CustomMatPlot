@@ -441,6 +441,47 @@ void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
   repaint(m_axes_bounds);
 }
 
+std::span<float> Plot::seriesYBuffer(const std::size_t series_index) noexcept {
+  auto remaining = series_index;
+
+  for (const auto& series : *m_series) {
+    if (series->getType() != SeriesType::normal) continue;
+
+    if (remaining == 0u) return series->getYDataForWriting();
+    --remaining;
+  }
+
+  return {};
+}
+
+void Plot::commitYWrite() {
+  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
+    setAutoYScale();
+  }
+
+  m_notify_components_on_update.notify();
+  repaint(m_axes_bounds);
+}
+
+Plot::ScopedYWrite Plot::writeY(const std::size_t series_index) {
+  // Without a preceding plot() there is no series, and so no buffer to write
+  // into and no length to write.
+  jassert(!m_series->empty());
+
+  return ScopedYWrite{*this, series_index};
+}
+
+std::span<float> Plot::ScopedYWrite::values() const noexcept {
+  return m_plot->seriesYBuffer(m_series_index);
+}
+
+Plot::ScopedYWrite::~ScopedYWrite() {
+  // Nothing to redraw if the series went away while the handle was alive.
+  if (values().empty()) return;
+
+  m_plot->commitYWrite();
+}
+
 void Plot::plotUpdateYOnly(std::initializer_list<float> y_data) {
   plotUpdateYOnly(std::span<const float>(y_data.begin(), y_data.size()));
 }
