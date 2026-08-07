@@ -129,6 +129,12 @@ class Plot : public juce::Component {
    * function. x-data must be set through the 'plot' function before calling
    * this function.
    *
+   * Pass the same number of y-values as the series already holds. Passing a
+   * different number is handled - the x-data is regenerated as a ramp, which
+   * replaces any x-data set through 'plot' - but it costs exactly the work
+   * this function exists to avoid, so prefer 'plot' when the number of points
+   * changes.
+   *
    * @param y_data vector of vectors with the y-values.
    */
   void plotUpdateYOnly(const std::vector<std::vector<float>> &y_data);
@@ -315,7 +321,7 @@ class Plot : public juce::Component {
   enum ColourIds : int {
     background_colour,        /**< Colour of the background. */
     grid_colour,              /**< Colour of the grids. */
-    translucent_grid_colour,   /**< Colour of the translucent grids. */
+    translucent_grid_colour,  /**< Colour of the translucent grids. */
     x_grid_label_colour,      /**< Colour of the label for each x-grid line. */
     y_grid_label_colour,      /**< Colour of the label for each y-grid line. */
     frame_colour,             /**< Colour of the frame around the axes area. */
@@ -498,6 +504,13 @@ class Plot : public juce::Component {
    * copy each); shared by the plot(SeriesData) and plot(SeriesDataList)
    * overloads. */
   void plotSeries(std::span<const SeriesData> series);
+  /** @internal Whether every series of this type already holds exactly as
+   * many x-values as the matching entry of 'y_data' has y-values. Must be
+   * asked before the y-data is written, since writing it changes the sizes
+   * being compared. */
+  template <SeriesType t_series_type>
+  bool seriesXSizesMatch(
+      const std::vector<std::vector<float>> &y_data) const noexcept;
   /** @internal */
   template <SeriesType t_series_type>
   void plotInternal(const std::vector<std::vector<float>> &y_data,
