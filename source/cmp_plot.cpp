@@ -441,10 +441,38 @@ void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
   repaint(m_axes_bounds);
 }
 
-void Plot::plotUpdateYOnly(std::vector<float> y_data) {
-  std::vector<std::vector<float>> data;
-  data.push_back(std::move(y_data));
-  plotUpdateYOnly(data);
+void Plot::plotUpdateYOnly(std::initializer_list<float> y_data) {
+  plotUpdateYOnly(std::span<const float>(y_data.begin(), y_data.size()));
+}
+
+void Plot::plotUpdateYOnly(std::span<const float> y_data) {
+  jassert(!m_series->empty());
+
+  // Straight into the first series: wrapping the values in a vector of
+  // vectors to reach the multi-series overload would copy them an extra time
+  // and allocate, on the path that exists to avoid exactly that.
+  for (const auto& series : *m_series) {
+    if (series->getType() != SeriesType::normal) continue;
+
+    // A different number of values leaves the x-data describing a different
+    // number of points, so fall back to the path that regenerates it.
+    if (series->getXData().size() != y_data.size()) {
+      plotUpdateYOnly(
+          std::vector<std::vector<float>>{{y_data.begin(), y_data.end()}});
+      return;
+    }
+
+    series->setYValues(y_data);
+    break;
+  }
+
+  // Matches what the multi-series path does through updateSeriesYData.
+  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
+    setAutoYScale();
+  }
+
+  m_notify_components_on_update.notify();
+  repaint(m_axes_bounds);
 }
 
 void Plot::fillBetween(const std::vector<SpreadIndex>& spread_indices,

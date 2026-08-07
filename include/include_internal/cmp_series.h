@@ -21,6 +21,8 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
+#include <span>
+
 #include <cstddef>
 
 #include "cmp_datamodels.h"
@@ -116,17 +118,20 @@ class Series : public juce::Component,
 
   /** @brief Set the y-values for the series
    *
-   *  @param y_values vector of y-values.
+   *  Takes a span so any contiguous range can be copied in without first
+   *  being packed into a vector.
+   *
+   *  @param y_values the y-values.
    *  @return void.
    */
-  void setYValues(const std::vector<float>& y_values);
+  void setYValues(std::span<const float> y_values);
 
   /** @brief Set the x-values for the series
    *
-   *  @param x_values vector of x-values.
+   *  @param x_values the x-values.
    *  @return void.
    */
-  void setXValues(const std::vector<float>& x_values);
+  void setXValues(std::span<const float> x_values);
 
   /** @brief Set a single x/y value for the series
    *

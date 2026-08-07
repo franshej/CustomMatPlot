@@ -145,9 +145,24 @@ class Plot : public juce::Component {
    * y-values need not be wrapped in an extra pair of braces:
    * @code plotUpdateYOnly(samples); @endcode
    *
+   * Takes a span, so the values can come from any contiguous range - a
+   * vector, a std::array, a raw buffer, or a sub-range of a larger one -
+   * without being packed into a vector first, and are copied straight into
+   * the series:
+   * @code plotUpdateYOnly({fft_buffer.data(), fft_size}); @endcode
+   *
    * @param y_data the new y-values for the first series.
    */
-  void plotUpdateYOnly(std::vector<float> y_data);
+  void plotUpdateYOnly(std::span<const float> y_data);
+
+  /** @brief Update only the y-data of a single series, from a braced list.
+   *
+   * A braced list does not convert to a span, so this overload keeps
+   * @code plotUpdateYOnly({4.f, 3.f, 2.f, 1.f}); @endcode working.
+   *
+   * @param y_data the new y-values for the first series.
+   */
+  void plotUpdateYOnly(std::initializer_list<float> y_data);
 
   /** @brief Fill the area between two data lines
    *
