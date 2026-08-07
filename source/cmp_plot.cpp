@@ -315,30 +315,57 @@ void Plot::plotVerticalLines(const std::vector<float>& x_coordinates,
 }
 
 template <SeriesType t_series_type>
+bool Plot::seriesXSizesMatch(
+    const std::vector<std::vector<float>>& y_data) const noexcept {
+  auto y_data_it = y_data.begin();
+
+  for (const auto& series : *m_series) {
+    if (series->getType() != t_series_type) continue;
+
+    if (y_data_it == y_data.end()) return false;
+    if (series->getXData().size() != (y_data_it++)->size()) return false;
+  }
+
+  // Any leftover y-data belongs to a series that does not exist yet.
+  return y_data_it == y_data.end();
+}
+
+template <SeriesType t_series_type>
 void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
                         const std::vector<std::vector<float>>& x_data,
                         const SeriesAttributeList& series_attributes,
                         const bool update_y_data_only) {
   if (update_y_data_only) jassert(!m_series->empty());
 
+  // Whether the existing x-data can be kept has to be decided before the
+  // y-data is written, because writing it changes the sizes being compared.
+  //
+  // Keeping x-data of a different length would leave it - and the pixel-point
+  // indices derived from it - describing a different number of points than
+  // the series holds, so the x-data is regenerated instead.
+  const auto keep_existing_x_data =
+      update_y_data_only && seriesXSizesMatch<t_series_type>(y_data);
+
+  // Reaching this in a y-only update means the caller changed the number of
+  // values, which costs the x-data update that plotUpdateYOnly exists to
+  // avoid. It is handled, but it is worth knowing about.
+  jassert(!update_y_data_only || keep_existing_x_data);
+
   updateSeriesYData<t_series_type>(y_data, series_attributes);
 
-  if (update_y_data_only) {
-    goto skip_update_x_data_label;
-  }
+  if (!keep_existing_x_data) {
+    if (!x_data.empty()) {
+      updateSeriesXData<t_series_type>(x_data);
+    } else {
+      // Fix this for other types of lines
+      const auto gen_x_data = generateXdataRamp(y_data);
 
-  if (!x_data.empty()) {
-    updateSeriesXData<t_series_type>(x_data);
-  } else {
-    // Fix this for other types of lines
-    const auto gen_x_data = generateXdataRamp(y_data);
-
-    if (!gen_x_data.empty()) {
-      updateSeriesXData<t_series_type>(gen_x_data);
+      if (!gen_x_data.empty()) {
+        updateSeriesXData<t_series_type>(gen_x_data);
+      }
     }
   }
 
-skip_update_x_data_label:
   m_notify_components_on_update.notify();
 }
 
