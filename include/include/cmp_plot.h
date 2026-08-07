@@ -155,6 +155,28 @@ class Plot : public juce::Component {
    */
   void plotUpdateYOnly(std::span<const float> y_data);
 
+  /** @brief Plot, but only update the y-data, for several series.
+   *
+   * As the vector-of-vectors overload, but each series' values can come from
+   * any contiguous range. A caller holding one buffer per channel - which is
+   * how audio arrives - can plot them without first copying everything into a
+   * vector of vectors:
+   *
+   * @code
+   *   const std::array<std::span<const float>, 2> channels{
+   *       std::span(buffer.getReadPointer(0), num_samples),
+   *       std::span(buffer.getReadPointer(1), num_samples)};
+   *
+   *   plot.plotUpdateYOnly(channels);
+   * @endcode
+   *
+   * Note that a vector of vectors does not convert to a span of spans, so
+   * such callers keep using the overload above.
+   *
+   * @param y_data one range of y-values per series.
+   */
+  void plotUpdateYOnly(std::span<const std::span<const float>> y_data);
+
   /** @brief Update only the y-data of a single series, from a braced list.
    *
    * A braced list does not convert to a span, so this overload keeps

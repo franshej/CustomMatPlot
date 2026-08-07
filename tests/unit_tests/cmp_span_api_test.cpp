@@ -86,6 +86,52 @@ SECTION(SpanApiTest, "Span y-data") {
                        [&](auto a, auto b) { expectEquals(a, b); });
   }
 
+  TEST("Several series from per-channel buffers, with no vector of vectors") {
+    cmp::Plot plot;
+    plot.setBounds(0, 0, 500, 400);
+
+    plot.plot({{.y = std::vector<float>(4u, 0.f)},
+               {.y = std::vector<float>(4u, 0.f)}});
+
+    // How audio arrives: one buffer per channel, nothing interleaved into a
+    // vector of vectors.
+    const float left[4] = {1.f, 2.f, 3.f, 4.f};
+    const float right[4] = {5.f, 6.f, 7.f, 8.f};
+
+    const std::array<std::span<const float>, 2> channels{
+        std::span<const float>(left, 4), std::span<const float>(right, 4)};
+
+    plot.plotUpdateYOnly(channels);
+
+    const auto series = getChildComponentHelper<cmp::Series>(plot);
+    expectEquals(series.size(), 2ul);
+    expectEqualVectors(series[0]->getYData(),
+                       std::vector<float>{1.f, 2.f, 3.f, 4.f},
+                       [&](auto a, auto b) { expectEquals(a, b); });
+    expectEqualVectors(series[1]->getYData(),
+                       std::vector<float>{5.f, 6.f, 7.f, 8.f},
+                       [&](auto a, auto b) { expectEquals(a, b); });
+  }
+
+  TEST("Several series with a changed size keep x and y consistent") {
+    cmp::Plot plot;
+    plot.setBounds(0, 0, 500, 400);
+
+    plot.plot({{.y = std::vector<float>(100u, 0.f)},
+               {.y = std::vector<float>(100u, 0.f)}});
+
+    const std::vector<float> shorter(12u, 3.f);
+    const std::array<std::span<const float>, 2> channels{
+        std::span<const float>(shorter), std::span<const float>(shorter)};
+
+    plot.plotUpdateYOnly(channels);
+
+    for (const auto* series : getChildComponentHelper<cmp::Series>(plot)) {
+      expectEquals(series->getYData().size(), std::size_t(12u));
+      expectEquals(series->getXData().size(), std::size_t(12u));
+    }
+  }
+
   TEST("A changed number of values keeps x and y the same length") {
     cmp::Plot plot;
     plot.setBounds(0, 0, 500, 400);

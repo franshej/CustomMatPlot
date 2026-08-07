@@ -441,6 +441,59 @@ void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
   repaint(m_axes_bounds);
 }
 
+void Plot::plotUpdateYOnly(std::span<const std::span<const float>> y_data) {
+  jassert(!m_series->empty());
+
+  // The x-data can only be left alone if every series is being given as many
+  // values as it already holds, and there is a series for every range.
+  auto series_count = std::size_t{0};
+  auto keep_existing_x_data = true;
+
+  for (const auto& series : *m_series) {
+    if (series->getType() != SeriesType::normal) continue;
+
+    if (series_count >= y_data.size() ||
+        series->getXData().size() != y_data[series_count].size()) {
+      keep_existing_x_data = false;
+      break;
+    }
+
+    ++series_count;
+  }
+
+  if (series_count != y_data.size()) keep_existing_x_data = false;
+
+  if (!keep_existing_x_data) {
+    // Hand over to the path that regenerates the x-data. This is the only
+    // case that copies into a vector of vectors, and it is already the slow
+    // path.
+    std::vector<std::vector<float>> owned;
+    owned.reserve(y_data.size());
+
+    for (const auto values : y_data)
+      owned.emplace_back(values.begin(), values.end());
+
+    plotUpdateYOnly(owned);
+    return;
+  }
+
+  auto values_it = y_data.begin();
+
+  for (const auto& series : *m_series) {
+    if (series->getType() != SeriesType::normal) continue;
+
+    series->setYValues(*values_it++);
+  }
+
+  // Matches what the multi-series path does through updateSeriesYData.
+  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
+    setAutoYScale();
+  }
+
+  m_notify_components_on_update.notify();
+  repaint(m_axes_bounds);
+}
+
 void Plot::plotUpdateYOnly(std::initializer_list<float> y_data) {
   plotUpdateYOnly(std::span<const float>(y_data.begin(), y_data.size()));
 }
