@@ -21,9 +21,8 @@
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
-#include <span>
-
 #include <cstddef>
+#include <span>
 
 #include "cmp_datamodels.h"
 #include "cmp_utils.h"
