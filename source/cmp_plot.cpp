@@ -385,7 +385,11 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
   return generateRamp();
 }
 
-void Plot::plotSeries(std::span<const SeriesData> series) {
+template <bool t_take_ownership>
+void Plot::plotSeriesInternal(
+    std::span<
+        std::conditional_t<t_take_ownership, SeriesData, const SeriesData>>
+        series) {
   // Validate before mutating any state, so a throw leaves the plot untouched.
   // An empty x is allowed: it auto-generates a 1..N ramp below.
   for (const auto& s : series)
@@ -405,16 +409,30 @@ void Plot::plotSeries(std::span<const SeriesData> series) {
     if (component->getType() != SeriesType::normal) continue;
     if (series_it == series.end()) break;
 
-    const auto& s = *series_it++;
-    component->setYValues(s.y);
+    auto& s = *series_it++;
 
-    if (s.x.empty()) {
-      // No x supplied: use a 1..N ramp, matching generateXdataRamp.
-      std::vector<float> ramp(s.y.size());
+    // No x supplied: use a 1..N ramp, matching generateXdataRamp. The ramp is
+    // built here and always moved, since nothing else owns it.
+    const auto needs_ramp = s.x.empty();
+    std::vector<float> ramp;
+
+    if (needs_ramp) {
+      ramp.resize(s.y.size());
       std::iota(ramp.begin(), ramp.end(), 1.0f);
-      component->setXValues(ramp);
+    }
+
+    if constexpr (t_take_ownership) {
+      // The caller's bundle is expiring, so its storage is taken rather than
+      // copied.
+      component->setYValues(std::move(s.y));
+      component->setXValues(needs_ramp ? std::move(ramp) : std::move(s.x));
     } else {
-      component->setXValues(s.x);
+      component->setYValues(s.y);
+
+      if (needs_ramp)
+        component->setXValues(std::move(ramp));
+      else
+        component->setXValues(s.x);
     }
 
     component->setSeriesAttribute(s.attribute);
@@ -430,9 +448,21 @@ void Plot::plotSeries(std::span<const SeriesData> series) {
   repaint();
 }
 
+void Plot::plotSeries(std::span<const SeriesData> series) {
+  plotSeriesInternal<false>(series);
+}
+
 void Plot::plot(const SeriesDataList& series) { plotSeries(series); }
 
 void Plot::plot(const SeriesData& series) { plotSeries({&series, 1}); }
+
+void Plot::plot(SeriesDataList&& series) {
+  plotSeriesInternal<true>(std::span<SeriesData>{series});
+}
+
+void Plot::plot(SeriesData&& series) {
+  plotSeriesInternal<true>(std::span<SeriesData>{&series, 1});
+}
 
 void Plot::clear() { plotSeries({}); }
 
