@@ -49,6 +49,196 @@ class Plot : public juce::Component {
   Plot(const Scaling x_scaling = Scaling::linear,
        const Scaling y_scaling = Scaling::linear);
 
+  class SeriesHandle;
+
+  /**
+   * @brief Scoped write access to one series' y-values.
+   *
+   * 'values()' is a span over the series' own y-buffer, so writing through it
+   * copies nothing. It is exactly as long as the series, which means the
+   * number of values cannot be got wrong: to change how many points a series
+   * has, plot it again.
+   *
+   * The update happens when the handle is destroyed, so keep it to the
+   * smallest scope that covers the writing:
+   *
+   * @code
+   *   {
+   *     auto y = series.write();
+   *     dsp.renderMagnitudesInto(y.values());
+   *   }   // series updated and repainted here
+   * @endcode
+   */
+  class ScopedYWrite {
+   public:
+    ~ScopedYWrite();
+
+    ScopedYWrite(const ScopedYWrite &) = delete;
+    ScopedYWrite &operator=(const ScopedYWrite &) = delete;
+    ScopedYWrite(ScopedYWrite &&) = delete;
+    ScopedYWrite &operator=(ScopedYWrite &&) = delete;
+
+    /** @brief The series' y-values, ready to be written. Empty if the series
+     * no longer exists. */
+    std::span<float> values() const noexcept;
+
+    /** @brief Whether the series still exists. */
+    bool isValid() const noexcept { return !values().empty(); }
+
+   private:
+    friend class SeriesHandle;
+
+    ScopedYWrite(Plot &plot, std::size_t series_index) noexcept
+        : m_plot{&plot}, m_series_index{series_index} {}
+
+    Plot *m_plot;
+    std::size_t m_series_index;
+  };
+
+  /**
+   * @brief Batches several series updates into one.
+   *
+   * Updating a series rescales the axes, notifies the other components and
+   * repaints. Doing that once per series is wasteful when several are updated
+   * together, so while an update is open the work is deferred and done once
+   * when it closes:
+   *
+   * @code
+   *   {
+   *     auto update = plot.beginUpdate();
+   *     left.setY(left_samples);
+   *     right.setY(right_samples);
+   *   }   // rescaled, notified and repainted once
+   * @endcode
+   *
+   * Nesting is allowed; the work happens when the outermost one closes.
+   */
+  class ScopedUpdate {
+   public:
+    ~ScopedUpdate();
+
+    ScopedUpdate(const ScopedUpdate &) = delete;
+    ScopedUpdate &operator=(const ScopedUpdate &) = delete;
+    ScopedUpdate(ScopedUpdate &&) = delete;
+    ScopedUpdate &operator=(ScopedUpdate &&) = delete;
+
+   private:
+    friend class Plot;
+
+    explicit ScopedUpdate(Plot &plot) noexcept;
+
+    Plot *m_plot;
+  };
+
+  /**
+   * @brief A reference to one plotted series.
+   *
+   * Returned by 'plot', which is what makes the ordering safe: there is no
+   * way to update a series without first having plotted one. A handle is
+   * cheap to copy and refers to its series by position, re-resolving it on
+   * use, so plotting again while a handle is held leaves it invalid rather
+   * than dangling. It must not outlive its Plot.
+   */
+  class SeriesHandle {
+   public:
+    /** @brief How many points the series holds. Zero if it no longer
+     * exists. */
+    std::size_t size() const noexcept;
+
+    /** @brief Whether the series still exists. */
+    bool isValid() const noexcept { return size() != 0u; }
+
+    /** @brief Replace the y-values, keeping the x-values.
+     *
+     * Pass as many values as 'size()'; a different number is handled but
+     * costs the x-data update this exists to avoid.
+     *
+     * @param y_values the new y-values.
+     */
+    void setY(std::span<const float> y_values) const;
+
+    /** @brief Take scoped write access to the y-values, without copying.
+     *
+     * @see ScopedYWrite
+     */
+    ScopedYWrite write() const noexcept;
+
+   private:
+    friend class Plot;
+    friend class SeriesHandles;
+
+    SeriesHandle(Plot &plot, std::size_t index) noexcept
+        : m_plot{&plot}, m_index{index} {}
+
+    Plot *m_plot;
+    std::size_t m_index;
+  };
+
+  /**
+   * @brief The series of a plot, as a range of handles.
+   *
+   * Holds no storage of its own - the handles are made on demand - so
+   * returning it from 'plot' costs nothing even when the caller ignores it.
+   */
+  class SeriesHandles {
+   public:
+    std::size_t size() const noexcept { return m_count; }
+    bool empty() const noexcept { return m_count == 0u; }
+
+    SeriesHandle operator[](const std::size_t index) const noexcept {
+      return SeriesHandle{*m_plot, index};
+    }
+
+    /** @brief Replace the y-values of every series, in one update.
+     *
+     * The batching is the point: updating the series one at a time rescales
+     * and refreshes once per series, which costs far more than doing it once
+     * for all of them. This does the batching for the caller so it cannot be
+     * forgotten.
+     *
+     * @code
+     *   channels.setY(std::array{left, right});
+     * @endcode
+     *
+     * @param y_values one range of y-values per series.
+     */
+    void setY(std::span<const std::span<const float>> y_values) const;
+
+    /** @brief Iteration support, so the handles can be walked directly. */
+    class Iterator {
+     public:
+      Iterator(Plot &plot, const std::size_t index) noexcept
+          : m_plot{&plot}, m_index{index} {}
+
+      SeriesHandle operator*() const noexcept {
+        return SeriesHandle{*m_plot, m_index};
+      }
+      Iterator &operator++() noexcept {
+        ++m_index;
+        return *this;
+      }
+      bool operator!=(const Iterator &other) const noexcept {
+        return m_index != other.m_index;
+      }
+
+     private:
+      Plot *m_plot;
+      std::size_t m_index;
+    };
+
+    Iterator begin() const noexcept { return Iterator{*m_plot, 0u}; }
+    Iterator end() const noexcept { return Iterator{*m_plot, m_count}; }
+
+   private:
+    friend class Plot;
+
+    SeriesHandles(Plot &plot, const std::size_t count) noexcept
+        : m_plot{&plot}, m_count{count} {}
+
+    Plot *m_plot;
+    std::size_t m_count;
+  };
+
   /**
    * @brief Set the X-limits
    * @param min minimum value
@@ -78,8 +268,9 @@ class Plot : public juce::Component {
    * @endcode
    *
    * @param series the series to plot @see SeriesData
+   * @return handles to the plotted series, for updating them afterwards
    */
-  void plot(const SeriesDataList &series);
+  SeriesHandles plot(const SeriesDataList &series);
 
   /**
    * @brief Plot a single series.
@@ -88,8 +279,29 @@ class Plot : public juce::Component {
    * pair of braces: @code plot({.y = samples}); @endcode
    *
    * @param series the series to plot @see SeriesData
+   * @return a handle to the plotted series, for updating it afterwards
    */
-  void plot(const SeriesData &series);
+  SeriesHandle plot(const SeriesData &series);
+
+  /**
+   * @brief Get a handle to an already plotted series.
+   *
+   * For code that plots in one place and updates in another, so the handle
+   * need not be carried around. An index with no series gives an invalid
+   * handle rather than undefined behaviour.
+   *
+   * @param series_index which series, in the order they were plotted.
+   * @return a handle to that series.
+   */
+  SeriesHandle series(const std::size_t series_index) noexcept;
+
+  /**
+   * @brief Batch several series updates into one rescale and repaint.
+   *
+   * @see ScopedUpdate
+   * @return a scoped handle that commits on destruction.
+   */
+  ScopedUpdate beginUpdate() noexcept;
 
   /**
    * @brief Remove all plotted series, clearing the plot.
@@ -541,6 +753,17 @@ class Plot : public juce::Component {
    * copy each); shared by the plot(SeriesData) and plot(SeriesDataList)
    * overloads. */
   void plotSeries(std::span<const SeriesData> series);
+  /** @internal Replace the y-values of the n-th normal series, regenerating
+   * its x-data if the number of values changed. */
+  void updateSeriesYAt(std::span<const float> y_data, std::size_t series_index);
+  /** @internal The y-buffer of the n-th normal series, empty if there is no
+   * such series. Shared by SeriesHandle and ScopedYWrite. */
+  std::span<float> seriesYBuffer(std::size_t series_index) noexcept;
+  /** @internal How many normal series are plotted. */
+  std::size_t normalSeriesCount() const noexcept;
+  /** @internal Rescale, notify and repaint after series were updated in
+   * place. Deferred while a ScopedUpdate is open. */
+  void commitSeriesUpdate();
   /** @internal Whether every series of this type already holds exactly as
    * many x-values as the matching entry of 'y_data' has y-values. Must be
    * asked before the y-data is written, since writing it changes the sizes
@@ -630,6 +853,11 @@ class Plot : public juce::Component {
   bool m_x_autoscale = true;
   bool m_y_autoscale = true;
   bool m_is_panning_or_zoomed_active = false;
+  /** How many ScopedUpdates are open. While non-zero, series updates defer
+   * their rescale and repaint to the outermost one. */
+  int m_open_update_count = 0;
+  /** Whether a deferred update is waiting to be committed. */
+  bool m_series_update_pending = false;
 };
 
 /**
