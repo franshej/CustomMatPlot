@@ -148,6 +148,15 @@ class Series : public juce::Component,
    */
   const std::vector<float>& getYData() const noexcept;
 
+  /** @brief Get the y-values for writing in place.
+   *
+   *  Lets a caller fill the series' own buffer instead of handing over values
+   *  to be copied. The length is fixed: use setYValues to change it.
+   *
+   *  @return a span over the y-values.
+   */
+  std::span<float> getYDataForWriting() noexcept;
+
   /** @brief Get x-values
    *
    *  Get a const reference of the x-values.

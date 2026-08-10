@@ -430,9 +430,114 @@ void Plot::plotSeries(std::span<const SeriesData> series) {
   repaint();
 }
 
-void Plot::plot(const SeriesDataList& series) { plotSeries(series); }
+std::size_t Plot::normalSeriesCount() const noexcept {
+  auto count = std::size_t{0};
 
-void Plot::plot(const SeriesData& series) { plotSeries({&series, 1}); }
+  for (const auto& series : *m_series)
+    if (series->getType() == SeriesType::normal) ++count;
+
+  return count;
+}
+
+std::span<float> Plot::seriesYBuffer(const std::size_t series_index) noexcept {
+  auto remaining = series_index;
+
+  for (const auto& series : *m_series) {
+    if (series->getType() != SeriesType::normal) continue;
+
+    if (remaining == 0u) return series->getYDataForWriting();
+    --remaining;
+  }
+
+  return {};
+}
+
+void Plot::commitSeriesUpdate() {
+  // While an update is open the work is left to the outermost one, so that
+  // several series can be updated for the price of one rescale and repaint.
+  if (m_open_update_count > 0) {
+    m_series_update_pending = true;
+    return;
+  }
+
+  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
+    setAutoYScale();
+  }
+
+  m_notify_components_on_update.notify();
+  repaint(m_axes_bounds);
+}
+
+Plot::ScopedUpdate::ScopedUpdate(Plot& plot) noexcept : m_plot{&plot} {
+  ++m_plot->m_open_update_count;
+}
+
+Plot::ScopedUpdate::~ScopedUpdate() {
+  --m_plot->m_open_update_count;
+
+  // Only the outermost update commits, and only if anything was changed.
+  if (m_plot->m_open_update_count > 0 || !m_plot->m_series_update_pending)
+    return;
+
+  m_plot->m_series_update_pending = false;
+  m_plot->commitSeriesUpdate();
+}
+
+Plot::ScopedUpdate Plot::beginUpdate() noexcept { return ScopedUpdate{*this}; }
+
+std::size_t Plot::SeriesHandle::size() const noexcept {
+  return m_plot->seriesYBuffer(m_index).size();
+}
+
+void Plot::SeriesHandle::setY(std::span<const float> y_values) const {
+  if (!isValid()) return;
+
+  m_plot->updateSeriesYAt(y_values, m_index);
+}
+
+Plot::ScopedYWrite Plot::SeriesHandle::write() const noexcept {
+  return ScopedYWrite{*m_plot, m_index};
+}
+
+std::span<float> Plot::ScopedYWrite::values() const noexcept {
+  return m_plot->seriesYBuffer(m_series_index);
+}
+
+Plot::ScopedYWrite::~ScopedYWrite() {
+  // Nothing to redraw if the series went away while the handle was alive.
+  if (values().empty()) return;
+
+  m_plot->commitSeriesUpdate();
+}
+
+void Plot::SeriesHandles::setY(
+    std::span<const std::span<const float>> y_values) const {
+  // One update for all of them: updating series one at a time rescales and
+  // refreshes once per series, which grows with the square of the series
+  // count.
+  auto update = m_plot->beginUpdate();
+
+  const auto count = std::min(m_count, y_values.size());
+
+  for (std::size_t i = 0; i < count; ++i)
+    m_plot->updateSeriesYAt(y_values[i], i);
+}
+
+Plot::SeriesHandle Plot::series(const std::size_t series_index) noexcept {
+  return SeriesHandle{*this, series_index};
+}
+
+Plot::SeriesHandles Plot::plot(const SeriesDataList& series) {
+  plotSeries(series);
+
+  return SeriesHandles{*this, normalSeriesCount()};
+}
+
+Plot::SeriesHandle Plot::plot(const SeriesData& series) {
+  plotSeries({&series, 1});
+
+  return SeriesHandle{*this, 0u};
+}
 
 void Plot::clear() { plotSeries({}); }
 
@@ -498,34 +603,48 @@ void Plot::plotUpdateYOnly(std::initializer_list<float> y_data) {
   plotUpdateYOnly(std::span<const float>(y_data.begin(), y_data.size()));
 }
 
-void Plot::plotUpdateYOnly(std::span<const float> y_data) {
+void Plot::updateSeriesYAt(std::span<const float> y_data,
+                           const std::size_t series_index) {
   jassert(!m_series->empty());
 
-  // Straight into the first series: wrapping the values in a vector of
-  // vectors to reach the multi-series overload would copy them an extra time
-  // and allocate, on the path that exists to avoid exactly that.
+  auto remaining = series_index;
+
+  // Straight into the series: wrapping the values in a vector of vectors to
+  // reach the multi-series overload would copy them an extra time and
+  // allocate, on the path that exists to avoid exactly that.
   for (const auto& series : *m_series) {
     if (series->getType() != SeriesType::normal) continue;
 
-    // A different number of values leaves the x-data describing a different
-    // number of points, so fall back to the path that regenerates it.
-    if (series->getXData().size() != y_data.size()) {
-      plotUpdateYOnly(
-          std::vector<std::vector<float>>{{y_data.begin(), y_data.end()}});
-      return;
+    if (remaining != 0u) {
+      --remaining;
+      continue;
     }
 
     series->setYValues(y_data);
+
+    // A different number of values would leave the x-data - and the
+    // pixel-point indices derived from it - describing a different number of
+    // points, so this series' x-data is regenerated as a ramp. The other
+    // series are left alone. This costs exactly the work updating only the
+    // y-values exists to avoid, hence the assert.
+    if (series->getXData().size() != y_data.size()) {
+      jassertfalse;
+
+      std::vector<float> ramp(y_data.size());
+      std::iota(ramp.begin(), ramp.end(), 1.0f);
+      series->setXValues(ramp);
+
+      if (m_x_autoscale && !m_is_panning_or_zoomed_active) setAutoXScale();
+    }
+
     break;
   }
 
-  // Matches what the multi-series path does through updateSeriesYData.
-  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
-    setAutoYScale();
-  }
+  commitSeriesUpdate();
+}
 
-  m_notify_components_on_update.notify();
-  repaint(m_axes_bounds);
+void Plot::plotUpdateYOnly(std::span<const float> y_data) {
+  updateSeriesYAt(y_data, 0u);
 }
 
 void Plot::fillBetween(const std::vector<SpreadIndex>& spread_indices,

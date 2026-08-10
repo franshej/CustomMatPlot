@@ -215,6 +215,8 @@ void Series::movePixelPoint(const juce::Point<float>& d_pixel_point,
 
 const std::vector<float>& Series::getYData() const noexcept { return m_y_data; }
 
+std::span<float> Series::getYDataForWriting() noexcept { return m_y_data; }
+
 const std::vector<float>& Series::getXData() const noexcept { return m_x_data; }
 
 const PixelPoints& Series::getPixelPoints() const noexcept {
