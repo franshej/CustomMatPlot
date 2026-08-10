@@ -2,7 +2,9 @@
 
 #include <juce_core/juce_core.h>
 
+#include <array>
 #include <memory>
+#include <span>
 
 #include "cmp_datamodels.h"
 #include "cmp_lookandfeel.h"
@@ -54,11 +56,10 @@ SECTION(PlotClass, "Plot class") {
     cmp::Plot bundle_plot;
     // First series supplies its own x; second omits x and should get a 1..N
     // ramp; the first also carries a per-series colour attribute.
-    bundle_plot.plot(
-        {{.x = x_data2,
-          .y = y_data2,
-          .attribute = {.series_colour = juce::Colours::red}},
-         {.y = y_data1}});
+    bundle_plot.plot({{.x = x_data2,
+                       .y = y_data2,
+                       .attribute = {.series_colour = juce::Colours::red}},
+                      {.y = y_data1}});
     auto series = getChildComponentHelper<cmp::Series>(bundle_plot);
     expectEquals(series.size(), 2ul);
     expectEqualVectors(series[0]->getXData(), x_data2, expectEqualsLambda);
@@ -120,10 +121,16 @@ SECTION(PlotClass, "Plot class") {
   }
 
   TEST("Update Y data only") {
-    plot.plot({{.x = x_data_random_1, .y = y_data1},
-               {.x = x_data_random_2, .y = y_data2},
-               {.x = x_data_random_3, .y = y_data3}});
-    plot.plotUpdateYOnly({y_data1, y_data2, y_data3});
+    const auto series_handles =
+        plot.plot({{.x = x_data_random_1, .y = y_data1},
+                   {.x = x_data_random_2, .y = y_data2},
+                   {.x = x_data_random_3, .y = y_data3}});
+
+    const std::array<std::span<const float>, 3> new_y{
+        std::span<const float>(y_data1), std::span<const float>(y_data2),
+        std::span<const float>(y_data3)};
+
+    series_handles.setY(new_y);
     auto series = getChildComponentHelper<cmp::Series>(plot);
     expectEquals(series.size(), 3ul);
     expectEqualVectors(series[0]->getXData(), x_data_random_1,

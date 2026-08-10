@@ -1,5 +1,7 @@
 #include <juce_core/juce_core.h>
 
+#include <array>
+#include <span>
 #include <vector>
 
 #include "cmp_lookandfeel.h"
@@ -7,16 +9,16 @@
 #include "cmp_series.h"
 #include "cmp_test_helper.hpp"
 
-/* Tests for plotUpdateYOnly when the number of y-values changes.
+/* Tests for updating a series' y-values when the number of them changes.
  *
- * plotUpdateYOnly skips the x-data update, which is where its speed comes
- * from. If the caller passes a different number of values, keeping the old
- * x-data would leave it - and the pixel-point indices derived from it -
- * describing a different number of points than the series holds, so indices
- * would be used to read past the end of the y-data. The x-data is regenerated
- * in that case instead.
+ * Updating only the y-values skips the x-data update, which is where its
+ * speed comes from. If the caller passes a different number of values,
+ * keeping the old x-data would leave it - and the pixel-point indices derived
+ * from it - describing a different number of points than the series holds, so
+ * indices would be used to read past the end of the y-data. The x-data is
+ * regenerated in that case instead.
  */
-SECTION(UpdateYOnlySizeTest, "plotUpdateYOnly size change") {
+SECTION(UpdateYOnlySizeTest, "Handle setY size change") {
   const auto make = [](const std::size_t n, const float value) {
     return std::vector<float>(n, value);
   };
@@ -38,7 +40,7 @@ SECTION(UpdateYOnlySizeTest, "plotUpdateYOnly size change") {
 
     const std::vector<float> x_data = make(500u, 3.f);
     plot.plot({.x = x_data, .y = make(500u, 1.f)});
-    plot.plotUpdateYOnly(make(500u, 2.f));
+    plot.series(0u).setY(make(500u, 2.f));
 
     const auto series = getChildComponentHelper<cmp::Series>(plot);
     expectEquals(series.size(), 1ul);
@@ -56,7 +58,7 @@ SECTION(UpdateYOnlySizeTest, "plotUpdateYOnly size change") {
     plot.setBounds(0, 0, 500, 400);
 
     plot.plot({.y = make(500u, 1.f)});
-    plot.plotUpdateYOnly(make(10u, 2.f));
+    plot.series(0u).setY(make(10u, 2.f));
 
     const auto series = getChildComponentHelper<cmp::Series>(plot);
     expectEquals(series.size(), 1ul);
@@ -71,7 +73,7 @@ SECTION(UpdateYOnlySizeTest, "plotUpdateYOnly size change") {
     plot.setBounds(0, 0, 500, 400);
 
     plot.plot({.y = make(10u, 1.f)});
-    plot.plotUpdateYOnly(make(500u, 2.f));
+    plot.series(0u).setY(make(500u, 2.f));
 
     const auto series = getChildComponentHelper<cmp::Series>(plot);
 
@@ -87,7 +89,7 @@ SECTION(UpdateYOnlySizeTest, "plotUpdateYOnly size change") {
     plot.plot({.y = make(300u, 1.f)});
 
     for (const std::size_t n : {50u, 700u, 20u, 300u, 1u}) {
-      plot.plotUpdateYOnly(make(n, 2.f));
+      plot.series(0u).setY(make(n, 2.f));
 
       const auto series = getChildComponentHelper<cmp::Series>(plot);
 
@@ -102,7 +104,12 @@ SECTION(UpdateYOnlySizeTest, "plotUpdateYOnly size change") {
     plot.setBounds(0, 0, 500, 400);
 
     plot.plot({{.y = make(200u, 1.f)}, {.y = make(200u, 2.f)}});
-    plot.plotUpdateYOnly({make(30u, 3.f), make(30u, 4.f)});
+    const auto first = make(30u, 3.f);
+    const auto second = make(30u, 4.f);
+    const std::array<std::span<const float>, 2> channels{
+        std::span<const float>(first), std::span<const float>(second)};
+
+    plot.series().setY(channels);
 
     const auto series = getChildComponentHelper<cmp::Series>(plot);
     expectEquals(series.size(), 2ul);

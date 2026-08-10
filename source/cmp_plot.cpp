@@ -347,8 +347,8 @@ void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
       update_y_data_only && seriesXSizesMatch<t_series_type>(y_data);
 
   // Reaching this in a y-only update means the caller changed the number of
-  // values, which costs the x-data update that plotUpdateYOnly exists to
-  // avoid. It is handled, but it is worth knowing about.
+  // values, which costs the x-data update that updating only the y-values
+  // exists to avoid. It is handled, but it is worth knowing about.
   jassert(!update_y_data_only || keep_existing_x_data);
 
   updateSeriesYData<t_series_type>(y_data, series_attributes);
@@ -527,6 +527,10 @@ Plot::SeriesHandle Plot::series(const std::size_t series_index) noexcept {
   return SeriesHandle{*this, series_index};
 }
 
+Plot::SeriesHandles Plot::series() noexcept {
+  return SeriesHandles{*this, normalSeriesCount()};
+}
+
 Plot::SeriesHandles Plot::plot(const SeriesDataList& series) {
   plotSeries(series);
 
@@ -540,68 +544,6 @@ Plot::SeriesHandle Plot::plot(const SeriesData& series) {
 }
 
 void Plot::clear() { plotSeries({}); }
-
-void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
-  plotInternal<SeriesType::normal>(y_data, {}, {}, true);
-  repaint(m_axes_bounds);
-}
-
-void Plot::plotUpdateYOnly(std::span<const std::span<const float>> y_data) {
-  jassert(!m_series->empty());
-
-  // The x-data can only be left alone if every series is being given as many
-  // values as it already holds, and there is a series for every range.
-  auto series_count = std::size_t{0};
-  auto keep_existing_x_data = true;
-
-  for (const auto& series : *m_series) {
-    if (series->getType() != SeriesType::normal) continue;
-
-    if (series_count >= y_data.size() ||
-        series->getXData().size() != y_data[series_count].size()) {
-      keep_existing_x_data = false;
-      break;
-    }
-
-    ++series_count;
-  }
-
-  if (series_count != y_data.size()) keep_existing_x_data = false;
-
-  if (!keep_existing_x_data) {
-    // Hand over to the path that regenerates the x-data. This is the only
-    // case that copies into a vector of vectors, and it is already the slow
-    // path.
-    std::vector<std::vector<float>> owned;
-    owned.reserve(y_data.size());
-
-    for (const auto values : y_data)
-      owned.emplace_back(values.begin(), values.end());
-
-    plotUpdateYOnly(owned);
-    return;
-  }
-
-  auto values_it = y_data.begin();
-
-  for (const auto& series : *m_series) {
-    if (series->getType() != SeriesType::normal) continue;
-
-    series->setYValues(*values_it++);
-  }
-
-  // Matches what the multi-series path does through updateSeriesYData.
-  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
-    setAutoYScale();
-  }
-
-  m_notify_components_on_update.notify();
-  repaint(m_axes_bounds);
-}
-
-void Plot::plotUpdateYOnly(std::initializer_list<float> y_data) {
-  plotUpdateYOnly(std::span<const float>(y_data.begin(), y_data.size()));
-}
 
 void Plot::updateSeriesYAt(std::span<const float> y_data,
                            const std::size_t series_index) {
@@ -641,10 +583,6 @@ void Plot::updateSeriesYAt(std::span<const float> y_data,
   }
 
   commitSeriesUpdate();
-}
-
-void Plot::plotUpdateYOnly(std::span<const float> y_data) {
-  updateSeriesYAt(y_data, 0u);
 }
 
 void Plot::fillBetween(const std::vector<SpreadIndex>& spread_indices,
