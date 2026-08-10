@@ -36,8 +36,10 @@ namespace cmp {
  * @see LogLog
  */
 class Plot : public juce::Component {
+  // These are the handles Plot vends; they reach its internals so that the
+  // internals need not be public. SeriesHandles is deliberately absent - it
+  // goes through SeriesHandle's public interface instead.
   friend class SeriesHandle;
-  friend class SeriesHandles;
   friend class ScopedSeriesWrite;
   friend class ScopedPlotUpdate;
 

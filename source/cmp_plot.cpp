@@ -526,8 +526,10 @@ void SeriesHandles::setY(
 
   const auto count = std::min(m_count, y_values.size());
 
+  // Through the handles' own public setY, so this needs no privileged access
+  // to Plot of its own.
   for (std::size_t i = 0; i < count; ++i) {
-    m_plot->updateSeriesYAt(y_values[i], i);
+    (*this)[i].setY(y_values[i]);
   }
 }
 
