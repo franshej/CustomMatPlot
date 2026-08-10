@@ -52,9 +52,9 @@ class Plot : public juce::Component {
   class SeriesHandle;
 
   /**
-   * @brief Scoped write access to one series' y-values.
+   * @brief Scoped write access to one of a series' value arrays.
    *
-   * 'values()' is a span over the series' own y-buffer, so writing through it
+   * 'values()' is a span over the series' own buffer, so writing through it
    * copies nothing. It is exactly as long as the series, which means the
    * number of values cannot be got wrong: to change how many points a series
    * has, plot it again.
@@ -64,19 +64,26 @@ class Plot : public juce::Component {
    *
    * @code
    *   {
-   *     auto y = series.write();
+   *     auto y = series.writeY();
    *     dsp.renderMagnitudesInto(y.values());
    *   }   // series updated and repainted here
    * @endcode
+   *
+   * Only the y-values can be written this way today. The type is not named
+   * for an axis so that writing the x-values, should it ever be wanted, is an
+   * addition rather than a rename - but note that the downsampler locates the
+   * visible range by binary-searching the x-data, so handing out a writable
+   * x-buffer would let a caller silently break that ordering. The y-values
+   * carry no such invariant, which is what makes writing them safe.
    */
-  class ScopedYWrite {
+  class ScopedWrite {
    public:
-    ~ScopedYWrite();
+    ~ScopedWrite();
 
-    ScopedYWrite(const ScopedYWrite &) = delete;
-    ScopedYWrite &operator=(const ScopedYWrite &) = delete;
-    ScopedYWrite(ScopedYWrite &&) = delete;
-    ScopedYWrite &operator=(ScopedYWrite &&) = delete;
+    ScopedWrite(const ScopedWrite &) = delete;
+    ScopedWrite &operator=(const ScopedWrite &) = delete;
+    ScopedWrite(ScopedWrite &&) = delete;
+    ScopedWrite &operator=(ScopedWrite &&) = delete;
 
     /** @brief The series' y-values, ready to be written. Empty if the series
      * no longer exists. */
@@ -88,7 +95,7 @@ class Plot : public juce::Component {
    private:
     friend class SeriesHandle;
 
-    ScopedYWrite(Plot &plot, std::size_t series_index) noexcept
+    ScopedWrite(Plot &plot, std::size_t series_index) noexcept
         : m_plot{&plot}, m_series_index{series_index} {}
 
     Plot *m_plot;
@@ -159,9 +166,9 @@ class Plot : public juce::Component {
 
     /** @brief Take scoped write access to the y-values, without copying.
      *
-     * @see ScopedYWrite
+     * @see ScopedWrite
      */
-    ScopedYWrite write() const noexcept;
+    ScopedWrite writeY() const noexcept;
 
    private:
     friend class Plot;
@@ -757,7 +764,7 @@ class Plot : public juce::Component {
    * its x-data if the number of values changed. */
   void updateSeriesYAt(std::span<const float> y_data, std::size_t series_index);
   /** @internal The y-buffer of the n-th normal series, empty if there is no
-   * such series. Shared by SeriesHandle and ScopedYWrite. */
+   * such series. Shared by SeriesHandle and ScopedWrite. */
   std::span<float> seriesYBuffer(std::size_t series_index) noexcept;
   /** @internal How many normal series are plotted. */
   std::size_t normalSeriesCount() const noexcept;

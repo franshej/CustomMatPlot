@@ -55,7 +55,7 @@ SECTION(SeriesHandleTest, "Series handles") {
     const auto series = plot.plot({.y = make(16u, 0.f)});
     const auto* buffer = seriesOf(plot).at(0)->getYData().data();
 
-    auto y = series.write();
+    auto y = series.writeY();
 
     expect(y.values().data() == buffer,
            "the span must alias the series' own storage");

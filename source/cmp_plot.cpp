@@ -495,15 +495,15 @@ void Plot::SeriesHandle::setY(std::span<const float> y_values) const {
   m_plot->updateSeriesYAt(y_values, m_index);
 }
 
-Plot::ScopedYWrite Plot::SeriesHandle::write() const noexcept {
-  return ScopedYWrite{*m_plot, m_index};
+Plot::ScopedWrite Plot::SeriesHandle::writeY() const noexcept {
+  return ScopedWrite{*m_plot, m_index};
 }
 
-std::span<float> Plot::ScopedYWrite::values() const noexcept {
+std::span<float> Plot::ScopedWrite::values() const noexcept {
   return m_plot->seriesYBuffer(m_series_index);
 }
 
-Plot::ScopedYWrite::~ScopedYWrite() {
+Plot::ScopedWrite::~ScopedWrite() {
   // Nothing to redraw if the series went away while the handle was alive.
   if (values().empty()) return;
 
