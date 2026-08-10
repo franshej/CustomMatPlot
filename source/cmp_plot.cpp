@@ -388,10 +388,12 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
 void Plot::plotSeries(std::span<const SeriesData> series) {
   // Validate before mutating any state, so a throw leaves the plot untouched.
   // An empty x is allowed: it auto-generates a 1..N ramp below.
-  for (const auto& s : series)
-    if (!s.x.empty() && s.x.size() != s.y.size())
+  for (const auto& s : series) {
+    if (!s.x.empty() && s.x.size() != s.y.size()) {
       throw std::invalid_argument(
           "plot: the x and y values of a series must have the same size.");
+    }
+  }
 
   // plot() sets the plot to exactly the given series; an empty list clears
   // them (there is no separate clear method).
@@ -433,8 +435,11 @@ void Plot::plotSeries(std::span<const SeriesData> series) {
 std::size_t Plot::normalSeriesCount() const noexcept {
   auto count = std::size_t{0};
 
-  for (const auto& series : *m_series)
-    if (series->getType() == SeriesType::normal) ++count;
+  for (const auto& series : *m_series) {
+    if (series->getType() == SeriesType::normal) {
+      ++count;
+    }
+  }
 
   return count;
 }
@@ -468,11 +473,11 @@ void Plot::commitSeriesUpdate() {
   repaint(m_axes_bounds);
 }
 
-Plot::ScopedUpdate::ScopedUpdate(Plot& plot) noexcept : m_plot{&plot} {
+ScopedPlotUpdate::ScopedPlotUpdate(Plot& plot) noexcept : m_plot{&plot} {
   ++m_plot->m_open_update_count;
 }
 
-Plot::ScopedUpdate::~ScopedUpdate() {
+ScopedPlotUpdate::~ScopedPlotUpdate() {
   --m_plot->m_open_update_count;
 
   // Only the outermost update commits, and only if anything was changed.
@@ -483,34 +488,36 @@ Plot::ScopedUpdate::~ScopedUpdate() {
   m_plot->commitSeriesUpdate();
 }
 
-Plot::ScopedUpdate Plot::beginUpdate() noexcept { return ScopedUpdate{*this}; }
+ScopedPlotUpdate Plot::beginUpdate() noexcept {
+  return ScopedPlotUpdate{*this};
+}
 
-std::size_t Plot::SeriesHandle::size() const noexcept {
+std::size_t SeriesHandle::size() const noexcept {
   return m_plot->seriesYBuffer(m_index).size();
 }
 
-void Plot::SeriesHandle::setY(std::span<const float> y_values) const {
+void SeriesHandle::setY(std::span<const float> y_values) const {
   if (!isValid()) return;
 
   m_plot->updateSeriesYAt(y_values, m_index);
 }
 
-Plot::ScopedWrite Plot::SeriesHandle::writeY() const noexcept {
-  return ScopedWrite{*m_plot, m_index};
+ScopedSeriesWrite SeriesHandle::writeY() const noexcept {
+  return ScopedSeriesWrite{*m_plot, m_index};
 }
 
-std::span<float> Plot::ScopedWrite::values() const noexcept {
+std::span<float> ScopedSeriesWrite::values() const noexcept {
   return m_plot->seriesYBuffer(m_series_index);
 }
 
-Plot::ScopedWrite::~ScopedWrite() {
+ScopedSeriesWrite::~ScopedSeriesWrite() {
   // Nothing to redraw if the series went away while the handle was alive.
   if (values().empty()) return;
 
   m_plot->commitSeriesUpdate();
 }
 
-void Plot::SeriesHandles::setY(
+void SeriesHandles::setY(
     std::span<const std::span<const float>> y_values) const {
   // One update for all of them: updating series one at a time rescales and
   // refreshes once per series, which grows with the square of the series
@@ -519,21 +526,22 @@ void Plot::SeriesHandles::setY(
 
   const auto count = std::min(m_count, y_values.size());
 
-  for (std::size_t i = 0; i < count; ++i)
+  for (std::size_t i = 0; i < count; ++i) {
     m_plot->updateSeriesYAt(y_values[i], i);
+  }
 }
 
-Plot::SeriesHandle Plot::series(const std::size_t series_index) noexcept {
+SeriesHandle Plot::series(const std::size_t series_index) noexcept {
   return SeriesHandle{*this, series_index};
 }
 
-Plot::SeriesHandles Plot::plot(const SeriesDataList& series) {
+SeriesHandles Plot::plot(const SeriesDataList& series) {
   plotSeries(series);
 
   return SeriesHandles{*this, normalSeriesCount()};
 }
 
-Plot::SeriesHandle Plot::plot(const SeriesData& series) {
+SeriesHandle Plot::plot(const SeriesData& series) {
   plotSeries({&series, 1});
 
   return SeriesHandle{*this, 0u};
@@ -575,8 +583,9 @@ void Plot::plotUpdateYOnly(std::span<const std::span<const float>> y_data) {
     std::vector<std::vector<float>> owned;
     owned.reserve(y_data.size());
 
-    for (const auto values : y_data)
+    for (const auto values : y_data) {
       owned.emplace_back(values.begin(), values.end());
+    }
 
     plotUpdateYOnly(owned);
     return;
