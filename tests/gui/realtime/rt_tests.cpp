@@ -5,6 +5,9 @@
  * https://opensource.org/licenses/MIT
  */
 
+#include <span>
+#include <vector>
+
 #include "cmp_lookandfeel.h"
 #include "test_macros.h"
 
@@ -62,7 +65,7 @@ TEST(real_time_plot_function, real_time) {
       y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     }
 
-    GET_PLOT->plotUpdateYOnly(y_test_data);
+    GET_PLOT->series(0u).setY(y_test_data);
   };
 }
 
@@ -98,7 +101,13 @@ TEST(spread, real_time) {
   FILL_BETWEEN(spread_indices);
 
   GET_TIMER_CB = [=](const int dt_ms) {
-    GET_PLOT->plotUpdateYOnly(getYData());
+    const auto y_data = getYData();
+
+    std::vector<std::span<const float>> channels;
+    channels.reserve(y_data.size());
+    for (const auto& y : y_data) channels.emplace_back(y);
+
+    GET_PLOT->series().setY(channels);
   };
 }
 

@@ -303,6 +303,16 @@ class Plot : public juce::Component {
   SeriesHandle series(const std::size_t series_index) noexcept;
 
   /**
+   * @brief Get handles to every plotted series.
+   *
+   * The same range 'plot' returns, for code that plots in one place and
+   * updates in another.
+   *
+   * @return handles to the plotted series.
+   */
+  SeriesHandles series() noexcept;
+
+  /**
    * @brief Batch several series updates into one rescale and repaint.
    *
    * @see ScopedUpdate
@@ -341,74 +351,10 @@ class Plot : public juce::Component {
   void plotVerticalLines(const std::vector<float> &x_coordinates,
                          const SeriesAttributeList &series_attributes = {});
 
-  /** @brief Plot, but only update the y-data.
-   *
-   * This plot function will only update the y-data in the series and only
-   * repaint the axes_area, therefore requires less CPU than the 'plot'
-   * function. x-data must be set through the 'plot' function before calling
-   * this function.
-   *
-   * Pass the same number of y-values as the series already holds. Passing a
-   * different number is handled - the x-data is regenerated as a ramp, which
-   * replaces any x-data set through 'plot' - but it costs exactly the work
-   * this function exists to avoid, so prefer 'plot' when the number of points
-   * changes.
-   *
-   * @param y_data vector of vectors with the y-values.
-   */
-  void plotUpdateYOnly(const std::vector<std::vector<float>> &y_data);
-
-  /** @brief Update only the y-data of a single series.
-   *
-   * Convenience overload for the common real-time case of one series, so the
-   * y-values need not be wrapped in an extra pair of braces:
-   * @code plotUpdateYOnly(samples); @endcode
-   *
-   * Takes a span, so the values can come from any contiguous range - a
-   * vector, a std::array, a raw buffer, or a sub-range of a larger one -
-   * without being packed into a vector first, and are copied straight into
-   * the series:
-   * @code plotUpdateYOnly({fft_buffer.data(), fft_size}); @endcode
-   *
-   * @param y_data the new y-values for the first series.
-   */
-  void plotUpdateYOnly(std::span<const float> y_data);
-
-  /** @brief Plot, but only update the y-data, for several series.
-   *
-   * As the vector-of-vectors overload, but each series' values can come from
-   * any contiguous range. A caller holding one buffer per channel - which is
-   * how audio arrives - can plot them without first copying everything into a
-   * vector of vectors:
-   *
-   * @code
-   *   const std::array<std::span<const float>, 2> channels{
-   *       std::span(buffer.getReadPointer(0), num_samples),
-   *       std::span(buffer.getReadPointer(1), num_samples)};
-   *
-   *   plot.plotUpdateYOnly(channels);
-   * @endcode
-   *
-   * Note that a vector of vectors does not convert to a span of spans, so
-   * such callers keep using the overload above.
-   *
-   * @param y_data one range of y-values per series.
-   */
-  void plotUpdateYOnly(std::span<const std::span<const float>> y_data);
-
-  /** @brief Update only the y-data of a single series, from a braced list.
-   *
-   * A braced list does not convert to a span, so this overload keeps
-   * @code plotUpdateYOnly({4.f, 3.f, 2.f, 1.f}); @endcode working.
-   *
-   * @param y_data the new y-values for the first series.
-   */
-  void plotUpdateYOnly(std::initializer_list<float> y_data);
-
   /** @brief Fill the area between two data lines
    *
    * Steps to use:
-   * 1. Draw series using plot() or plotUpdateYOnly()
+   * 1. Draw series using plot()
    * 2. Call this function to fill area between specified lines
    *
    * @param spread_indices Indices of series to fill between

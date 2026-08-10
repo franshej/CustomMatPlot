@@ -24,7 +24,7 @@ SECTION(SpanApiTest, "Span y-data") {
     plot.setBounds(0, 0, 500, 400);
 
     plot.plot({.y = std::vector<float>{1.f, 2.f, 3.f, 4.f}});
-    plot.plotUpdateYOnly(std::vector<float>{5.f, 6.f, 7.f, 8.f});
+    plot.series(0u).setY(std::vector<float>{5.f, 6.f, 7.f, 8.f});
 
     expectEqualVectors(firstSeries(plot)->getYData(),
                        std::vector<float>{5.f, 6.f, 7.f, 8.f},
@@ -36,7 +36,7 @@ SECTION(SpanApiTest, "Span y-data") {
     plot.setBounds(0, 0, 500, 400);
 
     plot.plot({.y = std::vector<float>{1.f, 2.f, 3.f, 4.f}});
-    plot.plotUpdateYOnly({5.f, 6.f, 7.f, 8.f});
+    plot.series(0u).setY(std::vector<float>{5.f, 6.f, 7.f, 8.f});
 
     expectEqualVectors(firstSeries(plot)->getYData(),
                        std::vector<float>{5.f, 6.f, 7.f, 8.f},
@@ -50,7 +50,7 @@ SECTION(SpanApiTest, "Span y-data") {
     plot.plot({.y = std::vector<float>{1.f, 2.f, 3.f, 4.f}});
 
     const std::array<float, 4> values{9.f, 8.f, 7.f, 6.f};
-    plot.plotUpdateYOnly(values);
+    plot.series(0u).setY(values);
 
     expectEqualVectors(firstSeries(plot)->getYData(),
                        std::vector<float>{9.f, 8.f, 7.f, 6.f},
@@ -64,7 +64,7 @@ SECTION(SpanApiTest, "Span y-data") {
     plot.plot({.y = std::vector<float>{1.f, 2.f, 3.f, 4.f}});
 
     float buffer[4] = {2.f, 4.f, 6.f, 8.f};
-    plot.plotUpdateYOnly(std::span<const float>(buffer, 4));
+    plot.series(0u).setY(std::span<const float>(buffer, 4));
 
     expectEqualVectors(firstSeries(plot)->getYData(),
                        std::vector<float>{2.f, 4.f, 6.f, 8.f},
@@ -79,7 +79,7 @@ SECTION(SpanApiTest, "Span y-data") {
 
     // The middle three of a longer buffer, with no intermediate copy.
     const std::vector<float> big{1.f, 2.f, 3.f, 4.f, 5.f, 6.f};
-    plot.plotUpdateYOnly(std::span<const float>(big).subspan(2u, 3u));
+    plot.series(0u).setY(std::span<const float>(big).subspan(2u, 3u));
 
     expectEqualVectors(firstSeries(plot)->getYData(),
                        std::vector<float>{3.f, 4.f, 5.f},
@@ -101,7 +101,7 @@ SECTION(SpanApiTest, "Span y-data") {
     const std::array<std::span<const float>, 2> channels{
         std::span<const float>(left, 4), std::span<const float>(right, 4)};
 
-    plot.plotUpdateYOnly(channels);
+    plot.series().setY(channels);
 
     const auto series = getChildComponentHelper<cmp::Series>(plot);
     expectEquals(series.size(), 2ul);
@@ -124,7 +124,7 @@ SECTION(SpanApiTest, "Span y-data") {
     const std::array<std::span<const float>, 2> channels{
         std::span<const float>(shorter), std::span<const float>(shorter)};
 
-    plot.plotUpdateYOnly(channels);
+    plot.series().setY(channels);
 
     for (const auto* series : getChildComponentHelper<cmp::Series>(plot)) {
       expectEquals(series->getYData().size(), std::size_t(12u));
@@ -137,7 +137,7 @@ SECTION(SpanApiTest, "Span y-data") {
     plot.setBounds(0, 0, 500, 400);
 
     plot.plot({.y = std::vector<float>(200u, 1.f)});
-    plot.plotUpdateYOnly(std::vector<float>(20u, 2.f));
+    plot.series(0u).setY(std::vector<float>(20u, 2.f));
 
     const auto* series = firstSeries(plot);
 
