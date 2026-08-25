@@ -3,6 +3,8 @@
 
 CustomMatPlot (CMP) is a plotting library for C++. It provides an API for embedding plot components into applications using the JUCE framework. The plot component is easy to integrate and is customizable using the included lookandfeel class.
 
+> ⭐ **If CustomMatPlot is useful to you, please star the repo.** It is the main way I can tell whether the library is worth continuing to invest in.
+
 | ![Image](img/spread.png)  | ![Image](img/sines.png)|
 | ------------- | ------------- |
 
@@ -154,3 +156,6 @@ The MIT License (MIT)
 Copyright (c) 2017-2022 Frans Rosencrantz
 
 **Free Software, Hell Yeah!**
+
+Free as in MIT: use it in anything, commercial or not, no strings attached. If
+it saves you time, a ⭐ on the repo is the only thanks I am after.
