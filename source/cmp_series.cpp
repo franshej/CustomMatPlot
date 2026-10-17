@@ -186,14 +186,22 @@ void Series::setSeriesAttribute(const SeriesAttribute& series_attribute) {
     m_series_attributes.gradient_colours = series_attribute.gradient_colours;
 }
 
-void Series::setYValues(const std::vector<float>& y_data) {
+void Series::setYValues(std::span<const float> y_data) {
   if (m_y_data.size() != y_data.size()) m_y_data.resize(y_data.size());
   std::copy(y_data.begin(), y_data.end(), m_y_data.begin());
 }
 
-void Series::setXValues(const std::vector<float>& x_data) {
+void Series::setYValues(std::vector<float>&& y_data) {
+  m_y_data = std::move(y_data);
+}
+
+void Series::setXValues(std::span<const float> x_data) {
   if (m_x_data.size() != x_data.size()) m_x_data.resize(x_data.size());
   std::copy(x_data.begin(), x_data.end(), m_x_data.begin());
+}
+
+void Series::setXValues(std::vector<float>&& x_data) {
+  m_x_data = std::move(x_data);
 }
 
 bool Series::setXYValue(const juce::Point<float>& xy_value, size_t index) {

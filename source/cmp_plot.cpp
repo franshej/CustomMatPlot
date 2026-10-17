@@ -315,30 +315,57 @@ void Plot::plotVerticalLines(const std::vector<float>& x_coordinates,
 }
 
 template <SeriesType t_series_type>
+bool Plot::seriesXSizesMatch(
+    const std::vector<std::vector<float>>& y_data) const noexcept {
+  auto y_data_it = y_data.begin();
+
+  for (const auto& series : *m_series) {
+    if (series->getType() != t_series_type) continue;
+
+    if (y_data_it == y_data.end()) return false;
+    if (series->getXData().size() != (y_data_it++)->size()) return false;
+  }
+
+  // Any leftover y-data belongs to a series that does not exist yet.
+  return y_data_it == y_data.end();
+}
+
+template <SeriesType t_series_type>
 void Plot::plotInternal(const std::vector<std::vector<float>>& y_data,
                         const std::vector<std::vector<float>>& x_data,
                         const SeriesAttributeList& series_attributes,
                         const bool update_y_data_only) {
   if (update_y_data_only) jassert(!m_series->empty());
 
+  // Whether the existing x-data can be kept has to be decided before the
+  // y-data is written, because writing it changes the sizes being compared.
+  //
+  // Keeping x-data of a different length would leave it - and the pixel-point
+  // indices derived from it - describing a different number of points than
+  // the series holds, so the x-data is regenerated instead.
+  const auto keep_existing_x_data =
+      update_y_data_only && seriesXSizesMatch<t_series_type>(y_data);
+
+  // Reaching this in a y-only update means the caller changed the number of
+  // values, which costs the x-data update that plotUpdateYOnly exists to
+  // avoid. It is handled, but it is worth knowing about.
+  jassert(!update_y_data_only || keep_existing_x_data);
+
   updateSeriesYData<t_series_type>(y_data, series_attributes);
 
-  if (update_y_data_only) {
-    goto skip_update_x_data_label;
-  }
+  if (!keep_existing_x_data) {
+    if (!x_data.empty()) {
+      updateSeriesXData<t_series_type>(x_data);
+    } else {
+      // Fix this for other types of lines
+      const auto gen_x_data = generateXdataRamp(y_data);
 
-  if (!x_data.empty()) {
-    updateSeriesXData<t_series_type>(x_data);
-  } else {
-    // Fix this for other types of lines
-    const auto gen_x_data = generateXdataRamp(y_data);
-
-    if (!gen_x_data.empty()) {
-      updateSeriesXData<t_series_type>(gen_x_data);
+      if (!gen_x_data.empty()) {
+        updateSeriesXData<t_series_type>(gen_x_data);
+      }
     }
   }
 
-skip_update_x_data_label:
   m_notify_components_on_update.notify();
 }
 
@@ -358,7 +385,11 @@ std::vector<std::vector<float>> Plot::generateXdataRamp(
   return generateRamp();
 }
 
-void Plot::plotSeries(std::span<const SeriesData> series) {
+template <bool t_take_ownership>
+void Plot::plotSeriesInternal(
+    std::span<
+        std::conditional_t<t_take_ownership, SeriesData, const SeriesData>>
+        series) {
   // Validate before mutating any state, so a throw leaves the plot untouched.
   // An empty x is allowed: it auto-generates a 1..N ramp below.
   for (const auto& s : series)
@@ -378,16 +409,30 @@ void Plot::plotSeries(std::span<const SeriesData> series) {
     if (component->getType() != SeriesType::normal) continue;
     if (series_it == series.end()) break;
 
-    const auto& s = *series_it++;
-    component->setYValues(s.y);
+    auto& s = *series_it++;
 
-    if (s.x.empty()) {
-      // No x supplied: use a 1..N ramp, matching generateXdataRamp.
-      std::vector<float> ramp(s.y.size());
+    // No x supplied: use a 1..N ramp, matching generateXdataRamp. The ramp is
+    // built here and always moved, since nothing else owns it.
+    const auto needs_ramp = s.x.empty();
+    std::vector<float> ramp;
+
+    if (needs_ramp) {
+      ramp.resize(s.y.size());
       std::iota(ramp.begin(), ramp.end(), 1.0f);
-      component->setXValues(ramp);
+    }
+
+    if constexpr (t_take_ownership) {
+      // The caller's bundle is expiring, so its storage is taken rather than
+      // copied.
+      component->setYValues(std::move(s.y));
+      component->setXValues(needs_ramp ? std::move(ramp) : std::move(s.x));
     } else {
-      component->setXValues(s.x);
+      component->setYValues(s.y);
+
+      if (needs_ramp)
+        component->setXValues(std::move(ramp));
+      else
+        component->setXValues(s.x);
     }
 
     component->setSeriesAttribute(s.attribute);
@@ -403,9 +448,21 @@ void Plot::plotSeries(std::span<const SeriesData> series) {
   repaint();
 }
 
+void Plot::plotSeries(std::span<const SeriesData> series) {
+  plotSeriesInternal<false>(series);
+}
+
 void Plot::plot(const SeriesDataList& series) { plotSeries(series); }
 
 void Plot::plot(const SeriesData& series) { plotSeries({&series, 1}); }
+
+void Plot::plot(SeriesDataList&& series) {
+  plotSeriesInternal<true>(std::span<SeriesData>{series});
+}
+
+void Plot::plot(SeriesData&& series) {
+  plotSeriesInternal<true>(std::span<SeriesData>{&series, 1});
+}
 
 void Plot::clear() { plotSeries({}); }
 
@@ -414,10 +471,91 @@ void Plot::plotUpdateYOnly(const std::vector<std::vector<float>>& y_data) {
   repaint(m_axes_bounds);
 }
 
-void Plot::plotUpdateYOnly(std::vector<float> y_data) {
-  std::vector<std::vector<float>> data;
-  data.push_back(std::move(y_data));
-  plotUpdateYOnly(data);
+void Plot::plotUpdateYOnly(std::span<const std::span<const float>> y_data) {
+  jassert(!m_series->empty());
+
+  // The x-data can only be left alone if every series is being given as many
+  // values as it already holds, and there is a series for every range.
+  auto series_count = std::size_t{0};
+  auto keep_existing_x_data = true;
+
+  for (const auto& series : *m_series) {
+    if (series->getType() != SeriesType::normal) continue;
+
+    if (series_count >= y_data.size() ||
+        series->getXData().size() != y_data[series_count].size()) {
+      keep_existing_x_data = false;
+      break;
+    }
+
+    ++series_count;
+  }
+
+  if (series_count != y_data.size()) keep_existing_x_data = false;
+
+  if (!keep_existing_x_data) {
+    // Hand over to the path that regenerates the x-data. This is the only
+    // case that copies into a vector of vectors, and it is already the slow
+    // path.
+    std::vector<std::vector<float>> owned;
+    owned.reserve(y_data.size());
+
+    for (const auto values : y_data)
+      owned.emplace_back(values.begin(), values.end());
+
+    plotUpdateYOnly(owned);
+    return;
+  }
+
+  auto values_it = y_data.begin();
+
+  for (const auto& series : *m_series) {
+    if (series->getType() != SeriesType::normal) continue;
+
+    series->setYValues(*values_it++);
+  }
+
+  // Matches what the multi-series path does through updateSeriesYData.
+  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
+    setAutoYScale();
+  }
+
+  m_notify_components_on_update.notify();
+  repaint(m_axes_bounds);
+}
+
+void Plot::plotUpdateYOnly(std::initializer_list<float> y_data) {
+  plotUpdateYOnly(std::span<const float>(y_data.begin(), y_data.size()));
+}
+
+void Plot::plotUpdateYOnly(std::span<const float> y_data) {
+  jassert(!m_series->empty());
+
+  // Straight into the first series: wrapping the values in a vector of
+  // vectors to reach the multi-series overload would copy them an extra time
+  // and allocate, on the path that exists to avoid exactly that.
+  for (const auto& series : *m_series) {
+    if (series->getType() != SeriesType::normal) continue;
+
+    // A different number of values leaves the x-data describing a different
+    // number of points, so fall back to the path that regenerates it.
+    if (series->getXData().size() != y_data.size()) {
+      plotUpdateYOnly(
+          std::vector<std::vector<float>>{{y_data.begin(), y_data.end()}});
+      return;
+    }
+
+    series->setYValues(y_data);
+    break;
+  }
+
+  // Matches what the multi-series path does through updateSeriesYData.
+  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
+    setAutoYScale();
+  }
+
+  m_notify_components_on_update.notify();
+  repaint(m_axes_bounds);
 }
 
 void Plot::fillBetween(const std::vector<SpreadIndex>& spread_indices,

@@ -92,6 +92,28 @@ class Plot : public juce::Component {
   void plot(const SeriesData &series);
 
   /**
+   * @brief Plot one or more series, taking their values.
+   *
+   * Overload for a caller handing over series it no longer needs: the x- and
+   * y-values are moved into the plot rather than copied.
+   *
+   * @code plot(std::move(my_series)); @endcode
+   *
+   * @param series the series to plot, left empty afterwards @see SeriesData
+   */
+  void plot(SeriesDataList &&series);
+
+  /**
+   * @brief Plot a single series, taking its values.
+   *
+   * Also picked for a temporary, so @code plot({.y = makeSamples()}); @endcode
+   * moves rather than copies.
+   *
+   * @param series the series to plot, left empty afterwards @see SeriesData
+   */
+  void plot(SeriesData &&series);
+
+  /**
    * @brief Remove all plotted series, clearing the plot.
    *
    * A named alias for plotting an empty list: @code plot({}); @endcode
@@ -129,6 +151,12 @@ class Plot : public juce::Component {
    * function. x-data must be set through the 'plot' function before calling
    * this function.
    *
+   * Pass the same number of y-values as the series already holds. Passing a
+   * different number is handled - the x-data is regenerated as a ramp, which
+   * replaces any x-data set through 'plot' - but it costs exactly the work
+   * this function exists to avoid, so prefer 'plot' when the number of points
+   * changes.
+   *
    * @param y_data vector of vectors with the y-values.
    */
   void plotUpdateYOnly(const std::vector<std::vector<float>> &y_data);
@@ -139,9 +167,46 @@ class Plot : public juce::Component {
    * y-values need not be wrapped in an extra pair of braces:
    * @code plotUpdateYOnly(samples); @endcode
    *
+   * Takes a span, so the values can come from any contiguous range - a
+   * vector, a std::array, a raw buffer, or a sub-range of a larger one -
+   * without being packed into a vector first, and are copied straight into
+   * the series:
+   * @code plotUpdateYOnly({fft_buffer.data(), fft_size}); @endcode
+   *
    * @param y_data the new y-values for the first series.
    */
-  void plotUpdateYOnly(std::vector<float> y_data);
+  void plotUpdateYOnly(std::span<const float> y_data);
+
+  /** @brief Plot, but only update the y-data, for several series.
+   *
+   * As the vector-of-vectors overload, but each series' values can come from
+   * any contiguous range. A caller holding one buffer per channel - which is
+   * how audio arrives - can plot them without first copying everything into a
+   * vector of vectors:
+   *
+   * @code
+   *   const std::array<std::span<const float>, 2> channels{
+   *       std::span(buffer.getReadPointer(0), num_samples),
+   *       std::span(buffer.getReadPointer(1), num_samples)};
+   *
+   *   plot.plotUpdateYOnly(channels);
+   * @endcode
+   *
+   * Note that a vector of vectors does not convert to a span of spans, so
+   * such callers keep using the overload above.
+   *
+   * @param y_data one range of y-values per series.
+   */
+  void plotUpdateYOnly(std::span<const std::span<const float>> y_data);
+
+  /** @brief Update only the y-data of a single series, from a braced list.
+   *
+   * A braced list does not convert to a span, so this overload keeps
+   * @code plotUpdateYOnly({4.f, 3.f, 2.f, 1.f}); @endcode working.
+   *
+   * @param y_data the new y-values for the first series.
+   */
+  void plotUpdateYOnly(std::initializer_list<float> y_data);
 
   /** @brief Fill the area between two data lines
    *
@@ -315,7 +380,7 @@ class Plot : public juce::Component {
   enum ColourIds : int {
     background_colour,        /**< Colour of the background. */
     grid_colour,              /**< Colour of the grids. */
-    translucent_grid_colour,   /**< Colour of the translucent grids. */
+    translucent_grid_colour,  /**< Colour of the translucent grids. */
     x_grid_label_colour,      /**< Colour of the label for each x-grid line. */
     y_grid_label_colour,      /**< Colour of the label for each y-grid line. */
     frame_colour,             /**< Colour of the frame around the axes area. */
@@ -498,6 +563,21 @@ class Plot : public juce::Component {
    * copy each); shared by the plot(SeriesData) and plot(SeriesDataList)
    * overloads. */
   void plotSeries(std::span<const SeriesData> series);
+  /** @internal Shared body of the plot overloads. With t_take_ownership the
+   * caller's series are expiring, so their values are moved rather than
+   * copied. */
+  template <bool t_take_ownership>
+  void plotSeriesInternal(
+      std::span<
+          std::conditional_t<t_take_ownership, SeriesData, const SeriesData>>
+          series);
+  /** @internal Whether every series of this type already holds exactly as
+   * many x-values as the matching entry of 'y_data' has y-values. Must be
+   * asked before the y-data is written, since writing it changes the sizes
+   * being compared. */
+  template <SeriesType t_series_type>
+  bool seriesXSizesMatch(
+      const std::vector<std::vector<float>> &y_data) const noexcept;
   /** @internal */
   template <SeriesType t_series_type>
   void plotInternal(const std::vector<std::vector<float>> &y_data,

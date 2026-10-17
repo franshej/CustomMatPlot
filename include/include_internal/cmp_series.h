@@ -22,6 +22,7 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include <cstddef>
+#include <span>
 
 #include "cmp_datamodels.h"
 #include "cmp_utils.h"
@@ -116,17 +117,37 @@ class Series : public juce::Component,
 
   /** @brief Set the y-values for the series
    *
-   *  @param y_values vector of y-values.
+   *  Takes a span so any contiguous range can be copied in without first
+   *  being packed into a vector.
+   *
+   *  @param y_values the y-values.
    *  @return void.
    */
-  void setYValues(const std::vector<float>& y_values);
+  void setYValues(std::span<const float> y_values);
+
+  /** @brief Take the y-values from an expiring vector.
+   *
+   *  Steals the storage instead of copying into the existing buffer, for
+   *  callers handing over values they no longer need.
+   *
+   *  @param y_values the y-values to take.
+   *  @return void.
+   */
+  void setYValues(std::vector<float>&& y_values);
 
   /** @brief Set the x-values for the series
    *
-   *  @param x_values vector of x-values.
+   *  @param x_values the x-values.
    *  @return void.
    */
-  void setXValues(const std::vector<float>& x_values);
+  void setXValues(std::span<const float> x_values);
+
+  /** @brief Take the x-values from an expiring vector.
+   *
+   *  @param x_values the x-values to take.
+   *  @return void.
+   */
+  void setXValues(std::vector<float>&& x_values);
 
   /** @brief Set a single x/y value for the series
    *
