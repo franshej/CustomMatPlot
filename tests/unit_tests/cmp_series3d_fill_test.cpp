@@ -25,14 +25,27 @@ SECTION(Series3DFillTest, "3D fill baseline") {
     expectWithinAbsoluteError(result.getY(), expected.getY(), 1e-2f);
   };
 
+  /* Mirrors Series3D::updateFloorPixelPointsIntern: the floor point is
+   * derived by sliding the already-projected point down by its own height,
+   * never by projecting the sample a second time. Deriving it here rather
+   * than calling toPixel with a floored z is what makes these tests exercise
+   * the shortcut instead of restating the projection.
+   */
+  const auto derivedFloor = [](const cmp::Projector3D& projector,
+                               const juce::Point<float> point,
+                               const float z_value) {
+    return juce::Point<float>(
+        point.getX(), point.getY() + projector.toUnitHeight(z_value) *
+                                         projector.pixelsPerUnitHeight());
+  };
+
   TEST("A point already on the floor is its own baseline") {
     const cmp::Projector3D projector(axes, cmp::Camera3D(), axes_bounds);
 
     // z is already at the minimum, so dropping it to the floor is a no-op.
-    const auto point = juce::Point<float>(projector.toPixel({3.f, 7.f, 0.f}));
-    const auto floor = juce::Point<float>(projector.toPixel({3.f, 7.f, 0.f}));
+    const auto point = projector.toPixel({3.f, 7.f, 0.f});
 
-    expectPointNear(floor, point);
+    expectPointNear(derivedFloor(projector, point, 0.f), point);
   }
 
   TEST("The floor point keeps the x/y of its sample") {
@@ -40,14 +53,16 @@ SECTION(Series3DFillTest, "3D fill baseline") {
 
     // Two samples sharing (x, y) but at different heights must drop onto the
     // same point of the xy-plane.
-    const auto floor_a = projector.toPixel({4.f, 6.f, 0.f});
-    const auto floor_b = projector.toPixel({4.f, 6.f, 0.f});
+    const auto sample_low = projector.toPixel({4.f, 6.f, 2.f});
+    const auto sample_high = projector.toPixel({4.f, 6.f, 9.f});
+
+    const auto floor_a = derivedFloor(projector, sample_low, 2.f);
+    const auto floor_b = derivedFloor(projector, sample_high, 9.f);
 
     expectPointNear(floor_a, floor_b);
 
     // ...and that point differs from the sample drawn above it.
-    const auto raised = projector.toPixel({4.f, 6.f, 10.f});
-    expect(std::abs(raised.getY() - floor_a.getY()) > 1.0f,
+    expect(std::abs(sample_high.getY() - floor_a.getY()) > 1.0f,
            "a raised sample must not sit on its own floor point");
   }
 
@@ -58,8 +73,10 @@ SECTION(Series3DFillTest, "3D fill baseline") {
     const cmp::Projector3D projector(axes, front_view, axes_bounds);
 
     for (const auto x : {0.f, 5.f, 10.f}) {
-      const auto floor = projector.toPixel({x, 5.f, 0.f});
-      expectWithinAbsoluteError(floor.getY(), 400.f, 1e-2f);
+      const auto sample = projector.toPixel({x, 5.f, 7.f});
+
+      expectWithinAbsoluteError(derivedFloor(projector, sample, 7.f).getY(),
+                                400.f, 1e-2f);
     }
   }
 
@@ -80,7 +97,6 @@ SECTION(Series3DFillTest, "3D fill baseline") {
           const cmp::Camera3D camera(azimuth, elevation);
           const cmp::Projector3D projector(current_axes, camera, axes_bounds);
 
-          const auto pixels_per_unit_height = projector.pixelsPerUnitHeight();
           const auto z_floor = current_axes.z.lim.min;
 
           for (const auto t : {0.f, 0.25f, 0.5f, 0.75f, 1.f}) {
@@ -90,10 +106,7 @@ SECTION(Series3DFillTest, "3D fill baseline") {
 
             const auto point = projector.toPixel({x, y, z});
 
-            const auto derived = juce::Point<float>(
-                point.getX(), point.getY() + projector.toUnitHeight(z) *
-                                                 pixels_per_unit_height);
-
+            const auto derived = derivedFloor(projector, point, z);
             const auto projected = projector.toPixel({x, y, z_floor});
 
             expectPointNear(derived, projected);
@@ -110,8 +123,7 @@ SECTION(Series3DFillTest, "3D fill baseline") {
     const cmp::Projector3D projector(axes, top_view, axes_bounds);
 
     const auto point = projector.toPixel({2.f, 8.f, 10.f});
-    const auto floor = projector.toPixel({2.f, 8.f, 0.f});
 
-    expectPointNear(floor, point);
+    expectPointNear(derivedFloor(projector, point, 10.f), point);
   }
 }

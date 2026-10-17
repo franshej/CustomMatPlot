@@ -53,7 +53,12 @@ class Projector3D {
     return {m_screen_x.toPixel(view_point.x), m_screen_y.toPixel(view_point.y)};
   }
 
-  /** @brief Normalize a z-value to its height in the unit cube, in [0, 1]. */
+  /** @brief Normalize a z-value to its height in the unit cube.
+   *
+   * In [0, 1] for a z-value inside the z-limits, and outside that range for
+   * one beyond them: the result is not clamped, so that a floor point derived
+   * from it stays consistent with the full projection of the same sample.
+   */
   float toUnitHeight(const float z_value) const noexcept {
     return toUnitRange(z_value, m_axes.z);
   }
