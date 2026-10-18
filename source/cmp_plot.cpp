@@ -506,8 +506,20 @@ ScopedPlotUpdate::~ScopedPlotUpdate() {
   if (m_plot->m_open_update_count > 0 || !m_plot->m_series_update_pending)
     return;
 
-  m_plot->m_series_update_pending = false;
-  m_plot->commitSeriesUpdate();
+  // The commit rescales, and an autoscale over data a logarithmic axis cannot
+  // represent throws. A destructor is implicitly noexcept, so letting that
+  // out would call std::terminate: the exception is swallowed here and the
+  // pending flag left set, so the next commit retries rather than losing the
+  // update. Callers that want to handle it can rescale explicitly.
+  //
+  // Not asserted: a logarithmic axis meeting zero-valued data is a property
+  // of the data, not a programmer error, and a jassert here would fire on
+  // ordinary use in a debug build.
+  try {
+    m_plot->commitSeriesUpdate();
+    m_plot->m_series_update_pending = false;
+  } catch (const std::invalid_argument&) {
+  }
 }
 
 ScopedPlotUpdate Plot::beginUpdate() noexcept {
@@ -516,6 +528,10 @@ ScopedPlotUpdate Plot::beginUpdate() noexcept {
 
 std::size_t SeriesHandle::size() const noexcept {
   return m_plot->seriesYBuffer(m_index).size();
+}
+
+bool SeriesHandle::isValid() const noexcept {
+  return m_index < m_plot->normalSeriesCount();
 }
 
 void SeriesHandle::setY(std::span<const float> y_values) const {
@@ -532,11 +548,20 @@ std::span<float> ScopedSeriesWrite::values() const noexcept {
   return m_plot->seriesYBuffer(m_series_index);
 }
 
+bool ScopedSeriesWrite::isValid() const noexcept {
+  return m_series_index < m_plot->normalSeriesCount();
+}
+
 ScopedSeriesWrite::~ScopedSeriesWrite() {
   // Nothing to redraw if the series went away while the handle was alive.
-  if (values().empty()) return;
+  if (!isValid()) return;
 
-  m_plot->commitSeriesUpdate();
+  // See ~ScopedPlotUpdate: the rescale inside the commit can throw, and a
+  // destructor cannot let it out.
+  try {
+    m_plot->commitSeriesUpdate();
+  } catch (const std::invalid_argument&) {
+  }
 }
 
 void SeriesHandles::setY(
@@ -545,6 +570,11 @@ void SeriesHandles::setY(
   // refreshes once per series, which grows with the square of the series
   // count.
   auto update = m_plot->beginUpdate();
+
+  // A mismatch means the caller's channel list has drifted from what was
+  // plotted: the extra series would silently keep a stale frame, and extra
+  // ranges would be dropped. Clamped so neither overruns, but worth knowing.
+  jassert(m_count == y_values.size());
 
   const auto count = std::min(m_count, y_values.size());
 
@@ -635,13 +665,10 @@ void Plot::plotUpdateYOnly(std::span<const std::span<const float>> y_data) {
     series->setYValues(*values_it++);
   }
 
-  // Matches what the multi-series path does through updateSeriesYData.
-  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
-    setAutoYScale();
-  }
-
-  m_notify_components_on_update.notify();
-  repaint(m_axes_bounds);
+  // Through the same commit as the handle API, so that this overload also
+  // defers while a ScopedPlotUpdate is open instead of rescaling and
+  // repainting inside it.
+  commitSeriesUpdate();
 }
 
 void Plot::plotUpdateYOnly(std::initializer_list<float> y_data) {

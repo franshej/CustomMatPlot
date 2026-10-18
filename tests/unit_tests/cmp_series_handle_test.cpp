@@ -223,6 +223,65 @@ SECTION(SeriesHandleTest, "Series handles") {
     expect(first_pixel_y() != before, "the series must have been refreshed");
   }
 
+  TEST("A series plotted without values can still be filled") {
+    cmp::Plot plot;
+    plot.setBounds(0, 0, 500, 400);
+
+    // Fixed limits on both axes, because an autoscale over a series with no
+    // values has no range to scale to and throws.
+    plot.setXLim(0.f, 10.f);
+    plot.setYLim(0.f, 10.f);
+
+    // A placeholder series, to be fed once the first frame arrives. It is
+    // empty but real, so its handle has to be usable: deriving validity from
+    // the point count would make this series permanently unfillable.
+    const auto series = plot.plot({.y = std::vector<float>{}});
+
+    expect(series.isValid(), "an empty series is still a plotted series");
+    expectEquals(series.size(), std::size_t(0u));
+
+    series.setY(make(4u, 3.f));
+
+    expectEquals(seriesOf(plot).at(0)->getYData().size(), std::size_t(4u));
+    expectEquals(seriesOf(plot).at(0)->getYData().at(0), 3.f);
+  }
+
+  TEST("A rescale the y-axis cannot represent does not escape the update") {
+    // A logarithmic y-axis cannot take a zero limit, so the autoscale on
+    // commit throws. The commit happens in a destructor, which is noexcept,
+    // so the throw must be contained rather than terminating the process.
+    cmp::SemiLogY plot;
+    plot.setBounds(0, 0, 500, 400);
+
+    // A spread of positive values, so plotting itself scales cleanly; the
+    // zero only appears later, on the update.
+    plot.plot({.y = std::vector<float>{1.f, 2.f, 3.f, 4.f}});
+
+    const auto series = plot.series(0u);
+
+    // One zero sample alongside non-zero ones: the autoscale then derives a
+    // y-limit of exactly zero, which 10log cannot represent. An all-zero
+    // frame would not do it, because equal limits get widened to {-1, 1}.
+    {
+      auto write = series.writeY();
+      const float frame[]{0.f, 2.f, 3.f, 4.f};
+      std::copy(std::begin(frame), std::end(frame), write.values().begin());
+    }
+
+    // Reaching here at all is the assertion: the scope exit above committed
+    // a rescale that throws internally.
+    expectEquals(seriesOf(plot).at(0)->getYData().at(0), 0.f);
+
+    // ...and the same through a batched update, which commits in
+    // ~ScopedPlotUpdate instead.
+    {
+      auto update = plot.beginUpdate();
+      series.setY(std::vector<float>{0.f, 5.f, 6.f, 7.f});
+    }
+
+    expectEquals(seriesOf(plot).at(0)->getYData().at(1), 5.f);
+  }
+
   TEST("An update that changes nothing does not force a refresh") {
     cmp::Plot plot;
     plot.setBounds(0, 0, 500, 400);

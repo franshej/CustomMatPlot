@@ -543,8 +543,9 @@ class ScopedSeriesWrite {
    * longer exists. */
   std::span<float> values() const noexcept;
 
-  /** @brief Whether the series still exists. */
-  bool isValid() const noexcept { return !values().empty(); }
+  /** @brief Whether the series still exists. Not taken from 'values()',
+   * which is also empty for a series plotted without any values. */
+  bool isValid() const noexcept;
 
  private:
   friend class SeriesHandle;
@@ -602,11 +603,17 @@ class ScopedPlotUpdate {
  */
 class SeriesHandle {
  public:
-  /** @brief How many points the series holds. Zero if it no longer exists. */
+  /** @brief How many points the series holds. Zero if it no longer exists,
+   * and zero for a series plotted without any values. */
   std::size_t size() const noexcept;
 
-  /** @brief Whether the series still exists. */
-  bool isValid() const noexcept { return size() != 0u; }
+  /** @brief Whether the series still exists.
+   *
+   * Taken from the position against the number of plotted series, not from
+   * 'size()': a series plotted with no values yet is empty but real, and has
+   * to stay updatable through its handle.
+   */
+  bool isValid() const noexcept;
 
   /** @brief Replace the y-values, keeping the x-values.
    *
@@ -656,7 +663,8 @@ class SeriesHandles {
    * of them. This does the batching for the caller so it cannot be forgotten.
    *
    * @code
-   *   channels.setY(std::array{left, right});
+   *   const std::span<const float> frames[]{left, right};
+   *   channels.setY(frames);
    * @endcode
    *
    * @param y_values one range of y-values per series.
