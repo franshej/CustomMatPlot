@@ -319,9 +319,21 @@ void PlotLookAndFeel::drawSeries(juce::Graphics& g,
   auto series_colour = series_data.series_attribute.series_colour.value();
 
   if (pixel_points.size() > 1) {
+    const auto* baseline = series_data.fill_baseline;
+
+    // A baseline is supplied and sized by the series itself, so a mismatch is
+    // a bug in the series rather than something to render around.
+    jassert(baseline == nullptr || baseline->size() == pixel_points.size());
+
+    const auto has_baseline = series_data.series_attribute.gradient_colours &&
+                              baseline != nullptr &&
+                              baseline->size() == pixel_points.size();
+
     // Each subpath start and line segment stores a marker plus an x/y pair, so
-    // the path is grown once here instead of reallocating as it is built.
-    series_path.preallocateSpace(int(pixel_points.size()) * 3);
+    // the path is grown once here instead of reallocating as it is built. A
+    // baseline fill walks back along the baseline, doubling the segments.
+    series_path.preallocateSpace(int(pixel_points.size()) *
+                                 (has_baseline ? 6 : 3));
 
     series_path.startNewSubPath(pixel_points[0]);
     std::for_each(
@@ -380,12 +392,38 @@ void PlotLookAndFeel::drawSeries(juce::Graphics& g,
           gradient_colours.first, 0.f, gradient_colours.second,
           series_bounds_f.getHeight());
 
-      series_path.lineTo(pixel_points.back().getX(), series_bounds.getBottom());
-      series_path.lineTo(pixel_points.front().getX(),
-                         series_bounds.getBottom());
+      // The series line is stroked on top of a baseline fill, so keep a copy
+      // before the path is closed into a filled shape.
+      juce::Path line_path;
+      if (has_baseline) {
+        line_path = series_path;
+      }
+
+      if (has_baseline) {
+        // Close the fill along the supplied baseline, walked backwards so the
+        // path stays a simple ribbon between the series and the baseline.
+        for (auto it = baseline->rbegin(); it != baseline->rend(); ++it) {
+          series_path.lineTo(*it);
+        }
+      } else {
+        // No baseline: fill down to the bottom of the series bounds.
+        series_path.lineTo(pixel_points.back().getX(),
+                           series_bounds.getBottom());
+        series_path.lineTo(pixel_points.front().getX(),
+                           series_bounds.getBottom());
+      }
+
       series_path.closeSubPath();
       g.setGradientFill(gradient);
       g.fillPath(series_path);
+
+      // A fill to a flat screen edge reads fine on its own, but a fill to a
+      // baseline that follows the data needs the series line drawn over it to
+      // stay legible where several fills overlap.
+      if (has_baseline) {
+        g.setColour(series_colour);
+        g.strokePath(line_path, stroke_type);
+      }
     } else {
       g.strokePath(series_path, stroke_type);
     }

@@ -528,6 +528,15 @@ struct SeriesDataView {
   const PixelPoints& pixel_points;
   const std::vector<std::size_t>& pixel_point_indices;
   const SeriesAttribute& series_attribute;
+
+  /** Optional baseline that a gradient fill is closed along, holding one
+   * point per pixel point.
+   *
+   * When null the fill is closed along the bottom edge of the series bounds,
+   * which is the 2D fill-to-the-x-axis behaviour. The 3D series instead
+   * supplies every point projected onto the xy-plane, so the fill follows the
+   * floor of the data cube rather than a flat screen edge. */
+  const PixelPoints* fill_baseline{nullptr};
 };
 
 /**
