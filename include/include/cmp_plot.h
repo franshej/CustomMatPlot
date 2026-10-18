@@ -121,6 +121,30 @@ class Plot : public juce::Component {
   ScopedPlotUpdate beginUpdate() noexcept;
 
   /**
+   * @brief Plot one or more series, taking their values.
+   *
+   * Overload for a caller handing over series it no longer needs: the x- and
+   * y-values are moved into the plot rather than copied.
+   *
+   * @code plot(std::move(my_series)); @endcode
+   *
+   * @param series the series to plot, left empty afterwards @see SeriesData
+   * @return a handle to every series plotted, for updating them later.
+   */
+  SeriesHandles plot(SeriesDataList &&series);
+
+  /**
+   * @brief Plot a single series, taking its values.
+   *
+   * Also picked for a temporary, so @code plot({.y = makeSamples()}); @endcode
+   * moves rather than copies.
+   *
+   * @param series the series to plot, left empty afterwards @see SeriesData
+   * @return a handle to the plotted series, for updating it later.
+   */
+  SeriesHandle plot(SeriesData &&series);
+
+  /**
    * @brief Remove all plotted series, clearing the plot.
    *
    * A named alias for plotting an empty list: @code plot({}); @endcode
@@ -581,6 +605,14 @@ class Plot : public juce::Component {
   /** @internal Rescale, notify and repaint after series were updated in
    * place. Deferred while a ScopedPlotUpdate is open. */
   void commitSeriesUpdate();
+  /** @internal Shared body of the plot overloads. With t_take_ownership the
+   * caller's series are expiring, so their values are moved rather than
+   * copied. */
+  template <bool t_take_ownership>
+  void plotSeriesInternal(
+      std::span<
+          std::conditional_t<t_take_ownership, SeriesData, const SeriesData>>
+          series);
   /** @internal Whether every series of this type already holds exactly as
    * many x-values as the matching entry of 'y_data' has y-values. Must be
    * asked before the y-data is written, since writing it changes the sizes
