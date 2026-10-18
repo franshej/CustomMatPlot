@@ -36,6 +36,13 @@ namespace cmp {
  * @see LogLog
  */
 class Plot : public juce::Component {
+  // These are the handles Plot vends; they reach its internals so that the
+  // internals need not be public. SeriesHandles is deliberately absent - it
+  // goes through SeriesHandle's public interface instead.
+  friend class SeriesHandle;
+  friend class ScopedSeriesWrite;
+  friend class ScopedPlotUpdate;
+
  public:
   /** Destructor, making sure to set the lookandfeel in all subcomponents to
    * nullptr. */
@@ -78,8 +85,9 @@ class Plot : public juce::Component {
    * @endcode
    *
    * @param series the series to plot @see SeriesData
+   * @return handles to the plotted series, for updating them afterwards
    */
-  void plot(const SeriesDataList &series);
+  SeriesHandles plot(const SeriesDataList &series);
 
   /**
    * @brief Plot a single series.
@@ -88,8 +96,29 @@ class Plot : public juce::Component {
    * pair of braces: @code plot({.y = samples}); @endcode
    *
    * @param series the series to plot @see SeriesData
+   * @return a handle to the plotted series, for updating it afterwards
    */
-  void plot(const SeriesData &series);
+  SeriesHandle plot(const SeriesData &series);
+
+  /**
+   * @brief Get a handle to an already plotted series.
+   *
+   * For code that plots in one place and updates in another, so the handle
+   * need not be carried around. An index with no series gives an invalid
+   * handle rather than undefined behaviour.
+   *
+   * @param series_index which series, in the order they were plotted.
+   * @return a handle to that series.
+   */
+  SeriesHandle series(const std::size_t series_index) noexcept;
+
+  /**
+   * @brief Batch several series updates into one rescale and repaint.
+   *
+   * @see ScopedPlotUpdate
+   * @return a scoped handle that commits on destruction.
+   */
+  ScopedPlotUpdate beginUpdate() noexcept;
 
   /**
    * @brief Plot one or more series, taking their values.
@@ -100,8 +129,9 @@ class Plot : public juce::Component {
    * @code plot(std::move(my_series)); @endcode
    *
    * @param series the series to plot, left empty afterwards @see SeriesData
+   * @return a handle to every series plotted, for updating them later.
    */
-  void plot(SeriesDataList &&series);
+  SeriesHandles plot(SeriesDataList &&series);
 
   /**
    * @brief Plot a single series, taking its values.
@@ -110,8 +140,9 @@ class Plot : public juce::Component {
    * moves rather than copies.
    *
    * @param series the series to plot, left empty afterwards @see SeriesData
+   * @return a handle to the plotted series, for updating it later.
    */
-  void plot(SeriesData &&series);
+  SeriesHandle plot(SeriesData &&series);
 
   /**
    * @brief Remove all plotted series, clearing the plot.
@@ -563,6 +594,17 @@ class Plot : public juce::Component {
    * copy each); shared by the plot(SeriesData) and plot(SeriesDataList)
    * overloads. */
   void plotSeries(std::span<const SeriesData> series);
+  /** @internal Replace the y-values of the n-th normal series, regenerating
+   * its x-data if the number of values changed. */
+  void updateSeriesYAt(std::span<const float> y_data, std::size_t series_index);
+  /** @internal The y-buffer of the n-th normal series, empty if there is no
+   * such series. Shared by SeriesHandle and ScopedSeriesWrite. */
+  std::span<float> seriesYBuffer(std::size_t series_index) noexcept;
+  /** @internal How many normal series are plotted. */
+  std::size_t normalSeriesCount() const noexcept;
+  /** @internal Rescale, notify and repaint after series were updated in
+   * place. Deferred while a ScopedPlotUpdate is open. */
+  void commitSeriesUpdate();
   /** @internal Shared body of the plot overloads. With t_take_ownership the
    * caller's series are expiring, so their values are moved rather than
    * copied. */
@@ -660,6 +702,11 @@ class Plot : public juce::Component {
   bool m_x_autoscale = true;
   bool m_y_autoscale = true;
   bool m_is_panning_or_zoomed_active = false;
+  /** How many ScopedPlotUpdates are open. While non-zero, series updates defer
+   * their rescale and repaint to the outermost one. */
+  int m_open_update_count = 0;
+  /** Whether a deferred update is waiting to be committed. */
+  bool m_series_update_pending = false;
 };
 
 /**

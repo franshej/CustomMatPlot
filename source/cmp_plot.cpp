@@ -392,10 +392,12 @@ void Plot::plotSeriesInternal(
         series) {
   // Validate before mutating any state, so a throw leaves the plot untouched.
   // An empty x is allowed: it auto-generates a 1..N ramp below.
-  for (const auto& s : series)
-    if (!s.x.empty() && s.x.size() != s.y.size())
+  for (const auto& s : series) {
+    if (!s.x.empty() && s.x.size() != s.y.size()) {
       throw std::invalid_argument(
           "plot: the x and y values of a series must have the same size.");
+    }
+  }
 
   // plot() sets the plot to exactly the given series; an empty list clears
   // them (there is no separate clear method).
@@ -452,16 +454,163 @@ void Plot::plotSeries(std::span<const SeriesData> series) {
   plotSeriesInternal<false>(series);
 }
 
-void Plot::plot(const SeriesDataList& series) { plotSeries(series); }
+std::size_t Plot::normalSeriesCount() const noexcept {
+  auto count = std::size_t{0};
 
-void Plot::plot(const SeriesData& series) { plotSeries({&series, 1}); }
+  for (const auto& series : *m_series) {
+    if (series->getType() == SeriesType::normal) {
+      ++count;
+    }
+  }
 
-void Plot::plot(SeriesDataList&& series) {
-  plotSeriesInternal<true>(std::span<SeriesData>{series});
+  return count;
 }
 
-void Plot::plot(SeriesData&& series) {
+std::span<float> Plot::seriesYBuffer(const std::size_t series_index) noexcept {
+  auto remaining = series_index;
+
+  for (const auto& series : *m_series) {
+    if (series->getType() != SeriesType::normal) continue;
+
+    if (remaining == 0u) return series->getYDataForWriting();
+    --remaining;
+  }
+
+  return {};
+}
+
+void Plot::commitSeriesUpdate() {
+  // While an update is open the work is left to the outermost one, so that
+  // several series can be updated for the price of one rescale and repaint.
+  if (m_open_update_count > 0) {
+    m_series_update_pending = true;
+    return;
+  }
+
+  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
+    setAutoYScale();
+  }
+
+  m_notify_components_on_update.notify();
+  repaint(m_axes_bounds);
+}
+
+ScopedPlotUpdate::ScopedPlotUpdate(Plot& plot) noexcept : m_plot{&plot} {
+  ++m_plot->m_open_update_count;
+}
+
+ScopedPlotUpdate::~ScopedPlotUpdate() {
+  --m_plot->m_open_update_count;
+
+  // Only the outermost update commits, and only if anything was changed.
+  if (m_plot->m_open_update_count > 0 || !m_plot->m_series_update_pending)
+    return;
+
+  // The commit rescales, and an autoscale over data a logarithmic axis cannot
+  // represent throws. A destructor is implicitly noexcept, so letting that
+  // out would call std::terminate: the exception is swallowed here and the
+  // pending flag left set, so the next commit retries rather than losing the
+  // update. Callers that want to handle it can rescale explicitly.
+  //
+  // Not asserted: a logarithmic axis meeting zero-valued data is a property
+  // of the data, not a programmer error, and a jassert here would fire on
+  // ordinary use in a debug build.
+  try {
+    m_plot->commitSeriesUpdate();
+    m_plot->m_series_update_pending = false;
+  } catch (const std::invalid_argument&) {
+  }
+}
+
+ScopedPlotUpdate Plot::beginUpdate() noexcept {
+  return ScopedPlotUpdate{*this};
+}
+
+std::size_t SeriesHandle::size() const noexcept {
+  return m_plot->seriesYBuffer(m_index).size();
+}
+
+bool SeriesHandle::isValid() const noexcept {
+  return m_index < m_plot->normalSeriesCount();
+}
+
+void SeriesHandle::setY(std::span<const float> y_values) const {
+  if (!isValid()) return;
+
+  m_plot->updateSeriesYAt(y_values, m_index);
+}
+
+ScopedSeriesWrite SeriesHandle::writeY() const noexcept {
+  return ScopedSeriesWrite{*m_plot, m_index};
+}
+
+std::span<float> ScopedSeriesWrite::values() const noexcept {
+  return m_plot->seriesYBuffer(m_series_index);
+}
+
+bool ScopedSeriesWrite::isValid() const noexcept {
+  return m_series_index < m_plot->normalSeriesCount();
+}
+
+ScopedSeriesWrite::~ScopedSeriesWrite() {
+  // Nothing to redraw if the series went away while the handle was alive.
+  if (!isValid()) return;
+
+  // See ~ScopedPlotUpdate: the rescale inside the commit can throw, and a
+  // destructor cannot let it out.
+  try {
+    m_plot->commitSeriesUpdate();
+  } catch (const std::invalid_argument&) {
+  }
+}
+
+void SeriesHandles::setY(
+    std::span<const std::span<const float>> y_values) const {
+  // One update for all of them: updating series one at a time rescales and
+  // refreshes once per series, which grows with the square of the series
+  // count.
+  auto update = m_plot->beginUpdate();
+
+  // A mismatch means the caller's channel list has drifted from what was
+  // plotted: the extra series would silently keep a stale frame, and extra
+  // ranges would be dropped. Clamped so neither overruns, but worth knowing.
+  jassert(m_count == y_values.size());
+
+  const auto count = std::min(m_count, y_values.size());
+
+  // Through the handles' own public setY, so this needs no privileged access
+  // to Plot of its own.
+  for (std::size_t i = 0; i < count; ++i) {
+    (*this)[i].setY(y_values[i]);
+  }
+}
+
+SeriesHandle Plot::series(const std::size_t series_index) noexcept {
+  return SeriesHandle{*this, series_index};
+}
+
+SeriesHandles Plot::plot(const SeriesDataList& series) {
+  plotSeries(series);
+
+  return SeriesHandles{*this, normalSeriesCount()};
+}
+
+SeriesHandle Plot::plot(const SeriesData& series) {
+  plotSeries({&series, 1});
+
+  return SeriesHandle{*this, 0u};
+}
+
+SeriesHandles Plot::plot(SeriesDataList&& series) {
+  plotSeriesInternal<true>(std::span<SeriesData>{series});
+
+  return SeriesHandles{*this, normalSeriesCount()};
+}
+
+SeriesHandle Plot::plot(SeriesData&& series) {
   plotSeriesInternal<true>(std::span<SeriesData>{&series, 1});
+
+  return SeriesHandle{*this, 0u};
 }
 
 void Plot::clear() { plotSeries({}); }
@@ -500,8 +649,9 @@ void Plot::plotUpdateYOnly(std::span<const std::span<const float>> y_data) {
     std::vector<std::vector<float>> owned;
     owned.reserve(y_data.size());
 
-    for (const auto values : y_data)
+    for (const auto values : y_data) {
       owned.emplace_back(values.begin(), values.end());
+    }
 
     plotUpdateYOnly(owned);
     return;
@@ -515,47 +665,58 @@ void Plot::plotUpdateYOnly(std::span<const std::span<const float>> y_data) {
     series->setYValues(*values_it++);
   }
 
-  // Matches what the multi-series path does through updateSeriesYData.
-  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
-    setAutoYScale();
-  }
-
-  m_notify_components_on_update.notify();
-  repaint(m_axes_bounds);
+  // Through the same commit as the handle API, so that this overload also
+  // defers while a ScopedPlotUpdate is open instead of rescaling and
+  // repainting inside it.
+  commitSeriesUpdate();
 }
 
 void Plot::plotUpdateYOnly(std::initializer_list<float> y_data) {
   plotUpdateYOnly(std::span<const float>(y_data.begin(), y_data.size()));
 }
 
-void Plot::plotUpdateYOnly(std::span<const float> y_data) {
+void Plot::updateSeriesYAt(std::span<const float> y_data,
+                           const std::size_t series_index) {
   jassert(!m_series->empty());
 
-  // Straight into the first series: wrapping the values in a vector of
-  // vectors to reach the multi-series overload would copy them an extra time
-  // and allocate, on the path that exists to avoid exactly that.
+  auto remaining = series_index;
+
+  // Straight into the series: wrapping the values in a vector of vectors to
+  // reach the multi-series overload would copy them an extra time and
+  // allocate, on the path that exists to avoid exactly that.
   for (const auto& series : *m_series) {
     if (series->getType() != SeriesType::normal) continue;
 
-    // A different number of values leaves the x-data describing a different
-    // number of points, so fall back to the path that regenerates it.
-    if (series->getXData().size() != y_data.size()) {
-      plotUpdateYOnly(
-          std::vector<std::vector<float>>{{y_data.begin(), y_data.end()}});
-      return;
+    if (remaining != 0u) {
+      --remaining;
+      continue;
     }
 
     series->setYValues(y_data);
+
+    // A different number of values would leave the x-data - and the
+    // pixel-point indices derived from it - describing a different number of
+    // points, so this series' x-data is regenerated as a ramp. The other
+    // series are left alone. This costs exactly the work updating only the
+    // y-values exists to avoid, hence the assert.
+    if (series->getXData().size() != y_data.size()) {
+      jassertfalse;
+
+      std::vector<float> ramp(y_data.size());
+      std::iota(ramp.begin(), ramp.end(), 1.0f);
+      series->setXValues(ramp);
+
+      if (m_x_autoscale && !m_is_panning_or_zoomed_active) setAutoXScale();
+    }
+
     break;
   }
 
-  // Matches what the multi-series path does through updateSeriesYData.
-  UNLIKELY if (m_y_autoscale && !m_is_panning_or_zoomed_active) {
-    setAutoYScale();
-  }
+  commitSeriesUpdate();
+}
 
-  m_notify_components_on_update.notify();
-  repaint(m_axes_bounds);
+void Plot::plotUpdateYOnly(std::span<const float> y_data) {
+  updateSeriesYAt(y_data, 0u);
 }
 
 void Plot::fillBetween(const std::vector<SpreadIndex>& spread_indices,
